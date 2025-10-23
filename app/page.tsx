@@ -44,7 +44,7 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900">
+    <div className="min-h-screen bg-black">
       <Header onSearch={handleSearch} />
 
       {searchQuery.trim() && filteredMovies.length === 0 ? (

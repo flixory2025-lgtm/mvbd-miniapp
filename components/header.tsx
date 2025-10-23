@@ -19,7 +19,7 @@ export default function Header({ onSearch }: HeaderProps) {
   }
 
   return (
-    <header className="sticky top-0 z-40 bg-gradient-to-b from-slate-900 to-slate-800 border-b border-slate-700 shadow-lg">
+    <header className="sticky top-0 z-40 bg-black border-b border-slate-700 shadow-lg">
       <div className="px-4 py-4 flex items-center gap-4">
         {/* Logo */}
         <div className="flex-shrink-0">
@@ -32,6 +32,10 @@ export default function Header({ onSearch }: HeaderProps) {
             <line x1="70" y1="50" x2="90" y2="70" stroke="#22c55e" strokeWidth="4" />
             <line x1="130" y1="50" x2="110" y2="70" stroke="#22c55e" strokeWidth="4" />
           </svg>
+        </div>
+
+        <div className="hidden sm:block">
+          <h1 className="text-white font-bold text-lg">MVBD miniapp</h1>
         </div>
 
         {/* Search Bar */}

@@ -14,15 +14,14 @@ interface MovieModalProps {
     duration: number
     director: string
     cast: string[]
+    telegramLink: string
   }
   onClose: () => void
 }
 
 export default function MovieModal({ movie, onClose }: MovieModalProps) {
   const handleWatchNow = () => {
-    // Open in Telegram
-    const telegramUrl = `https://t.me/moviesversebdreq?start=movie_${movie.id}`
-    window.open(telegramUrl, "_blank")
+    window.open(movie.telegramLink, "_blank")
   }
 
   return (

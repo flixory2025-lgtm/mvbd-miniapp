@@ -1,22 +1,24 @@
-export const genres = ["All",
-    "Action",
-    "Comedy",
-    "Drama",
-    "Horror",
-    "zombie",
-    "Romance",
-    "Sci-Fi",
-    "Thriller",
-    "kdrama",
-    "bangla",
-    "marvel",
-    "natok",
-    "DC",
-    "netflix",
-    "18+",]
+export const genres = [
+  "All",
+  "Action",
+  "Comedy",
+  "Drama",
+  "Horror",
+  "zombie",
+  "Romance",
+  "Sci-Fi",
+  "Thriller",
+  "kdrama",
+  "bangla",
+  "marvel",
+  "natok",
+  "DC",
+  "netflix",
+  "Adult",
+]
 
 export const movies = [
-  {
+   {
     id: 1,
     title: "My Name (2021)",
     poster: "/244id.jpg",
@@ -11065,8 +11067,8 @@ export const movies = [
 
 for (let i = 21; i <= 100; i++) {
   const genreList = [
-    genres[Math.floor(Math.random() * genres.length)],
-    genres[Math.floor(Math.random() * genres.length)],
+    genres[Math.floor(Math.random() * (genres.length - 1)) + 1],
+    genres[Math.floor(Math.random() * (genres.length - 1)) + 1],
   ]
   movies.push({
     id: i,

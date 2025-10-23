@@ -23,8 +23,10 @@ export default function Home() {
     }
 
     if (selectedGenre) {
-      filtered = filtered.filter((movie) => movie.genres.includes(selectedGenre))
+      filtered = filtered.filter((movie) => movie.genre.includes(selectedGenre))
     }
+
+    filtered = filtered.sort((a, b) => b.id - a.id)
 
     return filtered
   }, [searchQuery, selectedGenre])

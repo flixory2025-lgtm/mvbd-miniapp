@@ -11,6 +11,20 @@ interface MovieGridProps {
 }
 
 export default function MovieGrid({ movies, onMovieClick, currentPage, totalPages, onPageChange }: MovieGridProps) {
+  const getVisiblePages = () => {
+    const maxVisible = 5
+    let startPage = Math.max(1, currentPage - Math.floor(maxVisible / 2))
+    const endPage = Math.min(totalPages, startPage + maxVisible - 1)
+
+    if (endPage - startPage + 1 < maxVisible) {
+      startPage = Math.max(1, endPage - maxVisible + 1)
+    }
+
+    return Array.from({ length: endPage - startPage + 1 }, (_, i) => startPage + i)
+  }
+
+  const visiblePages = getVisiblePages()
+
   return (
     <section className="px-4 py-8">
       {movies.length === 0 ? (
@@ -36,37 +50,63 @@ export default function MovieGrid({ movies, onMovieClick, currentPage, totalPage
             ))}
           </div>
 
-          {/* Pagination */}
           {totalPages > 1 && (
-            <div className="flex justify-center gap-2 py-8">
+            <div className="flex justify-center items-center gap-1 md:gap-2 py-8 flex-wrap">
+              {/* Previous Button */}
               <button
                 onClick={() => onPageChange(Math.max(1, currentPage - 1))}
                 disabled={currentPage === 1}
-                className="px-4 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-600 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                className="px-2 md:px-4 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-600 disabled:opacity-50 disabled:cursor-not-allowed transition text-sm md:text-base"
               >
                 আগে
               </button>
 
-              <div className="flex items-center gap-1">
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+              {/* First Page */}
+              {visiblePages[0] > 1 && (
+                <>
                   <button
-                    key={page}
-                    onClick={() => onPageChange(page)}
-                    className={`px-3 py-2 rounded-lg transition ${
-                      currentPage === page
-                        ? "bg-green-500 text-white"
-                        : "bg-slate-700 text-slate-300 hover:bg-slate-600"
-                    }`}
+                    onClick={() => onPageChange(1)}
+                    className="px-2 md:px-3 py-2 bg-slate-700 text-slate-300 hover:bg-slate-600 rounded-lg transition text-sm md:text-base"
                   >
-                    {page}
+                    1
                   </button>
-                ))}
-              </div>
+                  {visiblePages[0] > 2 && <span className="text-slate-400 px-1">...</span>}
+                </>
+              )}
 
+              {/* Visible Pages */}
+              {visiblePages.map((page) => (
+                <button
+                  key={page}
+                  onClick={() => onPageChange(page)}
+                  className={`px-2 md:px-3 py-2 rounded-lg transition text-sm md:text-base ${
+                    currentPage === page ? "bg-green-500 text-white" : "bg-slate-700 text-slate-300 hover:bg-slate-600"
+                  }`}
+                >
+                  {page}
+                </button>
+              ))}
+
+              {/* Last Page */}
+              {visiblePages[visiblePages.length - 1] < totalPages && (
+                <>
+                  {visiblePages[visiblePages.length - 1] < totalPages - 1 && (
+                    <span className="text-slate-400 px-1">...</span>
+                  )}
+                  <button
+                    onClick={() => onPageChange(totalPages)}
+                    className="px-2 md:px-3 py-2 bg-slate-700 text-slate-300 hover:bg-slate-600 rounded-lg transition text-sm md:text-base"
+                  >
+                    {totalPages}
+                  </button>
+                </>
+              )}
+
+              {/* Next Button */}
               <button
                 onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
                 disabled={currentPage === totalPages}
-                className="px-4 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-600 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                className="px-2 md:px-4 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-600 disabled:opacity-50 disabled:cursor-not-allowed transition text-sm md:text-base"
               >
                 পরে
               </button>

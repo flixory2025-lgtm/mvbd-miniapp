@@ -4,9 +4,13 @@ import { useState, useEffect } from "react"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { movies } from "@/lib/movie-data"
 
-const trendingIds = [795, 801, 807, 812, 813, 786, 852,]
+const trendingIds = [2, 4, 5, 8, 9]
 
-export default function TrendingCarousel() {
+interface TrendingCarouselProps {
+  onMovieClick: (movie: (typeof movies)[0]) => void
+}
+
+export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps) {
   const [currentIndex, setCurrentIndex] = useState(0)
   const trendingMovies = movies.filter((m) => trendingIds.includes(m.id))
 
@@ -38,11 +42,12 @@ export default function TrendingCarousel() {
       <h2 className="text-2xl font-bold text-white mb-6">ট্রেন্ডিং এখন</h2>
 
       <div className="relative">
-        <div className="flex gap-4 overflow-hidden transition-all duration-700 ease-in-out">
+        <div className="flex gap-4 overflow-hidden">
           {getVisibleMovies().map((movie, idx) => (
             <div
               key={`${movie.id}-${idx}`}
-              className="flex-1 min-w-0 aspect-[2/3] rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+              className="flex-1 min-w-0 aspect-[2/3] rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 cursor-pointer"
+              onClick={() => onMovieClick(movie)}
             >
               <img src={movie.poster || "/placeholder.svg"} alt={movie.title} className="w-full h-full object-cover" />
             </div>

@@ -1,7 +1,8 @@
 "use client"
 
-import { X, Play } from "lucide-react"
+import { X, Play, Clock } from "lucide-react"
 import { useState } from "react"
+import { movies } from "@/lib/movie-data"
 
 interface MovieModalProps {
   movie: {
@@ -12,17 +13,23 @@ interface MovieModalProps {
     rating: number
     description: string
     genres: string[]
-    duration: number
+    duration: string
     director: string
-    cast: string[]
+    cast: string | string[]
     trailer?: string
     telegramLink?: string
   }
   onClose: () => void
+  onMovieClick?: (movie: (typeof movies)[0]) => void
 }
 
-export default function MovieModal({ movie, onClose }: MovieModalProps) {
+export default function MovieModal({ movie, onClose, onMovieClick }: MovieModalProps) {
   const [showTrailer, setShowTrailer] = useState(false)
+  const [isAddedToWatchLater, setIsAddedToWatchLater] = useState(false)
+
+  const relatedMovies = movies
+    .filter((m) => m.id !== movie.id && m.genres.some((genre) => movie.genres.includes(genre)))
+    .slice(0, 6)
 
   const handleWatchNow = () => {
     if (movie.telegramLink) {
@@ -33,6 +40,13 @@ export default function MovieModal({ movie, onClose }: MovieModalProps) {
   const handleWatchTrailer = () => {
     setShowTrailer(true)
   }
+
+  const handleWatchLater = () => {
+    setIsAddedToWatchLater(!isAddedToWatchLater)
+    console.log(`${isAddedToWatchLater ? "Removed from" : "Added to"} Watch Later: ${movie.title}`)
+  }
+
+  const castString = Array.isArray(movie.cast) ? movie.cast.join(", ") : movie.cast
 
   return (
     <>
@@ -71,8 +85,8 @@ export default function MovieModal({ movie, onClose }: MovieModalProps) {
 
             <div className="flex gap-4 mb-4 text-sm text-slate-300">
               <span>{movie.year}</span>
-              <span>⭐ {movie.rating.toFixed(1)}</span>
-              <span>{movie.duration} মিনিট</span>
+              <span>⭐ {typeof movie.rating === "number" ? movie.rating.toFixed(1) : movie.rating}</span>
+              <span>{movie.duration}</span>
             </div>
 
             <div className="mb-4">
@@ -80,7 +94,7 @@ export default function MovieModal({ movie, onClose }: MovieModalProps) {
                 <span className="font-semibold text-white">পরিচালক:</span> {movie.director}
               </p>
               <p className="text-slate-300 mb-4">
-                <span className="font-semibold text-white">অভিনেতা:</span> {movie.cast.join(", ")}
+                <span className="font-semibold text-white">অভিনেতা:</span> {castString}
               </p>
             </div>
 
@@ -88,7 +102,7 @@ export default function MovieModal({ movie, onClose }: MovieModalProps) {
               <p className="text-slate-300 leading-relaxed">{movie.description}</p>
             </div>
 
-            <div className="flex gap-2 mb-4 flex-wrap">
+            <div className="flex gap-2 mb-6 flex-wrap">
               {movie.genres.map((genre) => (
                 <span key={genre} className="px-3 py-1 bg-slate-700 text-slate-300 rounded-full text-sm">
                   {genre}
@@ -96,7 +110,7 @@ export default function MovieModal({ movie, onClose }: MovieModalProps) {
               ))}
             </div>
 
-            <div className="flex gap-2 flex-col sm:flex-row">
+            <div className="flex gap-2 flex-col sm:flex-row mb-8">
               {movie.trailer && (
                 <button
                   onClick={handleWatchTrailer}
@@ -113,7 +127,47 @@ export default function MovieModal({ movie, onClose }: MovieModalProps) {
                 <Play className="w-5 h-5" />
                 এখনই দেখুন
               </button>
+              <button
+                onClick={handleWatchLater}
+                className={`flex-1 font-bold py-3 rounded-lg flex items-center justify-center gap-2 transition ${
+                  isAddedToWatchLater
+                    ? "bg-purple-600 hover:bg-purple-700 text-white"
+                    : "bg-slate-700 hover:bg-slate-600 text-white"
+                }`}
+              >
+                <Clock className="w-5 h-5" />
+                {isAddedToWatchLater ? "পরে দেখা হয়েছে" : "পরে দেখুন"}
+              </button>
             </div>
+
+            {relatedMovies.length > 0 && (
+              <div className="border-t border-slate-700 pt-6">
+                <h3 className="text-xl font-bold text-white mb-4">সম্পর্কিত মুভি</h3>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                  {relatedMovies.map((relatedMovie) => (
+                    <div
+                      key={relatedMovie.id}
+                      onClick={() => {
+                        onMovieClick?.(relatedMovie)
+                      }}
+                      className="cursor-pointer group"
+                    >
+                      <div className="relative aspect-[2/3] overflow-hidden rounded-lg mb-2">
+                        <img
+                          src={relatedMovie.poster || "/placeholder.svg"}
+                          alt={relatedMovie.title}
+                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                        />
+                        <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 transition-all duration-300 flex items-center justify-center">
+                          <Play className="w-8 h-8 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                        </div>
+                      </div>
+                      <p className="text-sm text-slate-300 truncate">{relatedMovie.title}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

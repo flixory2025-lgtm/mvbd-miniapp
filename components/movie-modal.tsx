@@ -57,10 +57,11 @@ export default function MovieModal({ movie, onClose, onMovieClick }: MovieModalP
           backgroundImage: `url(${movie.poster})`,
           backgroundSize: "cover",
           backgroundPosition: "center",
+          backgroundAttachment: "fixed",
         }}
       >
         {/* Blur overlay */}
-        <div className="absolute inset-0 bg-black bg-opacity-60 backdrop-blur-md" onClick={onClose}></div>
+        <div className="absolute inset-0 bg-black bg-opacity-60 backdrop-blur-lg" onClick={onClose}></div>
 
         <div
           className="bg-slate-900 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto relative z-10"
@@ -74,9 +75,10 @@ export default function MovieModal({ movie, onClose, onMovieClick }: MovieModalP
             <X className="w-6 h-6" />
           </button>
 
-          {/* Poster */}
-          <div className="relative w-full aspect-[2/3] overflow-hidden">
-            <img src={movie.poster || "/placeholder.svg"} alt={movie.title} className="w-full h-full object-cover" />
+          <div className="flex justify-center pt-6 px-6">
+            <div className="relative w-40 aspect-[2/3] overflow-hidden rounded-lg shadow-lg">
+              <img src={movie.poster || "/placeholder.svg"} alt={movie.title} className="w-full h-full object-cover" />
+            </div>
           </div>
 
           {/* Content */}

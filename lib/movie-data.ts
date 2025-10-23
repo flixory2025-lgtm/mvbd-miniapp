@@ -1,4 +1,19 @@
-export const genres = ["অ্যাকশন", "ড্রামা", "কমেডি", "থ্রিলার", "রোমান্স", "সাইন্স ফিকশন", "হরর", "অ্যাডভেঞ্চার"]
+export const genres = ["All",
+    "Action",
+    "Comedy",
+    "Drama",
+    "Horror",
+    "zombie",
+    "Romance",
+    "Sci-Fi",
+    "Thriller",
+    "kdrama",
+    "bangla",
+    "marvel",
+    "natok",
+    "DC",
+    "netflix",
+    "18+",]
 
 export const movies = [
   {

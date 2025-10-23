@@ -194,7 +194,7 @@ export const movies = [
     poster: "/250id.jpeg",
     trailer: "https://www.youtube.com/embed/HbYtjXMIxVc?si",
     telegramLink: "https://t.me/MVPMCC/1203",
-    genre: "action", "thriler",
+    genre: ["action", "thriler"],
     year: 2023,
     rating: 8.1,
     language: "Korean",

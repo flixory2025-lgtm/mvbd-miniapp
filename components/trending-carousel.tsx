@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { movies } from "@/lib/movie-data"
 
-const trendingIds = [2, 4, 5, 8, 9]
+const trendingIds = [795, 801, 807, 812, 813, 786, 852,]
 
 interface TrendingCarouselProps {
   onMovieClick: (movie: (typeof movies)[0]) => void
@@ -17,17 +17,9 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % trendingMovies.length)
-    }, 3000)
+    }, 5000)
     return () => clearInterval(interval)
   }, [trendingMovies.length])
-
-  const getVisibleMovies = () => {
-    const visible = []
-    for (let i = 0; i < 3; i++) {
-      visible.push(trendingMovies[(currentIndex + i) % trendingMovies.length])
-    }
-    return visible
-  }
 
   const handlePrev = () => {
     setCurrentIndex((prev) => (prev - 1 + trendingMovies.length) % trendingMovies.length)
@@ -37,16 +29,24 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
     setCurrentIndex((prev) => (prev + 1) % trendingMovies.length)
   }
 
+  const extendedMovies = [...trendingMovies, ...trendingMovies, ...trendingMovies]
+  const offset = -currentIndex * (100 / 3)
+
   return (
     <section className="px-4 py-8">
-      <h2 className="text-2xl font-bold text-white mb-6">ট্রেন্ডিং এখন</h2>
+      <h2 className="text-2xl font-bold text-white mb-6">Trending Now</h2>
 
-      <div className="relative">
-        <div className="flex gap-4 overflow-hidden">
-          {getVisibleMovies().map((movie, idx) => (
+      <div className="relative overflow-hidden">
+        <div
+          className="flex gap-4 transition-transform duration-1000 ease-in-out"
+          style={{
+            transform: `translateX(${offset}%)`,
+          }}
+        >
+          {extendedMovies.map((movie, idx) => (
             <div
               key={`${movie.id}-${idx}`}
-              className="flex-1 min-w-0 aspect-[2/3] rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 cursor-pointer"
+              className="flex-shrink-0 w-1/3 aspect-[2/3] rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-all duration-500 transform hover:scale-105 cursor-pointer"
               onClick={() => onMovieClick(movie)}
             >
               <img src={movie.poster || "/placeholder.svg"} alt={movie.title} className="w-full h-full object-cover" />

@@ -1,6 +1,7 @@
 "use client"
 
 import { X, Play } from "lucide-react"
+import { useState } from "react"
 
 interface MovieModalProps {
   movie: {
@@ -14,76 +15,134 @@ interface MovieModalProps {
     duration: number
     director: string
     cast: string[]
-    telegramLink: string
+    trailer?: string
+    telegramLink?: string
   }
   onClose: () => void
 }
 
 export default function MovieModal({ movie, onClose }: MovieModalProps) {
+  const [showTrailer, setShowTrailer] = useState(false)
+
   const handleWatchNow = () => {
-    window.open(movie.telegramLink, "_blank")
+    if (movie.telegramLink) {
+      window.open(movie.telegramLink, "_blank")
+    }
+  }
+
+  const handleWatchTrailer = () => {
+    setShowTrailer(true)
   }
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4" onClick={onClose}>
+    <>
       <div
-        className="bg-slate-800 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto"
-        onClick={(e) => e.stopPropagation()}
+        className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4 backdrop-blur-sm"
+        onClick={onClose}
+        style={{
+          backgroundImage: `url(${movie.poster})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+        }}
       >
-        {/* Close Button */}
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 bg-slate-700 hover:bg-slate-600 text-white p-2 rounded-full transition z-10"
+        {/* Blur overlay */}
+        <div className="absolute inset-0 bg-black bg-opacity-60 backdrop-blur-md" onClick={onClose}></div>
+
+        <div
+          className="bg-slate-900 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto relative z-10"
+          onClick={(e) => e.stopPropagation()}
         >
-          <X className="w-6 h-6" />
-        </button>
-
-        {/* Poster */}
-        <div className="relative w-full aspect-[2/3] overflow-hidden">
-          <img src={movie.poster || "/placeholder.svg"} alt={movie.title} className="w-full h-full object-cover" />
-        </div>
-
-        {/* Content */}
-        <div className="p-6">
-          <h2 className="text-3xl font-bold text-white mb-2">{movie.title}</h2>
-
-          <div className="flex gap-4 mb-4 text-sm text-slate-300">
-            <span>{movie.year}</span>
-            <span>⭐ {movie.rating.toFixed(1)}</span>
-            <span>{movie.duration} মিনিট</span>
-          </div>
-
-          <div className="mb-4">
-            <p className="text-slate-300 mb-2">
-              <span className="font-semibold text-white">পরিচালক:</span> {movie.director}
-            </p>
-            <p className="text-slate-300 mb-4">
-              <span className="font-semibold text-white">অভিনেতা:</span> {movie.cast.join(", ")}
-            </p>
-          </div>
-
-          <div className="mb-6">
-            <p className="text-slate-300 leading-relaxed">{movie.description}</p>
-          </div>
-
-          <div className="flex gap-2 mb-4 flex-wrap">
-            {movie.genres.map((genre) => (
-              <span key={genre} className="px-3 py-1 bg-slate-700 text-slate-300 rounded-full text-sm">
-                {genre}
-              </span>
-            ))}
-          </div>
-
-          {/* Watch Now Button */}
+          {/* Close Button */}
           <button
-            onClick={handleWatchNow}
-            className="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 rounded-lg flex items-center justify-center gap-2 transition"
+            onClick={onClose}
+            className="absolute top-4 right-4 bg-slate-700 hover:bg-slate-600 text-white p-2 rounded-full transition z-20"
           >
-            <Play className="w-5 h-5" />
-            এখনই দেখুন
+            <X className="w-6 h-6" />
           </button>
+
+          {/* Poster */}
+          <div className="relative w-full aspect-[2/3] overflow-hidden">
+            <img src={movie.poster || "/placeholder.svg"} alt={movie.title} className="w-full h-full object-cover" />
+          </div>
+
+          {/* Content */}
+          <div className="p-6">
+            <h2 className="text-3xl font-bold text-white mb-2">{movie.title}</h2>
+
+            <div className="flex gap-4 mb-4 text-sm text-slate-300">
+              <span>{movie.year}</span>
+              <span>⭐ {movie.rating.toFixed(1)}</span>
+              <span>{movie.duration} মিনিট</span>
+            </div>
+
+            <div className="mb-4">
+              <p className="text-slate-300 mb-2">
+                <span className="font-semibold text-white">পরিচালক:</span> {movie.director}
+              </p>
+              <p className="text-slate-300 mb-4">
+                <span className="font-semibold text-white">অভিনেতা:</span> {movie.cast.join(", ")}
+              </p>
+            </div>
+
+            <div className="mb-6">
+              <p className="text-slate-300 leading-relaxed">{movie.description}</p>
+            </div>
+
+            <div className="flex gap-2 mb-4 flex-wrap">
+              {movie.genres.map((genre) => (
+                <span key={genre} className="px-3 py-1 bg-slate-700 text-slate-300 rounded-full text-sm">
+                  {genre}
+                </span>
+              ))}
+            </div>
+
+            <div className="flex gap-2 flex-col sm:flex-row">
+              {movie.trailer && (
+                <button
+                  onClick={handleWatchTrailer}
+                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg flex items-center justify-center gap-2 transition"
+                >
+                  <Play className="w-5 h-5" />
+                  ট্রেইলার দেখুন
+                </button>
+              )}
+              <button
+                onClick={handleWatchNow}
+                className="flex-1 bg-green-500 hover:bg-green-600 text-white font-bold py-3 rounded-lg flex items-center justify-center gap-2 transition"
+              >
+                <Play className="w-5 h-5" />
+                এখনই দেখুন
+              </button>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
+
+      {showTrailer && movie.trailer && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-[60] p-4"
+          onClick={() => setShowTrailer(false)}
+        >
+          <div className="relative w-full max-w-4xl aspect-video" onClick={(e) => e.stopPropagation()}>
+            <button
+              onClick={() => setShowTrailer(false)}
+              className="absolute -top-10 right-0 bg-slate-700 hover:bg-slate-600 text-white p-2 rounded-full transition"
+            >
+              <X className="w-6 h-6" />
+            </button>
+            <iframe
+              width="100%"
+              height="100%"
+              src={movie.trailer}
+              title={`${movie.title} Trailer`}
+              frameBorder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+              className="rounded-lg"
+            ></iframe>
+          </div>
+        </div>
+      )}
+    </>
   )
 }

@@ -71,7 +71,7 @@ export default function Home() {
         </div>
       ) : (
         <>
-          {!searchQuery && <TrendingCarousel />}
+          {!searchQuery && <TrendingCarousel onMovieClick={setSelectedMovie} />}
           <GenreCategories genres={genres} selectedGenre={selectedGenre} onGenreSelect={handleGenreSelect} />
           <MovieGrid
             movies={paginatedMovies}
@@ -85,7 +85,9 @@ export default function Home() {
 
       <Footer />
 
-      {selectedMovie && <MovieModal movie={selectedMovie} onClose={() => setSelectedMovie(null)} />}
+      {selectedMovie && (
+        <MovieModal movie={selectedMovie} onClose={() => setSelectedMovie(null)} onMovieClick={setSelectedMovie} />
+      )}
     </div>
   )
 }

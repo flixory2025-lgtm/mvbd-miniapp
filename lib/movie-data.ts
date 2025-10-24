@@ -11480,22 +11480,3 @@ export const movies = [
     views: 23847,
   },
 ]
-
-for (let i = 21; i <= 100; i++) {
-  const genreList = [
-    genres[Math.floor(Math.random() * (genres.length - 1)) + 1],
-    genres[Math.floor(Math.random() * (genres.length - 1)) + 1],
-  ]
-  movies.push({
-    id: i,
-    title: `Movie ${i} (2024)`,
-    poster: `/movie${i}.jpg`,
-    trailer: `https://www.youtube.com/embed/dQw4w9WgXcQ`,
-    telegramLink: `https://t.me/MVPMCC/${i}`,
-    genre: genreList.join(" | "),
-    year: 2024,
-    rating: Math.round((Math.random() * 4 + 5) * 10) / 10,
-    language: "Hindi",
-    description: `An exciting movie with great entertainment value.`,
-  })
-}

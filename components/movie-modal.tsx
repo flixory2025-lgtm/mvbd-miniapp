@@ -51,7 +51,7 @@ export default function MovieModal({ movie, onClose, onMovieClick }: MovieModalP
   return (
     <>
       <div
-        className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4 backdrop-blur-sm"
+        className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
         onClick={onClose}
         style={{
           backgroundImage: `url(${movie.poster})`,
@@ -60,8 +60,7 @@ export default function MovieModal({ movie, onClose, onMovieClick }: MovieModalP
           backgroundAttachment: "fixed",
         }}
       >
-        {/* Blur overlay */}
-        <div className="absolute inset-0 bg-black bg-opacity-60 backdrop-blur-lg" onClick={onClose}></div>
+        <div className="absolute inset-0 bg-black bg-opacity-50 backdrop-blur-md" onClick={onClose}></div>
 
         <div
           className="bg-slate-900 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto relative z-10"
@@ -143,17 +142,16 @@ export default function MovieModal({ movie, onClose, onMovieClick }: MovieModalP
                       }}
                       className="cursor-pointer group"
                     >
-                      <div className="relative aspect-[2/3] overflow-hidden rounded-lg mb-2">
+                      <div className="aspect-[2/3] rounded-lg overflow-hidden shadow-lg hover:shadow-2xl transition transform hover:scale-105">
                         <img
                           src={relatedMovie.poster || "/placeholder.svg"}
                           alt={relatedMovie.title}
-                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                          className="w-full h-full object-cover"
                         />
-                        <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 transition-all duration-300 flex items-center justify-center">
-                          <Play className="w-8 h-8 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
-                        </div>
                       </div>
-                      <p className="text-sm text-slate-300 truncate">{relatedMovie.title}</p>
+                      <p className="mt-2 text-sm text-slate-300 line-clamp-2 group-hover:text-white transition">
+                        {relatedMovie.title}
+                      </p>
                     </div>
                   ))}
                 </div>

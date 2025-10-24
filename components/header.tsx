@@ -4,6 +4,7 @@ import type React from "react"
 
 import { useState } from "react"
 import { Search } from "lucide-react"
+import Image from "next/image"
 
 interface HeaderProps {
   onSearch: (query: string) => void
@@ -21,17 +22,8 @@ export default function Header({ onSearch }: HeaderProps) {
   return (
     <header className="sticky top-0 z-40 bg-black border-b border-slate-700 shadow-lg">
       <div className="px-4 py-4 flex items-center gap-4">
-        {/* Logo */}
         <div className="flex-shrink-0">
-          <svg viewBox="0 0 200 200" className="w-10 h-10" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <rect x="40" y="60" width="120" height="100" rx="12" fill="#22c55e" />
-            <rect x="60" y="80" width="80" height="60" fill="white" />
-            <path d="M 90 100 L 110 110 L 90 120 Z" fill="#22c55e" />
-            <circle cx="70" cy="50" r="8" fill="#22c55e" />
-            <circle cx="130" cy="50" r="8" fill="#22c55e" />
-            <line x1="70" y1="50" x2="90" y2="70" stroke="#22c55e" strokeWidth="4" />
-            <line x1="130" y1="50" x2="110" y2="70" stroke="#22c55e" strokeWidth="4" />
-          </svg>
+          <Image src="/mvbd-logo.png" alt="MVBD Logo" width={50} height={50} className="w-12 h-12" />
         </div>
 
         <div className="hidden sm:block">

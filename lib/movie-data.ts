@@ -12977,7 +12977,7 @@ export const movies = [
   {
     id: 1001,
     title: "Nadaan (2023)",
-    poster: "/1001id.jpg",
+    poster: "/1002id.jpg",
     trailer: "https://www.youtube.com/embed/im76Xgb9KOI?si",
     telegramLink: "https://t.me/MoviesVerseBD/380",
     genre: "Romance | Adult | Emotion",
@@ -12990,7 +12990,7 @@ export const movies = [
   {
     id: 1002,
     title: "Itaewon Class (2020) season 1 complete☑️",
-    poster: "/1002id.jpg",
+    poster: "/1001id.jpg",
     trailer: "https://www.youtube.com/embed/NeaHNQJ1kCo?si",
     telegramLink: "https://t.me/c/3117912335/4422",
     genre: "Drama | Romance | kdrama",

@@ -17375,7 +17375,7 @@ export const movies = [
     trailer: "https://www.youtube.com/embed/DIezojsH-SU?si",
     telegramLink: "https://t.me/c/3117912335/5660",
     genre: "Crime | Thriller | Heist | netflix",
-    year: 2021",
+    year: "2021",
     rating: "8.2",
     language: "Hindi",
     description: "স্পেনের ব্যাংকে আটকে থাকা গ্যাং এখন সবচেয়ে কঠিন অবস্থায়। সেনাবাহিনী হামলা শুরু করলে বাঁচার পথ আরও সংকীর্ণ হয়।",

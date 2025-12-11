@@ -1,12 +1,13 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import Header from "@/components/header"
 import TrendingCarousel from "@/components/trending-carousel"
 import GenreCategories from "@/components/genre-categories"
 import MovieGrid from "@/components/movie-grid"
 import MovieModal from "@/components/movie-modal"
 import Footer from "@/components/footer"
+import WelcomePopup from "@/components/welcome-popup"
 import { movies, genres } from "@/lib/movie-data"
 
 export default function Home() {
@@ -14,6 +15,19 @@ export default function Home() {
   const [selectedGenre, setSelectedGenre] = useState<string | null>(null)
   const [selectedMovie, setSelectedMovie] = useState<(typeof movies)[0] | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
+  const [showWelcomePopup, setShowWelcomePopup] = useState(false)
+
+  useEffect(() => {
+    const hasVisited = localStorage.getItem("mvbd_visited")
+    if (!hasVisited) {
+      setShowWelcomePopup(true)
+    }
+  }, [])
+
+  const handleClosePopup = () => {
+    localStorage.setItem("mvbd_visited", "true")
+    setShowWelcomePopup(false)
+  }
 
   const filteredMovies = useMemo(() => {
     let filtered = movies
@@ -90,6 +104,8 @@ export default function Home() {
       {selectedMovie && (
         <MovieModal movie={selectedMovie} onClose={() => setSelectedMovie(null)} onMovieClick={setSelectedMovie} />
       )}
+
+      {showWelcomePopup && <WelcomePopup onClose={handleClosePopup} />}
     </div>
   )
 }

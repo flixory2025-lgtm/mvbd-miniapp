@@ -26,24 +26,42 @@ export default function MovieGrid({ movies, onMovieClick, currentPage, totalPage
   const visiblePages = getVisiblePages()
 
   return (
-    <section className="px-4 py-8">
+    <section className="px-4 py-4">
       {movies.length === 0 ? (
         <div className="text-center py-12">
           <p className="text-slate-400 text-lg">কোনো মুভি পাওয়া যায়নি</p>
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 mb-8">
+          <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 mb-8">
             {movies.map((movie) => (
               <div key={movie.id} onClick={() => onMovieClick(movie)} className="cursor-pointer group">
-                <div className="aspect-[2/3] rounded-lg overflow-hidden shadow-lg hover:shadow-2xl transition transform hover:scale-105 bg-slate-700">
+                <div className="aspect-[2/3] rounded-lg overflow-hidden shadow-lg hover:shadow-2xl transition transform hover:scale-105 bg-slate-700 relative">
                   <img
                     src={movie.poster || "/placeholder.svg"}
                     alt={movie.title}
                     className="w-full h-full object-cover"
                   />
+
+                  {movie.language && (
+                    <span className="absolute top-1 right-1 bg-black/70 text-white text-[9px] px-1.5 py-0.5 rounded uppercase font-semibold">
+                      {movie.language}
+                    </span>
+                  )}
+
+                  {movie.year && (
+                    <span className="absolute bottom-1 left-1 bg-black/60 text-white text-[9px] px-1.5 py-0.5 rounded font-medium">
+                      {movie.year}
+                    </span>
+                  )}
+
+                  {movie.rating && movie.rating !== "not available" && (
+                    <span className="absolute bottom-1 right-1 bg-yellow-500/90 text-black text-[9px] px-1.5 py-0.5 rounded font-bold flex items-center gap-0.5">
+                      ⭐ {movie.rating}
+                    </span>
+                  )}
                 </div>
-                <p className="mt-2 text-sm text-slate-300 line-clamp-2 group-hover:text-white transition">
+                <p className="mt-2 text-xs text-slate-300 line-clamp-2 group-hover:text-white transition">
                   {movie.title}
                 </p>
               </div>

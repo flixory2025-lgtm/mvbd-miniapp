@@ -4,7 +4,6 @@ import type React from "react"
 
 import { useState } from "react"
 import { Search } from "lucide-react"
-import Image from "next/image"
 
 interface HeaderProps {
   onSearch: (query: string) => void
@@ -21,13 +20,13 @@ export default function Header({ onSearch }: HeaderProps) {
 
   return (
     <header className="sticky top-0 z-40 bg-black border-b border-slate-700 shadow-lg">
-      <div className="px-4 py-4 flex items-center gap-4">
+      <div className="px-4 py-3 flex items-center gap-4">
         <div className="flex-shrink-0">
-          <Image src="/mvbd-logo.png" alt="MVBD Logo" width={50} height={50} className="w-12 h-12" />
-        </div>
-
-        <div className="hidden sm:block">
-          <h1 className="text-white font-bold text-lg">MVBD miniapp</h1>
+          <img
+            src="https://i.postimg.cc/0yqFXMFW/photo-2025-12-11-09-45-29-removebg-preview.png"
+            alt="MVBD Logo"
+            className="h-10 w-auto object-contain"
+          />
         </div>
 
         {/* Search Bar */}

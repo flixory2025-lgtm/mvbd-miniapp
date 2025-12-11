@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { movies } from "@/lib/movie-data"
 
-const trendingIds = [1334, 1336, 1341, 1342, 1343, 1344, 1345, 1346, 1359, 1360, 1361, 1366, 1368, 1369,]
+const trendingIds = [1334, 1336, 1341, 1342, 1343, 1344, 1345, 1346, 1359, 1360, 1361, 1366, 1368, 1369]
 
 interface TrendingCarouselProps {
   onMovieClick: (movie: (typeof movies)[0]) => void
@@ -33,8 +33,16 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
   const offset = -currentIndex * (100 / 3)
 
   return (
-    <section className="px-4 py-8">
-      <h2 className="text-2xl font-bold text-white mb-6">Trending Now</h2>
+    <section className="px-4 py-2">
+      <div className="flex justify-center -mt-2 mb-2">
+        <img
+          src="https://i.postimg.cc/LXBMvk6B/photo-2025-12-11-09-16-17-removebg-preview.png"
+          alt="MoviesVerseBD Logo"
+          className="w-56 h-56 object-contain"
+        />
+      </div>
+
+      <h2 className="text-2xl font-bold text-white mb-3 text-center">Trending Now</h2>
 
       <div className="relative overflow-hidden">
         <div

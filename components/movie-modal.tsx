@@ -1,20 +1,22 @@
 "use client"
 
-import { X, Play } from "lucide-react"
-import { useState } from "react"
+import { X, Play, Eye } from "lucide-react"
+import { useState, useEffect } from "react"
 import { movies } from "@/lib/movie-data"
+import { incrementMovieView } from "@/lib/firebase"
 
 interface MovieModalProps {
   movie: {
     id: number
     title: string
     poster: string
-    year: number
-    rating: number
+    year: number | string
+    rating: number | string
     description: string
     genre: string
     trailer?: string
     telegramLink?: string
+    language?: string
   }
   onClose: () => void
   onMovieClick?: (movie: (typeof movies)[0]) => void
@@ -23,6 +25,7 @@ interface MovieModalProps {
 export default function MovieModal({ movie, onClose, onMovieClick }: MovieModalProps) {
   const [showTrailer, setShowTrailer] = useState(false)
   const [isAddedToWatchLater, setIsAddedToWatchLater] = useState(false)
+  const [viewCount, setViewCount] = useState(0)
 
   const movieGenres = movie.genre.split(" | ").map((g) => g.trim())
 
@@ -32,6 +35,14 @@ export default function MovieModal({ movie, onClose, onMovieClick }: MovieModalP
       return m.id !== movie.id && mGenres.some((genre) => movieGenres.includes(genre))
     })
     .slice(0, 6)
+
+  useEffect(() => {
+    const trackView = async () => {
+      const views = await incrementMovieView(movie.id)
+      setViewCount(views)
+    }
+    trackView()
+  }, [movie.id])
 
   const handleWatchNow = () => {
     if (movie.telegramLink) {
@@ -45,7 +56,6 @@ export default function MovieModal({ movie, onClose, onMovieClick }: MovieModalP
 
   const handleWatchLater = () => {
     setIsAddedToWatchLater(!isAddedToWatchLater)
-    console.log(`${isAddedToWatchLater ? "Removed from" : "Added to"} Watch Later: ${movie.title}`)
   }
 
   return (
@@ -77,6 +87,12 @@ export default function MovieModal({ movie, onClose, onMovieClick }: MovieModalP
           <div className="flex justify-center pt-6 px-6">
             <div className="relative w-40 aspect-[2/3] overflow-hidden rounded-lg shadow-lg">
               <img src={movie.poster || "/placeholder.svg"} alt={movie.title} className="w-full h-full object-cover" />
+
+              {movie.language && (
+                <span className="absolute top-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded uppercase font-semibold">
+                  {movie.language}
+                </span>
+              )}
             </div>
           </div>
 
@@ -84,9 +100,14 @@ export default function MovieModal({ movie, onClose, onMovieClick }: MovieModalP
           <div className="p-6">
             <h2 className="text-3xl font-bold text-white mb-2">{movie.title}</h2>
 
-            <div className="flex gap-4 mb-4 text-sm text-slate-300">
+            <div className="flex gap-4 mb-4 text-sm text-slate-300 flex-wrap items-center">
               <span>{movie.year}</span>
               <span>⭐ {typeof movie.rating === "number" ? movie.rating.toFixed(1) : movie.rating}</span>
+              {movie.language && <span className="uppercase">{movie.language}</span>}
+              <span className="flex items-center gap-1 text-green-400">
+                <Eye className="w-4 h-4" />
+                {viewCount.toLocaleString()} views
+              </span>
             </div>
 
             <div className="mb-6">
@@ -133,7 +154,7 @@ export default function MovieModal({ movie, onClose, onMovieClick }: MovieModalP
             {relatedMovies.length > 0 && (
               <div className="border-t border-slate-700 pt-6">
                 <h3 className="text-xl font-bold text-white mb-4">সম্পর্কিত মুভি</h3>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                <div className="grid grid-cols-3 sm:grid-cols-3 gap-3">
                   {relatedMovies.map((relatedMovie) => (
                     <div
                       key={relatedMovie.id}
@@ -142,14 +163,32 @@ export default function MovieModal({ movie, onClose, onMovieClick }: MovieModalP
                       }}
                       className="cursor-pointer group"
                     >
-                      <div className="aspect-[2/3] rounded-lg overflow-hidden shadow-lg hover:shadow-2xl transition transform hover:scale-105">
+                      <div className="aspect-[2/3] rounded-lg overflow-hidden shadow-lg hover:shadow-2xl transition transform hover:scale-105 relative">
                         <img
                           src={relatedMovie.poster || "/placeholder.svg"}
                           alt={relatedMovie.title}
                           className="w-full h-full object-cover"
                         />
+
+                        {relatedMovie.language && (
+                          <span className="absolute top-1 right-1 bg-black/70 text-white text-[8px] px-1 py-0.5 rounded uppercase font-semibold">
+                            {relatedMovie.language}
+                          </span>
+                        )}
+
+                        {relatedMovie.year && (
+                          <span className="absolute bottom-1 left-1 bg-black/60 text-white text-[8px] px-1 py-0.5 rounded font-medium">
+                            {relatedMovie.year}
+                          </span>
+                        )}
+
+                        {relatedMovie.rating && relatedMovie.rating !== "not available" && (
+                          <span className="absolute bottom-1 right-1 bg-yellow-500/90 text-black text-[8px] px-1 py-0.5 rounded font-bold">
+                            ⭐ {relatedMovie.rating}
+                          </span>
+                        )}
                       </div>
-                      <p className="mt-2 text-sm text-slate-300 line-clamp-2 group-hover:text-white transition">
+                      <p className="mt-2 text-xs text-slate-300 line-clamp-2 group-hover:text-white transition">
                         {relatedMovie.title}
                       </p>
                     </div>

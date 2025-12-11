@@ -5,31 +5,38 @@ import Image from "next/image"
 const exclusiveContent = [
   {
     id: 1,
-    title: "Pushpa 2: The Rule - Behind The Scenes",
+    title: "《All of Us Are Dead (2022)》",
     storyline:
-      "Pushpa Raj এর journey continue হয়েছে এই sequel এ। Smuggling empire বড় করতে গিয়ে সে face করছে আরও বড় challenges। SP Bhanwar Singh Shekhawat এর সাথে তার clash এবারে আরও intense।",
-    screenshots: ["/pushpa-2-action-scene.jpg", "/placeholder-s6o33.png", "/pushpa-2-dramatic-scene.jpg"],
+      "একটি হাইস্কুলে ছড়িয়ে পড়ে ভয়ংকর ভাইরাস, যা ছাত্রদের জম্বিতে রূপান্তরিত করে। বেঁচে থাকা ক’জন শিক্ষার্থী স্কুলের ভেতর আটকে গিয়ে জীবন-মরণের লড়াই শুরু করে।",
+    screenshots: ["/AllofUsAreDead1.jpg", "/AllofUsAreDead2.jpg", "/AllofUsAreDead3.jpg"],
   },
   {
     id: 2,
-    title: "Moana 2 - Exclusive Preview",
+    title: "《Grave Torture (2024)》",
     storyline:
-      "Moana তার ancestral call এ respond করে বেরিয়ে পড়েছে আরেকটি adventure এ। এবার সে far seas of Oceania তে travel করবে এবং face করবে dangerous waters।",
-    screenshots: ["/moana-2-ocean-scene.jpg", "/moana-2-maui-scene.jpg", "/moana-2-adventure-scene.jpg"],
+      "একদল কিশোর মজা করে পুরনো কবরস্থান ঘুরে ভিডিও বানাতে গিয়ে ভুল করে এক অপদেবতাকে জাগিয়ে তোলে, যার অভিশাপ তাদের মানসিক ও শারীরিকভাবে ধ্বংস করতে শুরু করে।",
+    screenshots: ["/Grave1.jpg", "/Grave2.jpg", "/Grave3.jpg"],
   },
   {
     id: 3,
-    title: "Gladiator II - Epic Moments",
+    title: "《Kutukan Cakar Monyet (2023)》",
     storyline:
-      "Lucius, Maximus এর legacy carry করে Rome এর arena তে return করেছে। Political conspiracy এবং personal revenge এর মধ্যে সে fight করছে survival এবং honor এর জন্য।",
-    screenshots: ["/gladiator-2-colosseum-fight.jpg", "/placeholder-issax.png", "/gladiator-2-epic-battle.jpg"],
+      "এক বনাঞ্চলে পাওয়া রহস্যময় বানরের নখের অভিশাপ যাকে ছোঁয়, তার জীবন ট্র্যাজেডিতে ভরে ওঠে। অভিশাপ থামাতে নায়িকাকে খুঁজে বের করতে হয় এর অন্ধকার উৎস।",
+    screenshots: ["/Kutukan1.jpg", "/Kutukan2.jpg", "/Kutukan3.jpg", "/Kutukan4.jpg"],
   },
   {
     id: 4,
-    title: "Singham Again - Action Highlights",
+    title: "《Satan’s Slaves 2: Communion (2022)》",
     storyline:
-      "Bajirao Singham এবার face করছে সবচেয়ে dangerous villain কে। Lady Singham সহ পুরো team মিলে এই epic showdown এ অংশ নিচ্ছে।",
-    screenshots: ["/singham-again-action-scene.jpg", "/placeholder-0j9ll.png", "/placeholder.svg?height=200&width=350"],
+      "প্রথম ঘটনার পর পরিবারের সদস্যরা একটি অ্যাপার্টমেন্টে উঠে শান্তির আশা করে, কিন্তু এখানে উপস্থিত শয়তানি শক্তি আগের চেয়েও বেশি শক্তিশালী। বৃষ্টিভেজা রাতে শুরু হয় মৃত্যু ও দুঃস্বপ্নের নতুন অধ্যায়।",
+    screenshots: ["/Satan1.jpg", "/Satan2.jpg", "/Satan3.jpg"],
+  },
+  {
+    id: 5,
+    title: "《Khanzab (2023)》",
+    storyline:
+      "এক ভুতুড়ে গ্রামে এক কিশোরী তার বাবার হত্যার ট্রমা নিয়ে বাঁচতে চেষ্টা করে, কিন্তু রাত বাড়লেই তাকে তাড়া করে ‘খানজাব’ নামের একটি দানব—যা মানুষের ভয়কে শক্তি হিসেবে খায়।",
+    screenshots: ["/Khanzab1.jpg", "/Khanzab2.jpg", "/Khanzab3.jpg", "/Khanzab4.jpg"],
   },
 ]
 

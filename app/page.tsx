@@ -21,6 +21,7 @@ export default function Home() {
   const [currentPage, setCurrentPage] = useState(1)
   const [showWelcomePopup, setShowWelcomePopup] = useState(false)
   const [activeTab, setActiveTab] = useState("home")
+  const [isSearching, setIsSearching] = useState(false)
 
   useEffect(() => {
     const hasVisited = localStorage.getItem("mvbd_visited")
@@ -41,7 +42,7 @@ export default function Home() {
       filtered = filtered.filter((movie) => movie.title.toLowerCase().includes(searchQuery.toLowerCase()))
     }
 
-    if (selectedGenre) {
+    if (selectedGenre && !searchQuery.trim()) {
       filtered = filtered.filter((movie) => movie.genre.includes(selectedGenre))
     }
 
@@ -57,6 +58,7 @@ export default function Home() {
   const handleSearch = (query: string) => {
     setSearchQuery(query)
     setCurrentPage(1)
+    setIsSearching(query.trim().length > 0)
   }
 
   const handleGenreSelect = (genre: string | null) => {
@@ -101,8 +103,18 @@ export default function Home() {
               </div>
             ) : (
               <>
-                {!searchQuery && <TrendingCarousel onMovieClick={setSelectedMovie} />}
-                <GenreCategories genres={genres} selectedGenre={selectedGenre} onGenreSelect={handleGenreSelect} />
+                {!isSearching && <TrendingCarousel onMovieClick={setSelectedMovie} />}
+                {!isSearching && (
+                  <GenreCategories genres={genres} selectedGenre={selectedGenre} onGenreSelect={handleGenreSelect} />
+                )}
+
+                {isSearching && (
+                  <div className="px-4 pt-4">
+                    <h2 className="text-xl font-bold text-white mb-2">সার্চ রেজাল্ট: "{searchQuery}"</h2>
+                    <p className="text-slate-400 text-sm mb-4">{filteredMovies.length} টি মুভি পাওয়া গেছে</p>
+                  </div>
+                )}
+
                 <MovieGrid
                   movies={paginatedMovies}
                   onMovieClick={setSelectedMovie}

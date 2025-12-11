@@ -14,6 +14,8 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
   const [currentIndex, setCurrentIndex] = useState(0)
   const trendingMovies = movies.filter((m) => trendingIds.includes(m.id))
 
+  const totalMovieCount = movies.length
+
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % trendingMovies.length)
@@ -34,15 +36,17 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
 
   return (
     <section className="px-4 py-2">
-      <div className="flex justify-center -mt-2 mb-2">
+      <div className="flex justify-center -mt-4 mb-0">
         <img
           src="https://i.postimg.cc/LXBMvk6B/photo-2025-12-11-09-16-17-removebg-preview.png"
           alt="MoviesVerseBD Logo"
-          className="w-56 h-56 object-contain"
+          className="w-72 h-72 object-contain"
         />
       </div>
 
-      <h2 className="text-2xl font-bold text-white mb-3 text-center">Trending Now</h2>
+      <h2 className="text-2xl font-bold text-white mb-1 text-center -mt-6">Trending Now</h2>
+
+      <p className="text-center text-green-400 text-sm mb-3 font-medium">{totalMovieCount} Movie & Series Uploaded</p>
 
       <div className="relative overflow-hidden">
         <div
@@ -54,10 +58,28 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
           {extendedMovies.map((movie, idx) => (
             <div
               key={`${movie.id}-${idx}`}
-              className="flex-shrink-0 w-1/3 aspect-[2/3] rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-all duration-500 transform hover:scale-105 cursor-pointer"
+              className="flex-shrink-0 w-1/3 aspect-[2/3] rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-all duration-500 transform hover:scale-105 cursor-pointer relative"
               onClick={() => onMovieClick(movie)}
             >
               <img src={movie.poster || "/placeholder.svg"} alt={movie.title} className="w-full h-full object-cover" />
+
+              {movie.language && (
+                <span className="absolute top-1 right-1 bg-black/70 text-white text-[8px] px-1 py-0.5 rounded uppercase font-semibold">
+                  {movie.language}
+                </span>
+              )}
+
+              {movie.year && (
+                <span className="absolute bottom-1 left-1 bg-black/60 text-white text-[8px] px-1 py-0.5 rounded font-medium">
+                  {movie.year}
+                </span>
+              )}
+
+              {movie.rating && movie.rating !== "not available" && (
+                <span className="absolute bottom-1 right-1 bg-yellow-500/90 text-black text-[8px] px-1 py-0.5 rounded font-bold flex items-center gap-0.5">
+                  ⭐ {movie.rating}
+                </span>
+              )}
             </div>
           ))}
         </div>

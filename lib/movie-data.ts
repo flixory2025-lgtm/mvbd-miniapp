@@ -18512,4 +18512,17 @@ export const movies = [
     description: "এক ব্যতিক্রমি ডাক্তার  প্রভু  নিজেকে ঘটা করে ঘোষনা করেন  দাতা—কিন্তু পরিস্থিতি যত বাড়ে, হাস্যরসও তত বেড়ে যায়।",
     views: 23847,
   },
+  {
+    id: 1428,
+    title: "Akhanda 2 (2025) best quality print☑️",
+    poster: "/1428id.jpg",
+    trailer: "https://www.youtube.com/embed/1nV6Xl8dUEk?si",
+    telegramLink: "https://t.me/c/3117912335/6020",
+    genre: "Action | Drama | Fantasy",
+    year: "2025",
+    rating: "7.4",
+    language: "Hindi",
+    description: "অখণ্ডা আবার ফিরে আসে এক শক্তিশালী শত্রুর বিরুদ্ধে, যে অশুভ শক্তিকে ব্যবহার করে মানবতাকে ধ্বংসের পথে ঠেলে দিচ্ছে। ধর্ম রক্ষার জন্য অখণ্ডার মহাশক্তি আর ন্যায়ের লড়াই শুরু হয় আরও ভয়ংকর রূপে।",
+    views: 23847,
+  },
 ]

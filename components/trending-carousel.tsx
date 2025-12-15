@@ -55,17 +55,17 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
         />
       </div>
 
-      <div className="relative z-20 -mt-8 mb-2 flex flex-col items-center justify-center">
+      <div className="relative z-20 -mt-4 mb-1 flex flex-col items-center justify-center">
         <h2
-          className="text-3xl font-bold text-center tracking-wider animate-pulse"
+          className="text-xl font-bold text-center tracking-wider animate-pulse"
           style={{
             fontFamily: "'Times New Roman', serif",
-            letterSpacing: "0.15em",
+            letterSpacing: "0.2em",
             background: "linear-gradient(to right, #ff6b00, #ffa500, #ff6b00)",
             WebkitBackgroundClip: "text",
             backgroundClip: "text",
             color: "transparent",
-            textShadow: "0 0 15px rgba(255, 107, 0, 0.7), 0 0 25px rgba(255, 165, 0, 0.5)",
+            textShadow: "0 0 10px rgba(255, 107, 0, 0.7), 0 0 15px rgba(255, 165, 0, 0.5)",
             animation: "fireGlow 2s ease-in-out infinite alternate",
           }}
         >
@@ -74,13 +74,13 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
         <style jsx>{`
           @keyframes fireGlow {
             0% {
-              text-shadow: 0 0 10px rgba(255, 107, 0, 0.7), 0 0 20px rgba(255, 165, 0, 0.5);
+              text-shadow: 0 0 8px rgba(255, 107, 0, 0.7), 0 0 15px rgba(255, 165, 0, 0.5);
               background: linear-gradient(to right, #ff6b00, #ffa500, #ff6b00);
               -webkit-background-clip: text;
               background-clip: text;
             }
             100% {
-              text-shadow: 0 0 20px rgba(255, 107, 0, 0.9), 0 0 30px rgba(255, 165, 0, 0.7), 0 0 40px rgba(255, 69, 0, 0.6);
+              text-shadow: 0 0 15px rgba(255, 107, 0, 0.9), 0 0 25px rgba(255, 165, 0, 0.7), 0 0 35px rgba(255, 69, 0, 0.6);
               background: linear-gradient(to right, #ff4500, #ff8c00, #ff4500);
               -webkit-background-clip: text;
               background-clip: text;

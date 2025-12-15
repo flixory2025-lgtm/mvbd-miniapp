@@ -51,12 +51,12 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
         <img
           src="https://i.postimg.cc/LXBMvk6B/photo-2025-12-11-09-16-17-removebg-preview.png"
           alt="MoviesVerseBD Logo"
-          className="relative z-10 w-72 h-72 object-contain"
+          className="relative z-20 w-72 h-72 object-contain"
         />
       </div>
 
       <h2
-        className="text-4xl font-bold text-white text-center -mt-8 mb-2 tracking-wider"
+        className="text-4xl font-bold text-white text-center -mt-8 mb-2 tracking-wider relative z-20"
         style={{
           textShadow: "3px 3px 10px rgba(0,0,0,0.9), 0 0 25px rgba(0,0,0,0.8)",
           fontFamily: "'Cinzel', 'Playfair Display', 'Georgia', serif",
@@ -66,7 +66,7 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
         Trending Now
       </h2>
 
-      <p className="text-center text-green-400 text-sm mb-3 font-medium">{totalMovieCount} Movie & Series Uploaded</p>
+      <p className="text-center text-green-400 text-sm mb-3 font-medium relative z-20">{totalMovieCount} Movie & Series Uploaded</p>
 
       <div className="relative overflow-hidden">
         <div
@@ -107,13 +107,13 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
         {/* Navigation Buttons */}
         <button
           onClick={handlePrev}
-          className="absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-4 bg-green-500 hover:bg-green-600 text-white p-2 rounded-full transition z-10"
+          className="absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-4 bg-green-500 hover:bg-green-600 text-white p-2 rounded-full transition z-30"
         >
           <ChevronLeft className="w-6 h-6" />
         </button>
         <button
           onClick={handleNext}
-          className="absolute right-0 top-1/2 transform -translate-y-1/2 translate-x-4 bg-green-500 hover:bg-green-600 text-white p-2 rounded-full transition z-10"
+          className="absolute right-0 top-1/2 transform -translate-y-1/2 translate-x-4 bg-green-500 hover:bg-green-600 text-white p-2 rounded-full transition z-30"
         >
           <ChevronRight className="w-6 h-6" />
         </button>

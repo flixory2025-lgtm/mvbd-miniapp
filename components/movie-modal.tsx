@@ -60,26 +60,26 @@ export default function MovieModal({ movie, onClose, onMovieClick }: MovieModalP
 
   return (
     <>
-      <div
-        className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
-        onClick={onClose}
-        style={{
-          backgroundImage: `url(${movie.poster})`,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          backgroundAttachment: "fixed",
-        }}
-      >
-        <div className="absolute inset-0 bg-black bg-opacity-50 backdrop-blur-md" onClick={onClose}></div>
+      <div className="fixed inset-0 bg-black flex items-center justify-center z-50 p-4" onClick={onClose}>
+        {/* Background poster with dark overlay */}
+        <div
+          className="absolute inset-0 opacity-30"
+          style={{
+            backgroundImage: `url(${movie.poster})`,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            backgroundAttachment: "fixed",
+          }}
+        />
+        <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose}></div>
 
         <div
-          className="bg-slate-900 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto relative z-10"
+          className="bg-black/90 border border-slate-800 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto relative z-10"
           onClick={(e) => e.stopPropagation()}
         >
-          {/* Close Button */}
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 bg-slate-700 hover:bg-slate-600 text-white p-2 rounded-full transition z-20"
+            className="absolute top-4 right-4 bg-red-600 hover:bg-red-700 text-white p-2 rounded-full transition animate-pulse hover:animate-none z-20"
           >
             <X className="w-6 h-6" />
           </button>
@@ -114,19 +114,11 @@ export default function MovieModal({ movie, onClose, onMovieClick }: MovieModalP
               <p className="text-slate-300 leading-relaxed">{movie.description}</p>
             </div>
 
-            <div className="flex gap-2 mb-6 flex-wrap">
-              {movieGenres.map((genre) => (
-                <span key={genre} className="px-3 py-1 bg-slate-700 text-slate-300 rounded-full text-sm">
-                  {genre}
-                </span>
-              ))}
-            </div>
-
             <div className="flex gap-2 flex-col sm:flex-row mb-8">
               {movie.trailer && (
                 <button
                   onClick={handleWatchTrailer}
-                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg flex items-center justify-center gap-2 transition"
+                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg flex items-center justify-center gap-2 transition animate-pulse hover:animate-none shadow-lg shadow-blue-500/50"
                 >
                   <Play className="w-5 h-5" />
                   ট্রেইলার দেখুন
@@ -134,17 +126,17 @@ export default function MovieModal({ movie, onClose, onMovieClick }: MovieModalP
               )}
               <button
                 onClick={handleWatchNow}
-                className="flex-1 bg-green-500 hover:bg-green-600 text-white font-bold py-3 rounded-lg flex items-center justify-center gap-2 transition"
+                className="flex-1 bg-green-500 hover:bg-green-600 text-white font-bold py-3 rounded-lg flex items-center justify-center gap-2 transition animate-bounce hover:animate-none shadow-lg shadow-green-500/50"
               >
                 <Play className="w-5 h-5" />
                 এখনই দেখুন
               </button>
               <button
                 onClick={handleWatchLater}
-                className={`flex-1 font-bold py-3 rounded-lg flex items-center justify-center gap-2 transition ${
+                className={`flex-1 font-bold py-3 rounded-lg flex items-center justify-center gap-2 transition shadow-lg ${
                   isAddedToWatchLater
-                    ? "bg-purple-600 hover:bg-purple-700 text-white"
-                    : "bg-slate-700 hover:bg-slate-600 text-white"
+                    ? "bg-purple-600 hover:bg-purple-700 text-white animate-pulse shadow-purple-500/50"
+                    : "bg-slate-700 hover:bg-slate-600 text-white hover:animate-pulse shadow-slate-500/50"
                 }`}
               >
                 {isAddedToWatchLater ? "পরে দেখা হয়েছে" : "পরে দেখুন"}

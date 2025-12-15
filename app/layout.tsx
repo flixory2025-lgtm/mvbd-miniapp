@@ -8,8 +8,8 @@ const _geistMono = Geist_Mono({ subsets: ["latin"] })
 const _geistSans = _geist // Declaring _geistSans variable
 
 export const metadata: Metadata = {
-  title: "v0 App",
-  description: "Created with v0",
+  title: "MVBD MINI APP",
+  description: "🎥 HD Movies | 🎞️ Web Series | 🔥 Weekly Drops🚫 No Ads | ✅ Direct Download📥 all movie download our channel📥and🚀 easy search any movie on our website no ads☑️",
   generator: "v0.app",
 }
 

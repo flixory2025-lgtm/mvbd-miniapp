@@ -36,15 +36,35 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
 
   return (
     <section className="px-4 py-2">
-      <div className="flex justify-center -mt-4 mb-0">
+      <div className="relative flex justify-center -mt-4 mb-0">
+        <div
+          className="absolute inset-0 -top-20 flex justify-center"
+          style={{
+            backgroundImage: "url('https://i.postimg.cc/tRMc5ZNM/198b2f01e73b905772279616eccc7c65.jpg')",
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            backgroundRepeat: "no-repeat",
+          }}
+        >
+          <div className="w-full h-96 bg-gradient-to-b from-black/50 via-black/80 to-black rounded-b-3xl" />
+        </div>
         <img
           src="https://i.postimg.cc/LXBMvk6B/photo-2025-12-11-09-16-17-removebg-preview.png"
           alt="MoviesVerseBD Logo"
-          className="w-72 h-72 object-contain"
+          className="relative z-10 w-72 h-72 object-contain"
         />
       </div>
 
-      <h2 className="text-2xl font-bold text-white mb-1 text-center -mt-6">Trending Now</h2>
+      <h2
+        className="text-4xl font-bold text-white text-center -mt-8 mb-2 tracking-wider"
+        style={{
+          textShadow: "3px 3px 10px rgba(0,0,0,0.9), 0 0 25px rgba(0,0,0,0.8)",
+          fontFamily: "'Cinzel', 'Playfair Display', 'Georgia', serif",
+          letterSpacing: "0.1em",
+        }}
+      >
+        Trending Now
+      </h2>
 
       <p className="text-center text-green-400 text-sm mb-3 font-medium">{totalMovieCount} Movie & Series Uploaded</p>
 

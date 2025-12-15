@@ -44,11 +44,9 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
             backgroundSize: "cover",
             backgroundPosition: "center",
             backgroundRepeat: "no-repeat",
-            width: "100%",
-            minHeight: "400px",
           }}
         >
-          <div className="w-full h-96 bg-gradient-to-b from-black/70 via-black/85 to-black rounded-b-3xl" />
+          <div className="w-full h-96 bg-gradient-to-b from-black/50 via-black/80 to-black rounded-b-3xl" />
         </div>
         <img
           src="https://i.postimg.cc/LXBMvk6B/photo-2025-12-11-09-16-17-removebg-preview.png"

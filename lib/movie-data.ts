@@ -13,6 +13,7 @@ export const genres = [
   "marvel",
   "natok",
   "DC",
+  "kukutv",
   "netflix",
   "Adult",
 ]

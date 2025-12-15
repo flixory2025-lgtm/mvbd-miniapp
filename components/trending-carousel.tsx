@@ -55,16 +55,39 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
         />
       </div>
 
-      <h2
-        className="text-4xl font-bold text-white text-center -mt-8 mb-2 tracking-wider relative z-20"
-        style={{
-          textShadow: "3px 3px 10px rgba(0,0,0,0.9), 0 0 25px rgba(0,0,0,0.8)",
-          fontFamily: "'Cinzel', 'Playfair Display', 'Georgia', serif",
-          letterSpacing: "0.1em",
-        }}
-      >
-        Trending Now
-      </h2>
+      <div className="relative z-20 -mt-8 mb-2 flex flex-col items-center justify-center">
+        <h2
+          className="text-3xl font-bold text-center tracking-wider animate-pulse"
+          style={{
+            fontFamily: "'Times New Roman', serif",
+            letterSpacing: "0.15em",
+            background: "linear-gradient(to right, #ff6b00, #ffa500, #ff6b00)",
+            WebkitBackgroundClip: "text",
+            backgroundClip: "text",
+            color: "transparent",
+            textShadow: "0 0 15px rgba(255, 107, 0, 0.7), 0 0 25px rgba(255, 165, 0, 0.5)",
+            animation: "fireGlow 2s ease-in-out infinite alternate",
+          }}
+        >
+          Trending Now
+        </h2>
+        <style jsx>{`
+          @keyframes fireGlow {
+            0% {
+              text-shadow: 0 0 10px rgba(255, 107, 0, 0.7), 0 0 20px rgba(255, 165, 0, 0.5);
+              background: linear-gradient(to right, #ff6b00, #ffa500, #ff6b00);
+              -webkit-background-clip: text;
+              background-clip: text;
+            }
+            100% {
+              text-shadow: 0 0 20px rgba(255, 107, 0, 0.9), 0 0 30px rgba(255, 165, 0, 0.7), 0 0 40px rgba(255, 69, 0, 0.6);
+              background: linear-gradient(to right, #ff4500, #ff8c00, #ff4500);
+              -webkit-background-clip: text;
+              background-clip: text;
+            }
+          }
+        `}</style>
+      </div>
 
       <p className="text-center text-green-400 text-sm mb-3 font-medium relative z-20">{totalMovieCount} Movie & Series Uploaded</p>
 

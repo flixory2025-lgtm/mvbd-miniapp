@@ -1,6 +1,8 @@
 "use client"
 
 import type { movies as allMovies } from "@/lib/movie-data"
+import { useEffect, useState } from "react"
+import { getMovieUploadTime, getTimeAgo, setMovieUploadTime } from "@/lib/firebase"
 
 interface MovieGridProps {
   movies: typeof allMovies
@@ -11,6 +13,24 @@ interface MovieGridProps {
 }
 
 export default function MovieGrid({ movies, onMovieClick, currentPage, totalPages, onPageChange }: MovieGridProps) {
+  const [uploadTimes, setUploadTimes] = useState<Record<number, string>>({})
+
+  useEffect(() => {
+    const fetchUploadTimes = async () => {
+      const times: Record<number, string> = {}
+      for (const movie of movies) {
+        let uploadTime = await getMovieUploadTime(movie.id)
+        if (!uploadTime) {
+          await setMovieUploadTime(movie.id)
+          uploadTime = new Date().toISOString()
+        }
+        times[movie.id] = getTimeAgo(uploadTime)
+      }
+      setUploadTimes(times)
+    }
+    fetchUploadTimes()
+  }, [movies])
+
   const getVisiblePages = () => {
     const maxVisible = 5
     let startPage = Math.max(1, currentPage - Math.floor(maxVisible / 2))
@@ -64,13 +84,13 @@ export default function MovieGrid({ movies, onMovieClick, currentPage, totalPage
                 <p className="mt-2 text-xs text-slate-300 line-clamp-2 group-hover:text-white transition">
                   {movie.title}
                 </p>
+                {uploadTimes[movie.id] && <p className="text-[10px] text-green-400 mt-1">{uploadTimes[movie.id]}</p>}
               </div>
             ))}
           </div>
 
           {totalPages > 1 && (
             <div className="flex justify-center items-center gap-1 md:gap-2 py-8 flex-wrap">
-              {/* Previous Button */}
               <button
                 onClick={() => onPageChange(Math.max(1, currentPage - 1))}
                 disabled={currentPage === 1}
@@ -79,7 +99,6 @@ export default function MovieGrid({ movies, onMovieClick, currentPage, totalPage
                 আগে
               </button>
 
-              {/* First Page */}
               {visiblePages[0] > 1 && (
                 <>
                   <button
@@ -92,7 +111,6 @@ export default function MovieGrid({ movies, onMovieClick, currentPage, totalPage
                 </>
               )}
 
-              {/* Visible Pages */}
               {visiblePages.map((page) => (
                 <button
                   key={page}
@@ -105,7 +123,6 @@ export default function MovieGrid({ movies, onMovieClick, currentPage, totalPage
                 </button>
               ))}
 
-              {/* Last Page */}
               {visiblePages[visiblePages.length - 1] < totalPages && (
                 <>
                   {visiblePages[visiblePages.length - 1] < totalPages - 1 && (
@@ -120,7 +137,6 @@ export default function MovieGrid({ movies, onMovieClick, currentPage, totalPage
                 </>
               )}
 
-              {/* Next Button */}
               <button
                 onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
                 disabled={currentPage === totalPages}

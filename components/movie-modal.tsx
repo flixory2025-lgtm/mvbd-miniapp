@@ -4,6 +4,7 @@ import { X, Play, Eye } from "lucide-react"
 import { useState, useEffect } from "react"
 import { movies } from "@/lib/movie-data"
 import { incrementMovieView } from "@/lib/firebase"
+import TelegramJoinPopup from "./telegram-join-popup"
 
 interface MovieModalProps {
   movie: {
@@ -24,6 +25,7 @@ interface MovieModalProps {
 
 export default function MovieModal({ movie, onClose, onMovieClick }: MovieModalProps) {
   const [showTrailer, setShowTrailer] = useState(false)
+  const [showJoinPopup, setShowJoinPopup] = useState(false)
   const [isAddedToWatchLater, setIsAddedToWatchLater] = useState(false)
   const [viewCount, setViewCount] = useState(0)
 
@@ -45,9 +47,7 @@ export default function MovieModal({ movie, onClose, onMovieClick }: MovieModalP
   }, [movie.id])
 
   const handleWatchNow = () => {
-    if (movie.telegramLink) {
-      window.open(movie.telegramLink, "_blank")
-    }
+    setShowJoinPopup(true)
   }
 
   const handleWatchTrailer = () => {
@@ -216,6 +216,14 @@ export default function MovieModal({ movie, onClose, onMovieClick }: MovieModalP
             ></iframe>
           </div>
         </div>
+      )}
+
+      {showJoinPopup && (
+        <TelegramJoinPopup
+          movieTitle={movie.title}
+          telegramLink={movie.telegramLink}
+          onClose={() => setShowJoinPopup(false)}
+        />
       )}
     </>
   )

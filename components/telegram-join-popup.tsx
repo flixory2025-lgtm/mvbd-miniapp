@@ -13,7 +13,7 @@ export default function TelegramJoinPopup({ movieTitle, telegramLink, onClose }:
   const [hasJoined, setHasJoined] = useState(false)
 
   const handleWatchNow = () => {
-    if (hasJoined && telegramLink) {
+    if (telegramLink) {
       window.open(telegramLink, "_blank")
     }
   }
@@ -29,7 +29,6 @@ export default function TelegramJoinPopup({ movieTitle, telegramLink, onClose }:
         className="bg-gradient-to-b from-slate-900 to-black border border-green-500/30 rounded-2xl max-w-md w-full relative overflow-hidden animate-[slideUp_0.3s_ease-out]"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Animated background decoration */}
         <div className="absolute inset-0 bg-gradient-to-br from-green-500/10 via-transparent to-blue-500/10 animate-pulse"></div>
 
         <button
@@ -40,32 +39,25 @@ export default function TelegramJoinPopup({ movieTitle, telegramLink, onClose }:
         </button>
 
         <div className="relative p-8">
-          {/* Icon */}
           <div className="flex justify-center mb-6">
             <div className="bg-gradient-to-br from-green-500 to-blue-500 p-4 rounded-full animate-[spin_3s_linear_infinite]">
               <Play className="w-12 h-12 text-white" />
             </div>
           </div>
 
-          {/* Title */}
           <h2 className="text-2xl font-bold text-white mb-6 text-center leading-relaxed">
             এই মুভিটি দেখতে হলে অবশ্যই আগে আমাদের Telegram Private Channel এ জয়েন করতে হবে!
           </h2>
 
-          {/* Warning message */}
           <div className="bg-red-500/20 border border-red-500/50 rounded-lg p-4 mb-6">
-            <p className="text-red-300 text-sm text-center font-medium">
-              জয়েন ছাড়া Watch Now তে ক্লিক করলে <span className="font-bold text-red-400">Not Available</span> দেখাবে
-            </p>
+            <p className="text-red-300 text-sm text-center font-medium">জয়েন না করে দেখতে গেলে সমস্যা হতে পারে</p>
           </div>
 
-          {/* Instruction */}
           <p className="text-slate-300 text-center mb-6 leading-relaxed">
             জয়েন করতে নিচে দেওয়া <span className="text-green-400 font-bold">Private Channel</span> বাটনে ক্লিক করুন। এরপর{" "}
             <span className="text-blue-400 font-bold">Watch Now</span> তে ক্লিক করুন।
           </p>
 
-          {/* Buttons */}
           <div className="space-y-3">
             <button
               onClick={handleJoinChannel}
@@ -79,19 +71,13 @@ export default function TelegramJoinPopup({ movieTitle, telegramLink, onClose }:
 
             <button
               onClick={handleWatchNow}
-              disabled={!hasJoined}
-              className={`w-full font-bold py-4 rounded-xl flex items-center justify-center gap-3 transition shadow-lg ${
-                hasJoined
-                  ? "bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-blue-500/50 animate-bounce"
-                  : "bg-gray-700 text-gray-400 cursor-not-allowed opacity-50"
-              }`}
+              className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold py-4 rounded-xl flex items-center justify-center gap-3 transition shadow-lg shadow-blue-500/50 animate-bounce hover:animate-none"
             >
               <Play className="w-5 h-5" />
-              {hasJoined ? "Watch Now" : "Not Available"}
+              Watch Now
             </button>
           </div>
 
-          {/* Footer note */}
           {hasJoined && (
             <p className="text-green-400 text-sm text-center mt-4 font-medium animate-pulse">
               ✓ আপনি জয়েন করেছেন! এখন Watch Now এ ক্লিক করুন

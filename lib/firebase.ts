@@ -51,6 +51,7 @@ export async function getMovieViews(movieId: number): Promise<number> {
   }
 }
 
+// Function to set movie upload time
 export async function setMovieUploadTime(movieId: number): Promise<void> {
   try {
     const movieRef = doc(db, "movieUploads", movieId.toString())
@@ -67,6 +68,7 @@ export async function setMovieUploadTime(movieId: number): Promise<void> {
   }
 }
 
+// Function to get movie upload time
 export async function getMovieUploadTime(movieId: number): Promise<string | null> {
   try {
     const movieRef = doc(db, "movieUploads", movieId.toString())
@@ -82,6 +84,7 @@ export async function getMovieUploadTime(movieId: number): Promise<string | null
   }
 }
 
+// Function to get time ago from upload date
 export function getTimeAgo(uploadDate: string): string {
   const now = new Date()
   const uploaded = new Date(uploadDate)

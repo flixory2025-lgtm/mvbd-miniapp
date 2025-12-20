@@ -9,7 +9,7 @@ import MovieModal from "@/components/movie-modal"
 import Footer from "@/components/footer"
 import WelcomePopup from "@/components/welcome-popup"
 import BottomNavigation from "@/components/bottom-navigation"
-import UpdatesPage from "@/components/shorts-page"
+import ShortsPage from "@/components/shorts-page"
 import ExclusivePage from "@/components/exclusive-page"
 import ProfilePage from "@/components/profile-page"
 import { movies, genres } from "@/lib/movie-data"
@@ -68,8 +68,8 @@ export default function Home() {
 
   const renderContent = () => {
     switch (activeTab) {
-      case "updates":
-        return <UpdatesPage />
+      case "shorts":
+        return <ShortsPage />
       case "exclusive":
         return <ExclusivePage />
       case "profile":

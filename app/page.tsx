@@ -22,6 +22,7 @@ export default function Home() {
   const [showWelcomePopup, setShowWelcomePopup] = useState(false)
   const [activeTab, setActiveTab] = useState("home")
   const [isSearching, setIsSearching] = useState(false)
+  const [showAdultContent, setShowAdultContent] = useState(false)
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" })
@@ -68,6 +69,7 @@ export default function Home() {
   const handleGenreSelect = (genre: string | null) => {
     setSelectedGenre(genre)
     setCurrentPage(1)
+    setShowAdultContent(genre === "Adult")
   }
 
   const renderContent = () => {
@@ -109,7 +111,12 @@ export default function Home() {
               <>
                 {!isSearching && <TrendingCarousel onMovieClick={setSelectedMovie} />}
                 {!isSearching && (
-                  <GenreCategories genres={genres} selectedGenre={selectedGenre} onGenreSelect={handleGenreSelect} />
+                  <GenreCategories
+                    genres={genres}
+                    selectedGenre={selectedGenre}
+                    onGenreSelect={handleGenreSelect}
+                    showAdultContent={showAdultContent}
+                  />
                 )}
 
                 {isSearching && (
@@ -125,6 +132,8 @@ export default function Home() {
                   currentPage={currentPage}
                   totalPages={totalPages}
                   onPageChange={setCurrentPage}
+                  showAdultContent={showAdultContent}
+                  isSearching={isSearching}
                 />
               </>
             )}
@@ -142,7 +151,12 @@ export default function Home() {
       <BottomNavigation activeTab={activeTab} onTabChange={setActiveTab} />
 
       {selectedMovie && activeTab === "home" && (
-        <MovieModal movie={selectedMovie} onClose={() => setSelectedMovie(null)} onMovieClick={setSelectedMovie} />
+        <MovieModal
+          movie={selectedMovie}
+          onClose={() => setSelectedMovie(null)}
+          onMovieClick={setSelectedMovie}
+          showAdultContent={showAdultContent}
+        />
       )}
 
       {showWelcomePopup && <WelcomePopup onClose={handleClosePopup} />}

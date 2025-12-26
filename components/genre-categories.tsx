@@ -4,9 +4,15 @@ interface GenreCategoriesProps {
   genres: string[]
   selectedGenre: string | null
   onGenreSelect: (genre: string | null) => void
+  showAdultContent?: boolean
 }
 
-export default function GenreCategories({ genres, selectedGenre, onGenreSelect }: GenreCategoriesProps) {
+export default function GenreCategories({
+  genres,
+  selectedGenre,
+  onGenreSelect,
+  showAdultContent = false,
+}: GenreCategoriesProps) {
   return (
     <div className="bg-black border-b border-slate-700 px-4 py-6">
       <div className="max-w-7xl mx-auto">

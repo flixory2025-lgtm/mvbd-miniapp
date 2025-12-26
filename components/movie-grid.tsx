@@ -10,9 +10,23 @@ interface MovieGridProps {
   currentPage: number
   totalPages: number
   onPageChange: (page: number) => void
+  showAdultContent?: boolean
+  isSearching?: boolean
 }
 
-export default function MovieGrid({ movies, onMovieClick, currentPage, totalPages, onPageChange }: MovieGridProps) {
+const isAdultMovie = (genre: string): boolean => {
+  return genre.toLowerCase().includes("adult")
+}
+
+export default function MovieGrid({
+  movies,
+  onMovieClick,
+  currentPage,
+  totalPages,
+  onPageChange,
+  showAdultContent = false,
+  isSearching = false,
+}: MovieGridProps) {
   const [uploadTimes, setUploadTimes] = useState<Record<number, string>>({})
 
   useEffect(() => {
@@ -54,39 +68,49 @@ export default function MovieGrid({ movies, onMovieClick, currentPage, totalPage
       ) : (
         <>
           <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 mb-8">
-            {movies.map((movie) => (
-              <div key={movie.id} onClick={() => onMovieClick(movie)} className="cursor-pointer group">
-                <div className="aspect-[2/3] rounded-lg overflow-hidden shadow-lg hover:shadow-2xl transition transform hover:scale-105 bg-slate-700 relative">
-                  <img
-                    src={movie.poster || "/placeholder.svg"}
-                    alt={movie.title}
-                    className="w-full h-full object-cover"
-                  />
+            {movies.map((movie) => {
+              const isAdult = isAdultMovie(movie.genre)
+              const shouldBlur = isAdult && !showAdultContent
+              return (
+                <div key={movie.id} onClick={() => onMovieClick(movie)} className="cursor-pointer group">
+                  <div className="aspect-[2/3] rounded-lg overflow-hidden shadow-lg hover:shadow-2xl transition transform hover:scale-105 bg-slate-700 relative">
+                    <img
+                      src={movie.poster || "/placeholder.svg"}
+                      alt={movie.title}
+                      className={`w-full h-full object-cover ${shouldBlur ? "blur-lg" : ""}`}
+                    />
 
-                  {movie.language && (
-                    <span className="absolute top-1 right-1 bg-black/70 text-white text-[9px] px-1.5 py-0.5 rounded uppercase font-semibold">
-                      {movie.language}
-                    </span>
-                  )}
+                    {isAdult && (
+                      <span className="absolute top-1 right-8 bg-gradient-to-r from-pink-500 to-red-500 text-white text-[8px] px-1.5 py-0.5 rounded font-bold animate-pulse border border-white z-10">
+                        18+
+                      </span>
+                    )}
 
-                  {movie.year && (
-                    <span className="absolute bottom-1 left-1 bg-black/60 text-white text-[9px] px-1.5 py-0.5 rounded font-medium">
-                      {movie.year}
-                    </span>
-                  )}
+                    {movie.language && (
+                      <span className="absolute top-1 right-1 bg-black/70 text-white text-[9px] px-1.5 py-0.5 rounded uppercase font-semibold z-10">
+                        {movie.language}
+                      </span>
+                    )}
 
-                  {movie.rating && movie.rating !== "not available" && (
-                    <span className="absolute bottom-1 right-1 bg-yellow-500/90 text-black text-[9px] px-1.5 py-0.5 rounded font-bold flex items-center gap-0.5">
-                      ⭐ {movie.rating}
-                    </span>
-                  )}
+                    {movie.year && (
+                      <span className="absolute bottom-1 left-1 bg-black/60 text-white text-[9px] px-1.5 py-0.5 rounded font-medium z-10">
+                        {movie.year}
+                      </span>
+                    )}
+
+                    {movie.rating && movie.rating !== "not available" && (
+                      <span className="absolute bottom-1 right-1 bg-yellow-500/90 text-black text-[9px] px-1.5 py-0.5 rounded font-bold flex items-center gap-0.5 z-10">
+                        ⭐ {movie.rating}
+                      </span>
+                    )}
+                  </div>
+                  <p className="mt-2 text-xs text-slate-300 line-clamp-2 group-hover:text-white transition">
+                    {movie.title}
+                  </p>
+                  {uploadTimes[movie.id] && <p className="text-[10px] text-green-400 mt-1">{uploadTimes[movie.id]}</p>}
                 </div>
-                <p className="mt-2 text-xs text-slate-300 line-clamp-2 group-hover:text-white transition">
-                  {movie.title}
-                </p>
-                {uploadTimes[movie.id] && <p className="text-[10px] text-green-400 mt-1">{uploadTimes[movie.id]}</p>}
-              </div>
-            ))}
+              )
+            })}
           </div>
 
           {totalPages > 1 && (

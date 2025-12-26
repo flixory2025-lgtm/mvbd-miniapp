@@ -21,15 +21,21 @@ interface MovieModalProps {
   }
   onClose: () => void
   onMovieClick?: (movie: (typeof movies)[0]) => void
+  showAdultContent?: boolean
 }
 
-export default function MovieModal({ movie, onClose, onMovieClick }: MovieModalProps) {
+const isAdultMovie = (genre: string): boolean => {
+  return genre.toLowerCase().includes("adult")
+}
+
+export default function MovieModal({ movie, onClose, onMovieClick, showAdultContent = false }: MovieModalProps) {
   const [showTrailer, setShowTrailer] = useState(false)
   const [showJoinPopup, setShowJoinPopup] = useState(false)
   const [isAddedToWatchLater, setIsAddedToWatchLater] = useState(false)
   const [viewCount, setViewCount] = useState(0)
 
   const movieGenres = movie.genre.split(" | ").map((g) => g.trim())
+  const isAdult = isAdultMovie(movie.genre)
 
   const relatedMovies = movies
     .filter((m) => {
@@ -61,7 +67,6 @@ export default function MovieModal({ movie, onClose, onMovieClick }: MovieModalP
   return (
     <>
       <div className="fixed inset-0 bg-black flex items-center justify-center z-50 p-4" onClick={onClose}>
-        {/* Background poster with dark overlay */}
         <div
           className="absolute inset-0 opacity-30"
           style={{
@@ -88,15 +93,20 @@ export default function MovieModal({ movie, onClose, onMovieClick }: MovieModalP
             <div className="relative w-40 aspect-[2/3] overflow-hidden rounded-lg shadow-lg">
               <img src={movie.poster || "/placeholder.svg"} alt={movie.title} className="w-full h-full object-cover" />
 
+              {isAdult && (
+                <span className="absolute top-1 right-8 bg-gradient-to-r from-pink-500 to-red-500 text-white text-[8px] px-1.5 py-0.5 rounded font-bold animate-pulse border border-white z-10">
+                  18+
+                </span>
+              )}
+
               {movie.language && (
-                <span className="absolute top-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded uppercase font-semibold">
+                <span className="absolute top-1 right-1 bg-black/70 text-white text-xs px-2 py-1 rounded uppercase font-semibold z-10">
                   {movie.language}
                 </span>
               )}
             </div>
           </div>
 
-          {/* Content */}
           <div className="p-6">
             <h2 className="text-3xl font-bold text-white mb-2">{movie.title}</h2>
 
@@ -147,44 +157,54 @@ export default function MovieModal({ movie, onClose, onMovieClick }: MovieModalP
               <div className="border-t border-slate-700 pt-6">
                 <h3 className="text-xl font-bold text-white mb-4">সম্পর্কিত মুভি</h3>
                 <div className="grid grid-cols-3 sm:grid-cols-3 gap-3">
-                  {relatedMovies.map((relatedMovie) => (
-                    <div
-                      key={relatedMovie.id}
-                      onClick={() => {
-                        onMovieClick?.(relatedMovie)
-                      }}
-                      className="cursor-pointer group"
-                    >
-                      <div className="aspect-[2/3] rounded-lg overflow-hidden shadow-lg hover:shadow-2xl transition transform hover:scale-105 relative">
-                        <img
-                          src={relatedMovie.poster || "/placeholder.svg"}
-                          alt={relatedMovie.title}
-                          className="w-full h-full object-cover"
-                        />
+                  {relatedMovies.map((relatedMovie) => {
+                    const isRelatedAdult = isAdultMovie(relatedMovie.genre)
+                    const shouldBlurRelated = isRelatedAdult && !showAdultContent
+                    return (
+                      <div
+                        key={relatedMovie.id}
+                        onClick={() => {
+                          onMovieClick?.(relatedMovie)
+                        }}
+                        className="cursor-pointer group"
+                      >
+                        <div className="aspect-[2/3] rounded-lg overflow-hidden shadow-lg hover:shadow-2xl transition transform hover:scale-105 relative">
+                          <img
+                            src={relatedMovie.poster || "/placeholder.svg"}
+                            alt={relatedMovie.title}
+                            className={`w-full h-full object-cover ${shouldBlurRelated ? "blur-lg" : ""}`}
+                          />
 
-                        {relatedMovie.language && (
-                          <span className="absolute top-1 right-1 bg-black/70 text-white text-[8px] px-1 py-0.5 rounded uppercase font-semibold">
-                            {relatedMovie.language}
-                          </span>
-                        )}
+                          {isRelatedAdult && (
+                            <span className="absolute top-1 right-8 bg-gradient-to-r from-pink-500 to-red-500 text-white text-[8px] px-1.5 py-0.5 rounded font-bold animate-pulse border border-white z-10">
+                              18+
+                            </span>
+                          )}
 
-                        {relatedMovie.year && (
-                          <span className="absolute bottom-1 left-1 bg-black/60 text-white text-[8px] px-1 py-0.5 rounded font-medium">
-                            {relatedMovie.year}
-                          </span>
-                        )}
+                          {relatedMovie.language && (
+                            <span className="absolute top-1 right-1 bg-black/70 text-white text-[8px] px-1 py-0.5 rounded uppercase font-semibold z-10">
+                              {relatedMovie.language}
+                            </span>
+                          )}
 
-                        {relatedMovie.rating && relatedMovie.rating !== "not available" && (
-                          <span className="absolute bottom-1 right-1 bg-yellow-500/90 text-black text-[8px] px-1 py-0.5 rounded font-bold">
-                            ⭐ {relatedMovie.rating}
-                          </span>
-                        )}
+                          {relatedMovie.year && (
+                            <span className="absolute bottom-1 left-1 bg-black/60 text-white text-[8px] px-1 py-0.5 rounded font-medium z-10">
+                              {relatedMovie.year}
+                            </span>
+                          )}
+
+                          {relatedMovie.rating && relatedMovie.rating !== "not available" && (
+                            <span className="absolute bottom-1 right-1 bg-yellow-500/90 text-black text-[8px] px-1 py-0.5 rounded font-bold z-10">
+                              ⭐ {relatedMovie.rating}
+                            </span>
+                          )}
+                        </div>
+                        <p className="mt-2 text-xs text-slate-300 line-clamp-2 group-hover:text-white transition">
+                          {relatedMovie.title}
+                        </p>
                       </div>
-                      <p className="mt-2 text-xs text-slate-300 line-clamp-2 group-hover:text-white transition">
-                        {relatedMovie.title}
-                      </p>
-                    </div>
-                  ))}
+                    )
+                  })}
                 </div>
               </div>
             )}

@@ -13,7 +13,6 @@ import ShortsPage from "@/components/shorts-page"
 import ExclusivePage from "@/components/exclusive-page"
 import ProfilePage from "@/components/profile-page"
 import { movies, genres } from "@/lib/movie-data"
-import { isTelegramWebView } from "@/lib/telegram-utils"
 
 export default function Home() {
   const [searchQuery, setSearchQuery] = useState("")
@@ -24,17 +23,6 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState("home")
   const [isSearching, setIsSearching] = useState(false)
   const [showAdultContent, setShowAdultContent] = useState(false)
-  const [isTelegramApp, setIsTelegramApp] = useState(false)
-
-  // Detect if running in Telegram Mini App
-  useEffect(() => {
-    setIsTelegramApp(isTelegramWebView())
-    
-    // Add Telegram-specific CSS class if in Telegram
-    if (isTelegramWebView()) {
-      document.body.classList.add('telegram-webview')
-    }
-  }, [])
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" })
@@ -84,27 +72,18 @@ export default function Home() {
     setShowAdultContent(genre === "Adult")
   }
 
-  const handleMovieClick = (movie: (typeof movies)[0]) => {
-    setSelectedMovie(movie)
-    
-    // Telegram-এ video player modal খুললে scroll position reset করুন
-    if (isTelegramApp) {
-      window.scrollTo({ top: 0, behavior: 'auto' })
-    }
-  }
-
   const renderContent = () => {
     switch (activeTab) {
       case "shorts":
-        return <ShortsPage isTelegramApp={isTelegramApp} />
+        return <ShortsPage />
       case "exclusive":
-        return <ExclusivePage isTelegramApp={isTelegramApp} />
+        return <ExclusivePage />
       case "profile":
         return <ProfilePage />
       default:
         return (
-          <div className={`min-h-screen bg-black pb-20 ${isTelegramApp ? 'telegram-safe-area' : ''}`}>
-            <Header onSearch={handleSearch} isTelegramApp={isTelegramApp} />
+          <div className="min-h-screen bg-black pb-20">
+            <Header onSearch={handleSearch} />
 
             {searchQuery.trim() && filteredMovies.length === 0 ? (
               <div className="px-4 py-12 text-center">
@@ -127,26 +106,16 @@ export default function Home() {
                     Telegram Group
                   </a>
                 </div>
-                
-                {isTelegramApp && (
-                  <div className="mt-8 p-4 bg-slate-800/50 rounded-lg">
-                    <p className="text-slate-400 text-sm mb-2">📱 Telegram Mini App ব্যবহারের জন্য:</p>
-                    <p className="text-slate-300 text-sm">
-                      ভিডিও play না হলে, "Open in Browser" অপশনে ক্লিক করে ব্রাউজারে ওপেন করুন
-                    </p>
-                  </div>
-                )}
               </div>
             ) : (
               <>
-                {!isSearching && <TrendingCarousel onMovieClick={handleMovieClick} isTelegramApp={isTelegramApp} />}
+                {!isSearching && <TrendingCarousel onMovieClick={setSelectedMovie} />}
                 {!isSearching && (
                   <GenreCategories
                     genres={genres}
                     selectedGenre={selectedGenre}
                     onGenreSelect={handleGenreSelect}
                     showAdultContent={showAdultContent}
-                    isTelegramApp={isTelegramApp}
                   />
                 )}
 
@@ -159,13 +128,12 @@ export default function Home() {
 
                 <MovieGrid
                   movies={paginatedMovies}
-                  onMovieClick={handleMovieClick}
+                  onMovieClick={setSelectedMovie}
                   currentPage={currentPage}
                   totalPages={totalPages}
                   onPageChange={setCurrentPage}
                   showAdultContent={showAdultContent}
                   isSearching={isSearching}
-                  isTelegramApp={isTelegramApp}
                 />
               </>
             )}
@@ -178,60 +146,20 @@ export default function Home() {
 
   return (
     <>
-      {/* Telegram-specific notification */}
-      {isTelegramApp && (
-        <div className="fixed top-0 left-0 right-0 bg-blue-600 text-white text-center py-2 text-sm z-50">
-          🔊 Telegram App-এ ভিডিও সরাসরি চালানোর জন্য অপটিমাইজড
-        </div>
-      )}
+      {renderContent()}
 
-      <div className={isTelegramApp ? 'mt-8' : ''}>
-        {renderContent()}
-      </div>
-
-      <BottomNavigation 
-        activeTab={activeTab} 
-        onTabChange={setActiveTab} 
-        isTelegramApp={isTelegramApp}
-      />
+      <BottomNavigation activeTab={activeTab} onTabChange={setActiveTab} />
 
       {selectedMovie && activeTab === "home" && (
         <MovieModal
           movie={selectedMovie}
           onClose={() => setSelectedMovie(null)}
-          onMovieClick={handleMovieClick}
+          onMovieClick={setSelectedMovie}
           showAdultContent={showAdultContent}
-          isTelegramApp={isTelegramApp}
         />
       )}
 
       {showWelcomePopup && <WelcomePopup onClose={handleClosePopup} />}
-
-      {/* Telegram-specific global styles */}
-      <style jsx global>{`
-        .telegram-webview {
-          -webkit-touch-callout: none;
-          -webkit-user-select: none;
-          user-select: none;
-        }
-        
-        .telegram-safe-area {
-          padding-bottom: env(safe-area-inset-bottom, 20px);
-        }
-        
-        /* Improve video player in Telegram */
-        iframe {
-          max-width: 100%;
-        }
-        
-        /* Optimize for Telegram's webview */
-        @media (max-width: 768px) {
-          .telegram-webview video,
-          .telegram-webview iframe {
-            object-fit: contain;
-          }
-        }
-      `}</style>
     </>
   )
 }

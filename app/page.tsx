@@ -24,6 +24,10 @@ export default function Home() {
   const [isSearching, setIsSearching] = useState(false)
 
   useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" })
+  }, [currentPage])
+
+  useEffect(() => {
     const hasVisited = localStorage.getItem("mvbd_visited")
     if (!hasVisited) {
       setShowWelcomePopup(true)

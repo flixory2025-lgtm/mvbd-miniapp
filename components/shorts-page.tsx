@@ -26,9 +26,7 @@ export default function ShortsPage() {
   const containerRef = useRef<HTMLDivElement>(null)
   const videoRef = useRef<HTMLIFrameElement>(null)
   const touchStartY = useRef(0)
-  const touchStartTime = useRef(0)
   const isScrolling = useRef(false)
-  const scrollContainerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const shortsCollection = collection(db, "shorts")
@@ -64,7 +62,6 @@ export default function ShortsPage() {
 
   const handleTouchStart = (e: React.TouchEvent) => {
     touchStartY.current = e.touches[0].clientY
-    touchStartTime.current = Date.now()
   }
 
   const handleTouchEnd = (e: React.TouchEvent) => {
@@ -72,10 +69,8 @@ export default function ShortsPage() {
 
     const touchEndY = e.changedTouches[0].clientY
     const diff = touchStartY.current - touchEndY
-    const timeDiff = Date.now() - touchStartTime.current
 
-    const velocity = Math.abs(diff) / timeDiff
-    if (Math.abs(diff) > 25 || velocity > 0.5) {
+    if (Math.abs(diff) > 50) {
       isScrolling.current = true
       if (diff > 0 && currentIndex < shorts.length - 1) {
         setCurrentIndex(currentIndex + 1)
@@ -84,14 +79,14 @@ export default function ShortsPage() {
       }
       setTimeout(() => {
         isScrolling.current = false
-      }, 350)
+      }, 500)
     }
   }
 
   const handleWheel = (e: React.WheelEvent) => {
     if (isScrolling.current) return
 
-    if (Math.abs(e.deltaY) > 25) {
+    if (Math.abs(e.deltaY) > 30) {
       isScrolling.current = true
       if (e.deltaY > 0 && currentIndex < shorts.length - 1) {
         setCurrentIndex(currentIndex + 1)
@@ -100,7 +95,7 @@ export default function ShortsPage() {
       }
       setTimeout(() => {
         isScrolling.current = false
-      }, 350)
+      }, 500)
     }
   }
 
@@ -152,7 +147,7 @@ export default function ShortsPage() {
     const shortRegex = /youtube\.com\/shorts\/([a-zA-Z0-9_-]+)/
     const match = url.match(shortRegex)
     if (match) {
-      return `https://www.youtube-nocookie.com/embed/${match[1]}?autoplay=1&mute=0&controls=0&modestbranding=1&rel=0&loop=1&playlist=${match[1]}&fs=1&playsinline=1`
+      return `https://www.youtube.com/embed/${match[1]}?autoplay=1&mute=0&controls=0&modestbranding=1&rel=0&loop=1&playlist=${match[1]}&origin=${typeof window !== "undefined" ? window.location.origin : ""}`
     }
     return url
   }
@@ -192,22 +187,14 @@ export default function ShortsPage() {
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
       onWheel={handleWheel}
-      style={{ scrollBehavior: "smooth" }}
     >
-      <div
-        className="relative w-full h-full transition-all duration-300 ease-out"
-        onClick={togglePlayPause}
-        style={{
-          opacity: 1,
-          transform: "scale(1)",
-        }}
-      >
+      <div className="relative w-full h-full transition-transform duration-500 ease-out" onClick={togglePlayPause}>
         <iframe
           ref={videoRef}
           key={`${currentShort.id}-${currentIndex}`}
           src={getYouTubeEmbedUrl(currentShort.videoUrl)}
           className="absolute inset-0 w-full h-full object-cover"
-          allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
+          allow="autoplay; encrypted-media; fullscreen"
           allowFullScreen
           style={{ pointerEvents: "none" }}
           loading="lazy"
@@ -331,9 +318,7 @@ export default function ShortsPage() {
             <div
               key={idx}
               className={`rounded-full transition-all duration-300 ${
-                idx === currentIndex
-                  ? "w-1.5 h-7 bg-white shadow-lg scale-100"
-                  : "w-1.5 h-1.5 bg-white/30 hover:bg-white/50 scale-75"
+                idx === currentIndex ? "w-1.5 h-7 bg-white shadow-lg" : "w-1.5 h-1.5 bg-white/30"
               }`}
             />
           ))}

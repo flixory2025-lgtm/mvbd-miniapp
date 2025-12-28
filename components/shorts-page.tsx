@@ -147,7 +147,7 @@ export default function ShortsPage() {
     const shortRegex = /youtube\.com\/shorts\/([a-zA-Z0-9_-]+)/
     const match = url.match(shortRegex)
     if (match) {
-      return `https://www.youtube.com/embed/${match[1]}?autoplay=1&mute=0&controls=0&modestbranding=1&rel=0&loop=1&playlist=${match[1]}`
+      return `https://www.youtube.com/embed/${match[1]}?autoplay=1&mute=0&controls=0&modestbranding=1&rel=0&loop=1&playlist=${match[1]}&origin=${typeof window !== "undefined" ? window.location.origin : ""}`
     }
     return url
   }
@@ -194,9 +194,10 @@ export default function ShortsPage() {
           key={`${currentShort.id}-${currentIndex}`}
           src={getYouTubeEmbedUrl(currentShort.videoUrl)}
           className="absolute inset-0 w-full h-full object-cover"
-          allow="autoplay; encrypted-media"
+          allow="autoplay; encrypted-media; fullscreen"
           allowFullScreen
           style={{ pointerEvents: "none" }}
+          loading="lazy"
         />
 
         {showPlayIcon && (
@@ -238,9 +239,7 @@ export default function ShortsPage() {
                 </p>
               </div>
 
-              {/* Right side: Action buttons */}
               <div className="flex flex-col items-center gap-4 pb-1 pointer-events-auto">
-                {/* Like button */}
                 <button
                   onClick={(e) => {
                     e.stopPropagation()
@@ -262,7 +261,6 @@ export default function ShortsPage() {
                   </span>
                 </button>
 
-                {/* Comment button */}
                 <button
                   onClick={(e) => {
                     e.stopPropagation()
@@ -282,7 +280,6 @@ export default function ShortsPage() {
                   </span>
                 </button>
 
-                {/* Share button */}
                 <button
                   onClick={(e) => {
                     e.stopPropagation()
@@ -306,7 +303,6 @@ export default function ShortsPage() {
                   </span>
                 </button>
 
-                {/* Profile circle */}
                 <div className="mt-1">
                   <div className="w-9 h-9 rounded-full bg-gradient-to-br from-red-500 to-pink-500 flex items-center justify-center border-2 border-white shadow-lg">
                     <span className="text-white font-bold text-xs">MB</span>
@@ -317,7 +313,6 @@ export default function ShortsPage() {
           </div>
         </div>
 
-        {/* Progress dots */}
         <div className="absolute right-2 top-1/2 -translate-y-1/2 z-10 flex flex-col gap-1.5 pointer-events-none">
           {shorts.map((_, idx) => (
             <div
@@ -329,7 +324,6 @@ export default function ShortsPage() {
           ))}
         </div>
 
-        {/* Swipe indicator */}
         {currentIndex === 0 && (
           <div className="absolute bottom-28 left-1/2 -translate-x-1/2 z-10 animate-bounce pointer-events-none">
             <div className="bg-black/70 backdrop-blur-sm px-4 py-2 rounded-full shadow-xl">

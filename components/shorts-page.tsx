@@ -75,7 +75,7 @@ export default function ShortsPage() {
     const timeDiff = Date.now() - touchStartTime.current
 
     const velocity = Math.abs(diff) / timeDiff
-    if (Math.abs(diff) > 30 || velocity > 0.3) {
+    if (Math.abs(diff) > 25 || velocity > 0.5) {
       isScrolling.current = true
       if (diff > 0 && currentIndex < shorts.length - 1) {
         setCurrentIndex(currentIndex + 1)
@@ -84,14 +84,14 @@ export default function ShortsPage() {
       }
       setTimeout(() => {
         isScrolling.current = false
-      }, 400)
+      }, 350)
     }
   }
 
   const handleWheel = (e: React.WheelEvent) => {
     if (isScrolling.current) return
 
-    if (Math.abs(e.deltaY) > 30) {
+    if (Math.abs(e.deltaY) > 25) {
       isScrolling.current = true
       if (e.deltaY > 0 && currentIndex < shorts.length - 1) {
         setCurrentIndex(currentIndex + 1)
@@ -100,7 +100,7 @@ export default function ShortsPage() {
       }
       setTimeout(() => {
         isScrolling.current = false
-      }, 400)
+      }, 350)
     }
   }
 

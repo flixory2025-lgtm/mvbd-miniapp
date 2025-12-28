@@ -81,13 +81,13 @@ export default function MovieGrid({
                     />
 
                     {isAdult && (
-                      <span className="absolute top-1 right-8 bg-gradient-to-r from-pink-500 to-red-500 text-white text-[8px] px-1.5 py-0.5 rounded font-bold animate-pulse border border-white z-10">
+                      <span className="absolute top-1 right-1 bg-gradient-to-r from-pink-500 to-red-500 text-white text-[8px] px-1.5 py-0.5 rounded font-bold animate-pulse border border-white z-10">
                         18+
                       </span>
                     )}
 
                     {movie.language && (
-                      <span className="absolute top-1 right-1 bg-black/70 text-white text-[9px] px-1.5 py-0.5 rounded uppercase font-semibold z-10">
+                      <span className="absolute top-1 left-1 bg-black/70 text-white text-[9px] px-1.5 py-0.5 rounded uppercase font-semibold z-10">
                         {movie.language}
                       </span>
                     )}

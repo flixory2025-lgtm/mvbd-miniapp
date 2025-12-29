@@ -9,8 +9,8 @@ const _geist = Geist({ subsets: ["latin"] })
 const _geistMono = Geist_Mono({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "v0 App",
-  description: "Created with v0",
+  title: "MVBD MINI APP",
+  description: "🎬 HD Movies | Fast Download🔥 বাংলা | হিন্দি | ইংরেজি | কোরিয়ান📥 GDrive + Mega Links📩 মুভি রিকোয়েস্ট = ইনবক্স",
   generator: "v0.app",
   icons: {
     icon: [

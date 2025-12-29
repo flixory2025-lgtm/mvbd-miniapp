@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { movies } from "@/lib/movie-data"
 
-const trendingIds = [1557, 1562, 1564, 1566, 1567, 1570, 1573, 1574, 1576, 1577, 1578, 1580, 1548, 1556, 1558, 1560,]
+const trendingIds = [1611, 1615, 1564, 1566, 1567, 1570, 1573, 1574, 1576, 1577, 1578, 1580, 1548, 1556, 1558, 1560,]
 
 interface TrendingCarouselProps {
   onMovieClick: (movie: (typeof movies)[0]) => void

@@ -4,7 +4,7 @@ import type React from "react"
 
 import { useState, useEffect, useRef } from "react"
 import { Heart, MessageCircle, Share2, Play, Pause, X, Send } from "lucide-react"
-import { collection, doc, updateDoc, increment, onSnapshot, addDoc, query, where, orderBy } from "firebase/firestore"
+import { collection, doc, updateDoc, increment, onSnapshot, addDoc, query, where } from "firebase/firestore"
 import { db } from "@/lib/firebase"
 
 interface Short {
@@ -30,7 +30,7 @@ export default function ShortsPage() {
   const [isPlaying, setIsPlaying] = useState(true)
   const [userLikes, setUserLikes] = useState<Set<string>>(new Set())
   const [loading, setLoading] = useState(true)
-  const [showPlayIcon, setShowPlayIcon] = useState(false)
+  const [showPlayPauseIcon, setShowPlayPauseIcon] = useState(false)
   const [showCommentModal, setShowCommentModal] = useState(false)
   const [comments, setComments] = useState<Comment[]>([])
   const [commentText, setCommentText] = useState("")
@@ -41,7 +41,7 @@ export default function ShortsPage() {
   const videoRef = useRef<HTMLIFrameElement>(null)
   const touchStartY = useRef(0)
   const isScrolling = useRef(false)
-  const commentsEndRef = useRef<HTMLDivElement>(null)
+  const commentsContainerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const shortsCollection = collection(db, "shorts")
@@ -90,13 +90,15 @@ export default function ShortsPage() {
     setLoadingComments(true)
     try {
       const commentsRef = collection(db, "comments")
-      const q = query(commentsRef, where("shortId", "==", shortId), orderBy("timestamp", "desc"))
+      const q = query(commentsRef, where("shortId", "==", shortId))
 
       const unsubscribe = onSnapshot(q, (snapshot) => {
         const commentsData = snapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
         })) as Comment[]
+        // Sort by timestamp on client side
+        commentsData.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
         setComments(commentsData)
         setLoadingComments(false)
       })
@@ -122,10 +124,8 @@ export default function ShortsPage() {
         timestamp: new Date().toISOString(),
       })
 
-      // Save user name for future use
       localStorage.setItem("mvbd_user_name", userName)
 
-      // Increment comment count
       const shortRef = doc(db, "shorts", shorts[currentIndex].id)
       await updateDoc(shortRef, {
         comments: increment(1),
@@ -133,9 +133,8 @@ export default function ShortsPage() {
 
       setCommentText("")
 
-      // Scroll to bottom to see new comment
       setTimeout(() => {
-        commentsEndRef.current?.scrollIntoView({ behavior: "smooth" })
+        commentsContainerRef.current?.scrollIntoView({ behavior: "smooth" })
       }, 100)
     } catch (error) {
       console.error("Error adding comment:", error)
@@ -154,14 +153,18 @@ export default function ShortsPage() {
 
     if (Math.abs(diff) > 50) {
       isScrolling.current = true
-      if (diff > 0 && currentIndex < shorts.length - 1) {
-        setCurrentIndex(currentIndex + 1)
-      } else if (diff < 0 && currentIndex > 0) {
-        setCurrentIndex(currentIndex - 1)
+
+      if (diff > 0) {
+        // Swipe up - go to next
+        setCurrentIndex((prev) => (prev + 1) % shorts.length)
+      } else {
+        // Swipe down - go to previous with loop
+        setCurrentIndex((prev) => (prev - 1 + shorts.length) % shorts.length)
       }
+
       setTimeout(() => {
         isScrolling.current = false
-      }, 500)
+      }, 600)
     }
   }
 
@@ -170,21 +173,34 @@ export default function ShortsPage() {
 
     if (Math.abs(e.deltaY) > 30) {
       isScrolling.current = true
-      if (e.deltaY > 0 && currentIndex < shorts.length - 1) {
-        setCurrentIndex(currentIndex + 1)
-      } else if (e.deltaY < 0 && currentIndex > 0) {
-        setCurrentIndex(currentIndex - 1)
+
+      if (e.deltaY > 0) {
+        // Scroll down - next video
+        setCurrentIndex((prev) => (prev + 1) % shorts.length)
+      } else {
+        // Scroll up - previous video
+        setCurrentIndex((prev) => (prev - 1 + shorts.length) % shorts.length)
       }
+
       setTimeout(() => {
         isScrolling.current = false
-      }, 500)
+      }, 600)
     }
   }
 
   const togglePlayPause = () => {
-    setIsPlaying((prev) => !prev)
-    setShowPlayIcon(true)
-    setTimeout(() => setShowPlayIcon(false), 600)
+    const newPlayState = !isPlaying
+    setIsPlaying(newPlayState)
+    setShowPlayPauseIcon(true)
+
+    if (videoRef.current) {
+      videoRef.current.contentWindow?.postMessage(
+        { event: "command", func: newPlayState ? "playVideo" : "pauseVideo" },
+        "*",
+      )
+    }
+
+    setTimeout(() => setShowPlayPauseIcon(false), 800)
   }
 
   const toggleLike = async () => {
@@ -212,16 +228,11 @@ export default function ShortsPage() {
     }
   }
 
-  const handleOpenComments = () => {
-    setShowCommentModal(true)
-    loadComments(shorts[currentIndex].id)
-  }
-
   const getYouTubeEmbedUrl = (url: string) => {
     const shortRegex = /youtube\.com\/shorts\/([a-zA-Z0-9_-]+)/
     const match = url.match(shortRegex)
     if (match) {
-      return `https://www.youtube.com/embed/${match[1]}?autoplay=1&mute=0&controls=0&modestbranding=1&rel=0&loop=1&playlist=${match[1]}&origin=${typeof window !== "undefined" ? window.location.origin : ""}`
+      return `https://www.youtube.com/embed/${match[1]}?autoplay=${isPlaying ? 1 : 0}&mute=0&controls=0&modestbranding=1&rel=0&loop=1&playlist=${match[1]}&enablejsapi=1&origin=${typeof window !== "undefined" ? window.location.origin : ""}`
     }
     return url
   }
@@ -262,7 +273,7 @@ export default function ShortsPage() {
       onTouchEnd={handleTouchEnd}
       onWheel={handleWheel}
     >
-      <div className="relative w-full h-full transition-transform duration-500 ease-out" onClick={togglePlayPause}>
+      <div className="relative w-full h-full" onClick={togglePlayPause}>
         <iframe
           ref={videoRef}
           key={`${currentShort.id}-${currentIndex}`}
@@ -274,13 +285,13 @@ export default function ShortsPage() {
           loading="lazy"
         />
 
-        {showPlayIcon && (
+        {showPlayPauseIcon && (
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-30">
-            <div className="bg-black/60 rounded-full p-6 animate-ping">
+            <div className="bg-black/50 rounded-full p-6 animate-fade-out">
               {isPlaying ? (
-                <Pause className="w-12 h-12 text-white" fill="white" />
+                <Play className="w-12 h-12 text-white fill-white" />
               ) : (
-                <Play className="w-12 h-12 text-white" fill="white" />
+                <Pause className="w-12 h-12 text-white fill-white" />
               )}
             </div>
           </div>
@@ -338,7 +349,7 @@ export default function ShortsPage() {
                 <button
                   onClick={(e) => {
                     e.stopPropagation()
-                    handleOpenComments()
+                    setShowCommentModal(true)
                   }}
                   className="flex flex-col items-center gap-1 transition-transform active:scale-95"
                 >
@@ -387,7 +398,7 @@ export default function ShortsPage() {
           </div>
         </div>
 
-        <div className="absolute right-2 top-1/2 -translate-y-1/2 z-10 flex flex-col gap-1.5 pointer-events-none">
+        <div className="absolute right-2 top-1/2 -translate-y-1/2 z-10 flex flex-col gap-1.5 pointer-events-none max-h-96 overflow-hidden">
           {shorts.map((_, idx) => (
             <div
               key={idx}
@@ -408,90 +419,104 @@ export default function ShortsPage() {
       </div>
 
       {showCommentModal && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex flex-col animate-in slide-in-from-bottom-96 duration-300">
-          {/* Header */}
-          <div className="bg-gradient-to-b from-black/90 to-black/50 px-4 py-4 flex items-center justify-between border-b border-white/10">
-            <h2 className="text-white font-bold text-lg">Comments</h2>
-            <button
-              onClick={() => setShowCommentModal(false)}
-              className="text-white/60 hover:text-white transition-colors"
-            >
-              <X className="w-6 h-6" />
-            </button>
-          </div>
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-start justify-center p-4 pt-20">
+          <div className="bg-gradient-to-b from-black/95 to-black/90 rounded-2xl w-full md:max-w-md max-h-[70vh] flex flex-col border border-white/10 shadow-2xl">
+            {/* Header */}
+            <div className="flex items-center justify-between px-4 py-4 border-b border-white/10 flex-shrink-0">
+              <h2 className="text-white font-bold text-lg">Comments</h2>
+              <button
+                onClick={() => setShowCommentModal(false)}
+                className="text-white/60 hover:text-white transition-colors p-1 hover:bg-white/10 rounded-full"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
 
-          {/* Comments List */}
-          <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
-            {loadingComments ? (
-              <div className="flex items-center justify-center py-8">
-                <div className="w-8 h-8 border-3 border-red-500 border-t-transparent rounded-full animate-spin" />
-              </div>
-            ) : comments.length === 0 ? (
-              <div className="flex items-center justify-center py-12 text-center">
-                <div>
-                  <MessageCircle className="w-12 h-12 text-white/20 mx-auto mb-2" />
-                  <p className="text-white/60 text-sm">No comments yet. Be the first!</p>
+            {/* Comments List - Scrollable */}
+            <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3 min-h-0">
+              {loadingComments ? (
+                <div className="flex items-center justify-center py-8">
+                  <div className="w-8 h-8 border-3 border-red-500 border-t-transparent rounded-full animate-spin" />
                 </div>
-              </div>
-            ) : (
-              comments.map((comment) => (
-                <div
-                  key={comment.id}
-                  className="bg-white/5 rounded-lg p-3 border border-white/10 hover:bg-white/10 transition-colors"
-                >
-                  <div className="flex items-start gap-2">
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-red-500 to-pink-500 flex items-center justify-center flex-shrink-0">
-                      <span className="text-white font-bold text-xs">{comment.userName.charAt(0).toUpperCase()}</span>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <p className="text-white font-semibold text-sm">{comment.userName}</p>
-                        <span className="text-white/40 text-xs">
-                          {new Date(comment.timestamp).toLocaleDateString("en-US", {
-                            month: "short",
-                            day: "numeric",
-                          })}
-                        </span>
-                      </div>
-                      <p className="text-white/80 text-sm mt-1 break-words">{comment.text}</p>
-                    </div>
+              ) : comments.length === 0 ? (
+                <div className="flex items-center justify-center py-8 text-center">
+                  <div>
+                    <MessageCircle className="w-10 h-10 text-white/20 mx-auto mb-2" />
+                    <p className="text-white/60 text-sm">No comments yet</p>
                   </div>
                 </div>
-              ))
-            )}
-            <div ref={commentsEndRef} />
-          </div>
+              ) : (
+                comments.map((comment) => (
+                  <div
+                    key={comment.id}
+                    className="bg-white/5 rounded-lg p-2.5 border border-white/10 hover:bg-white/10 transition-colors"
+                  >
+                    <div className="flex items-start gap-2">
+                      <div className="w-7 h-7 rounded-full bg-gradient-to-br from-red-500 to-pink-500 flex items-center justify-center flex-shrink-0">
+                        <span className="text-white font-bold text-xs">{comment.userName.charAt(0).toUpperCase()}</span>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <p className="text-white font-semibold text-xs">{comment.userName}</p>
+                          <span className="text-white/40 text-xs whitespace-nowrap">
+                            {new Date(comment.timestamp).toLocaleDateString("en-US", {
+                              month: "short",
+                              day: "numeric",
+                            })}
+                          </span>
+                        </div>
+                        <p className="text-white/80 text-xs mt-1 break-words">{comment.text}</p>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
+              <div ref={commentsContainerRef} />
+            </div>
 
-          {/* Comment Input */}
-          <div className="bg-gradient-to-t from-black/90 to-black/50 px-4 py-4 border-t border-white/10">
-            <form onSubmit={handleAddComment} className="space-y-3">
-              <input
-                type="text"
-                placeholder="Your name..."
-                value={userName}
-                onChange={(e) => setUserName(e.target.value)}
-                className="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm"
-              />
-              <div className="flex gap-2">
+            {/* Comment Input */}
+            <div className="bg-gradient-to-t from-black/95 to-black/50 px-4 py-3 border-t border-white/10 flex-shrink-0">
+              <form onSubmit={handleAddComment} className="space-y-2">
                 <input
                   type="text"
-                  placeholder="Add a comment..."
-                  value={commentText}
-                  onChange={(e) => setCommentText(e.target.value)}
-                  className="flex-1 bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm"
+                  placeholder="Your name..."
+                  value={userName}
+                  onChange={(e) => setUserName(e.target.value)}
+                  maxLength={20}
+                  className="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-1.5 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-xs"
                 />
-                <button
-                  type="submit"
-                  disabled={!commentText.trim() || !userName.trim()}
-                  className="bg-red-500 hover:bg-red-600 disabled:bg-red-500/50 text-white rounded-lg px-3 py-2 transition-colors flex items-center justify-center"
-                >
-                  <Send className="w-4 h-4" />
-                </button>
-              </div>
-            </form>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    placeholder="Add a comment..."
+                    value={commentText}
+                    onChange={(e) => setCommentText(e.target.value)}
+                    maxLength={150}
+                    className="flex-1 bg-white/10 border border-white/20 rounded-lg px-3 py-1.5 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-xs"
+                  />
+                  <button
+                    type="submit"
+                    disabled={!commentText.trim() || !userName.trim()}
+                    className="bg-red-500 hover:bg-red-600 disabled:bg-red-500/50 text-white rounded-lg px-3 py-1.5 transition-colors flex items-center justify-center flex-shrink-0"
+                  >
+                    <Send className="w-4 h-4" />
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
         </div>
       )}
+
+      <style>{`
+        @keyframes fade-out {
+          0% { opacity: 1; transform: scale(1); }
+          100% { opacity: 0; transform: scale(0.8); }
+        }
+        .animate-fade-out {
+          animation: fade-out 0.8s ease-out forwards;
+        }
+      `}</style>
     </div>
   )
 }

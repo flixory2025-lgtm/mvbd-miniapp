@@ -3,8 +3,8 @@
 import type React from "react"
 
 import { useState, useEffect, useRef } from "react"
-import { Heart, MessageCircle, Share2, Play, Pause } from "lucide-react"
-import { collection, doc, updateDoc, increment, onSnapshot } from "firebase/firestore"
+import { Heart, MessageCircle, Share2, Play, Pause, X, Send } from "lucide-react"
+import { collection, doc, updateDoc, increment, onSnapshot, addDoc, query, where, orderBy } from "firebase/firestore"
 import { db } from "@/lib/firebase"
 
 interface Short {
@@ -16,6 +16,14 @@ interface Short {
   comments: number
 }
 
+interface Comment {
+  id: string
+  shortId: string
+  userName: string
+  text: string
+  timestamp: string
+}
+
 export default function ShortsPage() {
   const [shorts, setShorts] = useState<Short[]>([])
   const [currentIndex, setCurrentIndex] = useState(0)
@@ -23,10 +31,17 @@ export default function ShortsPage() {
   const [userLikes, setUserLikes] = useState<Set<string>>(new Set())
   const [loading, setLoading] = useState(true)
   const [showPlayIcon, setShowPlayIcon] = useState(false)
+  const [showCommentModal, setShowCommentModal] = useState(false)
+  const [comments, setComments] = useState<Comment[]>([])
+  const [commentText, setCommentText] = useState("")
+  const [userName, setUserName] = useState("")
+  const [loadingComments, setLoadingComments] = useState(false)
+
   const containerRef = useRef<HTMLDivElement>(null)
   const videoRef = useRef<HTMLIFrameElement>(null)
   const touchStartY = useRef(0)
   const isScrolling = useRef(false)
+  const commentsEndRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const shortsCollection = collection(db, "shorts")
@@ -47,6 +62,11 @@ export default function ShortsPage() {
     if (savedLikes) {
       setUserLikes(new Set(JSON.parse(savedLikes)))
     }
+
+    const savedUserName = localStorage.getItem("mvbd_user_name")
+    if (savedUserName) {
+      setUserName(savedUserName)
+    }
   }, [])
 
   useEffect(() => {
@@ -59,6 +79,68 @@ export default function ShortsPage() {
   useEffect(() => {
     setIsPlaying(true)
   }, [currentIndex])
+
+  useEffect(() => {
+    if (shorts.length > 0 && showCommentModal) {
+      loadComments(shorts[currentIndex].id)
+    }
+  }, [currentIndex, shorts, showCommentModal])
+
+  const loadComments = async (shortId: string) => {
+    setLoadingComments(true)
+    try {
+      const commentsRef = collection(db, "comments")
+      const q = query(commentsRef, where("shortId", "==", shortId), orderBy("timestamp", "desc"))
+
+      const unsubscribe = onSnapshot(q, (snapshot) => {
+        const commentsData = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        })) as Comment[]
+        setComments(commentsData)
+        setLoadingComments(false)
+      })
+
+      return () => unsubscribe()
+    } catch (error) {
+      console.error("Error loading comments:", error)
+      setLoadingComments(false)
+    }
+  }
+
+  const handleAddComment = async (e: React.FormEvent) => {
+    e.preventDefault()
+
+    if (!commentText.trim() || !userName.trim() || !shorts[currentIndex]) return
+
+    try {
+      const commentsRef = collection(db, "comments")
+      await addDoc(commentsRef, {
+        shortId: shorts[currentIndex].id,
+        userName: userName.trim(),
+        text: commentText.trim(),
+        timestamp: new Date().toISOString(),
+      })
+
+      // Save user name for future use
+      localStorage.setItem("mvbd_user_name", userName)
+
+      // Increment comment count
+      const shortRef = doc(db, "shorts", shorts[currentIndex].id)
+      await updateDoc(shortRef, {
+        comments: increment(1),
+      })
+
+      setCommentText("")
+
+      // Scroll to bottom to see new comment
+      setTimeout(() => {
+        commentsEndRef.current?.scrollIntoView({ behavior: "smooth" })
+      }, 100)
+    } catch (error) {
+      console.error("Error adding comment:", error)
+    }
+  }
 
   const handleTouchStart = (e: React.TouchEvent) => {
     touchStartY.current = e.touches[0].clientY
@@ -100,7 +182,7 @@ export default function ShortsPage() {
   }
 
   const togglePlayPause = () => {
-    setIsPlaying(!isPlaying)
+    setIsPlaying((prev) => !prev)
     setShowPlayIcon(true)
     setTimeout(() => setShowPlayIcon(false), 600)
   }
@@ -130,17 +212,9 @@ export default function ShortsPage() {
     }
   }
 
-  const handleComment = async () => {
-    if (!shorts[currentIndex]) return
-
-    try {
-      const shortRef = doc(db, "shorts", shorts[currentIndex].id)
-      await updateDoc(shortRef, {
-        comments: increment(1),
-      })
-    } catch (error) {
-      console.error("Error updating comment:", error)
-    }
+  const handleOpenComments = () => {
+    setShowCommentModal(true)
+    loadComments(shorts[currentIndex].id)
   }
 
   const getYouTubeEmbedUrl = (url: string) => {
@@ -204,9 +278,9 @@ export default function ShortsPage() {
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-30">
             <div className="bg-black/60 rounded-full p-6 animate-ping">
               {isPlaying ? (
-                <Play className="w-12 h-12 text-white" fill="white" />
-              ) : (
                 <Pause className="w-12 h-12 text-white" fill="white" />
+              ) : (
+                <Play className="w-12 h-12 text-white" fill="white" />
               )}
             </div>
           </div>
@@ -264,7 +338,7 @@ export default function ShortsPage() {
                 <button
                   onClick={(e) => {
                     e.stopPropagation()
-                    handleComment()
+                    handleOpenComments()
                   }}
                   className="flex flex-col items-center gap-1 transition-transform active:scale-95"
                 >
@@ -332,6 +406,92 @@ export default function ShortsPage() {
           </div>
         )}
       </div>
+
+      {showCommentModal && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex flex-col animate-in slide-in-from-bottom-96 duration-300">
+          {/* Header */}
+          <div className="bg-gradient-to-b from-black/90 to-black/50 px-4 py-4 flex items-center justify-between border-b border-white/10">
+            <h2 className="text-white font-bold text-lg">Comments</h2>
+            <button
+              onClick={() => setShowCommentModal(false)}
+              className="text-white/60 hover:text-white transition-colors"
+            >
+              <X className="w-6 h-6" />
+            </button>
+          </div>
+
+          {/* Comments List */}
+          <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
+            {loadingComments ? (
+              <div className="flex items-center justify-center py-8">
+                <div className="w-8 h-8 border-3 border-red-500 border-t-transparent rounded-full animate-spin" />
+              </div>
+            ) : comments.length === 0 ? (
+              <div className="flex items-center justify-center py-12 text-center">
+                <div>
+                  <MessageCircle className="w-12 h-12 text-white/20 mx-auto mb-2" />
+                  <p className="text-white/60 text-sm">No comments yet. Be the first!</p>
+                </div>
+              </div>
+            ) : (
+              comments.map((comment) => (
+                <div
+                  key={comment.id}
+                  className="bg-white/5 rounded-lg p-3 border border-white/10 hover:bg-white/10 transition-colors"
+                >
+                  <div className="flex items-start gap-2">
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-red-500 to-pink-500 flex items-center justify-center flex-shrink-0">
+                      <span className="text-white font-bold text-xs">{comment.userName.charAt(0).toUpperCase()}</span>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <p className="text-white font-semibold text-sm">{comment.userName}</p>
+                        <span className="text-white/40 text-xs">
+                          {new Date(comment.timestamp).toLocaleDateString("en-US", {
+                            month: "short",
+                            day: "numeric",
+                          })}
+                        </span>
+                      </div>
+                      <p className="text-white/80 text-sm mt-1 break-words">{comment.text}</p>
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
+            <div ref={commentsEndRef} />
+          </div>
+
+          {/* Comment Input */}
+          <div className="bg-gradient-to-t from-black/90 to-black/50 px-4 py-4 border-t border-white/10">
+            <form onSubmit={handleAddComment} className="space-y-3">
+              <input
+                type="text"
+                placeholder="Your name..."
+                value={userName}
+                onChange={(e) => setUserName(e.target.value)}
+                className="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm"
+              />
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  placeholder="Add a comment..."
+                  value={commentText}
+                  onChange={(e) => setCommentText(e.target.value)}
+                  className="flex-1 bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm"
+                />
+                <button
+                  type="submit"
+                  disabled={!commentText.trim() || !userName.trim()}
+                  className="bg-red-500 hover:bg-red-600 disabled:bg-red-500/50 text-white rounded-lg px-3 py-2 transition-colors flex items-center justify-center"
+                >
+                  <Send className="w-4 h-4" />
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

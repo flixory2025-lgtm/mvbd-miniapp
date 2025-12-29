@@ -3,7 +3,7 @@
 import type React from "react"
 
 import { useState, useEffect, useRef } from "react"
-import { Heart, MessageCircle, Share2, Play, Pause, X, Send } from "lucide-react"
+import { Heart, MessageCircle, Share2, Play, Pause, X, Send, ChevronUp, ChevronDown } from "lucide-react"
 import { collection, doc, updateDoc, increment, onSnapshot, addDoc, query, where } from "firebase/firestore"
 import { db } from "@/lib/firebase"
 
@@ -164,7 +164,7 @@ export default function ShortsPage() {
 
       setTimeout(() => {
         isScrolling.current = false
-      }, 600)
+      }, 1000)
     }
   }
 
@@ -184,7 +184,7 @@ export default function ShortsPage() {
 
       setTimeout(() => {
         isScrolling.current = false
-      }, 600)
+      }, 1000)
     }
   }
 
@@ -226,6 +226,24 @@ export default function ShortsPage() {
     } catch (error) {
       console.error("Error updating like:", error)
     }
+  }
+
+  const handleScrollUp = () => {
+    if (isScrolling.current) return
+    isScrolling.current = true
+    setCurrentIndex((prev) => (prev - 1 + shorts.length) % shorts.length)
+    setTimeout(() => {
+      isScrolling.current = false
+    }, 1000)
+  }
+
+  const handleScrollDown = () => {
+    if (isScrolling.current) return
+    isScrolling.current = true
+    setCurrentIndex((prev) => (prev + 1) % shorts.length)
+    setTimeout(() => {
+      isScrolling.current = false
+    }, 1000)
   }
 
   const getYouTubeEmbedUrl = (url: string) => {
@@ -304,6 +322,29 @@ export default function ShortsPage() {
               <div className="w-8 h-8 rounded-full bg-white/10 backdrop-blur-sm" />
             </div>
           </div>
+        </div>
+
+        <div className="absolute top-20 right-4 z-20 flex flex-col gap-3 pointer-events-auto">
+          <button
+            onClick={(e) => {
+              e.stopPropagation()
+              handleScrollUp()
+            }}
+            className="w-10 h-10 rounded-full bg-black/40 hover:bg-black/60 backdrop-blur-sm flex items-center justify-center transition-all active:scale-90 shadow-lg"
+            title="Previous short"
+          >
+            <ChevronUp className="w-5 h-5 text-white" strokeWidth={3} />
+          </button>
+          <button
+            onClick={(e) => {
+              e.stopPropagation()
+              handleScrollDown()
+            }}
+            className="w-10 h-10 rounded-full bg-black/40 hover:bg-black/60 backdrop-blur-sm flex items-center justify-center transition-all active:scale-90 shadow-lg"
+            title="Next short"
+          >
+            <ChevronDown className="w-5 h-5 text-white" strokeWidth={3} />
+          </button>
         </div>
 
         <div className="absolute bottom-16 left-0 right-0 z-20 pointer-events-none">

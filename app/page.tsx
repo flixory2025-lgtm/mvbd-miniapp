@@ -78,68 +78,36 @@ export default function Home() {
       case "shorts":
         return (
           <div className="relative min-h-screen">
+            <Snowfall />
             <ShortsPage />
           </div>
         )
       case "exclusive":
         return (
           <div className="relative min-h-screen">
+            <Snowfall />
             <ExclusivePage />
           </div>
         )
       case "profile":
         return (
           <div className="relative min-h-screen">
+            <Snowfall />
             <ProfilePage />
           </div>
         )
       default:
         return (
           <>
-            {/* Header এর নিচে background image area */}
-            <div className="relative">
-              {/* Header Component */}
-              <Header onSearch={handleSearch} />
-              
-              {/* Header এর নিচের background area - শুধুমাত্র এখানে snowfall */}
-              <div className="relative h-[300px] overflow-hidden">
-                {/* Background Image */}
-                <div 
-                  className="absolute inset-0 bg-cover bg-center"
-                  style={{
-                    backgroundImage: "url('/header-background.jpg')", // আপনার background image path দিন
-                    backgroundSize: "cover",
-                    backgroundPosition: "center",
-                  }}
-                />
-                
-                {/* Snowfall শুধুমাত্র এই background image এর উপর */}
-                <div className="absolute inset-0">
-                  <Snowfall />
-                </div>
-                
-                {/* Logo and Title - snowfall এর উপরে */}
-                <div className="relative z-10 flex flex-col items-center justify-center h-full text-center px-4">
-                  <div className="mb-4">
-                    {/* MoviesVerseBD Logo */}
-                    <img 
-                      src="/logo.png" // আপনার logo path দিন
-                      alt="MoviesVerseBD"
-                      className="h-24 w-auto mx-auto opacity-90"
-                    />
-                  </div>
-                  <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">
-                    MoviesVerseBD
-                  </h1>
-                  <p className="text-slate-200 text-lg">
-                    Unlimited Movies & Web Series
-                  </p>
-                </div>
-              </div>
+            {/* Snowfall সবকিছুর উপরে থাকবে */}
+            <div className="fixed inset-0 pointer-events-none z-50">
+              <Snowfall />
             </div>
+            
+            {/* Main content - snowfall এর নিচে থাকবে */}
+            <div className="relative min-h-screen bg-black pb-20">
+              <Header onSearch={handleSearch} />
 
-            {/* Main content area - এখানে কোন snowfall নেই */}
-            <div className="min-h-screen bg-black">
               {searchQuery.trim() && filteredMovies.length === 0 ? (
                 <div className="px-4 py-12 text-center">
                   <p className="text-lg text-slate-300 mb-6">আমরা দুঃখিত! এই নামের কোনো মুভি আমাদের কালেকশনে নেই</p>

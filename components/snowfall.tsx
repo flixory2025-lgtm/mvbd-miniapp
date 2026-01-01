@@ -1,114 +1,100 @@
 "use client"
 
-import { useEffect, useRef } from "react"
+import { useEffect, useState } from "react"
 
 interface Snowflake {
   id: number
-  left: number
-  delay: number
-  duration: number
+  x: number
+  y: number
   size: number
+  speed: number
   opacity: number
-  sway: number
-  blur: number
 }
 
 export default function Snowfall() {
-  const containerRef = useRef<HTMLDivElement>(null)
-  const snowflakesRef = useRef<Snowflake[]>([])
+  const [snowflakes, setSnowflakes] = useState<Snowflake[]>([])
 
   useEffect(() => {
-    const container = containerRef.current
-    if (!container) return
+    // Initialize snowflakes - 150 টি snowflake
+    const initialSnowflakes: Snowflake[] = []
+    for (let i = 0; i < 150; i++) {
+      initialSnowflakes.push({
+        id: i,
+        x: Math.random() * 100,
+        y: Math.random() * 100,
+        size: 1 + Math.random() * 5, // 1-6px সাইজ
+        speed: 0.5 + Math.random() * 2, // বিভিন্ন গতি
+        opacity: 0.2 + Math.random() * 0.5, // 0.2-0.7 opacity
+      })
+    }
+    setSnowflakes(initialSnowflakes)
 
-    // Generate 120 snowflakes for dense snowfall
-    const generateSnowflakes = () => {
-      const snowflakes: Snowflake[] = []
-      for (let i = 0; i < 120; i++) { // 120 snowflakes
-        const size = Math.random() > 0.7 ? 
-          2 + Math.random() * 3 : // 70% small flakes
-          1 + Math.random() * 2   // 30% tiny flakes
+    // Animation loop
+    let animationId: number
+    let lastTime = 0
+    const updateSnowflakes = (timestamp: number) => {
+      if (!lastTime) lastTime = timestamp
+      const deltaTime = timestamp - lastTime
+      lastTime = timestamp
+
+      setSnowflakes(prev => 
+        prev.map(flake => {
+          let newY = flake.y + (flake.speed * deltaTime * 0.05)
+          let newX = flake.x + Math.sin(timestamp * 0.001 + flake.id) * 0.2
           
-        snowflakes.push({
-          id: i,
-          left: Math.random() * 100,
-          delay: Math.random() * 8, // More varied delays
-          duration: 10 + Math.random() * 15, // Slower, more varied
-          size: size,
-          opacity: 0.08 + Math.random() * 0.25, // Very light and transparent
-          sway: 20 + Math.random() * 60, // More sway movement
-          blur: 0.1 + Math.random() * 0.4, // Blur effect
+          // Reset if goes below screen
+          if (newY > 100) {
+            newY = -5
+            newX = Math.random() * 100
+          }
+          
+          // Keep X within bounds
+          if (newX > 100) newX = 100
+          if (newX < 0) newX = 0
+
+          return {
+            ...flake,
+            y: newY,
+            x: newX,
+          }
         })
-      }
-      return snowflakes
+      )
+      animationId = requestAnimationFrame(updateSnowflakes)
     }
 
-    snowflakesRef.current = generateSnowflakes()
+    animationId = requestAnimationFrame(updateSnowflakes)
+
+    return () => {
+      cancelAnimationFrame(animationId)
+    }
   }, [])
 
   return (
-    <div ref={containerRef} className="fixed inset-0 pointer-events-none z-50 overflow-hidden">
-      <style jsx>{`
-        @keyframes snowfall {
-          0% {
-            transform: translateY(-30px) translateX(0) rotate(0deg);
-            opacity: 0;
-          }
-          5% {
-            opacity: var(--flake-opacity);
-          }
-          95% {
-            opacity: calc(var(--flake-opacity) * 0.3);
-          }
-          100% {
-            transform: translateY(100vh) translateX(var(--sway)) rotate(var(--rotate));
-            opacity: 0;
-          }
-        }
-
-        @keyframes float {
-          0%, 100% {
-            transform: translateX(0);
-          }
-          50% {
-            transform: translateX(var(--float-distance));
-          }
-        }
-
-        .snowflake {
-          position: absolute;
-          top: -30px;
-          border-radius: 50%;
-          animation: snowfall linear forwards, float ease-in-out infinite;
-          animation-iteration-count: infinite;
-          filter: blur(var(--blur));
-          pointer-events: none;
-          background: radial-gradient(
-            circle at 30% 30%,
-            rgba(255, 255, 255, var(--flake-opacity)) 0%,
-            rgba(255, 255, 255, calc(var(--flake-opacity) * 0.3)) 70%,
-            transparent 100%
-          );
-        }
-      `}</style>
-
-      {snowflakesRef.current.map((flake) => (
+    <div 
+      className="fixed inset-0 pointer-events-none z-50 overflow-hidden"
+      style={{
+        background: 'transparent',
+      }}
+    >
+      {snowflakes.map(flake => (
         <div
           key={flake.id}
-          className="snowflake"
+          className="absolute rounded-full"
           style={{
-            '--flake-opacity': `${flake.opacity}`,
-            '--sway': `${flake.sway}px`,
-            '--blur': `${flake.blur}px`,
-            '--rotate': `${Math.random() * 360}deg`,
-            '--float-distance': `${(Math.random() * 20) - 10}px`,
-            left: `${flake.left}%`,
+            left: `${flake.x}%`,
+            top: `${flake.y}%`,
             width: `${flake.size}px`,
             height: `${flake.size}px`,
-            animationDuration: `${flake.duration}s`,
-            animationDelay: `${flake.delay}s`,
-            animationTimingFunction: 'linear',
-          } as React.CSSProperties}
+            opacity: flake.opacity,
+            filter: 'blur(0.8px)',
+            background: `radial-gradient(circle at 30% 30%, rgba(255, 255, 255, ${flake.opacity}) 0%, rgba(255, 255, 255, ${flake.opacity * 0.3}) 70%, transparent 100%)`,
+            boxShadow: `
+              0 0 ${flake.size}px rgba(255, 255, 255, ${flake.opacity}),
+              0 0 ${flake.size * 2}px rgba(255, 255, 255, ${flake.opacity * 0.3})
+            `,
+            transform: `translate(-50%, -50%)`,
+            willChange: 'transform, opacity',
+          }}
         />
       ))}
     </div>

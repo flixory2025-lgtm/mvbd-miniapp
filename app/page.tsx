@@ -96,81 +96,104 @@ export default function Home() {
       default:
         return (
           <>
-            {/* Header - snowfall এর উপরে থাকবে */}
-            <Header onSearch={handleSearch} />
-
-            {/* Main content area - শুধুমাত্র এই কালো background এর উপর snowfall */}
-            <div className="relative min-h-screen bg-black">
-              {/* Snowfall শুধুমাত্র কালো background এর উপর */}
-              <div className="absolute inset-0 z-0">
-                <Snowfall />
-              </div>
-
-              {/* Content - snowfall এর উপরে থাকবে */}
-              <div className="relative z-10">
-                {searchQuery.trim() && filteredMovies.length === 0 ? (
-                  <div className="px-4 py-12 text-center">
-                    <p className="text-lg text-slate-300 mb-6">আমরা দুঃখিত! এই নামের কোনো মুভি আমাদের কালেকশনে নেই</p>
-                    <div className="flex gap-4 justify-center flex-wrap">
-                      <a
-                        href="https://www.facebook.com/groups/733950559669339/?ref=share&mibextid=NSMWBT"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition"
-                      >
-                        Facebook Group
-                      </a>
-                      <a
-                        href="https://t.me/moviesversebdreq"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="px-6 py-2 bg-sky-500 hover:bg-sky-600 text-white rounded-lg transition"
-                      >
-                        Telegram Group
-                      </a>
-                    </div>
+            {/* Header এর নিচে background image area */}
+            <div className="relative">
+              {/* Header Component */}
+              <Header onSearch={handleSearch} />
+              
+              {/* Header এর নিচের background area - শুধুমাত্র এখানে snowfall */}
+              <div className="relative h-[300px] overflow-hidden">
+                {/* Background Image */}
+                <div 
+                  className="absolute inset-0 bg-cover bg-center"
+                  style={{
+                    backgroundImage: "url('/header-background.jpg')", // আপনার background image path দিন
+                    backgroundSize: "cover",
+                    backgroundPosition: "center",
+                  }}
+                />
+                
+                {/* Snowfall শুধুমাত্র এই background image এর উপর */}
+                <div className="absolute inset-0">
+                  <Snowfall />
+                </div>
+                
+                {/* Logo and Title - snowfall এর উপরে */}
+                <div className="relative z-10 flex flex-col items-center justify-center h-full text-center px-4">
+                  <div className="mb-4">
+                    {/* MoviesVerseBD Logo */}
+                    <img 
+                      src="/logo.png" // আপনার logo path দিন
+                      alt="MoviesVerseBD"
+                      className="h-24 w-auto mx-auto opacity-90"
+                    />
                   </div>
-                ) : (
-                  <>
-                    {/* Trending Carousel - snowfall এর উপরে */}
-                    {!isSearching && <TrendingCarousel onMovieClick={setSelectedMovie} />}
-                    
-                    {/* Genre Categories - snowfall এর উপরে */}
-                    {!isSearching && (
-                      <div className="relative z-20">
-                        <GenreCategories
-                          genres={genres}
-                          selectedGenre={selectedGenre}
-                          onGenreSelect={handleGenreSelect}
-                          showAdultContent={showAdultContent}
-                        />
-                      </div>
-                    )}
-
-                    {isSearching && (
-                      <div className="px-4 pt-4">
-                        <h2 className="text-xl font-bold text-white mb-2">সার্চ রেজাল্ট: "{searchQuery}"</h2>
-                        <p className="text-slate-400 text-sm mb-4">{filteredMovies.length} টি মুভি পাওয়া গেছে</p>
-                      </div>
-                    )}
-
-                    {/* Movie Grid - snowfall এর উপরে */}
-                    <div className="relative z-10">
-                      <MovieGrid
-                        movies={paginatedMovies}
-                        onMovieClick={setSelectedMovie}
-                        currentPage={currentPage}
-                        totalPages={totalPages}
-                        onPageChange={setCurrentPage}
-                        showAdultContent={showAdultContent}
-                        isSearching={isSearching}
-                      />
-                    </div>
-                  </>
-                )}
-
-                <Footer />
+                  <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">
+                    MoviesVerseBD
+                  </h1>
+                  <p className="text-slate-200 text-lg">
+                    Unlimited Movies & Web Series
+                  </p>
+                </div>
               </div>
+            </div>
+
+            {/* Main content area - এখানে কোন snowfall নেই */}
+            <div className="min-h-screen bg-black">
+              {searchQuery.trim() && filteredMovies.length === 0 ? (
+                <div className="px-4 py-12 text-center">
+                  <p className="text-lg text-slate-300 mb-6">আমরা দুঃখিত! এই নামের কোনো মুভি আমাদের কালেকশনে নেই</p>
+                  <div className="flex gap-4 justify-center flex-wrap">
+                    <a
+                      href="https://www.facebook.com/groups/733950559669339/?ref=share&mibextid=NSMWBT"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition"
+                    >
+                      Facebook Group
+                    </a>
+                    <a
+                      href="https://t.me/moviesversebdreq"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-6 py-2 bg-sky-500 hover:bg-sky-600 text-white rounded-lg transition"
+                    >
+                      Telegram Group
+                    </a>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  {!isSearching && <TrendingCarousel onMovieClick={setSelectedMovie} />}
+                  {!isSearching && (
+                    <GenreCategories
+                      genres={genres}
+                      selectedGenre={selectedGenre}
+                      onGenreSelect={handleGenreSelect}
+                      showAdultContent={showAdultContent}
+                    />
+                  )}
+
+                  {isSearching && (
+                    <div className="px-4 pt-4">
+                      <h2 className="text-xl font-bold text-white mb-2">সার্চ রেজাল্ট: "{searchQuery}"</h2>
+                      <p className="text-slate-400 text-sm mb-4">{filteredMovies.length} টি মুভি পাওয়া গেছে</p>
+                    </div>
+                  )}
+
+                  <MovieGrid
+                    movies={paginatedMovies}
+                    onMovieClick={setSelectedMovie}
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={setCurrentPage}
+                    showAdultContent={showAdultContent}
+                    isSearching={isSearching}
+                  />
+                </>
+              )}
+
+              <Footer />
             </div>
           </>
         )

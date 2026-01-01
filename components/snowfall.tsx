@@ -46,11 +46,15 @@ export default function Snowfall() {
   }, [])
 
   return (
-    <div ref={containerRef} className="fixed inset-0 pointer-events-none z-10 overflow-hidden">
+    <div ref={containerRef} className="absolute inset-0 pointer-events-none z-10 overflow-hidden">
       <style jsx>{`
         @keyframes snowfall {
-          to {
-            transform: translateY(100vh) translateX(0);
+          0% {
+            transform: translateY(-10px) translateX(0);
+            opacity: 1;
+          }
+          100% {
+            transform: translateY(calc(100vh + 20px)) translateX(20px);
             opacity: 0;
           }
         }
@@ -78,6 +82,7 @@ export default function Snowfall() {
             opacity: flake.opacity,
             animationDuration: `${flake.duration}s`,
             animationDelay: `${flake.delay}s`,
+            animationIterationCount: "infinite",
             boxShadow: `0 0 ${flake.size}px rgba(255, 255, 255, ${flake.opacity})`,
           }}
         />

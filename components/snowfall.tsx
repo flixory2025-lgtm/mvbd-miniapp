@@ -9,6 +9,7 @@ interface Snowflake {
   duration: number
   size: number
   opacity: number
+  sway: number
 }
 
 export default function Snowfall() {
@@ -19,17 +20,19 @@ export default function Snowfall() {
     const container = containerRef.current
     if (!container) return
 
-    // Generate snowflakes for header background
+    // Generate snowflakes that will be on top of everything
     const generateSnowflakes = () => {
       const snowflakes: Snowflake[] = []
-      for (let i = 0; i < 40; i++) {
+      // More flakes for better coverage
+      for (let i = 0; i < 70; i++) {
         snowflakes.push({
           id: i,
           left: Math.random() * 100,
-          delay: Math.random() * 3,
-          duration: 12 + Math.random() * 8, // Slower falling for dramatic effect
-          size: 2 + Math.random() * 4, // Small flakes
-          opacity: 0.2 + Math.random() * 0.3, // More transparent
+          delay: Math.random() * 5,
+          duration: 8 + Math.random() * 10, // Varied speed
+          size: 1 + Math.random() * 4, // Very small flakes
+          opacity: 0.1 + Math.random() * 0.4, // Very transparent
+          sway: 10 + Math.random() * 40, // More sway
         })
       }
       return snowflakes
@@ -39,7 +42,7 @@ export default function Snowfall() {
   }, [])
 
   return (
-    <div ref={containerRef} className="absolute inset-0 pointer-events-none z-0 overflow-hidden">
+    <div ref={containerRef} className="fixed inset-0 pointer-events-none z-50 overflow-hidden">
       <style jsx>{`
         @keyframes snowfall {
           0% {
@@ -50,10 +53,10 @@ export default function Snowfall() {
             opacity: var(--flake-opacity);
           }
           95% {
-            opacity: calc(var(--flake-opacity) * 0.8);
+            opacity: calc(var(--flake-opacity) * 0.5);
           }
           100% {
-            transform: translateY(300px) translateX(calc(var(--left) * 0.1px));
+            transform: translateY(100vh) translateX(var(--sway));
             opacity: 0;
           }
         }
@@ -66,7 +69,8 @@ export default function Snowfall() {
           border-radius: 50%;
           animation: snowfall linear forwards;
           animation-iteration-count: infinite;
-          filter: blur(0.3px);
+          filter: blur(0.2px);
+          pointer-events: none;
         }
       `}</style>
 
@@ -76,7 +80,7 @@ export default function Snowfall() {
           className="snowflake"
           style={{
             '--flake-opacity': `${flake.opacity}`,
-            '--left': `${flake.left}`,
+            '--sway': `${flake.sway}px`,
             left: `${flake.left}%`,
             width: `${flake.size}px`,
             height: `${flake.size}px`,
@@ -85,7 +89,7 @@ export default function Snowfall() {
             background: `rgba(255, 255, 255, ${flake.opacity})`,
             boxShadow: `
               0 0 ${flake.size}px rgba(255, 255, 255, ${flake.opacity}),
-              0 0 ${flake.size * 1.5}px rgba(255, 255, 255, ${flake.opacity * 0.5})
+              0 0 ${flake.size * 2}px rgba(255, 255, 255, ${flake.opacity * 0.3})
             `,
           } as React.CSSProperties}
         />

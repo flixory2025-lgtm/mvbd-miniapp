@@ -12,7 +12,7 @@ import BottomNavigation from "@/components/bottom-navigation"
 import ShortsPage from "@/components/shorts-page"
 import ExclusivePage from "@/components/exclusive-page"
 import ProfilePage from "@/components/profile-page"
-import Snowfall from "@/components/snowfall"
+import Snowfall from "@/components/snowfall" // Import Snowfall component
 import { movies, genres } from "@/lib/movie-data"
 
 export default function Home() {
@@ -76,36 +76,18 @@ export default function Home() {
   const renderContent = () => {
     switch (activeTab) {
       case "shorts":
-        return (
-          <div className="relative min-h-screen">
-            <Snowfall />
-            <ShortsPage />
-          </div>
-        )
+        return <ShortsPage />
       case "exclusive":
-        return (
-          <div className="relative min-h-screen">
-            <Snowfall />
-            <ExclusivePage />
-          </div>
-        )
+        return <ExclusivePage />
       case "profile":
-        return (
-          <div className="relative min-h-screen">
-            <Snowfall />
-            <ProfilePage />
-          </div>
-        )
+        return <ProfilePage />
       default:
         return (
           <>
-            {/* Dense snowfall on top of everything */}
-            <div className="fixed inset-0 pointer-events-none z-50">
-              <Snowfall />
-            </div>
+            {/* Snowfall effect added here */}
+            <Snowfall />
             
-            {/* Main content */}
-            <div className="relative min-h-screen bg-black pb-20">
+            <div className="min-h-screen bg-black pb-20">
               <Header onSearch={handleSearch} />
 
               {searchQuery.trim() && filteredMovies.length === 0 ? (
@@ -175,21 +157,15 @@ export default function Home() {
       <BottomNavigation activeTab={activeTab} onTabChange={setActiveTab} />
 
       {selectedMovie && activeTab === "home" && (
-        <div className="relative z-60">
-          <MovieModal
-            movie={selectedMovie}
-            onClose={() => setSelectedMovie(null)}
-            onMovieClick={setSelectedMovie}
-            showAdultContent={showAdultContent}
-          />
-        </div>
+        <MovieModal
+          movie={selectedMovie}
+          onClose={() => setSelectedMovie(null)}
+          onMovieClick={setSelectedMovie}
+          showAdultContent={showAdultContent}
+        />
       )}
 
-      {showWelcomePopup && (
-        <div className="relative z-60">
-          <WelcomePopup onClose={handleClosePopup} />
-        </div>
-      )}
+      {showWelcomePopup && <WelcomePopup onClose={handleClosePopup} />}
     </>
   )
 }

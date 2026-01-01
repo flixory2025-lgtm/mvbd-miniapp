@@ -12,7 +12,7 @@ import BottomNavigation from "@/components/bottom-navigation"
 import ShortsPage from "@/components/shorts-page"
 import ExclusivePage from "@/components/exclusive-page"
 import ProfilePage from "@/components/profile-page"
-import Snowfall from "@/components/snowfall" // Import Snowfall component
+import Snowfall from "@/components/snowfall"
 import { movies, genres } from "@/lib/movie-data"
 
 export default function Home() {
@@ -84,10 +84,13 @@ export default function Home() {
       default:
         return (
           <>
-            {/* Snowfall effect added here */}
-            <Snowfall />
+            {/* Snowfall Background */}
+            <div className="fixed inset-0 z-0 overflow-hidden">
+              <Snowfall />
+            </div>
             
-            <div className="min-h-screen bg-black pb-20">
+            {/* Main Content */}
+            <div className="relative z-10 min-h-screen bg-black/95 pb-20">
               <Header onSearch={handleSearch} />
 
               {searchQuery.trim() && filteredMovies.length === 0 ? (

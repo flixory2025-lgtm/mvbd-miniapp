@@ -12,7 +12,7 @@ import BottomNavigation from "@/components/bottom-navigation"
 import ShortsPage from "@/components/shorts-page"
 import ExclusivePage from "@/components/exclusive-page"
 import ProfilePage from "@/components/profile-page"
-import Snowfall from "@/components/snowfall" // Import Snowfall component
+import Snowfall from "@/components/snowfall"
 import { movies, genres } from "@/lib/movie-data"
 
 export default function Home() {
@@ -76,18 +76,34 @@ export default function Home() {
   const renderContent = () => {
     switch (activeTab) {
       case "shorts":
-        return <ShortsPage />
+        return (
+          <div className="relative min-h-screen">
+            <Snowfall />
+            <ShortsPage />
+          </div>
+        )
       case "exclusive":
-        return <ExclusivePage />
+        return (
+          <div className="relative min-h-screen">
+            <Snowfall />
+            <ExclusivePage />
+          </div>
+        )
       case "profile":
-        return <ProfilePage />
+        return (
+          <div className="relative min-h-screen">
+            <Snowfall />
+            <ProfilePage />
+          </div>
+        )
       default:
         return (
-          <>
-            {/* Snowfall effect added here */}
+          <div className="relative min-h-screen bg-black pb-20">
+            {/* Snowfall component goes here */}
             <Snowfall />
             
-            <div className="min-h-screen bg-black pb-20">
+            {/* Main content with appropriate z-index */}
+            <div className="relative z-20">
               <Header onSearch={handleSearch} />
 
               {searchQuery.trim() && filteredMovies.length === 0 ? (
@@ -145,7 +161,7 @@ export default function Home() {
 
               <Footer />
             </div>
-          </>
+          </div>
         )
     }
   }

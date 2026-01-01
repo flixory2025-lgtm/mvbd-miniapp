@@ -99,12 +99,12 @@ export default function Home() {
       default:
         return (
           <>
-            {/* Snowfall সবকিছুর উপরে থাকবে */}
+            {/* Dense snowfall on top of everything */}
             <div className="fixed inset-0 pointer-events-none z-50">
               <Snowfall />
             </div>
             
-            {/* Main content - snowfall এর নিচে থাকবে */}
+            {/* Main content */}
             <div className="relative min-h-screen bg-black pb-20">
               <Header onSearch={handleSearch} />
 
@@ -175,15 +175,21 @@ export default function Home() {
       <BottomNavigation activeTab={activeTab} onTabChange={setActiveTab} />
 
       {selectedMovie && activeTab === "home" && (
-        <MovieModal
-          movie={selectedMovie}
-          onClose={() => setSelectedMovie(null)}
-          onMovieClick={setSelectedMovie}
-          showAdultContent={showAdultContent}
-        />
+        <div className="relative z-60">
+          <MovieModal
+            movie={selectedMovie}
+            onClose={() => setSelectedMovie(null)}
+            onMovieClick={setSelectedMovie}
+            showAdultContent={showAdultContent}
+          />
+        </div>
       )}
 
-      {showWelcomePopup && <WelcomePopup onClose={handleClosePopup} />}
+      {showWelcomePopup && (
+        <div className="relative z-60">
+          <WelcomePopup onClose={handleClosePopup} />
+        </div>
+      )}
     </>
   )
 }

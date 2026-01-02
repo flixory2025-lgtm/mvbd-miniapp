@@ -20999,7 +20999,7 @@ export const movies = [
   {
     id: 1618,
     title: "Boarding Gate (2007)",
-    poster: "/1618id.jpg",
+    poster: "/1618ids.jpg",
     trailer: "https://www.youtube.com/embed/eyWMTZeTFSM?si",
     telegramLink: "https://t.me/MoviesVerseBD/784",
     genre: "Adult | Thriller | Drama | Erotic",

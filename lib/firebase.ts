@@ -85,9 +85,9 @@ export async function getMovieUploadTime(movieId: number): Promise<string | null
 }
 
 // Function to get time ago from upload date
-export function getTimeAgo(uploadDate: string): string {
+export function getTimeAgo(uploadDate: string | Date): string {
   const now = new Date()
-  const uploaded = new Date(uploadDate)
+  const uploaded = typeof uploadDate === "string" ? new Date(uploadDate) : uploadDate
   const diffMs = now.getTime() - uploaded.getTime()
 
   const diffMinutes = Math.floor(diffMs / (1000 * 60))

@@ -84,20 +84,30 @@ export async function getMovieUploadTime(movieId: number): Promise<string | null
   }
 }
 
-// Function to get time ago from upload date
 export function getTimeAgo(uploadDate: string | Date): string {
   const now = new Date()
   const uploaded = typeof uploadDate === "string" ? new Date(uploadDate) : uploadDate
   const diffMs = now.getTime() - uploaded.getTime()
 
+  const diffSeconds = Math.floor(diffMs / 1000)
   const diffMinutes = Math.floor(diffMs / (1000 * 60))
   const diffHours = Math.floor(diffMs / (1000 * 60 * 60))
   const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24))
+  const diffWeeks = Math.floor(diffDays / 7)
   const diffMonths = Math.floor(diffDays / 30)
+  const diffYears = Math.floor(diffDays / 365)
 
-  if (diffMinutes < 1) return "এখনই আপলোড"
-  if (diffMinutes < 60) return `${diffMinutes} মিনিট আগে`
-  if (diffHours < 24) return `${diffHours} ঘণ্টা আগে`
-  if (diffDays < 30) return `${diffDays} দিন আগে`
-  return `${diffMonths} মাস আগে`
+  if (diffSeconds < 60) return "Just now"
+  if (diffMinutes === 1) return "1 minute ago"
+  if (diffMinutes < 60) return `${diffMinutes} minutes ago`
+  if (diffHours === 1) return "1 hour ago"
+  if (diffHours < 24) return `${diffHours} hours ago`
+  if (diffDays === 1) return "1 day ago"
+  if (diffDays < 7) return `${diffDays} days ago`
+  if (diffWeeks === 1) return "1 week ago"
+  if (diffWeeks < 4) return `${diffWeeks} weeks ago`
+  if (diffMonths === 1) return "1 month ago"
+  if (diffMonths < 12) return `${diffMonths} months ago`
+  if (diffYears === 1) return "1 year ago"
+  return `${diffYears} years ago`
 }

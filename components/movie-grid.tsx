@@ -28,22 +28,40 @@ export default function MovieGrid({
   isSearching = false,
 }: MovieGridProps) {
   const [uploadTimes, setUploadTimes] = useState<Record<number, string>>({})
+  const [uploadDates, setUploadDates] = useState<Record<number, string>>({})
 
   useEffect(() => {
     const fetchUploadTimes = async () => {
       const times: Record<number, string> = {}
+      const dates: Record<number, string> = {}
       for (const movie of movies) {
         let uploadTime = await getMovieUploadTime(movie.id)
         if (!uploadTime) {
           await setMovieUploadTime(movie.id)
           uploadTime = new Date().toISOString()
         }
+        dates[movie.id] = uploadTime
         times[movie.id] = getTimeAgo(uploadTime)
       }
+      setUploadDates(dates)
       setUploadTimes(times)
     }
     fetchUploadTimes()
   }, [movies])
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setUploadTimes((prev) => {
+        const updated: Record<number, string> = {}
+        for (const movieId in uploadDates) {
+          updated[movieId] = getTimeAgo(uploadDates[movieId])
+        }
+        return updated
+      })
+    }, 1000)
+
+    return () => clearInterval(interval)
+  }, [uploadDates])
 
   const getVisiblePages = () => {
     const maxVisible = 5

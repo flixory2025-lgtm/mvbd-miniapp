@@ -16,7 +16,7 @@ export const animes: Anime[] = [
   {
     id: 1,
     title: "Spirited Away",
-    poster: "/1id.jpg",
+    poster: "/a1id.jpg",
     trailer: "https://www.youtube.com/embed/aL-97TEa43Y?si",
     telegramLink: "https://t.me/animeversebd/9",
     genre: "Action | Drama | Thriller",
@@ -29,7 +29,7 @@ export const animes: Anime[] = [
 {
   id: 2,
   title: "The Monkey King",
-  poster: "/2id.jpg",
+  poster: "/a2id.jpg",
   trailer: "https://www.youtube.com/embed/0pmIANSKkdo?si",
   telegramLink: "https://t.me/animeverse_bd",
   genre: "Action | Supernatural | Historical",
@@ -42,7 +42,7 @@ export const animes: Anime[] = [
 {
   id: 3,
   title: "Your Name",
-  poster: "/3id.jpg",
+  poster: "/a3id.jpg",
   trailer: "https://www.youtube.com/embed/_oWzYOwXn-o?si",
   telegramLink: "https://t.me/animeversebd/13",
   genre: "Action | School | Supernatural",
@@ -55,7 +55,7 @@ export const animes: Anime[] = [
 {
   id: 4,
   title: "A Whisker Away",
-  poster: "/4id.jpg",
+  poster: "/a4id.jpg",
   trailer: "https://www.youtube.com/embed/zGGp2RVoPdU?si",
   telegramLink: "https://t.me/animeversebd/17",
   genre: "Adventure | Comedy | Action",
@@ -68,7 +68,7 @@ export const animes: Anime[] = [
 {
   id: 5,
   title: "Drifting Home",
-  poster: "/5id.jpg",
+  poster: "/a5id.jpg",
   trailer: "https://www.youtube.com/embed/zY5O9JRPKLY?si",
   telegramLink: "https://t.me/animeversebd/19",
   genre: "Action | Martial Arts | Adventure",
@@ -81,7 +81,7 @@ export const animes: Anime[] = [
 {
   id: 6,
   title: "Once Upon a Witch's Death Season 1",
-  poster: "/6id.jpg",
+  poster: "/a6id.jpg",
   trailer: "https://www.youtube.com/embed/FerOCv5eOHI?si",
   telegramLink: "https://t.me/animeversebd/21",
   genre: "Action | Adventure | Martial Arts",
@@ -94,7 +94,7 @@ export const animes: Anime[] = [
 {
   id: 7,
   title: "A Great Cleric Season 1",
-  poster: "/7id.jpg",
+  poster: "/a7id.jpg",
   trailer: "https://www.youtube.com/embed/susqUMviH_E?si",
   telegramLink: "https://t.me/animeversebd/46",
   genre: "Superhero | School | Action",
@@ -107,7 +107,7 @@ export const animes: Anime[] = [
 {
   id: 8,
   title: "Rurouni Kenshin Season 1",
-  poster: "/8id.jpg",
+  poster: "/a8id.jpg",
   trailer: "https://www.youtube.com/embed/ZONOltoCdP4?si",
   telegramLink: "https://t.me/animeversebd/73",
   genre: "Thriller | Supernatural | Psychological",
@@ -120,7 +120,7 @@ export const animes: Anime[] = [
 {
   id: 9,
   title: "A Couple of Cuckoos Season 1",
-  poster: "/9id.jpg",
+  poster: "/a9id.jpg",
   trailer: "https://www.youtube.com/embed/WtBwfWvUEqY?si",
   telegramLink: "https://t.me/animeversebd/82",
   genre: "Comedy | Action | Supernatural",
@@ -133,7 +133,7 @@ export const animes: Anime[] = [
 {
   id: 10,
   title: "The Misfit of Demon King Academy Season 1",
-  poster: "/10id.jpg",
+  poster: "/a10id.jpg",
   trailer: "https://www.youtube.com/embed/e8YBesRKq_U?si",
   telegramLink: "https://t.me/animeversebd/137",
   genre: "Action | Supernatural | Adventure",
@@ -146,7 +146,7 @@ export const animes: Anime[] = [
 {
   id: 11,
   title: "Shangri La Frontier Season 2",
-  poster: "/11id.jpg",
+  poster: "/a11id.jpg",
   trailer: "https://www.youtube.com/embed/R_7Okd4X1lU?si",
   telegramLink: "https://t.me/animeversebd/193",
   genre: "Action | Adventure | Fantasy | Game",
@@ -159,7 +159,7 @@ export const animes: Anime[] = [
 {
   id: 12,
   title: "Attack on Titan Season 1",
-  poster: "/12id.jpg",
+  poster: "/a12id.jpg",
   trailer: "https://www.youtube.com/embed/LajOXSdyBeE?si",
   telegramLink: "https://t.me/animeversebd/198",
   genre: "Action | Supernatural | Adventure",
@@ -172,7 +172,7 @@ export const animes: Anime[] = [
 {
   id: 13,
   title: "Attack on Titan Season 2",
-  poster: "/13id.jpg",
+  poster: "/a13id.jpg",
   trailer: "https://www.youtube.com/embed/X2WGyFRKb8Y?si",
   telegramLink: "https://t.me/animeversebd/250",
   genre: "Action | Supernatural | Adventure",
@@ -185,7 +185,7 @@ export const animes: Anime[] = [
 {
   id: 14,
   title: "Attack on Titan Season 3",
-  poster: "/14id.jpg",
+  poster: "/a14id.jpg",
   trailer: "https://www.youtube.com/embed/mBGyz4G60cQ?si",
   telegramLink: "https://t.me/animeversebd/273",
   genre: "Action | Supernatural | Adventure",
@@ -198,7 +198,7 @@ export const animes: Anime[] = [
 {
   id: 15,
   title: "Attack on Titan Season 4",
-  poster: "/15id.jpg",
+  poster: "/a15id.jpg",
   trailer: "https://www.youtube.com/embed/cR0zTG2czV0?si",
   telegramLink: "https://t.me/animeversebd/318",
   genre: "Action | Supernatural | Adventure",
@@ -211,7 +211,7 @@ export const animes: Anime[] = [
 {
   id: 16,
   title: "Olaf Presents Season 1",
-  poster: "/16id.jpg",
+  poster: "/a16id.jpg",
   trailer: "https://www.youtube.com/embed/2Stzk2aopxs?si",
   telegramLink: "https://t.me/animeversebd/376",
   genre: "Animation | Comedy | Short",
@@ -224,7 +224,7 @@ export const animes: Anime[] = [
 {
   id: 17,
   title: "Brave",
-  poster: "/17id.jpg",
+  poster: "/a17id.jpg",
   trailer: "https://www.youtube.com/embed/fyP0IGEzr4s?si",
   telegramLink: "https://t.me/animeversebd/389",
   genre: "Animation | Adventure | Fantasy",
@@ -237,7 +237,7 @@ export const animes: Anime[] = [
 {
   id: 18,
   title: "DC League of Super-Pets",
-  poster: "/18id.jpg",
+  poster: "/a18id.jpg",
   trailer: "https://www.youtube.com/embed/dgtFO6ANznY?si",
   telegramLink: "https://t.me/animeversebd/391",
   genre: "Animation | Action | Comedy",
@@ -250,7 +250,7 @@ export const animes: Anime[] = [
 {
   id: 19,
   title: "Doraemon: Nobita's Chronicle of the Moon Exploration",
-  poster: "/19id.jpg",
+  poster: "/a19id.jpg",
   trailer: "https://www.youtube.com/embed/w7Iz-zsltjw?si",
   telegramLink: "https://t.me/animeversebd/393",
   genre: "Animation | Sci-Fi | Adventure",
@@ -263,7 +263,7 @@ export const animes: Anime[] = [
 {
   id: 20,
   title: "Justice Society: World War II",
-  poster: "/20id.jpg",
+  poster: "/a20id.jpg",
   trailer: "https://www.youtube.com/embed/qx2zoSk42BI?si",
   telegramLink: "https://t.me/animeversebd/395",
   genre: "Animation | Action | Superhero",
@@ -276,7 +276,7 @@ export const animes: Anime[] = [
 {
   id: 21,
   title: "Puss in Boots: The Last Wish",
-  poster: "/21id.jpg",
+  poster: "/a21id.jpg",
   trailer: "https://www.youtube.com/embed/tsTLlZ32SpI?si",
   telegramLink: "https://t.me/animeversebd/397",
   genre: "Animation | Adventure | Comedy",
@@ -289,7 +289,7 @@ export const animes: Anime[] = [
 {
   id: 22,
   title: "Constantine: City of Demons",
-  poster: "/22id.jpg",
+  poster: "/a22id.jpg",
   trailer: "https://www.youtube.com/embed/6vL--ZrHC6U?si",
   telegramLink: "https://t.me/animeversebd/399",
   genre: "Animation | Action | Fantasy",
@@ -302,7 +302,7 @@ export const animes: Anime[] = [
 {
   id: 23,
   title: "Doraemon: Nobita and the Kingdom of Clouds",
-  poster: "/23id.jpg",
+  poster: "/a23id.jpg",
   trailer: "https://www.youtube.com/embed/6ndjhJo2zFw?si",
   telegramLink: "https://t.me/animeversebd/401",
   genre: "Animation | Adventure | Family",
@@ -315,7 +315,7 @@ export const animes: Anime[] = [
 {
   id: 24,
   title: "Hotel Transylvania 2",
-  poster: "/24id.jpg",
+  poster: "/a24id.jpg",
   trailer: "https://www.youtube.com/embed/E3mL9H3C2OY?si",
   telegramLink: "https://t.me/animeversebd/403",
   genre: "Animation | Comedy | Family",
@@ -328,7 +328,7 @@ export const animes: Anime[] = [
 {
   id: 25,
   title: "Hotel Transylvania 3: Summer Vacation",
-  poster: "/25id.jpg",
+  poster: "/a25id.jpg",
   trailer: "https://www.youtube.com/embed/Qvt0KnhtPBk?si",
   telegramLink: "https://t.me/animeversebd/405",
   genre: "Animation | Comedy | Family",
@@ -341,7 +341,7 @@ export const animes: Anime[] = [
 {
   id: 26,
   title: "Ainbo: Spirit of the Amazon",
-  poster: "/26id.jpg",
+  poster: "/a26id.jpg",
   trailer: "https://www.youtube.com/embed/PWRtf3pc14c?si",
   telegramLink: "https://t.me/animeversebd/407",
   genre: "Animation | Adventure | Fantasy",
@@ -354,7 +354,7 @@ export const animes: Anime[] = [
 {
   id: 27,
   title: "Onward",
-  poster: "/27id.jpg",
+  poster: "/a27id.jpg",
   trailer: "https://www.youtube.com/embed/dLXt8r1cQVk?si",
   telegramLink: "https://t.me/animeversebd/409",
   genre: "Animation | Adventure | Comedy",
@@ -367,7 +367,7 @@ export const animes: Anime[] = [
 {
   id: 28,
   title: "Zootopia",
-  poster: "/28id.jpg",
+  poster: "/a28id.jpg",
   trailer: "https://www.youtube.com/embed/X4XvU9FT0NM?si",
   telegramLink: "https://t.me/animeversebd/411",
   genre: "Animation | Adventure | Comedy",
@@ -380,7 +380,7 @@ export const animes: Anime[] = [
 {
   id: 29,
   title: "Ben 10: Destroy All Aliens",
-  poster: "/29id.jpg",
+  poster: "/a29id.jpg",
   trailer: "https://www.youtube.com/embed/zIYZQpknKZQ?si",
   telegramLink: "https://t.me/animeversebd/414",
   genre: "Animation | Action | Sci-Fi",
@@ -393,7 +393,7 @@ export const animes: Anime[] = [
 {
   id: 30,
   title: "Shrek",
-  poster: "/30id.jpg",
+  poster: "/a30id.jpg",
   trailer: "https://www.youtube.com/embed/V2WydtFqZP8?si",
   telegramLink: "https://t.me/animeversebd/416",
   genre: "Animation | Comedy | Fantasy",
@@ -406,7 +406,7 @@ export const animes: Anime[] = [
 {
   id: 31,
   title: "Shrek 2",
-  poster: "/31id.jpg",
+  poster: "/a31id.jpg",
   trailer: "https://www.youtube.com/embed/YxXp4EB6-fQ?si",
   telegramLink: "https://t.me/animeversebd/418",
   genre: "Animation | Comedy | Adventure",
@@ -419,7 +419,7 @@ export const animes: Anime[] = [
 {
   id: 32,
   title: "The Jungle Book",
-  poster: "/32id.jpg",
+  poster: "/a32id.jpg",
   trailer: "https://www.youtube.com/embed/q6ZbvucX4Pg?si",
   telegramLink: "https://t.me/animeversebd/419",
   genre: "Animation | Adventure | Family",
@@ -432,7 +432,7 @@ export const animes: Anime[] = [
 {
   id: 33,
   title: "The Secret Life of Pets 2",
-  poster: "/33id.jpg",
+  poster: "/a33id.jpg",
   trailer: "https://www.youtube.com/embed/Id9iHnlOZaI?si",
   telegramLink: "https://t.me/animeversebd/421",
   genre: "Animation | Comedy | Family",
@@ -445,7 +445,7 @@ export const animes: Anime[] = [
 {
   id: 34,
   title: "Turbo",
-  poster: "/34id.jpg",
+  poster: "/a34id.jpg",
   trailer: "https://www.youtube.com/embed/VlRtm8Gh9PQ?si",
   telegramLink: "https://t.me/animeversebd/423",
   genre: "Animation | Adventure | Comedy",
@@ -458,7 +458,7 @@ export const animes: Anime[] = [
 {
   id: 35,
   title: "White Snake",
-  poster: "/35id.jpg",
+  poster: "/a35id.jpg",
   trailer: "https://www.youtube.com/embed/RYKRko-yaO4?si",
   telegramLink: "https://t.me/animeversebd/425",
   genre: "Animation | Fantasy | Romance",
@@ -471,7 +471,7 @@ export const animes: Anime[] = [
 {
   id: 36,
   title: "Wonder Park",
-  poster: "/36id.jpg",
+  poster: "/a36id.jpg",
   trailer: "https://www.youtube.com/embed/kNIyjsmoKts?si",
   telegramLink: "https://t.me/animeversebd/427",
   genre: "Animation | Family | Fantasy",
@@ -484,7 +484,7 @@ export const animes: Anime[] = [
 {
   id: 37,
   title: "Mojib Bai",
-  poster: "/37id.jpg",
+  poster: "/a37id.jpg",
   trailer: "https://www.youtube.com/embed/givLtqsybMo?si",
   telegramLink: "https://t.me/animeversebd/429",
   genre: "Animation | Adventure | Action",
@@ -497,7 +497,7 @@ export const animes: Anime[] = [
 {
   id: 38,
   title: "Madan Senki Ryukendo",
-  poster: "/38id.jpg",
+  poster: "/a38id.jpg",
   trailer: "https://www.youtube.com/embed/vNgF_ZbVZHk?si",
   telegramLink: "https://t.me/animeversebd/431",
   genre: "Action | Fantasy | Tokusatsu",
@@ -510,7 +510,7 @@ export const animes: Anime[] = [
 {
   id: 39,
   title: "What If... Season 1",
-  poster: "/39id.jpg",
+  poster: "/a39id.jpg",
   trailer: "https://www.youtube.com/embed/I7ztyv9dwgo?si",
   telegramLink: "https://t.me/animeversebd/536",
   genre: "Animation | Action | Sci-Fi",
@@ -523,7 +523,7 @@ export const animes: Anime[] = [
 {
   id: 40,
   title: "SK8 the Infinity Season 1",
-  poster: "/40id.jpg",
+  poster: "/a40id.jpg",
   trailer: "https://www.youtube.com/embed/cBPPj83KjTQ?si",
   telegramLink: "https://t.me/animeversebd/555",
   genre: "Sports | Action | Comedy",
@@ -536,7 +536,7 @@ export const animes: Anime[] = [
 {
   id: 41,
   title: "Death Note Season 1",
-  poster: "/41id.jpg",
+  poster: "/a41id.jpg",
   trailer: "https://www.youtube.com/embed/R5JgNbmQBcY?si",
   telegramLink: "https://t.me/animeversebd/578",
   genre: "Mystery | Supernatural | Thriller",
@@ -549,7 +549,7 @@ export const animes: Anime[] = [
 {
   id: 42,
   title: "Roll No. 21 Season 1",
-  poster: "/42id.jpg",
+  poster: "/a42id.jpg",
   trailer: "https://www.youtube.com/embed/Zx4Yu2cujqI?si",
   telegramLink: "https://t.me/animeversebd/585",
   genre: "Animation | Comedy | Adventure",
@@ -562,7 +562,7 @@ export const animes: Anime[] = [
 {
   id: 43,
   title: "Roll No. 21 Season 2",
-  poster: "/43id.jpg",
+  poster: "/a43id.jpg",
   trailer: "https://www.youtube.com/embed/LTeXi8LgTy4?si",
   telegramLink: "https://t.me/animeversebd/632",
   genre: "Animation | Comedy | Adventure",
@@ -575,7 +575,7 @@ export const animes: Anime[] = [
 {
   id: 44,
   title: "Baki Hanma Season 2",
-  poster: "/44id.jpg",
+  poster: "/a44id.jpg",
   trailer: "https://www.youtube.com/embed/KN98VzNwjOY?si",
   telegramLink: "https://t.me/animeversebd/685",
   genre: "Action | Martial Arts | Anime",
@@ -588,7 +588,7 @@ export const animes: Anime[] = [
 {
   id: 45,
   title: "Blue Eye Samurai Season 1",
-  poster: "/45id.jpg",
+  poster: "/a45id.jpg",
   trailer: "https://www.youtube.com/embed/WfzXxTq_W6k?si",
   telegramLink: "https://t.me/animeversebd/738",
   genre: "Animation | Action | Drama",
@@ -601,7 +601,7 @@ export const animes: Anime[] = [
 {
   id: 46,
   title: "Puss in Boots",
-  poster: "/46id.jpg",
+  poster: "/a46id.jpg",
   trailer: "https://www.youtube.com/embed/tsTLlZ32SpI?si",
   telegramLink: "https://t.me/animeversebd/755",
   genre: "Animation | Comedy | Adventure",
@@ -614,7 +614,7 @@ export const animes: Anime[] = [
 {
   id: 47,
   title: "Invincible Season 1",
-  poster: "/47id.jpg",
+  poster: "/a47id.jpg",
   trailer: "https://www.youtube.com/embed/qR2xlrQiHDk?si",
   telegramLink: "https://t.me/animeversebd/757",
   genre: "Animation | Action | Superhero",
@@ -627,7 +627,7 @@ export const animes: Anime[] = [
 {
   id: 48,
   title: "Invincible Season 2",
-  poster: "/48id.jpg",
+  poster: "/a48id.jpg",
   trailer: "https://www.youtube.com/embed/13ahG2dEiWQ?si",
   telegramLink: "https://t.me/animeversebd/776",
   genre: "Animation | Action | Superhero",
@@ -640,7 +640,7 @@ export const animes: Anime[] = [
 {
   id: 49,
   title: "Onimusha Season 1",
-  poster: "/49id.jpg",
+  poster: "/a49id.jpg",
   trailer: "https://www.youtube.com/embed/SqWxZEvMrdo?si",
   telegramLink: "https://t.me/animeversebd/779",
   genre: "Animation | Action | Samurai",
@@ -653,7 +653,7 @@ export const animes: Anime[] = [
 {
   id: 50,
   title: "Tokyo Revengers Season 2",
-  poster: "/50id.jpg",
+  poster: "/a50id.jpg",
   trailer: "https://www.youtube.com/embed/eNZSurcYTW8?si",
   telegramLink: "https://t.me/animeversebd/797",
   genre: "Action | Drama | Supernatural",
@@ -666,7 +666,7 @@ export const animes: Anime[] = [
 {
   id: 51,
   title: "Captain Laserhawk: A Blood Dragon Remix Season 1",
-  poster: "/51id.jpg",
+  poster: "/a51id.jpg",
   trailer: "https://www.youtube.com/embed/1cqWBOVszYo?si",
   telegramLink: "https://t.me/animeversebd/825",
   genre: "Animation | Action | Sci-Fi",
@@ -679,7 +679,7 @@ export const animes: Anime[] = [
 {
   id: 52,
   title: "Ultraman Season 3",
-  poster: "/52id.jpg",
+  poster: "/a52id.jpg",
   trailer: "https://www.youtube.com/embed/Tvb-9DWt45Q?si",
   telegramLink: "https://t.me/animeversebd/837",
   genre: "Action | Sci-Fi | Superhero",
@@ -692,7 +692,7 @@ export const animes: Anime[] = [
 {
   id: 53,
   title: "Rurouni Kenshin Season 1 Ep 5-8",
-  poster: "/53id.jpg",
+  poster: "/a53id.jpg",
   trailer: "https://www.youtube.com/embed/ZONOltoCdP4?si",
   telegramLink: "https://t.me/animeversebd/862",
   genre: "Historical | Action | Romance",
@@ -705,7 +705,7 @@ export const animes: Anime[] = [
 {
   id: 54,
   title: "Rurouni Kenshin Season 1 Ep 13-19",
-  poster: "/54id.jpg",
+  poster: "/a54id.jpg",
   trailer: "https://www.youtube.com/embed/ZONOltoCdP4?si",
   telegramLink: "https://t.me/animeversebd/871",
   genre: "Historical | Action | Romance",
@@ -718,7 +718,7 @@ export const animes: Anime[] = [
 {
   id: 55,
   title: "Justice League Season 1",
-  poster: "/55id.jpg",
+  poster: "/a55id.jpg",
   trailer: "https://www.youtube.com/embed/9Wly6N7dSkM?si",
   telegramLink: "https://t.me/animeversebd/886",
   genre: "Animation | Action | Superhero",
@@ -731,7 +731,7 @@ export const animes: Anime[] = [
 {
   id: 56,
   title: "Baki Hanma Season 1",
-  poster: "/56id.jpg",
+  poster: "/a56id.jpg",
   trailer: "https://www.youtube.com/embed/pRYZRvYGMtc?si",
   telegramLink: "https://t.me/animeversebd/939",
   genre: "Action | Martial Arts | Anime",
@@ -744,7 +744,7 @@ export const animes: Anime[] = [
 {
   id: 57,
   title: "Pokémon Ultimate Journeys Season 1",
-  poster: "/57id.jpg",
+  poster: "/a57id.jpg",
   trailer: "https://www.youtube.com/embed/wyrWFzV5U5Y?si",
   telegramLink: "https://t.me/animeversebd/964",
   genre: "Animation | Adventure | Fantasy",
@@ -757,7 +757,7 @@ export const animes: Anime[] = [
 {
   id: 58,
   title: "Pokémon Ultimate Journeys Season 2",
-  poster: "/58id.jpg",
+  poster: "/a58id.jpg",
   trailer: "https://www.youtube.com/embed/sR1hzqn8k5w?si",
   telegramLink: "https://t.me/animeversebd/991",
   genre: "Animation | Adventure | Fantasy",
@@ -770,7 +770,7 @@ export const animes: Anime[] = [
 {
   id: 59,
   title: "Scott Pilgrim Takes Off Season 1",
-  poster: "/59id.jpg",
+  poster: "/a59id.jpg",
   trailer: "https://www.youtube.com/embed/WAqJZdsV3mo?si",
   telegramLink: "https://t.me/animeversebd/1024",
   genre: "Animation | Comedy | Romance | Action",
@@ -783,7 +783,7 @@ export const animes: Anime[] = [
 {
   id: 60,
   title: "Ultraman Season 2",
-  poster: "/60id.jpg",
+  poster: "/a60id.jpg",
   trailer: "https://www.youtube.com/embed/AudT7Av-pv4?si",
   telegramLink: "https://t.me/animeversebd/1041",
   genre: "Action | Sci-Fi | Superhero",
@@ -796,7 +796,7 @@ export const animes: Anime[] = [
 {
   id: 61,
   title: "Solo Leveling Season 1",
-  poster: "/61id.jpg",
+  poster: "/a61id.jpg",
   trailer: "https://www.youtube.com/embed/-tJMyIXjn9I?si",
   telegramLink: "https://t.me/animeversebd/1054",
   genre: "Action | Fantasy | Adventure",
@@ -809,7 +809,7 @@ export const animes: Anime[] = [
 {
   id: 62,
   title: "Ultraman Season 1",
-  poster: "/62id.jpg",
+  poster: "/a62id.jpg",
   trailer: "https://www.youtube.com/embed/hLfNecWqzJs?si",
   telegramLink: "https://t.me/animeversebd/1057",
   genre: "Action | Sci-Fi | Superhero",
@@ -822,7 +822,7 @@ export const animes: Anime[] = [
 {
   id: 63,
   title: "Akuma Kun Season 1",
-  poster: "/63id.jpg",
+  poster: "/a63id.jpg",
   trailer: "https://www.youtube.com/embed/ZZQ7BaCunsw?si",
   telegramLink: "https://t.me/animeversebd/1084",
   genre: "Fantasy | Supernatural | Adventure",
@@ -835,7 +835,7 @@ export const animes: Anime[] = [
 {
   id: 64,
   title: "My Daemon Season 1",
-  poster: "/64id.jpg",
+  poster: "/a64id.jpg",
   trailer: "https://www.youtube.com/embed/vYTKsskxPV0?si",
   telegramLink: "https://t.me/animeversebd/1109",
   genre: "Fantasy | Sci-Fi | Drama",
@@ -848,7 +848,7 @@ export const animes: Anime[] = [
 {
   id: 65,
   title: "Prison School Season 1",
-  poster: "/65id.jpg",
+  poster: "/a65id.jpg",
   trailer: "https://www.youtube.com/embed/l1v5WqCJva4?si",
   telegramLink: "https://t.me/animeversebd/1136",
   genre: "Comedy | Ecchi | School Life",
@@ -861,7 +861,7 @@ export const animes: Anime[] = [
 {
   id: 66,
   title: "Spy x Family Season 1",
-  poster: "/66id.jpg",
+  poster: "/a66id.jpg",
   trailer: "https://www.youtube.com/embed/fi_k0iAN8BE?si",
   telegramLink: "https://t.me/animeversebd/1161",
   genre: "Action | Comedy | Family",
@@ -874,7 +874,7 @@ export const animes: Anime[] = [
 {
   id: 67,
   title: "Mashle: Magic and Muscles Season 1",
-  poster: "/67id.jpg",
+  poster: "/a67id.jpg",
   trailer: "https://www.youtube.com/embed/nDHAgFP3wxU?si",
   telegramLink: "https://t.me/animeversebd/1212",
   genre: "Fantasy | Comedy | Action",
@@ -887,7 +887,7 @@ export const animes: Anime[] = [
 {
   id: 68,
   title: "My Love Story with Yamada-kun at Lv999",
-  poster: "/68id.jpg",
+  poster: "/a68id.jpg",
   trailer: "https://www.youtube.com/embed/im1jnkHA7wg?si",
   telegramLink: "https://t.me/animeversebd/1235",
   genre: "Romance | Comedy | Slice of Life",
@@ -900,7 +900,7 @@ export const animes: Anime[] = [
 {
   id: 69,
   title: "Sgt. Stubby: An American Hero",
-  poster: "/69id.jpg",
+  poster: "/a69id.jpg",
   trailer: "https://www.youtube.com/embed/n3mbKogOWJ0?si",
   telegramLink: "https://t.me/animeversebd/1258",
   genre: "Adventure | Family | History",
@@ -913,7 +913,7 @@ export const animes: Anime[] = [
 {
   id: 70,
   title: "Stuart Little",
-  poster: "/70id.jpg",
+  poster: "/a70id.jpg",
   trailer: "https://www.youtube.com/embed/Wlo-sYrADlw?si",
   telegramLink: "https://t.me/animeversebd/1260",
   genre: "Adventure | Family | Comedy",
@@ -926,7 +926,7 @@ export const animes: Anime[] = [
 {
   id: 71,
   title: "Stuart Little 2",
-  poster: "/71id.jpg",
+  poster: "/a71id.jpg",
   trailer: "https://www.youtube.com/embed/k--OdtbKyqE?si",
   telegramLink: "https://t.me/animeversebd/1262",
   genre: "Adventure | Family | Comedy",
@@ -939,7 +939,7 @@ export const animes: Anime[] = [
 {
   id: 72,
   title: "Stuart Little 3",
-  poster: "/72id.jpg",
+  poster: "/a72id.jpg",
   trailer: "https://www.youtube.com/embed/trBgCyZpaa4?si",
   telegramLink: "https://t.me/animeversebd/1264",
   genre: "Adventure | Family | Comedy",
@@ -952,7 +952,7 @@ export const animes: Anime[] = [
 {
   id: 73,
   title: "I Want to Eat Your Pancreas",
-  poster: "/73id.jpg",
+  poster: "/a73id.jpg",
   trailer: "https://www.youtube.com/embed/uqQySB0NO4U?si",
   telegramLink: "https://t.me/animeversebd/1270",
   genre: "Drama | Romance",
@@ -965,7 +965,7 @@ export const animes: Anime[] = [
 {
   id: 74,
   title: "Suzume",
-  poster: "/74id.jpg",
+  poster: "/a74id.jpg",
   trailer: "https://www.youtube.com/embed/ciQc8lfvSm0?si",
   telegramLink: "https://t.me/animeversebd/1272",
   genre: "Fantasy | Adventure | Drama",
@@ -978,7 +978,7 @@ export const animes: Anime[] = [
 {
   id: 75,
   title: "Adam's Sweet Agony",
-  poster: "/75id.jpg",
+  poster: "/a75id.jpg",
   trailer: "https://www.youtube.com/embed/DzhRc0fsVrY?si",
   telegramLink: "https://t.me/animeversebd/1274",
   genre: "Romance | Sci-Fi | Adult Comedy",
@@ -991,7 +991,7 @@ export const animes: Anime[] = [
 {
   id: 76,
   title: "Bye Bye, Earth Season 1",
-  poster: "/76id.jpg",
+  poster: "/a76id.jpg",
   trailer: "https://www.youtube.com/embed/33rmUkfc7tM?si",
   telegramLink: "https://t.me/animeversebd/1289",
   genre: "Fantasy | Adventure | Drama",
@@ -1004,7 +1004,7 @@ export const animes: Anime[] = [
 {
   id: 77,
   title: "Dr. Stone Season 1",
-  poster: "/77id.jpg",
+  poster: "/a77id.jpg",
   trailer: "https://www.youtube.com/embed/Zlf8N7yrPwg?si",
   telegramLink: "https://t.me/animeversebd/1311",
   genre: "Animation | Comedy | Adventure",
@@ -1017,7 +1017,7 @@ export const animes: Anime[] = [
 {
   id: 78,
   title: "Dr. Stone: Stone Wars Season 2",
-  poster: "/78id.jpg",
+  poster: "/a78id.jpg",
   trailer: "https://www.youtube.com/embed/Nf8HZT3orUE?si",
   telegramLink: "https://t.me/animeversebd/1360",
   genre: "Animation | Action | Superhero",
@@ -1030,7 +1030,7 @@ export const animes: Anime[] = [
 {
   id: 79,
   title: "My Happy Marriage Season 1",
-  poster: "/79id.jpg",
+  poster: "/a79id.jpg",
   trailer: "https://www.youtube.com/embed/XoduKRPJeTI?si",
   telegramLink: "https://t.me/animeversebd/1383",
   genre: "Romance | Drama | Fantasy",
@@ -1043,7 +1043,7 @@ export const animes: Anime[] = [
 {
   id: 80,
   title: "Lord of the Mysteries Season 1",
-  poster: "/80id.jpg",
+  poster: "/a80id.jpg",
   trailer: "https://www.youtube.com/embed/Pdv0Uoh-brs?si",
   telegramLink: "https://t.me/animeversebd/1410",
   genre: "Mystery | Fantasy | Action | Suspense",
@@ -1056,7 +1056,7 @@ export const animes: Anime[] = [
 {
   id: 81,
   title: "Sakamoto Days Season 1",
-  poster: "/81id.jpg",
+  poster: "/a81id.jpg",
   trailer: "https://www.youtube.com/embed/13pu4O72Rs4?si",
   telegramLink: "https://t.me/animeversebd/1429",
   genre: "Action | Comedy | Thriller",
@@ -1069,7 +1069,7 @@ export const animes: Anime[] = [
 {
   id: 82,
   title: "Watchmen",
-  poster: "/82id.jpg",
+  poster: "/a82id.jpg",
   trailer: "https://www.youtube.com/embed/oUk6l8LCdCM?si",
   telegramLink: "https://t.me/animeversebd/1469",
   genre: "Action | Mystery | Drama | Superhero",
@@ -1082,7 +1082,7 @@ export const animes: Anime[] = [
 {
   id: 83,
   title: "Watchmen",
-  poster: "/83id.jpg",
+  poster: "/a83id.jpg",
   trailer: "https://www.youtube.com/embed/Gzt7e1eP2hs?si",
   telegramLink: "https://t.me/animeversebd/1471",
   genre: "Action | Mystery | Drama | Superhero",
@@ -1095,7 +1095,7 @@ export const animes: Anime[] = [
 {
   id: 84,
   title: "Demon Slayer: Kimetsu no Yaiba – Infinity Castle",
-  poster: "/84id.jpg",
+  poster: "/a84id.jpg",
   trailer: "https://www.youtube.com/embed/x7uLutVRBfI?si",
   telegramLink: "https://t.me/animeversebd/1486",
   genre: "Anime | Action | Fantasy | Adventure",
@@ -1108,7 +1108,7 @@ export const animes: Anime[] = [
 {
   id: 85,
   title: "Tower of God Season 1",
-  poster: "/85id.jpg",
+  poster: "/a85id.jpg",
   trailer: "https://www.youtube.com/embed/9GJAE8Kj5Z4?si",
   telegramLink: "https://t.me/animeversebd/1488",
   genre: "Fantasy | Adventure | Mystery",
@@ -1121,7 +1121,7 @@ export const animes: Anime[] = [
 {
   id: 86,
   title: "Demon Slayer: Kimetsu no Yaiba – Infinity Castle",
-  poster: "/86id.jpg",
+  poster: "/a86id.jpg",
   trailer: "https://www.youtube.com/embed/0pdC1l6M8rU?si",
   telegramLink: "https://t.me/animeversebd/1503",
   genre: "Action | Fantasy | Adventure",
@@ -1134,7 +1134,7 @@ export const animes: Anime[] = [
 {
   id: 87,
   title: "The God of High School",
-  poster: "/87id.jpg",
+  poster: "/a87id.jpg",
   trailer: "https://www.youtube.com/embed/yKsM3eceKWk?si",
   telegramLink: "https://t.me/animeversebd/1505",
   genre: "Action | Fantasy | Martial Arts",
@@ -1147,7 +1147,7 @@ export const animes: Anime[] = [
 {
   id: 88,
   title: "Naruto Shippuden Season 1",
-  poster: "/88id.jpg",
+  poster: "/a88id.jpg",
   trailer: "https://www.youtube.com/embed/voAYyJwgQ3I?si",
   telegramLink: "https://t.me/animeversebd/1508",
   genre: "Animation | Action | Adventure | Fantasy",
@@ -1160,7 +1160,7 @@ export const animes: Anime[] = [
 {
   id: 89,
   title: "Oggy and the Cockroaches Season 1",
-  poster: "/89id.jpg",
+  poster: "/a89id.jpg",
   trailer: "https://www.youtube.com/embed/m67kaN-6VQk?si",
   telegramLink: "https://t.me/animeversebd/1526",
   genre: "Animation | Comedy | Family",
@@ -1173,7 +1173,7 @@ export const animes: Anime[] = [
 {
   id: 90,
   title: "Yoasobi Gurashi! (2024) Season 1",
-  poster: "/90id.jpg",
+  poster: "/a90id.jpg",
   trailer: "https://www.youtube.com/embed/OWHj6smKlsk?si",
   telegramLink: "https://t.me/animeversebd/1538",
   genre: "Animation | Romance | Slice of Life",
@@ -1186,7 +1186,7 @@ export const animes: Anime[] = [
 {
   id: 91,
   title: "Naruto Shippuden  – Season 2 [Episode 1-32]",
-  poster: "/91id.jpg",
+  poster: "/a91id.jpg",
   trailer: "https://www.youtube.com/embed/hyapq_q_kvY?si",
   telegramLink: "https://t.me/animeversebd/1568",
   genre: "Animation | Adventure | Fantasy",
@@ -1199,7 +1199,7 @@ export const animes: Anime[] = [
 {
   id: 92,
   title: "Yoasobi Gurashi! (2024) Season 1 part 2",
-  poster: "/92id.jpg",
+  poster: "/a92id.jpg",
   trailer: "https://www.youtube.com/embed/OWHj6smKlsk?si",
   telegramLink: "https://t.me/animeversebd/1592",
   genre: "Animation | Romance | Slice of Life",
@@ -1212,7 +1212,7 @@ export const animes: Anime[] = [
 {
   id: 93,
   title: "Fire Force (Season 2 – 2020)",
-  poster: "/93id.jpg",
+  poster: "/a93id.jpg",
   trailer: "https://www.youtube.com/embed/Clr3JzxtAU4?si",
   telegramLink: "https://t.me/animeversebd/1597",
   genre: "Animation | Supernatural | Shounen",
@@ -1225,7 +1225,7 @@ export const animes: Anime[] = [
 {
   id: 94,
   title: "Motu Patlu (Season 1 – Bangla Dubbed)",
-  poster: "/94id.jpg",
+  poster: "/a94id.jpg",
   trailer: "https://www.youtube.com/embed/nb7eXOnflw4?si",
   telegramLink: "https://t.me/animeversebd/1648",
   genre: "Animation | Comedy | Adventure",
@@ -1238,7 +1238,7 @@ export const animes: Anime[] = [
 {
   id: 95,
   title: "Naruto Shippuden  – Season 3 [Episode 1-18]",
-  poster: "/95id.jpg",
+  poster: "/a95id.jpg",
   trailer: "https://www.youtube.com/embed/-1TKGtX8lJY?si",
   telegramLink: "https://t.me/animeversebd/1650",
   genre: "Animation | Comedy | Family",
@@ -1251,7 +1251,7 @@ export const animes: Anime[] = [
 {
   id: 96,
   title: "Marvel Zombies: Season 1 (2025)",
-  poster: "/96id.jpg",
+  poster: "/a96id.jpg",
   trailer: "https://www.youtube.com/embed/UPAr5zef2Pk?si",
   telegramLink: "https://t.me/animeversebd/1693",
   genre: "Animation | Horror | Superhero",
@@ -1264,7 +1264,7 @@ export const animes: Anime[] = [
 {
   id: 97,
   title: "Doraemon: Nobita’s Art World Tales (2024)",
-  poster: "/97id.jpg",
+  poster: "/a97id.jpg",
   trailer: "https://www.youtube.com/embed/3kW9tWoJfeM?si",
   telegramLink: "https://t.me/animeversebd/1784",
   genre: "Animation | Adventure | Fantasy",
@@ -1277,7 +1277,7 @@ export const animes: Anime[] = [
 {
   id: 98,
   title: "Naruto Shippuden  – Season 4 [Episode 1-17]",
-  poster: "/98id.jpg",
+  poster: "/a98id.jpg",
   trailer: "https://www.youtube.com/embed/zD8GPACmks8?si",
   telegramLink: "https://t.me/animeversebd/1786",
   genre: "Animation | Comedy | Family",
@@ -1290,7 +1290,7 @@ export const animes: Anime[] = [
 {
   id: 99,
   title: "Tom and Jerry – Season 1 (1940-Present)",
-  poster: "/99id.jpg",
+  poster: "/a99id.jpg",
   trailer: "https://www.youtube.com/embed/hgLV7qyWU04?si",
   telegramLink: "https://t.me/animeversebd/1824",
   genre: "Animation | Comedy | Family",
@@ -1303,7 +1303,7 @@ export const animes: Anime[] = [
 {
   id: 100,
   title: "Motu Patlu vs the ghost house.",
-  poster: "/100id.jpg",
+  poster: "/a100id.jpg",
   trailer: "https://www.youtube.com/embed/k0N7N09Viy8?si",
   telegramLink: "https://t.me/animeversebd/1826",
   genre: "Animation | Comedy | Kids",
@@ -1316,7 +1316,7 @@ export const animes: Anime[] = [
 {
   id: 101,
   title: "Naruto Shippuden  – Season 5 [Episode 1-24]",
-  poster: "/101id.jpg",
+  poster: "/a101id.jpg",
   trailer: "https://www.youtube.com/embed/hyapq_q_kvY?si",
   telegramLink: "https://t.me/animeversebd/1828",
   genre: "Animation | Adventure | Fantasy",
@@ -1329,7 +1329,7 @@ export const animes: Anime[] = [
 {
   id: 102,
   title: "One Punch Man – Season 1 (2015)",
-  poster: "/102id.jpg",
+  poster: "/a102id.jpg",
   trailer: "https://www.youtube.com/embed/iYPDxVoLNS8?si",
   telegramLink: "https://t.me/animeversebd/1882",
   genre: "Animation | Comedy | Superhero",
@@ -1342,7 +1342,7 @@ export const animes: Anime[] = [
 {
   id: 103,
   title: "One Punch Man – Season 2",
-  poster: "/103id.jpg",
+  poster: "/a103id.jpg",
   trailer: "https://www.youtube.com/embed/mS1FcNK7VnI?si",
   telegramLink: "https://t.me/animeversebd/1910",
   genre: "Animation | Comedy | Superhero",
@@ -1355,7 +1355,7 @@ export const animes: Anime[] = [
 {
   id: 104,
   title: "Naruto Shippuden – Season 6 [episode 1-31]",
-  poster: "/104id.jpg",
+  poster: "/a104id.jpg",
   trailer: "https://www.youtube.com/embed/6kNR6fnoHrU?si",
   telegramLink: "https://t.me/animeversebd/1921",
   genre: "Animation | Comedy | Fantasy",
@@ -1368,7 +1368,7 @@ export const animes: Anime[] = [
 {
   id: 105,
   title: "Dr. Stone – Season 4: Science Future Arc (ドクターストーン)",
-  poster: "/105id.jpg",
+  poster: "/a105id.jpg",
   trailer: "https://www.youtube.com/embed/hvX-cYLRAfY?si",
   telegramLink: "https://t.me/animeversebd/1987",
   genre: "Animation | Comedy | Sci-Fi",
@@ -1381,7 +1381,7 @@ export const animes: Anime[] = [
 {
   id: 106,
   title: "Rent a Girlfriend – Season 1 (彼女、お借りします)",
-  poster: "/106id.jpg",
+  poster: "/a106id.jpg",
   trailer: "https://www.youtube.com/embed/8r3h_CI1C3s?si",
   telegramLink: "https://t.me/animeversebd/2038",
   genre: "Animation | Comedy | Slice of Life",
@@ -1394,7 +1394,7 @@ export const animes: Anime[] = [
 {
   id: 107,
   title: "Solo Leveling: Season 1 (2024)",
-  poster: "/107id.jpg",
+  poster: "/a107id.jpg",
   trailer: "https://www.youtube.com/embed/-tJMyIXjn9I?si",
   telegramLink: "https://t.me/animeversebd/2065",
   genre: "Animation | Comedy | Supernatural",
@@ -1407,7 +1407,7 @@ export const animes: Anime[] = [
 {
   id: 108,
   title: "Solo Leveling: Season 2 – Arise from the Shadow (2025)",
-  poster: "/108id.jpg",
+  poster: "/a108id.jpg",
   trailer: "https://www.youtube.com/embed/Mgk5_MXodvY?si",
   telegramLink: "https://t.me/animeversebd/2072",
   genre: "Animation | Comedy | Adventure",
@@ -1420,7 +1420,7 @@ export const animes: Anime[] = [
 {
   id: 109,
   title: "Naruto Shippuden – Season 7 (2009) [Episode1-08]",
-  poster: "/109id.jpg",
+  poster: "/a109id.jpg",
   trailer: "https://www.youtube.com/embed/6kNR6fnoHrU?si",
   telegramLink: "https://t.me/animeversebd/2080",
   genre: "Animation | Comedy | Fantasy",
@@ -1433,7 +1433,7 @@ export const animes: Anime[] = [
 {
   id: 110,
   title: "Naruto Shippuden – Season 8 (2009-2010)[Episode1-24]",
-  poster: "/110id.jpg",
+  poster: "/a110id.jpg",
   trailer: "https://www.youtube.com/embed/zD8GPACmks8?si",
   telegramLink: "https://t.me/animeversebd/2101",
   genre: "Animation | Comedy | Fantasy",
@@ -1446,7 +1446,7 @@ export const animes: Anime[] = [
 {
   id: 111,
   title: "classroom of the elite (Season 1)",
-  poster: "/111id.jpg",
+  poster: "/a111id.jpg",
   trailer: "https://www.youtube.com/embed/bXoll51Iig0?si",
   telegramLink: "https://t.me/animeversebd/2199",
   genre: "Animation | drama | sci-fi",
@@ -1459,7 +1459,7 @@ export const animes: Anime[] = [
 {
   id: 112,
   title: "classroom of the elite (Season 2)",
-  poster: "/112id.jpg",
+  poster: "/a112id.jpg",
   trailer: "https://www.youtube.com/embed/hDzuuQJG6Ss?si",
   telegramLink: "https://t.me/animeversebd/2226",
   genre: "Animation | sci-fi | drama",
@@ -1472,7 +1472,7 @@ export const animes: Anime[] = [
 {
   id: 113,
   title: "Haikyuu!! – Season 1 (2014)",
-  poster: "/113id.jpg",
+  poster: "/a113id.jpg",
   trailer: "https://www.youtube.com/embed/Bp7e_Vi0WVs?si",
   telegramLink: "https://t.me/animeversebd/2255",
   genre: "Animation | Sports | Comedy",
@@ -1485,7 +1485,7 @@ export const animes: Anime[] = [
 {
   id: 114,
   title: "My Mother: The Animation",
-  poster: "/114id.jpg",
+  poster: "/a114id.jpg",
   trailer: "https://www.youtube.com/embed/nE08t1HQwkU?si",
   telegramLink: "https://t.me/animeversebd/2306",
   genre: "Animation | Adventure | Adult",
@@ -1498,7 +1498,7 @@ export const animes: Anime[] = [
 {
   id: 115,
   title: "Naruto Shippuden: Season 9 (2010)",
-  poster: "/115id.jpg",
+  poster: "/a115id.jpg",
   trailer: "https://www.youtube.com/embed/3NtW5gyNeaI?si",
   telegramLink: "https://t.me/animeversebd/2308",
   genre: "Action | Adventure | Anime",
@@ -1511,7 +1511,7 @@ export const animes: Anime[] = [
 {
   id: 116,
   title: "Bastard!! -Heavy Metal, Dark Fantasy- (Season 1)",
-  poster: "/116id.jpg",
+  poster: "/a116id.jpg",
   trailer: "https://www.youtube.com/embed/alXQXal8dw4?si",
   telegramLink: "https://t.me/animeversebd/2357",
   genre: "Action | Fantasy | Adventure",
@@ -1524,7 +1524,7 @@ export const animes: Anime[] = [
 {
   id: 117,
   title: "Bastard!! -Heavy Metal, Dark Fantasy- (Season 2)",
-  poster: "/117id.jpg",
+  poster: "/a117id.jpg",
   trailer: "https://www.youtube.com/embed/UP3FnxiT8RI?si",
   telegramLink: "https://t.me/animeversebd/2366",
   genre: "Dark Fantasy | Magic | Shounen",
@@ -1537,7 +1537,7 @@ export const animes: Anime[] = [
 {
   id: 118,
   title: "Takopi’s Original Sin (Season 1)",
-  poster: "/118id.jpg",
+  poster: "/a118id.jpg",
   trailer: "https://www.youtube.com/embed/pDNkpj2ERao?si",
   telegramLink: "https://t.me/animeversebd/2373",
   genre: "Action | Sci-Fi | Drama",
@@ -1550,7 +1550,7 @@ export const animes: Anime[] = [
 {
   id: 119,
   title: "Heroines Run the Show (Season 1)",
-  poster: "/119id.jpg",
+  poster: "/a119id.jpg",
   trailer: "https://www.youtube.com/embed/y20zBmpuSVY?si",
   telegramLink: "https://t.me/animeversebd/2377",
   genre: "Animation | School | Music",
@@ -1563,7 +1563,7 @@ export const animes: Anime[] = [
 {
   id: 120,
   title: "Hunter x Hunter (Season 2)",
-  poster: "/120id.jpg",
+  poster: "/a120id.jpg",
   trailer: "https://www.youtube.com/embed/aa8XPmXboOw?si",
   telegramLink: "https://t.me/animeversebd/2404",
   genre: "Animation | Fantasy | Adventure",
@@ -1576,7 +1576,7 @@ export const animes: Anime[] = [
 {
   id: 121,
   title: "Food Wars!: Shokugeki no Soma (Season 1)",
-  poster: "/121id.jpg",
+  poster: "/a121id.jpg",
   trailer: "https://www.youtube.com/embed/z4vihPwUBls?si",
   telegramLink: "https://t.me/animeversebd/2408",
   genre: "Animation | Comedy | Family",
@@ -1589,7 +1589,7 @@ export const animes: Anime[] = [
 {
   id: 122,
   title: "Trapped in a Dating Sim: The World of Otome Games is Tough for Mobs (Season 1)",
-  poster: "/122id.jpg",
+  poster: "/a122id.jpg",
   trailer: "https://www.youtube.com/embed/zOdeGIrQlQ8?si",
   telegramLink: "https://t.me/animeversebd/2415",
   genre: "Animation | Comedy | Adventure",
@@ -1602,7 +1602,7 @@ export const animes: Anime[] = [
 {
   id: 123,
   title: "Shinchan Spin-Off (Season 3)",
-  poster: "/123id.jpg",
+  poster: "/a123id.jpg",
   trailer: "https://www.youtube.com/embed/g1Y1v96KGXA?si",
   telegramLink: "https://t.me/animeversebd/2420",
   genre: "Animation | Comedy | Fantasy",
@@ -1615,7 +1615,7 @@ export const animes: Anime[] = [
 {
   id: 124,
   title: "Shinchan Spin-Off (Season 4)",
-  poster: "/124id.jpg",
+  poster: "/a124id.jpg",
   trailer: "https://www.youtube.com/embed/fcVy846GFXA?si",
   telegramLink: "https://t.me/animeversebd/2422",
   genre: "Animation | Comedy | Family",
@@ -1628,7 +1628,7 @@ export const animes: Anime[] = [
 {
   id: 125,
   title: "Vinland Saga (Season 1)",
-  poster: "/125id.jpg",
+  poster: "/a125id.jpg",
   trailer: "https://www.youtube.com/embed/FlPs7EdBmNA?si",
   telegramLink: "https://t.me/animeversebd/2424",
   genre: "Animation | Adventure | Family",
@@ -1641,7 +1641,7 @@ export const animes: Anime[] = [
 {
   id: 126,
   title: "Vinland Saga (Season 2)",
-  poster: "/126id.jpg",
+  poster: "/a126id.jpg",
   trailer: "https://www.youtube.com/embed/cfme7JslzoQ?si",
   telegramLink: "https://t.me/animeversebd/2435",
   genre: "Animation | Adventure | Historical",
@@ -1654,7 +1654,7 @@ export const animes: Anime[] = [
 {
   id: 127,
   title: "Haikyuu!! (Season 2)",
-  poster: "/127id.jpg",
+  poster: "/a127id.jpg",
   trailer: "https://www.youtube.com/embed/3AJNuyXbCO4?si",
   telegramLink: "https://t.me/animeversebd/2442",
   genre: "Animation | Sports | Shounen",
@@ -1667,7 +1667,7 @@ export const animes: Anime[] = [
 {
   id: 128,
   title: "Haikyuu!! (Season 3)",
-  poster: "/128id.jpg",
+  poster: "/a128id.jpg",
   trailer: "https://www.youtube.com/embed/3AJNuyXbCO4?si",
   telegramLink: "https://t.me/animeversebd/2495",
   genre: "Animation | Sports | Teamwork",
@@ -1680,7 +1680,7 @@ export const animes: Anime[] = [
 {
   id: 129,
   title: "Hunter x Hunter (Season 3 – 2012)",
-  poster: "/129id.jpg",
+  poster: "/a129id.jpg",
   trailer: "https://www.youtube.com/embed/aa8XPmXboOw?si",
   telegramLink: "https://t.me/animeversebd/2522",
   genre: "Action | Fantasy | Adventure",
@@ -1693,7 +1693,7 @@ export const animes: Anime[] = [
 {
   id: 130,
   title: "Hunter x Hunter (Season 4 – 2013)",
-  poster: "/130id.jpg",
+  poster: "/a130id.jpg",
   trailer: "https://www.youtube.com/embed/aa8XPmXboOw?si",
   telegramLink: "https://t.me/animeversebd/2527",
   genre: "Dark Fantasy | Magic | Shounen",
@@ -1706,7 +1706,7 @@ export const animes: Anime[] = [
 {
   id: 131,
   title: "Naruto Shippuden (Season 10 – 2011)[EP-1-25]",
-  poster: "/131id.jpg",
+  poster: "/a131id.jpg",
   trailer: "https://www.youtube.com/embed/6kNR6fnoHrU?si",
   telegramLink: "https://t.me/animeversebd/2532",
   genre: "Action | Sci-Fi | Drama",
@@ -1719,7 +1719,7 @@ export const animes: Anime[] = [
 {
   id: 132,
   title: "Chainsaw Man (2025)",
-  poster: "/132id.jpg",
+  poster: "/a132id.jpg",
   trailer: "https://www.youtube.com/embed/HUlu-nbmFjU?si",
   telegramLink: "https://t.me/animeversebd/2588",
   genre: "Action | Horror | Supernatural",
@@ -1732,7 +1732,7 @@ export const animes: Anime[] = [
 {
   id: 133,
   title: "Naruto Season 11 (2011)",
-  poster: "/133id.jpg",
+  poster: "/a133id.jpg",
   trailer: "https://www.youtube.com/embed/eka84VDAHsI?si",
   telegramLink: "https://t.me/animeversebd/2590",
   genre: "Action | Adventure | Fantasy",
@@ -1745,7 +1745,7 @@ export const animes: Anime[] = [
 {
   id: 134,
   title: "Haikyuu!! Season 4: To the Top (2020)",
-  poster: "/134id.jpg",
+  poster: "/a134id.jpg",
   trailer: "https://www.youtube.com/embed/Z_eI8k0yB8Q?si",
   telegramLink: "https://t.me/animeversebd/2635",
   genre: "Sports | Friendship | Drama",
@@ -1758,7 +1758,7 @@ export const animes: Anime[] = [
 {
   id: 135,
   title: "Kurukshetra (Season 1 - 2024) EP-01-18 added☑️",
-  poster: "/135id.jpg",
+  poster: "/a135id.jpg",
   trailer: "https://www.youtube.com/embed/AEP84U6ApSI?si",
   telegramLink: "https://t.me/animeversebd/2664",
   genre: "Action | Political | Thriller",
@@ -1771,7 +1771,7 @@ export const animes: Anime[] = [
 {
   id: 136,
   title: "Naruto: Shippuden – Season 12 (2011–2012)",
-  poster: "/136id.jpg",
+  poster: "/a136id.jpg",
   trailer: "https://www.youtube.com/embed/L8M9j98V-oQ?si",
   telegramLink: "https://t.me/animeversebd/2703",
   genre: "Action | Fantasy | Adventure",
@@ -1784,7 +1784,7 @@ export const animes: Anime[] = [
 {
   id: 137,
   title: "Doraemon the Movie: Nobita's Earth Symphony (2024)",
-  poster: "/137id.jpg",
+  poster: "/a137id.jpg",
   trailer: "https://www.youtube.com/embed/hwN3QpGGEe0?si",
   telegramLink: "https://t.me/animeversebd/2774",
   genre: "Family | Animation | Adventure",
@@ -1797,7 +1797,7 @@ export const animes: Anime[] = [
 {
   id: 138,
   title: "Mother-in-Love 2025",
-  poster: "/138id.jpg",
+  poster: "/a138id.jpg",
   trailer: "https://www.youtube.com/embed/56sSGP2J2Wc?si",
   telegramLink: "https://t.me/animeversebd/2776",
   genre: "Romance | Adult | Drama",
@@ -1810,7 +1810,7 @@ export const animes: Anime[] = [
 {
   id: 139,
   title: "Naruto Shippuden – Season 13 (2012)",
-  poster: "/139id.jpg",
+  poster: "/a139id.jpg",
   trailer: "https://www.youtube.com/embed/0e_Qnum4dRw?si",
   telegramLink: "https://t.me/animeversebd/2782",
   genre: "Action | Adventure | Fantasy",
@@ -1823,7 +1823,7 @@ export const animes: Anime[] = [
 {
   id: 140,
   title: "My Hero Academia: Vigilantes",
-  poster: "/140id.jpg",
+  poster: "/a140id.jpg",
   trailer: "https://www.youtube.com/embed/i-8-xFFIOoM?si",
   telegramLink: "https://t.me/animeversebd/2826",
   genre: "Action | Superhero | Crime",
@@ -1836,7 +1836,7 @@ export const animes: Anime[] = [
 {
   id: 141,
   title: "Tokyo Revengers – Season 2 (2023)",
-  poster: "/141id.jpg",
+  poster: "/a141id.jpg",
   trailer: "https://www.youtube.com/embed/eNZSurcYTW8?si",
   telegramLink: "https://t.me/animeversebd/2833",
   genre: "Action | Time-Travel | Drama",
@@ -1849,7 +1849,7 @@ export const animes: Anime[] = [
 {
   id: 142,
   title: "Up (2009)",
-  poster: "/142id.jpg",
+  poster: "/a142id.jpg",
   trailer: "https://www.youtube.com/embed/ORFWdXl_zJ4?si",
   telegramLink: "https://t.me/animeversebd/2862",
   genre: "Animation | Adventure | Comedy",
@@ -1862,7 +1862,7 @@ export const animes: Anime[] = [
 {
   id: 143,
   title: "Naruto Shippuden – Season 14 (2012)",
-  poster: "/143id.jpg",
+  poster: "/a143id.jpg",
   trailer: "https://www.youtube.com/embed/0e_Qnum4dRw?si",
   telegramLink: "https://t.me/animeversebd/2864",
   genre: "Action | Fantasy | Adventure",
@@ -1875,7 +1875,7 @@ export const animes: Anime[] = [
 {
   id: 144,
   title: "One Piece – The Grand Voyage ",
-  poster: "/144id.jpg",
+  poster: "/a144id.jpg",
   trailer: "https://www.youtube.com/embed/Hy_twM7sLjk?si",
   telegramLink: "https://t.me/animeversebd/2917",
   genre: "Animation | Adventure | Action",
@@ -1888,7 +1888,7 @@ export const animes: Anime[] = [
 {
   id: 145,
   title: "Tony’s Heroine (2009)",
-  poster: "/145id.jpg",
+  poster: "/a145id.jpg",
   trailer: "https://www.youtube.com/embed/IH8AzAF1jM4?si",
   telegramLink: "https://t.me/animeversebd/2921",
   genre: "Action | Comedy | Family",
@@ -1901,7 +1901,7 @@ export const animes: Anime[] = [
 {
   id: 146,
   title: "Young Justice – Season 1 (2010)",
-  poster: "/146id.jpg",
+  poster: "/a146id.jpg",
   trailer: "https://www.youtube.com/embed/SQi0Ll6vNpM?si",
   telegramLink: "https://t.me/animeversebd/2927",
   genre: "Animation | Adventure | Family",
@@ -1914,7 +1914,7 @@ export const animes: Anime[] = [
 {
   id: 147,
   title: "Young Justice – Season 2: Invasion (2012)",
-  poster: "/147id.jpg",
+  poster: "/a147id.jpg",
   trailer: "https://www.youtube.com/embed/SQi0Ll6vNpM?si",
   telegramLink: "https://t.me/animeversebd/2931",
   genre: "Animation | Action | Sci-Fi",
@@ -1927,7 +1927,7 @@ export const animes: Anime[] = [
 {
   id: 148,
   title: "Young Justice – Season 3: Outsiders (2019)",
-  poster: "/148id.jpg",
+  poster: "/a148id.jpg",
   trailer: "https://www.youtube.com/embed/SQi0Ll6vNpM?si",
   telegramLink: "https://t.me/animeversebd/2936",
   genre: "Animation | Sports | Shounen",
@@ -1940,7 +1940,7 @@ export const animes: Anime[] = [
 {
   id: 149,
   title: "Bat-Fam – Season 1 (2024)",
-  poster: "/149id.jpg",
+  poster: "/a149id.jpg",
   trailer: "https://www.youtube.com/embed/_UM-Q9TZig0?si",
   telegramLink: "https://t.me/animeversebd/2940",
   genre: "Animation | Sports | Teamwork",
@@ -1953,7 +1953,7 @@ export const animes: Anime[] = [
 {
   id: 150,
   title: "Chainsaw Man – Season 1 (2022)",
-  poster: "/150id.jpg",
+  poster: "/a150id.jpg",
   trailer: "https://www.youtube.com/embed/nl9GzV4cltU?si",
   telegramLink: "https://t.me/animeversebd/2945",
   genre: "Animation | Comedy | Superhero",
@@ -1966,7 +1966,7 @@ export const animes: Anime[] = [
 {
   id: 151,
   title: "Chainsaw Man: The Movie – Reze Arc (2025)",
-  poster: "/151id.jpg",
+  poster: "/a151id.jpg",
   trailer: "https://www.youtube.com/embed/nl9GzV4cltU?si",
   telegramLink: "https://t.me/animeversebd/2972",
   genre: "Animation | Comedy | Fantasy",
@@ -1979,7 +1979,7 @@ export const animes: Anime[] = [
   {
     id: 152,
     title: "Naruto Shippuden – Season 15 (2012) Episode- 321☑️",
-    poster: "/152id.jpg",
+    poster: "/a152id.jpg",
     trailer: "https://www.youtube.com/embed/KpLFe8kYHVE?si",
     telegramLink: "https://t.me/animeversebd/2976",
     genre: "Animation | Comedy | Sci-Fi",

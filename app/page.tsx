@@ -10,9 +10,10 @@ import MovieModal from "@/components/movie-modal"
 import Footer from "@/components/footer"
 import WelcomePopup from "@/components/welcome-popup"
 import BottomNavigation from "@/components/bottom-navigation"
-import ShortsPage from "@/components/shorts-page"
+import AnimePage from "@/components/anime-page"
 import ExclusivePage from "@/components/exclusive-page"
 import ProfilePage from "@/components/profile-page"
+import ShortsPage from "@/components/shorts-page" // Import ShortsPage component
 import { movies, genres } from "@/lib/movie-data"
 
 export default function Home() {
@@ -78,8 +79,8 @@ export default function Home() {
       case "shorts":
         return (
           <>
-            <Snowfall /> {/* Shorts পেজেও Snowfall যোগ করুন */}
-            <ShortsPage />
+            <Snowfall /> {/* Anime পেজেও Snowfall যোগ করুন */}
+            <AnimePage />
           </>
         )
       case "exclusive":

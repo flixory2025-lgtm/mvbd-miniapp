@@ -82,9 +82,9 @@ export default function AnimeTrendingCarousel({ onAnimeClick }: AnimeTrendingCar
         `}</style>
       </div>
 
-      <div className="relative z-10 h-96 overflow-hidden rounded-2xl">
+      <div className="relative z-10 overflow-hidden">
         <div
-          className="flex transition-transform duration-1000 ease-in-out"
+          className="flex gap-4 transition-transform duration-1000 ease-in-out"
           style={{
             transform: `translateX(${offset}%)`,
           }}
@@ -92,20 +92,14 @@ export default function AnimeTrendingCarousel({ onAnimeClick }: AnimeTrendingCar
           {extendedAnimes.map((anime, index) => (
             <div
               key={`${anime.id}-${index}`}
-              className="w-1/3 flex-shrink-0 px-2"
+              className="flex-shrink-0 w-1/3 aspect-[2/3] rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-all duration-500 transform hover:scale-105 cursor-pointer relative"
               onClick={() => onAnimeClick(anime)}
             >
-              <div className="relative h-96 rounded-lg overflow-hidden cursor-pointer group">
-                <img
-                  src={anime.poster || "/placeholder.svg"}
-                  alt={anime.title}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4">
-                  <h3 className="text-white font-bold text-lg line-clamp-2">{anime.title}</h3>
-                  <p className="text-yellow-400 text-sm">⭐ {anime.rating}</p>
-                </div>
-              </div>
+              <img
+                src={anime.poster || "/placeholder.svg"}
+                alt={anime.title}
+                className="w-full h-full object-cover"
+              />
             </div>
           ))}
         </div>

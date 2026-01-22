@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { animes } from "@/lib/anime-data"
 import type { Anime } from "@/lib/anime-data"
 
-const trendingIds = [40, 42, 44, 13, 14, 16, 18]
+const trendingIds = [137, 139, 141, 143, 145, 151, 152, 111, 112, 154, 156, 157, 158, 159, 160,]
 
 interface AnimeTrendingCarouselProps {
   onAnimeClick: (anime: Anime) => void

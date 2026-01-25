@@ -24,7 +24,7 @@ export default function BottomNavigation({ activeTab, onTabChange }: BottomNavig
         />
       ),
     },
-    { id: "exclusive", label: "Exclusive", icon: Star },
+    { id: "exclusive", label: "Platforms", icon: Star },
     { id: "profile", label: "Profile", icon: User },
   ]
 

@@ -38,7 +38,7 @@ const PLATFORMS: Platform[] = [
   },
   {
     id: "telegram-mini",
-    name: "Telegram Mini App",
+    name: "Telegram Private Channel",
     icon: <Send className="w-8 h-8" />,
     url: "https://t.me/+O-A7AGa-gWNiZWY1",
     description: "Access our mini app with exclusive movie and series uploads",

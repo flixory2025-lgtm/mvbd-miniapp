@@ -41,8 +41,8 @@ export default function AnimeTrendingCarousel({ onAnimeClick }: AnimeTrendingCar
           <div className="w-full h-96 bg-gradient-to-b from-black/50 via-black/80 to-black rounded-b-3xl" />
         </div>
         <img
-          src="https://i.postimg.cc/3whq6Y7j/20260101-071805.png"
-          alt="ANIMEVERSE Logo"
+          src="https://i.postimg.cc/R0Z7mhQq/Screenshot-2026-01-25-085527-removebg-preview.png"
+          alt="MoviesVerseBD Logo"
           className="relative z-20 w-72 h-72 object-contain"
         />
       </div>
@@ -63,7 +63,7 @@ export default function AnimeTrendingCarousel({ onAnimeClick }: AnimeTrendingCar
         >
           Trending Now
         </h2>
-        <p className="text-slate-400 text-sm mt-2">{totalAnimeCount} anime & series uploaded</p>
+        <p className="text-green-500 text-sm mt-2 font-semibold">{totalAnimeCount} anime & series uploaded</p>
         <style jsx>{`
           @keyframes fireGlow {
             0% {

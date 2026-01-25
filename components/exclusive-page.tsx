@@ -6,6 +6,7 @@ import GenreCategories from "./genre-categories"
 import MovieGrid from "./movie-grid"
 import MovieModal from "./movie-modal"
 import Footer from "./footer"
+import PlatformsSection from "./platforms-section"
 import { movies, genres } from "@/lib/movie-data"
 import type { Movie } from "@/lib/movie-data"
 
@@ -47,6 +48,7 @@ export default function ExclusivePage() {
   return (
     <div className="min-h-screen bg-black">
       <Header />
+      <PlatformsSection />
       <GenreCategories
         genres={genres}
         selectedGenre={selectedGenre}

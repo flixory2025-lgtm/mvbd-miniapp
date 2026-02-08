@@ -24925,7 +24925,7 @@ export const movies = [
   {
     id: 1921,
     title: "I Am Number Four (2011)",
-    poster: "/1821id.jpg",
+    poster: "/1921id.jpg",
     trailer: "https://www.youtube.com/embed/44DxkeLnCAA?si",
     telegramLink: "https://t.me/c/3117912335/8036",
     genre: "Sci-Fi | Action | Thriller",

@@ -25094,7 +25094,7 @@ export const movies = [
   {
     id: 1934,
     title: "Naari Naari Na Duma Murari (2026)",
-    poster: "/1834id.jpg",
+    poster: "/1934id.jpg",
     trailer: "https://www.youtube.com/embed/ILrgbOWdHf4?si",
     telegramLink: "https://t.me/c/3117912335/8073",
     genre: "Comedy | Drama",

@@ -25276,7 +25276,7 @@ export const movies = [
   {
     id: 1948,
     title: "Bardovi (2024)",
-    poster: "/1848id.jpg",
+    poster: "/1948id.jpg",
     trailer: "https://www.youtube.com/embed/r-jUhQPBJgs?si",
     telegramLink: "https://t.me/c/3117912335/8121",
     genre: "Drama | Mystery",

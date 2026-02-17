@@ -15,11 +15,10 @@ export const metadata: Metadata = {
     "🎬 HD Movies | Fast Download🔥 বাংলা | হিন্দি | ইংরেজি | কোরিয়ান📥 GDrive + Mega Links📩 মুভি রিকোয়েস্ট = ইনবক্স",
   generator: "v0.app",
   icons: {
-    icon: [
-      { url: "/favicon2.png" }, // small favicon, 32x32 px by default
-    ],
-    apple: "/favicon2.png",
-  },
+  icon: "/favicon.ico",
+  apple: "/apple-touch-icon.png",
+},
+manifest: "/site.webmanifest",
 }
 export default function RootLayout({
   children,

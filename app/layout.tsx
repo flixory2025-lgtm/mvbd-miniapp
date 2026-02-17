@@ -32,12 +32,12 @@ export default function RootLayout({
       <head>
         <script src="https://telegram.org/js/telegram-web-app.js"></script>
       </head>
-      <body className={`${_geist.className} ${_geistMono.className} antialiased`}>
-        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
-          {children}
-          <Analytics />
-        </ThemeProvider>
-      </body>
-    </html>
-  )
+     <body className={font-sans antialiased}>
+<ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
+{children}
+<Analytics />
+</ThemeProvider>
+</body>
+</html>
+)
 }

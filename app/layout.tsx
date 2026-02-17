@@ -5,29 +5,21 @@ import { Analytics } from "@vercel/analytics/next"
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
 
-const geist = Geist({ subsets: ["latin"] })
-const geistMono = Geist_Mono({ subsets: ["latin"] })
+// 🔹 আগের font restore
+const _geist = Geist({ subsets: ["latin"] })
+const _geistMono = Geist_Mono({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
   title: "MVBD MINI APP",
   description:
     "🎬 HD Movies | Fast Download🔥 বাংলা | হিন্দি | ইংরেজি | কোরিয়ান📥 GDrive + Mega Links📩 মুভি রিকোয়েস্ট = ইনবক্স",
   generator: "v0.app",
-  icons: {
-    icon: [
-      {
-        url: "/favicon1.png",      // normal icon
-      },
-      {
-        url: "/favicon1.png",
-        sizes: "512x512",
-        type: "image/png",
-        purpose: "maskable",     // 👈 circular effect support
-      },
-    ],
-    shortcut: "/favicon1.png",
-    apple: "/favicon1.png",
-  },
+  icons: [
+    { url: "/favicon1.png" },
+    { url: "/favicon1.png", sizes: "512x512", type: "image/png", purpose: "maskable" },
+  ],
+  shortcut: "/favicon1.png",
+  apple: "/favicon1.png",
 }
 
 export default function RootLayout({
@@ -40,9 +32,7 @@ export default function RootLayout({
       <head>
         <script src="https://telegram.org/js/telegram-web-app.js"></script>
       </head>
-      <body
-        className={`${geist.className} ${geistMono.className} antialiased`}
-      >
+      <body className={`${_geist.className} ${_geistMono.className} antialiased`}>
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
           {children}
           <Analytics />

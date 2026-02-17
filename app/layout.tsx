@@ -14,7 +14,17 @@ export const metadata: Metadata = {
     "🎬 HD Movies | Fast Download🔥 বাংলা | হিন্দি | ইংরেজি | কোরিয়ান📥 GDrive + Mega Links📩 মুভি রিকোয়েস্ট = ইনবক্স",
   generator: "v0.app",
   icons: {
-    icon: "/favicon.png",
+    icon: [
+      {
+        url: "/favicon.png",      // normal icon
+      },
+      {
+        url: "/favicon.png",
+        sizes: "512x512",
+        type: "image/png",
+        purpose: "maskable",     // 👈 circular effect support
+      },
+    ],
     shortcut: "/favicon.png",
     apple: "/favicon.png",
   },

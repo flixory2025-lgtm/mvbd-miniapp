@@ -31,7 +31,7 @@ export default function RootLayout({
         <script src="https://telegram.org/js/telegram-web-app.js"></script>
       </head>
       <body
-        className={${geist.className} ${geistMono.className} antialiased}
+        className={`${geist.className} ${geistMono.className} antialiased`}
       >
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
           {children}

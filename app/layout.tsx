@@ -16,9 +16,9 @@ export const metadata: Metadata = {
   generator: "v0.app",
   icons: {
     icon: [
-      { url: "/favicon1.png" }, // small favicon, 32x32 px by default
+      { url: "/favicon2.png" }, // small favicon, 32x32 px by default
     ],
-    apple: "/favicon1.png",
+    apple: "/favicon2.png",
   },
 }
 export default function RootLayout({

@@ -16,17 +16,17 @@ export const metadata: Metadata = {
   icons: {
     icon: [
       {
-        url: "/favicon.png",      // normal icon
+        url: "/favicon1.png",      // normal icon
       },
       {
-        url: "/favicon.png",
+        url: "/favicon1.png",
         sizes: "512x512",
         type: "image/png",
         purpose: "maskable",     // 👈 circular effect support
       },
     ],
-    shortcut: "/favicon.png",
-    apple: "/favicon.png",
+    shortcut: "/favicon1.png",
+    apple: "/favicon1.png",
   },
 }
 

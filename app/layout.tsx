@@ -14,14 +14,13 @@ export const metadata: Metadata = {
   description:
     "🎬 HD Movies | Fast Download🔥 বাংলা | হিন্দি | ইংরেজি | কোরিয়ান📥 GDrive + Mega Links📩 মুভি রিকোয়েস্ট = ইনবক্স",
   generator: "v0.app",
-  icons: [
-    { url: "/favicon1.png" },
-    { url: "/favicon1.png", sizes: "512x512", type: "image/png", purpose: "maskable" },
-  ],
-  shortcut: "/favicon1.png",
-  apple: "/favicon1.png",
+  icons: {
+    icon: [
+      { url: "/favicon1.png" }, // small favicon, 32x32 px by default
+    ],
+    apple: "/favicon1.png",
+  },
 }
-
 export default function RootLayout({
   children,
 }: {
@@ -32,7 +31,7 @@ export default function RootLayout({
       <head>
         <script src="https://telegram.org/js/telegram-web-app.js"></script>
       </head>
-     <body className={`${_geist.className} ${_geistMono.className} antialiased`}>
+     <body className={`${_geist.className} antialiased`}>
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
           {children}
           <Analytics />

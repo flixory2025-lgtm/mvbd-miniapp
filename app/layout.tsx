@@ -15,8 +15,8 @@ export const metadata: Metadata = {
     "🎬 HD Movies | Fast Download🔥 বাংলা | হিন্দি | ইংরেজি | কোরিয়ান📥 GDrive + Mega Links📩 মুভি রিকোয়েস্ট = ইনবক্স",
   generator: "v0.app",
   icons: {
-  icon: "/favicon.ico",
-  apple: "/apple-touch-icon.png",
+  icon: "/favicon2.png",
+  apple: "/favicon2.png",
 },
 manifest: "/site.webmanifest",
 }

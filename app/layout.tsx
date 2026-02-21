@@ -13,7 +13,7 @@ export const metadata: Metadata = {
   title: "MoviesVerseBD",
   description:
     "mvbd mini app HD Movies | Fast Download🔥 বাংলা | হিন্দি | ইংরেজি | কোরিয়ান📥 GDrive + Mega Links📩 মুভি রিকোয়েস্ট = ইনবক্স",
-  generator: "v0.app",
+  generator: "mvbd studio",
   icons: {
   icon: "/favicon2.png",
   apple: "/favicon2.png",

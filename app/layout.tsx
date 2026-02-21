@@ -5,21 +5,52 @@ import { Analytics } from "@vercel/analytics/next"
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
 
-// 🔹 আগের font restore
-const _geist = Geist({ subsets: ["latin"] })
-const _geistMono = Geist_Mono({ subsets: ["latin"] })
+const geist = Geist({ subsets: ["latin"] })
+const geistMono = Geist_Mono({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "MoviesVerseBD",
+  metadataBase: new URL("https://mvbds.xyz"),
+
+  title: {
+    default: "MoviesVerseBD Official | mvbds.xyz",
+    template: "%s | MoviesVerseBD",
+  },
+
   description:
-    "mvbd mini app HD Movies | Fast Download🔥 বাংলা | হিন্দি | ইংরেজি | কোরিয়ান📥 GDrive + Mega Links📩 মুভি রিকোয়েস্ট = ইনবক্স",
-  generator: "mvbd studio",
+    "MoviesVerseBD Official – Download & Watch HD Movies in Bangla, Hindi, English, Korean & South Indian. Dual Audio 480p, 720p, 1080p | Fast GDrive & Mega Links | Latest Bollywood, Hollywood Movies.",
+
+  keywords: [
+    "MoviesVerseBD",
+    "MVBD",
+    "Bangla Movies Download",
+    "Hindi Movies Download",
+    "Hollywood Movies Download",
+    "South Indian Hindi Dubbed",
+    "Korean Movies Download",
+    "Dual Audio Movies",
+    "480p 720p 1080p Movies",
+    "Latest Bollywood Movies",
+  ],
+
+  applicationName: "MoviesVerseBD",
+
+  openGraph: {
+    title: "MoviesVerseBD Official | mvbds.xyz",
+    description:
+      "Download Bangla, Hindi, English, Korean & South Indian HD Movies in 480p, 720p, 1080p. Fast Download Links Only on MoviesVerseBD.",
+    url: "https://mvbds.xyz",
+    siteName: "MoviesVerseBD",
+    type: "website",
+  },
+
   icons: {
-  icon: "/favicon2.png",
-  apple: "/favicon2.png",
-},
-manifest: "/site.webmanifest",
+    icon: "/favicon2.png",
+    apple: "/favicon2.png",
+  },
+
+  manifest: "/site.webmanifest",
 }
+
 export default function RootLayout({
   children,
 }: {
@@ -29,12 +60,31 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <head>
         <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+        {/* Structured Data for Google Site Name */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "WebSite",
+              name: "MoviesVerseBD",
+              alternateName: "MVBD",
+              url: "https://mvbds.xyz",
+            }),
+          }}
+        />
       </head>
-     <body className={`${_geist.className} antialiased`}>
+
+      <body className={`${geist.className} antialiased`}>
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
           {children}
           <Analytics />
         </ThemeProvider>
+      </body>
+    </html>
+  )
+}        </ThemeProvider>
       </body>
     </html>
   )

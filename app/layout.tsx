@@ -44,8 +44,8 @@ export const metadata: Metadata = {
   },
 
   icons: {
-    icon: "/favicon-96×96.png",
-    apple: "/favicon-96×96.png",
+    icon: "/favicon96.png",
+    apple: "/favicon96.png",
   },
 
   manifest: "/site.webmanifest",

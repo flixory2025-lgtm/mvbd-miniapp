@@ -15242,7 +15242,7 @@ export const movies = [
     title: "Peaky Blinders – Season 2 (2014)",
     poster: "/1175id.jpg",
     trailer: "https://www.youtube.com/embed/PRBPQFgVCpY?si",
-    telegramLink: "https://t.me/MoviesVerseBD/386",
+    telegramLink: "https://t.me/c/3117912335/5225",
     genre: "Crime | Drama | Thriller | netflix ",
     year: "2014",
     rating: "8.8",

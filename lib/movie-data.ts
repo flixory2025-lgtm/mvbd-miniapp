@@ -29895,7 +29895,7 @@ export const movies = [
     trailer: "https://www.youtube.com/embed/ZNeGF-PvRHY?si",
     telegramLink: "https://t.me/c/3117912335/10468",
     genre: "Crime | Thriller | Drama",
-    year: 2018",
+    year: "2018",
     rating: "8.5",
     language: "Hindi",
     description: "মির্জাপুর শহরের মাফিয়া দুনিয়া ঘিরে গল্পটি এগোয়, যেখানে ক্ষমতা, প্রতিশোধ আর রাজনীতি একে অপরের সাথে জড়িয়ে যায়। এক ডন ও তার পরিবারের সাথে জড়িয়ে পড়ে দুই ভাই, আর শুরু হয় রক্তক্ষয়ী ক্ষমতার লড়াই। 🔫🔥",

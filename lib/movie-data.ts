@@ -29956,7 +29956,7 @@ export const movies = [
   {
     id: 2308,
     title: "Mili (2022)",
-    poster: "/.jpg",
+    poster: "/2308id.jpg",
     trailer: "https://www.youtube.com/embed/RX9sn_BRxZs?si",
     telegramLink: "https://t.me/c/3117912335/10577",
     genre: "Thriller | Drama",

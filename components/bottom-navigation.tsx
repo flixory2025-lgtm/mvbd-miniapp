@@ -10,6 +10,7 @@ interface BottomNavigationProps {
 
 export default function BottomNavigation({ activeTab, onTabChange }: BottomNavigationProps) {
   const [clickedTab, setClickedTab] = useState<string | null>(null)
+  const [bubbles, setBubbles] = useState<Array<{ id: number; tabId: string }>>([])
 
   const tabs = [
     { id: "home", label: "Home", icon: Home },
@@ -31,39 +32,172 @@ export default function BottomNavigation({ activeTab, onTabChange }: BottomNavig
   const handleTabClick = (tabId: string) => {
     setClickedTab(tabId)
     onTabChange(tabId)
-    setTimeout(() => setClickedTab(null), 600)
+
+    // Create water bubbles
+    const newBubbles = Array.from({ length: 6 }).map((_, i) => ({
+      id: Date.now() + i,
+      tabId,
+    }))
+    setBubbles([...bubbles, ...newBubbles])
+
+    // Remove bubbles after animation
+    setTimeout(() => {
+      setBubbles([])
+    }, 800)
   }
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-black border-t border-slate-900 z-50 safe-area-bottom">
-      <div className="flex items-center justify-around py-2">
-        {tabs.map((tab) => {
-          const Icon = tab.icon
-          const isActive = activeTab === tab.id
-          const isClicked = clickedTab === tab.id
-          return (
-            <button
-              key={tab.id}
-              onClick={() => handleTabClick(tab.id)}
-              className={`relative flex flex-col items-center gap-1 px-4 py-2 rounded-lg transition-all ${
-                isActive ? "text-green-500" : "text-slate-400 hover:text-slate-200"
-              } ${isClicked ? "fire-animation" : ""}`}
-            >
-              <Icon className={isActive ? "fill-green-500/20" : ""} />
-              <span className="text-xs font-medium">{tab.label}</span>
-              {isClicked && (
-                <div className="absolute inset-0 pointer-events-none">
-                  <div className="fire-particle fire-1" />
-                  <div className="fire-particle fire-2" />
-                  <div className="fire-particle fire-3" />
-                  <div className="fire-particle fire-4" />
-                  <div className="fire-particle fire-5" />
-                </div>
-              )}
-            </button>
-          )
-        })}
-      </div>
-    </nav>
+    <>
+      <style>{`
+        @keyframes waterBubbleRise {
+          0% {
+            opacity: 1;
+            transform: translate(0, 0) scale(1);
+            filter: blur(0);
+          }
+          100% {
+            opacity: 0;
+            transform: translate(var(--tx), -50px) scale(0.3);
+            filter: blur(1px);
+          }
+        }
+
+        @keyframes navPulse {
+          0% {
+            transform: scale(1);
+          }
+          50% {
+            transform: scale(1.08);
+          }
+          100% {
+            transform: scale(1);
+          }
+        }
+
+        @keyframes bubbleGlow {
+          0% {
+            box-shadow: 0 0 4px rgba(59, 130, 246, 0.6), inset -1px -1px 2px rgba(0, 0, 0, 0.2);
+          }
+          100% {
+            box-shadow: 0 0 12px rgba(96, 165, 250, 0.3), inset -1px -1px 2px rgba(0, 0, 0, 0.1);
+          }
+        }
+
+        .nav-bubble {
+          position: absolute;
+          width: 10px;
+          height: 10px;
+          background: radial-gradient(circle at 35% 35%, rgba(96, 165, 250, 0.9), rgba(59, 130, 246, 0.4));
+          border-radius: 50%;
+          border: 1px solid rgba(96, 165, 250, 0.5);
+          pointer-events: none;
+          box-shadow: 0 0 6px rgba(59, 130, 246, 0.5), 
+                      inset -2px -2px 3px rgba(0, 0, 0, 0.15),
+                      inset 1px 1px 2px rgba(255, 255, 255, 0.1);
+        }
+
+        .nav-bubble.active {
+          animation: waterBubbleRise 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+
+        .nav-button.clicked {
+          animation: navPulse 0.4s ease-out;
+        }
+      `}</style>
+
+      <nav className="fixed bottom-0 left-0 right-0 bg-black/40 backdrop-blur-xl border-t border-white/10 z-50 safe-area-bottom">
+        <style>{`
+          @keyframes liquidButtonZoom {
+            0% {
+              transform: scale(1);
+              background: rgba(255, 255, 255, 0.05);
+              backdrop-filter: blur(20px);
+            }
+            50% {
+              transform: scale(1.1);
+              background: rgba(255, 255, 255, 0.1);
+              backdrop-filter: blur(25px);
+            }
+            100% {
+              transform: scale(1.15);
+              background: rgba(255, 255, 255, 0.12);
+              backdrop-filter: blur(30px);
+            }
+          }
+
+          @keyframes liquidButtonActive {
+            0% {
+              box-shadow: 0 0 0 0 rgba(100, 200, 255, 0.3), inset 0 0 20px rgba(255, 255, 255, 0.1);
+            }
+            100% {
+              box-shadow: 0 0 20px 8px rgba(100, 200, 255, 0.2), inset 0 0 40px rgba(255, 255, 255, 0.15);
+            }
+          }
+
+          .liquid-nav-button {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            transition: all 0.3s ease;
+          }
+
+          .liquid-nav-button:hover {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(25px);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+          }
+
+          @keyframes greenFirePulse {
+            0%, 100% {
+              box-shadow: 0 0 15px rgba(34, 197, 94, 0.6), inset 0 0 20px rgba(255, 255, 255, 0.1);
+            }
+            50% {
+              box-shadow: 0 0 25px rgba(34, 197, 94, 0.8), inset 0 0 30px rgba(255, 255, 255, 0.15);
+            }
+          }
+
+          .liquid-nav-button.active {
+            background: rgba(34, 197, 94, 0.15);
+            backdrop-filter: blur(30px);
+            border: 1px solid rgba(34, 197, 94, 0.4);
+            animation: liquidButtonZoom 0.5s ease-out, greenFirePulse 0.8s ease-in-out infinite;
+          }
+        `}</style>
+        <div className="flex items-center justify-around py-4 px-2">
+          {tabs.map((tab) => {
+            const Icon = tab.icon
+            const isActive = activeTab === tab.id
+            return (
+              <div key={tab.id} className="relative">
+                <button
+                  onClick={() => handleTabClick(tab.id)}
+                  className={`liquid-nav-button relative flex flex-col items-center justify-center gap-2 w-16 h-16 rounded-3xl transition-all ${
+                    isActive ? "active" : ""
+                  } ${clickedTab === tab.id ? "clicked" : ""}`}
+                >
+                  <Icon className="w-6 h-6" />
+                  <span className="text-xs font-medium text-center">{tab.label}</span>
+                </button>
+
+                {/* Liquid Glass Bubbles */}
+                {bubbles
+                  .filter((b) => b.tabId === tab.id)
+                  .map((bubble, idx) => (
+                    <div
+                      key={bubble.id}
+                      className="nav-bubble active"
+                      style={{
+                        left: `calc(50% + ${(idx - 2.5) * 8}px)`,
+                        top: "-15px",
+                        "--tx": `${(idx - 2.5) * 15}px`,
+                      } as React.CSSProperties & { "--tx": string }}
+                    />
+                  ))}
+              </div>
+            )
+          })}
+        </div>
+      </nav>
+    </>
   )
 }

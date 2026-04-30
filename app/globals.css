@@ -246,4 +246,156 @@
       transform: scale(1.1);
     }
   }
+
+  /* Water Bubble Animation for Search Bar */
+  @keyframes water-bubble-pulse {
+    0% {
+      box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4),
+                  0 0 0 0 rgba(96, 165, 250, 0.2);
+    }
+    50% {
+      box-shadow: 0 0 10px 4px rgba(59, 130, 246, 0.3),
+                  0 0 20px 10px rgba(96, 165, 250, 0.1);
+    }
+    100% {
+      box-shadow: 0 0 20px 8px rgba(59, 130, 246, 0.1),
+                  0 0 40px 20px rgba(96, 165, 250, 0);
+    }
+  }
+
+  .search-bubble {
+    animation: water-bubble-pulse 0.6s ease-out forwards;
+  }
+
+  /* Water Bubble Animation for Navigation Buttons */
+  @keyframes bubble-rise {
+    0% {
+      transform: translateY(0) translateX(0) scale(1);
+      opacity: 1;
+    }
+    100% {
+      transform: translateY(-50px) translateX(var(--tx, 0)) scale(0.3);
+      opacity: 0;
+    }
+  }
+
+  .nav-bubble {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.8), rgba(59, 130, 246, 0.4));
+    border-radius: 50%;
+    border: 1px solid rgba(96, 165, 250, 0.5);
+    pointer-events: none;
+    animation: bubble-rise 0.8s ease-out forwards;
+    box-shadow: 0 0 8px rgba(59, 130, 246, 0.3),
+                inset -1px -1px 3px rgba(0, 0, 0, 0.1);
+  }
+
+  /* Water Bubble Glow for Header Search Focus */
+  @keyframes header-glow {
+    0% {
+      box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.5);
+    }
+    100% {
+      box-shadow: 0 0 20px 8px rgba(59, 130, 246, 0),
+                  inset 0 0 10px rgba(59, 130, 246, 0.2);
+    }
+  }
+
+  .header-search-active {
+    animation: header-glow 0.6s ease-out;
+  }
+
+  /* Water Ripple Effect for Footer Buttons */
+  @keyframes water-ripple {
+    0% {
+      transform: scale(0);
+      opacity: 1;
+    }
+    100% {
+      transform: scale(2);
+      opacity: 0;
+    }
+  }
+
+  .footer-ripple {
+    position: absolute;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(59, 130, 246, 0.4), transparent);
+    pointer-events: none;
+    animation: water-ripple 0.6s ease-out forwards;
+  }
+
+  /* iOS 26 Liquid Glass Morphism */
+  @keyframes liquidGlassScale {
+    0% {
+      transform: scale(1);
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(20px);
+    }
+    100% {
+      transform: scale(1.2);
+      background: rgba(255, 255, 255, 0.12);
+      backdrop-filter: blur(40px);
+    }
+  }
+
+  @keyframes liquidGlassRotate {
+    0% {
+      transform: rotate(0deg) scale(1);
+      opacity: 1;
+    }
+    100% {
+      transform: rotate(5deg) scale(0.8);
+      opacity: 0;
+    }
+  }
+
+  .liquid-glass-container {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 24px;
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .liquid-glass-container:hover {
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(30px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    transform: scale(1.02);
+  }
+
+  .liquid-glass-interactive {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .liquid-glass-interactive:active {
+    animation: liquidGlassScale 0.5s ease-out forwards;
+  }
+
+  /* Long press zoom effect for desktop */
+  @media (min-width: 1024px) {
+    .liquid-glass-interactive:active::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(255, 255, 255, 0.15) 0%, transparent 70%);
+      transform: translate(-50%, -50%) scale(0);
+      animation: liquidGlassRotate 0.8s ease-out;
+      pointer-events: none;
+    }
+  }
+
+  /* Touch/Mobile long press effect */
+  @supports (touch-action: manipulation) {
+    .liquid-glass-interactive {
+      touch-action: manipulation;
+    }
+  }
 }

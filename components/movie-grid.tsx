@@ -132,11 +132,51 @@ export default function MovieGrid({
           </div>
 
           {totalPages > 1 && (
-            <div className="flex justify-center items-center gap-1 md:gap-2 py-8 flex-wrap">
+            <div className="flex justify-center items-center gap-2 md:gap-3 py-8 flex-wrap">
+              <style>{`
+                @keyframes liquidPaginationZoom {
+                  0% {
+                    transform: scale(1);
+                    background: rgba(255, 255, 255, 0.05);
+                    border: 1px solid rgba(255, 255, 255, 0.15);
+                  }
+                  100% {
+                    transform: scale(1.1);
+                    background: rgba(100, 200, 255, 0.12);
+                    border: 1px solid rgba(100, 200, 255, 0.4);
+                    backdrop-filter: blur(30px);
+                  }
+                }
+
+                .liquid-pagination-button {
+                  background: rgba(255, 255, 255, 0.05);
+                  backdrop-filter: blur(15px);
+                  border: 1px solid rgba(255, 255, 255, 0.15);
+                  border-radius: 12px;
+                  transition: all 0.3s ease;
+                  padding: 0.5rem 0.75rem;
+                  font-weight: 500;
+                }
+
+                .liquid-pagination-button:hover:not(:disabled) {
+                  background: rgba(255, 255, 255, 0.08);
+                  border: 1px solid rgba(255, 255, 255, 0.25);
+                  transform: scale(1.05);
+                }
+
+                .liquid-pagination-button.active {
+                  animation: liquidPaginationZoom 0.4s ease-out forwards;
+                }
+
+                .liquid-pagination-button:disabled {
+                  opacity: 0.5;
+                  cursor: not-allowed;
+                }
+              `}</style>
               <button
                 onClick={() => onPageChange(Math.max(1, currentPage - 1))}
                 disabled={currentPage === 1}
-                className="px-2 md:px-4 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-600 disabled:opacity-50 disabled:cursor-not-allowed transition text-sm md:text-base"
+                className="liquid-pagination-button text-white text-sm md:text-base"
               >
                 আগে
               </button>
@@ -145,7 +185,7 @@ export default function MovieGrid({
                 <>
                   <button
                     onClick={() => onPageChange(1)}
-                    className="px-2 md:px-3 py-2 bg-slate-700 text-slate-300 hover:bg-slate-600 rounded-lg transition text-sm md:text-base"
+                    className="liquid-pagination-button text-slate-300 text-sm md:text-base"
                   >
                     1
                   </button>
@@ -157,8 +197,8 @@ export default function MovieGrid({
                 <button
                   key={page}
                   onClick={() => onPageChange(page)}
-                  className={`px-2 md:px-3 py-2 rounded-lg transition text-sm md:text-base ${
-                    currentPage === page ? "bg-green-500 text-white" : "bg-slate-700 text-slate-300 hover:bg-slate-600"
+                  className={`liquid-pagination-button text-sm md:text-base ${
+                    currentPage === page ? "active text-blue-200" : "text-slate-300"
                   }`}
                 >
                   {page}

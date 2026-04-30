@@ -79,12 +79,56 @@ export default function MovieModal({ movie, onClose, onMovieClick, showAdultCont
         <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose}></div>
 
         <div
-          className="bg-black/90 border border-slate-800 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto relative z-10"
+          className="bg-black/60 backdrop-blur-xl border border-white/20 rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto relative z-10"
           onClick={(e) => e.stopPropagation()}
         >
+          <style>{`
+            @keyframes fireGlassAnimation {
+              0%, 100% {
+                box-shadow: 0 0 10px rgba(34, 197, 94, 0.5), inset 0 0 20px rgba(255, 255, 255, 0.1);
+              }
+              50% {
+                box-shadow: 0 0 20px rgba(34, 197, 94, 0.7), inset 0 0 30px rgba(255, 255, 255, 0.15);
+              }
+            }
+
+            @keyframes liquidGlassButtonPulse {
+              0% {
+                transform: scale(1);
+                background: rgba(100, 200, 255, 0.1);
+              }
+              50% {
+                transform: scale(1.05);
+                background: rgba(100, 200, 255, 0.15);
+              }
+              100% {
+                transform: scale(1);
+                background: rgba(100, 200, 255, 0.1);
+              }
+            }
+
+            .modal-liquid-glass-button {
+              background: rgba(255, 255, 255, 0.08);
+              backdrop-filter: blur(20px);
+              border: 1px solid rgba(255, 255, 255, 0.2);
+              border-radius: 12px;
+              transition: all 0.3s ease;
+            }
+
+            .modal-liquid-glass-button:hover {
+              background: rgba(100, 200, 255, 0.1);
+              backdrop-filter: blur(25px);
+              border: 1px solid rgba(100, 200, 255, 0.4);
+              transform: scale(1.03);
+            }
+
+            .modal-liquid-glass-button.fire {
+              animation: fireGlassAnimation 0.8s ease-in-out infinite;
+            }
+          `}</style>
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 bg-red-600 hover:bg-red-700 text-white p-2 rounded-full transition animate-pulse hover:animate-none z-20"
+            className="absolute top-4 right-4 modal-liquid-glass-button text-white p-2 rounded-full hover:bg-red-500/30 transition z-20"
           >
             <X className="w-6 h-6" />
           </button>
@@ -124,11 +168,11 @@ export default function MovieModal({ movie, onClose, onMovieClick, showAdultCont
               <p className="text-slate-300 leading-relaxed">{movie.description}</p>
             </div>
 
-            <div className="flex gap-2 flex-col sm:flex-row mb-8">
+            <div className="flex gap-3 flex-col sm:flex-row mb-8">
               {movie.trailer && (
                 <button
                   onClick={handleWatchTrailer}
-                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg flex items-center justify-center gap-2 transition animate-pulse hover:animate-none shadow-lg shadow-blue-500/50"
+                  className="flex-1 modal-liquid-glass-button bg-blue-500/20 border border-blue-400/40 hover:bg-blue-500/30 text-white font-bold py-3 rounded-xl flex items-center justify-center gap-2 transition shadow-lg shadow-blue-500/30"
                 >
                   <Play className="w-5 h-5" />
                   ট্রেইলার দেখুন
@@ -136,17 +180,17 @@ export default function MovieModal({ movie, onClose, onMovieClick, showAdultCont
               )}
               <button
                 onClick={handleWatchNow}
-                className="flex-1 bg-green-500 hover:bg-green-600 text-white font-bold py-3 rounded-lg flex items-center justify-center gap-2 transition animate-bounce hover:animate-none shadow-lg shadow-green-500/50"
+                className="flex-1 modal-liquid-glass-button fire bg-green-500/20 border border-green-400/40 hover:bg-green-500/30 text-white font-bold py-3 rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-green-500/30"
               >
                 <Play className="w-5 h-5" />
                 এখনই দেখুন
               </button>
               <button
                 onClick={handleWatchLater}
-                className={`flex-1 font-bold py-3 rounded-lg flex items-center justify-center gap-2 transition shadow-lg ${
+                className={`flex-1 modal-liquid-glass-button font-bold py-3 rounded-xl flex items-center justify-center gap-2 transition shadow-lg ${
                   isAddedToWatchLater
-                    ? "bg-purple-600 hover:bg-purple-700 text-white animate-pulse shadow-purple-500/50"
-                    : "bg-slate-700 hover:bg-slate-600 text-white hover:animate-pulse shadow-slate-500/50"
+                    ? "fire bg-purple-500/20 border border-purple-400/40 hover:bg-purple-500/30 text-white shadow-purple-500/30"
+                    : "bg-slate-500/20 border border-slate-400/40 hover:bg-slate-500/30 text-white shadow-slate-500/30"
                 }`}
               >
                 {isAddedToWatchLater ? "পরে দেখা হয়েছে" : "পরে দেখুন"}

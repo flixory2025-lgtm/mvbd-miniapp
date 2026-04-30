@@ -14,16 +14,55 @@ export default function GenreCategories({
   showAdultContent = false,
 }: GenreCategoriesProps) {
   return (
-    <div className="bg-black border-b border-slate-700 px-4 py-6">
+    <div className="bg-black/30 backdrop-blur-lg border-b border-white/10 px-4 py-6">
+      <style>{`
+        @keyframes liquidGlassButtonZoom {
+          0% {
+            transform: scale(1);
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+          }
+          50% {
+            transform: scale(1.05);
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(25px);
+          }
+          100% {
+            transform: scale(1.08);
+            background: rgba(100, 200, 255, 0.1);
+            backdrop-filter: blur(30px);
+          }
+        }
+
+        .liquid-glass-category {
+          background: rgba(255, 255, 255, 0.05);
+          backdrop-filter: blur(20px);
+          border: 1px solid rgba(255, 255, 255, 0.15);
+          border-radius: 16px;
+          transition: all 0.3s ease;
+        }
+
+        .liquid-glass-category:hover {
+          background: rgba(255, 255, 255, 0.08);
+          backdrop-filter: blur(25px);
+          border: 1px solid rgba(255, 255, 255, 0.25);
+          transform: scale(1.02);
+        }
+
+        .liquid-glass-category.active {
+          background: rgba(100, 200, 255, 0.12);
+          backdrop-filter: blur(30px);
+          border: 1px solid rgba(100, 200, 255, 0.4);
+          animation: liquidGlassButtonZoom 0.5s ease-out;
+        }
+      `}</style>
       <div className="max-w-7xl mx-auto">
         <h2 className="text-white font-bold text-lg mb-4">Categories</h2>
-        <div className="flex gap-2 flex-wrap">
+        <div className="flex gap-3 flex-wrap">
           <button
             onClick={() => onGenreSelect(null)}
-            className={`px-4 py-2 rounded-lg font-medium transition relative overflow-hidden ${
-              selectedGenre === null
-                ? "bg-green-500 text-white burning-fire"
-                : "bg-black border border-slate-700 text-slate-300 hover:bg-slate-900"
+            className={`liquid-glass-category px-4 py-2 font-medium transition relative overflow-hidden ${
+              selectedGenre === null ? "active text-blue-200" : "text-slate-300"
             }`}
           >
             All
@@ -43,10 +82,8 @@ export default function GenreCategories({
               <button
                 key={genre}
                 onClick={() => onGenreSelect(genre)}
-                className={`px-4 py-2 rounded-lg font-medium transition relative overflow-hidden ${
-                  selectedGenre === genre
-                    ? "bg-green-500 text-white burning-fire"
-                    : "bg-black border border-slate-700 text-slate-300 hover:bg-slate-900"
+                className={`liquid-glass-category px-4 py-2 font-medium transition relative overflow-hidden ${
+                  selectedGenre === genre ? "active text-blue-200" : "text-slate-300"
                 }`}
               >
                 {genre}

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { movies } from "@/lib/movie-data"
 
@@ -12,6 +12,9 @@ interface TrendingCarouselProps {
 
 export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps) {
   const [currentIndex, setCurrentIndex] = useState(0)
+  const [touchStart, setTouchStart] = useState(0)
+  const [touchEnd, setTouchEnd] = useState(0)
+  const carouselRef = useRef<HTMLDivElement>(null)
   const trendingMovies = movies.filter((m) => trendingIds.includes(m.id))
 
   const totalMovieCount = movies.length
@@ -29,6 +32,37 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
 
   const handleNext = () => {
     setCurrentIndex((prev) => (prev + 1) % trendingMovies.length)
+  }
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchStart(e.targetTouches[0].clientX)
+  }
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    setTouchEnd(e.changedTouches[0].clientX)
+    handleSwipe()
+  }
+
+  const handleSwipe = () => {
+    if (!touchStart || !touchEnd) return
+    const distance = touchStart - touchEnd
+    const isLeftSwipe = distance > 50
+    const isRightSwipe = distance < -50
+
+    if (isLeftSwipe) {
+      handleNext()
+    } else if (isRightSwipe) {
+      handlePrev()
+    }
+  }
+
+  const handleMouseWheel = (e: React.WheelEvent) => {
+    e.preventDefault()
+    if (e.deltaY > 0) {
+      handleNext()
+    } else {
+      handlePrev()
+    }
   }
 
   const extendedMovies = [...trendingMovies, ...trendingMovies, ...trendingMovies]
@@ -91,7 +125,14 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
 
       <p className="text-center text-green-400 text-sm mb-3 font-medium relative z-20">{totalMovieCount} Movie & Series Uploaded</p>
 
-      <div className="relative overflow-hidden">
+      <div 
+        ref={carouselRef}
+        className="relative overflow-hidden"
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+        onWheel={handleMouseWheel}
+        style={{ touchAction: "pan-y" }}
+      >
         <div
           className="flex gap-4 transition-transform duration-1000 ease-in-out"
           style={{
@@ -128,15 +169,40 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
         </div>
 
         {/* Navigation Buttons */}
+        <style>{`
+          @keyframes carouselNavGlow {
+            0%, 100% {
+              box-shadow: 0 0 15px rgba(34, 197, 94, 0.6), inset 0 0 20px rgba(255, 255, 255, 0.1);
+            }
+            50% {
+              box-shadow: 0 0 25px rgba(34, 197, 94, 0.8), inset 0 0 30px rgba(255, 255, 255, 0.15);
+            }
+          }
+
+          .carousel-nav-button {
+            background: rgba(34, 197, 94, 0.15);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(34, 197, 94, 0.4);
+            transition: all 0.3s ease;
+            animation: carouselNavGlow 0.8s ease-in-out infinite;
+          }
+
+          .carousel-nav-button:hover {
+            background: rgba(34, 197, 94, 0.25);
+            backdrop-filter: blur(25px);
+            border: 1px solid rgba(34, 197, 94, 0.6);
+            transform: scale(1.1);
+          }
+        `}</style>
         <button
           onClick={handlePrev}
-          className="absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-4 bg-green-500 hover:bg-green-600 text-white p-2 rounded-full transition z-30"
+          className="carousel-nav-button absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-4 text-white p-2 rounded-full z-30 hidden md:block"
         >
           <ChevronLeft className="w-6 h-6" />
         </button>
         <button
           onClick={handleNext}
-          className="absolute right-0 top-1/2 transform -translate-y-1/2 translate-x-4 bg-green-500 hover:bg-green-600 text-white p-2 rounded-full transition z-30"
+          className="carousel-nav-button absolute right-0 top-1/2 transform -translate-y-1/2 translate-x-4 text-white p-2 rounded-full z-30 hidden md:block"
         >
           <ChevronRight className="w-6 h-6" />
         </button>

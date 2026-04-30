@@ -33,10 +33,59 @@ export default function WelcomePopup({ onClose }: WelcomePopupProps) {
   }
 
   return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
-      <div className="bg-gradient-to-b from-slate-900 to-slate-950 rounded-2xl max-w-md w-full border border-slate-700 shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-lg flex items-center justify-center z-[100] p-4">
+      <style>{`
+        @keyframes popupEnter {
+          0% {
+            transform: scale(0.95);
+            opacity: 0;
+          }
+          100% {
+            transform: scale(1);
+            opacity: 1;
+          }
+        }
+
+        @keyframes greenGlassGlow {
+          0%, 100% {
+            box-shadow: 0 0 15px rgba(34, 197, 94, 0.3), inset 0 0 20px rgba(255, 255, 255, 0.05);
+          }
+          50% {
+            box-shadow: 0 0 25px rgba(34, 197, 94, 0.5), inset 0 0 30px rgba(255, 255, 255, 0.1);
+          }
+        }
+
+        .popup-liquid-glass {
+          background: rgba(20, 20, 30, 0.5);
+          backdrop-filter: blur(20px);
+          border: 1px solid rgba(255, 255, 255, 0.15);
+          animation: popupEnter 0.4s ease-out;
+        }
+
+        .popup-glass-button {
+          background: rgba(255, 255, 255, 0.08);
+          backdrop-filter: blur(20px);
+          border: 1px solid rgba(255, 255, 255, 0.15);
+          transition: all 0.3s ease;
+        }
+
+        .popup-glass-button:hover {
+          background: rgba(255, 255, 255, 0.12);
+          backdrop-filter: blur(25px);
+          border: 1px solid rgba(255, 255, 255, 0.25);
+          transform: scale(1.02);
+        }
+
+        .popup-header-glass {
+          background: rgba(34, 197, 94, 0.15);
+          backdrop-filter: blur(20px);
+          border-bottom: 1px solid rgba(34, 197, 94, 0.3);
+          animation: greenGlassGlow 0.8s ease-in-out infinite;
+        }
+      `}</style>
+      <div className="popup-liquid-glass rounded-3xl max-w-md w-full shadow-2xl overflow-hidden">
         {/* Header */}
-        <div className="bg-gradient-to-r from-green-600 to-green-500 px-6 py-4 flex items-center justify-between">
+        <div className="popup-header-glass px-6 py-5 flex items-center justify-between">
           <h2 className="text-white font-bold text-xl">স্বাগতম!</h2>
           <button
             onClick={onClose}
@@ -49,16 +98,16 @@ export default function WelcomePopup({ onClose }: WelcomePopupProps) {
         {/* Content */}
         <div className="p-6">
           {/* Typewriter Text */}
-          <div className="bg-slate-800/50 rounded-xl p-4 mb-6 min-h-[100px] border border-slate-700">
+          <div className="popup-glass-button rounded-2xl p-4 mb-6 min-h-[100px]">
             <p className="text-white text-lg leading-relaxed">
               {displayedText}
-              {!isTypingComplete && <span className="inline-block w-0.5 h-5 bg-green-500 ml-1 animate-pulse" />}
+              {!isTypingComplete && <span className="inline-block w-0.5 h-5 bg-green-400 ml-1 animate-pulse" />}
             </p>
           </div>
 
           {/* Notice Box */}
-          <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 mb-6">
-            <p className="text-amber-400 text-sm font-medium text-center">⚠️ বিশেষ দ্রষ্টব্য</p>
+          <div className="popup-glass-button rounded-2xl p-4 mb-6 border border-amber-400/30">
+            <p className="text-amber-300 text-sm font-medium text-center">⚠️ বিশেষ দ্রষ্টব্য</p>
             <p className="text-slate-300 text-sm text-center mt-2">
               MoviesVerseBD এর সমস্ত মুভি Telegram এর Private Channel এ Upload হয়।
             </p>
@@ -69,7 +118,7 @@ export default function WelcomePopup({ onClose }: WelcomePopupProps) {
             {/* Join Private Channel Button */}
             <button
               onClick={handleJoinChannel}
-              className="w-full bg-[#0088cc] hover:bg-[#0077b5] text-white font-bold py-3.5 px-6 rounded-xl flex items-center justify-center gap-3 transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-lg"
+              className="popup-glass-button bg-cyan-500/20 border border-cyan-400/40 hover:bg-cyan-500/30 w-full text-white font-bold py-3.5 px-6 rounded-xl flex items-center justify-center gap-3 transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-lg"
             >
               {/* Telegram Icon */}
               <svg viewBox="0 0 24 24" className="w-6 h-6 fill-current">
@@ -81,7 +130,7 @@ export default function WelcomePopup({ onClose }: WelcomePopupProps) {
             {/* Watch Now Button */}
             <button
               onClick={onClose}
-              className="w-full bg-slate-700 hover:bg-slate-600 text-slate-300 hover:text-white font-medium py-3 px-6 rounded-xl transition-all"
+              className="popup-glass-button bg-slate-500/20 border border-slate-400/40 hover:bg-slate-500/30 w-full text-white font-medium py-3 px-6 rounded-xl transition-all"
             >
               অন্যথায় মুভি এখনই দেখুন
             </button>

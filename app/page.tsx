@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useMemo, useEffect } from "react"
-import Snowfall from "@/components/snowfall" // Snowfall import করুন
 import Header from "@/components/header"
 import TrendingCarousel from "@/components/trending-carousel"
 import GenreCategories from "@/components/genre-categories"
@@ -25,6 +24,7 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState("home")
   const [isSearching, setIsSearching] = useState(false)
   const [showAdultContent, setShowAdultContent] = useState(false)
+  const [tabHistory, setTabHistory] = useState<string[]>(["home"])
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" })
@@ -36,6 +36,27 @@ export default function Home() {
       setShowWelcomePopup(true)
     }
   }, [])
+
+  useEffect(() => {
+    const handlePopState = () => {
+      if (tabHistory.length > 1) {
+        const newHistory = tabHistory.slice(0, -1)
+        setTabHistory(newHistory)
+        setActiveTab(newHistory[newHistory.length - 1])
+      }
+    }
+
+    window.addEventListener("popstate", handlePopState)
+    return () => window.removeEventListener("popstate", handlePopState)
+  }, [tabHistory])
+
+  const handleTabChange = (newTab: string) => {
+    if (newTab !== activeTab) {
+      setTabHistory([...tabHistory, newTab])
+      setActiveTab(newTab)
+      window.history.pushState(null, "", "")
+    }
+  }
 
   const handleClosePopup = () => {
     localStorage.setItem("mvbd_visited", "true")
@@ -79,28 +100,24 @@ export default function Home() {
       case "shorts":
         return (
           <>
-            <Snowfall /> {/* Anime পেজেও Snowfall যোগ করুন */}
             <AnimePage />
           </>
         )
       case "exclusive":
         return (
           <>
-            <Snowfall /> {/* Exclusive পেজেও Snowfall যোগ করুন */}
             <ExclusivePage />
           </>
         )
       case "profile":
         return (
           <>
-            <Snowfall /> {/* Profile পেজেও Snowfall যোগ করুন */}
             <ProfilePage />
           </>
         )
       default:
         return (
           <>
-            <Snowfall /> {/* Home পেজের জন্য Snowfall যোগ করুন */}
             <div className="min-h-screen bg-black pb-20">
               <Header onSearch={handleSearch} />
 
@@ -168,7 +185,7 @@ export default function Home() {
     <>
       {renderContent()}
 
-      <BottomNavigation activeTab={activeTab} onTabChange={setActiveTab} />
+      <BottomNavigation activeTab={activeTab} onTabChange={handleTabChange} />
 
       {selectedMovie && activeTab === "home" && (
         <MovieModal

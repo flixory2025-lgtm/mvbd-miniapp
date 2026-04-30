@@ -105,7 +105,7 @@ export default function BottomNavigation({ activeTab, onTabChange }: BottomNavig
         }
       `}</style>
 
-      <nav className="fixed bottom-0 left-0 right-0 bg-black/40 backdrop-blur-xl border-t border-white/10 z-50 safe-area-bottom">
+      <nav className="fixed bottom-0 left-0 right-0 bg-black/40 backdrop-blur-xl z-50 safe-area-bottom flex items-end justify-center pb-4 px-4">
         <style>{`
           @keyframes liquidButtonZoom {
             0% {
@@ -114,37 +114,52 @@ export default function BottomNavigation({ activeTab, onTabChange }: BottomNavig
               backdrop-filter: blur(20px);
             }
             50% {
-              transform: scale(1.1);
+              transform: scale(1.15);
               background: rgba(255, 255, 255, 0.1);
               backdrop-filter: blur(25px);
             }
             100% {
-              transform: scale(1.15);
+              transform: scale(1.2);
               background: rgba(255, 255, 255, 0.12);
               backdrop-filter: blur(30px);
             }
           }
 
-          @keyframes liquidButtonActive {
-            0% {
-              box-shadow: 0 0 0 0 rgba(100, 200, 255, 0.3), inset 0 0 20px rgba(255, 255, 255, 0.1);
-            }
-            100% {
-              box-shadow: 0 0 20px 8px rgba(100, 200, 255, 0.2), inset 0 0 40px rgba(255, 255, 255, 0.15);
-            }
+          .nav-pill-container {
+            background: rgba(30, 30, 40, 0.6);
+            backdrop-filter: blur(25px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 40px;
+            padding: 12px 20px;
+            display: flex;
+            items-align: center;
+            gap: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
           }
 
           .liquid-nav-button {
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(255, 255, 255, 0.08);
             backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.15);
             transition: all 0.3s ease;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            width: 60px;
+            height: 60px;
+            border-radius: 30px;
+            cursor: pointer;
+            padding: 0;
           }
 
           .liquid-nav-button:hover {
-            background: rgba(255, 255, 255, 0.08);
+            background: rgba(255, 255, 255, 0.12);
             backdrop-filter: blur(25px);
-            border: 1px solid rgba(255, 255, 255, 0.25);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            transform: scale(1.05);
           }
 
           @keyframes greenFirePulse {
@@ -157,13 +172,13 @@ export default function BottomNavigation({ activeTab, onTabChange }: BottomNavig
           }
 
           .liquid-nav-button.active {
-            background: rgba(34, 197, 94, 0.15);
+            background: rgba(34, 197, 94, 0.2);
             backdrop-filter: blur(30px);
-            border: 1px solid rgba(34, 197, 94, 0.4);
+            border: 1px solid rgba(34, 197, 94, 0.5);
             animation: liquidButtonZoom 0.5s ease-out, greenFirePulse 0.8s ease-in-out infinite;
           }
         `}</style>
-        <div className="flex items-center justify-around py-4 px-2">
+        <div className="nav-pill-container">
           {tabs.map((tab) => {
             const Icon = tab.icon
             const isActive = activeTab === tab.id
@@ -171,12 +186,11 @@ export default function BottomNavigation({ activeTab, onTabChange }: BottomNavig
               <div key={tab.id} className="relative">
                 <button
                   onClick={() => handleTabClick(tab.id)}
-                  className={`liquid-nav-button relative flex flex-col items-center justify-center gap-2 w-16 h-16 rounded-3xl transition-all ${
-                    isActive ? "active" : ""
-                  } ${clickedTab === tab.id ? "clicked" : ""}`}
+                  className={`liquid-nav-button ${isActive ? "active" : ""} ${clickedTab === tab.id ? "clicked" : ""}`}
+                  title={tab.label}
                 >
-                  <Icon className="w-6 h-6" />
-                  <span className="text-xs font-medium text-center">{tab.label}</span>
+                  <Icon className="w-7 h-7" />
+                  <span className="text-xs font-medium">{tab.label}</span>
                 </button>
 
                 {/* Liquid Glass Bubbles */}
@@ -188,7 +202,7 @@ export default function BottomNavigation({ activeTab, onTabChange }: BottomNavig
                       className="nav-bubble active"
                       style={{
                         left: `calc(50% + ${(idx - 2.5) * 8}px)`,
-                        top: "-15px",
+                        top: "-20px",
                         "--tx": `${(idx - 2.5) * 15}px`,
                       } as React.CSSProperties & { "--tx": string }}
                     />

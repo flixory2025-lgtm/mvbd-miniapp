@@ -25,7 +25,7 @@ export default function BottomNavigation({ activeTab, onTabChange }: BottomNavig
         />
       ),
     },
-    { id: "exclusive", label: "Platforms", icon: Star },
+    { id: "exclusive", label: "Series", icon: Star },
     { id: "profile", label: "Profile", icon: User },
   ]
 
@@ -105,7 +105,7 @@ export default function BottomNavigation({ activeTab, onTabChange }: BottomNavig
         }
       `}</style>
 
-      <nav className="fixed bottom-0 left-0 right-0 bg-black/40 backdrop-blur-xl z-50 safe-area-bottom flex items-end justify-center pb-4 px-4">
+      <nav className="fixed bottom-0 left-0 right-0 z-50 safe-area-bottom flex items-end justify-center pb-3 px-4">
         <style>{`
           @keyframes liquidButtonZoom {
             0% {
@@ -114,27 +114,27 @@ export default function BottomNavigation({ activeTab, onTabChange }: BottomNavig
               backdrop-filter: blur(20px);
             }
             50% {
-              transform: scale(1.15);
+              transform: scale(1.12);
               background: rgba(255, 255, 255, 0.1);
               backdrop-filter: blur(25px);
             }
             100% {
-              transform: scale(1.2);
+              transform: scale(1.15);
               background: rgba(255, 255, 255, 0.12);
               backdrop-filter: blur(30px);
             }
           }
 
           .nav-pill-container {
-            background: rgba(30, 30, 40, 0.6);
+            background: rgba(30, 30, 40, 0.5);
             backdrop-filter: blur(25px);
             border: 1px solid rgba(255, 255, 255, 0.15);
-            border-radius: 40px;
-            padding: 12px 20px;
+            border-radius: 50px;
+            padding: 8px 16px;
             display: flex;
-            items-align: center;
-            gap: 12px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
           }
 
           .liquid-nav-button {
@@ -147,12 +147,23 @@ export default function BottomNavigation({ activeTab, onTabChange }: BottomNavig
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 6px;
-            width: 60px;
-            height: 60px;
-            border-radius: 30px;
+            gap: 4px;
+            width: 50px;
+            height: 50px;
+            border-radius: 25px;
             cursor: pointer;
             padding: 0;
+          }
+
+          .liquid-nav-button .icon {
+            width: 24px;
+            height: 24px;
+          }
+
+          .liquid-nav-button .label {
+            font-size: 10px;
+            font-weight: 600;
+            line-height: 1;
           }
 
           .liquid-nav-button:hover {
@@ -189,8 +200,8 @@ export default function BottomNavigation({ activeTab, onTabChange }: BottomNavig
                   className={`liquid-nav-button ${isActive ? "active" : ""} ${clickedTab === tab.id ? "clicked" : ""}`}
                   title={tab.label}
                 >
-                  <Icon className="w-7 h-7" />
-                  <span className="text-xs font-medium">{tab.label}</span>
+                  <Icon className="icon" />
+                  <span className="label">{tab.label}</span>
                 </button>
 
                 {/* Liquid Glass Bubbles */}

@@ -1,14 +1,22 @@
 "use client"
 
-import { useState, useMemo, useEffect } from "react"
+import { useState, useMemo, useEffect, useRef } from "react"
 import Header from "@/components/header"
 import MovieGrid from "@/components/movie-grid"
 import MovieModal from "@/components/movie-modal"
 import GenreCategories from "@/components/genre-categories"
 import { movies, genres } from "@/lib/movie-data"
 
-// Swiper import for slideshow
-import Swiper from 'swiper'
+// Dynamic import for Swiper to avoid SSR issues
+import dynamic from 'next/dynamic'
+
+// Dynamically import Swiper with no SSR
+const SwiperCore = dynamic(
+  () => import('swiper').then((mod) => mod.default),
+  { ssr: false }
+)
+
+// Import Swiper styles
 import 'swiper/css'
 
 export default function SeriesSection() {
@@ -17,6 +25,7 @@ export default function SeriesSection() {
   const [selectedGenre, setSelectedGenre] = useState<string | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
   const [isSearching, setIsSearching] = useState(false)
+  const swiperInstanceRef = useRef<any>(null)
 
   // Filter movies that contain "season" in title (series)
   const allSeries = useMemo(() => {
@@ -61,60 +70,69 @@ export default function SeriesSection() {
 
   // Initialize Swiper for trending slider
   useEffect(() => {
-    if (!isSearching && trendingSeries.length > 0) {
-      const swiperElement = document.querySelector('#trendingSwiper')
-      if (swiperElement && !(swiperElement as any).swiper) {
-        new Swiper('#trendingSwiper', {
-          slidesPerView: 'auto',
-          spaceBetween: 16,
-          loop: true,
-          autoplay: {
-            delay: 3000,
-            disableOnInteraction: false,
-            pauseOnMouseEnter: true,
-          },
-          speed: 800,
-          freeMode: false,
-          breakpoints: {
-            320: {
-              slidesPerView: 2.2,
-              spaceBetween: 12,
+    // Only run on client side and when not searching
+    if (typeof window !== 'undefined' && !isSearching && trendingSeries.length > 0) {
+      // Small delay to ensure DOM is ready
+      const timer = setTimeout(async () => {
+        const swiperElement = document.querySelector('#trendingSwiper')
+        if (swiperElement && !swiperInstanceRef.current) {
+          const Swiper = (await import('swiper')).default
+          swiperInstanceRef.current = new Swiper('#trendingSwiper', {
+            slidesPerView: 'auto',
+            spaceBetween: 16,
+            loop: true,
+            autoplay: {
+              delay: 3000,
+              disableOnInteraction: false,
+              pauseOnMouseEnter: true,
             },
-            480: {
-              slidesPerView: 2.5,
+            speed: 800,
+            freeMode: false,
+            breakpoints: {
+              320: {
+                slidesPerView: 2.2,
+                spaceBetween: 12,
+              },
+              480: {
+                slidesPerView: 2.5,
+              },
+              640: {
+                slidesPerView: 3.2,
+              },
+              768: {
+                slidesPerView: 4.2,
+              },
+              1024: {
+                slidesPerView: 5.2,
+              },
+              1280: {
+                slidesPerView: 6.2,
+              }
             },
-            640: {
-              slidesPerView: 3.2,
-            },
-            768: {
-              slidesPerView: 4.2,
-            },
-            1024: {
-              slidesPerView: 5.2,
-            },
-            1280: {
-              slidesPerView: 6.2,
-            }
-          },
-          touchRatio: 1,
-          resistance: true,
-          resistanceRatio: 0.85,
-        })
-      }
-    }
-
-    // Cleanup function
-    return () => {
-      const swiperElement = document.querySelector('#trendingSwiper')
-      if (swiperElement && (swiperElement as any).swiper) {
-        (swiperElement as any).swiper.destroy(true, true)
-      }
+            touchRatio: 1,
+            resistance: true,
+            resistanceRatio: 0.85,
+          })
+        }
+      }, 100)
+      
+      return () => clearTimeout(timer)
     }
   }, [isSearching, trendingSeries.length])
 
+  // Cleanup function
+  useEffect(() => {
+    return () => {
+      if (swiperInstanceRef.current) {
+        swiperInstanceRef.current.destroy(true, true)
+        swiperInstanceRef.current = null
+      }
+    }
+  }, [])
+
   return (
     <div className="min-h-screen bg-black pb-20">
-      <style>{`
+      <style jsx>{`
         @keyframes movieFlicker {
           0%, 100% {
             opacity: 0.15;
@@ -130,20 +148,6 @@ export default function SeriesSection() {
           background: linear-gradient(135deg, rgba(0, 0, 0, 0.8), rgba(20, 20, 40, 0.6));
           padding: 40px 20px;
           margin-bottom: 30px;
-        }
-
-        .series-background-animation {
-          position: absolute;
-          inset: 0;
-          opacity: 0.1;
-          pointer-events: none;
-        }
-
-        .series-background-animation video {
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-          animation: movieFlicker 4s ease-in-out infinite;
         }
 
         .series-header-content {
@@ -292,16 +296,6 @@ export default function SeriesSection() {
           .trending-swiper-container::after {
             width: 30px;
           }
-        }
-
-        .trending-label {
-          font-size: 1.5rem;
-          font-weight: 700;
-          color: white;
-          margin-bottom: 16px;
-          padding-left: 16px;
-          text-transform: uppercase;
-          letter-spacing: 1px;
         }
       `}</style>
 

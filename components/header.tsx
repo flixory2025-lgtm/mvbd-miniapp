@@ -16,14 +16,15 @@ export default function Header({ onSearch }: HeaderProps) {
   const [bubbles, setBubbles] = useState<Array<{ id: number; x: number; y: number }>>([])
   const bubbleIdRef = useRef(0)
 
-  const searchSuggestions = useMemo(() => {
+  const allSearchSuggestions = useMemo(() => {
     if (!searchInput.trim()) return []
     const query = searchInput.toLowerCase()
     return movies
       .filter((m) => m.title.toLowerCase().includes(query))
-      .slice(0, 6)
       .map((m) => m.title)
   }, [searchInput])
+
+  const searchSuggestions = allSearchSuggestions.slice(0, 5)
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
@@ -116,9 +117,28 @@ export default function Header({ onSearch }: HeaderProps) {
           border: 1px solid rgba(100, 200, 255, 0.3);
           border-radius: 12px;
           margin-top: 8px;
-          max-height: 300px;
-          overflow-y-auto;
+          max-height: 280px;
+          overflow-y: auto;
           z-index: 50;
+          scrollbar-width: thin;
+          scrollbar-color: rgba(100, 200, 255, 0.5) transparent;
+        }
+
+        .search-suggestions::-webkit-scrollbar {
+          width: 6px;
+        }
+
+        .search-suggestions::-webkit-scrollbar-track {
+          background: transparent;
+        }
+
+        .search-suggestions::-webkit-scrollbar-thumb {
+          background: rgba(100, 200, 255, 0.5);
+          border-radius: 3px;
+        }
+
+        .search-suggestions::-webkit-scrollbar-thumb:hover {
+          background: rgba(100, 200, 255, 0.7);
         }
 
         .search-suggestion-item {
@@ -188,9 +208,9 @@ export default function Header({ onSearch }: HeaderProps) {
             ))}
           </div>
 
-          {isFocused && searchSuggestions.length > 0 && (
+          {isFocused && allSearchSuggestions.length > 0 && (
             <div className="search-suggestions">
-              {searchSuggestions.map((suggestion, idx) => (
+              {allSearchSuggestions.map((suggestion, idx) => (
                 <div
                   key={idx}
                   className="search-suggestion-item text-slate-200"

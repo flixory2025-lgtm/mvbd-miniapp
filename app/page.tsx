@@ -12,7 +12,8 @@ import BottomNavigation from "@/components/bottom-navigation"
 import AnimePage from "@/components/anime-page"
 import ExclusivePage from "@/components/exclusive-page"
 import ProfilePage from "@/components/profile-page"
-import ShortsPage from "@/components/shorts-page" // Import ShortsPage component
+import ShortsPage from "@/components/shorts-page"
+import SeriesSection from "@/components/series-section"
 import { movies, genres } from "@/lib/movie-data"
 
 export default function Home() {
@@ -106,7 +107,7 @@ export default function Home() {
       case "exclusive":
         return (
           <>
-            <ExclusivePage />
+            <SeriesSection />
           </>
         )
       case "profile":

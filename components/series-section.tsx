@@ -1,8 +1,7 @@
-dhd"use client"
+"use client"
 
 import { useState, useMemo } from "react"
 import Header from "@/components/header"
-import TrendingCarousel from "@/components/trending-carousel"
 import MovieGrid from "@/components/movie-grid"
 import MovieModal from "@/components/movie-modal"
 import GenreCategories from "@/components/genre-categories"
@@ -32,14 +31,10 @@ export default function SeriesSection() {
     })
   }, [allSeries, searchQuery, selectedGenre])
 
-  // Trending series IDs (customizable)
-  const trendingSeriesIds = useMemo(() => {
-    return allSeries.slice(0, 12).map((s) => s.id)
-  }, [allSeries])
-
+  // Trending series (first 12 from filtered series)
   const trendingSeries = useMemo(() => {
-    return allSeries.filter((s) => trendingSeriesIds.includes(s.id))
-  }, [allSeries, trendingSeriesIds])
+    return allSeries.slice(0, 12)
+  }, [allSeries])
 
   const handleSearch = (query: string) => {
     setSearchQuery(query)
@@ -53,7 +48,7 @@ export default function SeriesSection() {
   }
 
   // Pagination
-  const itemsPerPage = 10
+  const itemsPerPage = 30
   const totalPages = Math.ceil(filteredSeries.length / itemsPerPage)
   const paginatedMovies = filteredSeries.slice(
     (currentPage - 1) * itemsPerPage,
@@ -158,7 +153,24 @@ export default function SeriesSection() {
           {!isSearching && trendingSeries.length > 0 && (
             <div className="trending-section">
               <div className="trending-label">Trending Now</div>
-              <TrendingCarousel onMovieClick={setSelectedMovie} />
+              <div className="px-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 mb-8">
+                {trendingSeries.map((series) => (
+                  <div
+                    key={series.id}
+                    className="group cursor-pointer relative rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 aspect-[2/3]"
+                    onClick={() => setSelectedMovie(series)}
+                  >
+                    <img
+                      src={series.poster}
+                      alt={series.title}
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                      <p className="text-white text-center text-sm font-semibold px-2">{series.title}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
 

@@ -6,7 +6,7 @@ import TrendingCarousel from "@/components/trending-carousel"
 import MovieGrid from "@/components/movie-grid"
 import MovieModal from "@/components/movie-modal"
 import GenreCategories from "@/components/genre-categories"
-import { movies } from "@/lib/movie-data"
+import { movies, genres } from "@/lib/movie-data"
 
 export default function SeriesSection() {
   const [selectedMovie, setSelectedMovie] = useState<(typeof movies)[0] | null>(null)
@@ -19,16 +19,6 @@ export default function SeriesSection() {
   const allSeries = useMemo(() => {
     return movies.filter((m) => m.title.toLowerCase().includes("season"))
   }, [])
-
-  // Get unique genres from series
-  const seriesGenres = useMemo(() => {
-    const genreSet = new Set<string>()
-    allSeries.forEach((series) => {
-      const genres = series.genre.split(" | ")
-      genres.forEach((g) => genreSet.add(g.trim()))
-    })
-    return ["All", ...Array.from(genreSet)]
-  }, [allSeries])
 
   // Filter series based on search and genre
   const filteredSeries = useMemo(() => {
@@ -173,9 +163,9 @@ export default function SeriesSection() {
           )}
 
           {/* Genre Categories */}
-          {!isSearching && seriesGenres.length > 0 && (
+          {!isSearching && genres.length > 0 && (
             <GenreCategories
-              genres={seriesGenres}
+              genres={genres}
               selectedGenre={selectedGenre}
               onGenreSelect={handleGenreSelect}
             />

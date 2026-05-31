@@ -5,6 +5,7 @@ import Header from "@/components/header"
 import MovieGrid from "@/components/movie-grid"
 import MovieModal from "@/components/movie-modal"
 import GenreCategories from "@/components/genre-categories"
+import Footer from "@/components/footer"
 import { movies, genres } from "@/lib/movie-data"
 
 export default function SeriesSection() {
@@ -129,11 +130,19 @@ export default function SeriesSection() {
       `}</style>
 
       {/* Header with Search */}
-      <Header onSearch={handleSearch} />
+      <Header onSearch={handleSearch} pageType="series" searchData={allSeries} />
 
       {/* Series Header Background */}
       <div className="series-header-background">
         <div className="series-header-content">
+          {/* Logo */}
+          <div className="flex justify-center mb-4">
+            <img 
+              src="https://i.postimg.cc/BbPgTGsZ/de3c8a1-dca3128d-72e2-431f-87ea-88e9c3b9702b-removebg-preview.png" 
+              alt="Series Logo" 
+              className="h-20 w-auto object-contain drop-shadow-lg"
+            />
+          </div>
           <h1 className="series-title">Web Series & TV Shows</h1>
           <p className="text-cyan-300 text-lg mt-4">Explore {allSeries.length} amazing series</p>
         </div>
@@ -209,6 +218,9 @@ export default function SeriesSection() {
           onClose={() => setSelectedMovie(null)}
         />
       )}
+
+      {/* Footer */}
+      <Footer />
     </div>
   )
 }

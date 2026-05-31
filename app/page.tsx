@@ -19,7 +19,6 @@ import ContactUsPage from "@/components/contact-us-page"
 import AboutUsPage from "@/components/about-us-page"
 import SettingsPage from "@/components/settings-page"
 import UniversalFooter from "@/components/universal-footer"
-import { useSwipe } from "@/hooks/use-swipe"
 
 export default function Home() {
   const [searchQuery, setSearchQuery] = useState("")

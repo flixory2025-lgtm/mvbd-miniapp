@@ -22,13 +22,14 @@ interface MovieModalProps {
   onClose: () => void
   onMovieClick?: (movie: (typeof movies)[0]) => void
   showAdultContent?: boolean
+  onOpenDetailPage?: () => void
 }
 
 const isAdultMovie = (genre: string): boolean => {
   return genre.toLowerCase().includes("adult")
 }
 
-export default function MovieModal({ movie, onClose, onMovieClick, showAdultContent = false }: MovieModalProps) {
+export default function MovieModal({ movie, onClose, onMovieClick, showAdultContent = false, onOpenDetailPage }: MovieModalProps) {
   const [showTrailer, setShowTrailer] = useState(false)
   const [showJoinPopup, setShowJoinPopup] = useState(false)
   const [isAddedToWatchLater, setIsAddedToWatchLater] = useState(false)
@@ -196,6 +197,15 @@ export default function MovieModal({ movie, onClose, onMovieClick, showAdultCont
                 {isAddedToWatchLater ? "পরে দেখা হয়েছে" : "পরে দেখুন"}
               </button>
             </div>
+
+            {onOpenDetailPage && (
+              <button
+                onClick={onOpenDetailPage}
+                className="w-full modal-liquid-glass-button bg-amber-500/20 border border-amber-400/40 hover:bg-amber-500/30 text-white font-bold py-3 rounded-xl transition shadow-lg shadow-amber-500/30 mb-6"
+              >
+                সম্পূর্ণ বিবরণ দেখুন
+              </button>
+            )}
 
             {relatedMovies.length > 0 && (
               <div className="border-t border-slate-700 pt-6">

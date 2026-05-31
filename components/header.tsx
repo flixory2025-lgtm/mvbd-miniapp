@@ -1,7 +1,8 @@
 "use client"
 
 import type React from "react"
-import { useState, useRef, useMemo, useEffect } from "react"
+
+import { useState, useRef, useMemo } from "react"
 import { Search, X } from "lucide-react"
 import { movies } from "@/lib/movie-data"
 
@@ -9,86 +10,11 @@ interface HeaderProps {
   onSearch: (query: string) => void
 }
 
-const searchSuggestions = [
-  "search movie...",
-  "search web series...",
-  "bachelor point...",
-  "money heist",
-  "all of us are dead",
-  "alice in borderland",
-  "avengers infinity war",
-  "if wishes could kill",
-  "the wonderfall",
-]
-
 export default function Header({ onSearch }: HeaderProps) {
   const [searchInput, setSearchInput] = useState("")
   const [isFocused, setIsFocused] = useState(false)
   const [bubbles, setBubbles] = useState<Array<{ id: number; x: number; y: number }>>([])
-  const [displayedText, setDisplayedText] = useState("")
-  const [currentSuggestionIndex, setCurrentSuggestionIndex] = useState(0)
-  const [isTyping, setIsTyping] = useState(true)
-  const [charIndex, setCharIndex] = useState(0)
   const bubbleIdRef = useRef(0)
-  const timeoutRef = useRef<NodeJS.Timeout>()
-
-  const currentSuggestion = searchSuggestions[currentSuggestionIndex]
-
-  useEffect(() => {
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current)
-    }
-
-    if (isTyping && charIndex < currentSuggestion.length) {
-      timeoutRef.current = setTimeout(() => {
-        setDisplayedText((prev) => prev + currentSuggestion[charIndex])
-        setCharIndex((prev) => prev + 1)
-      }, 80)
-    } else if (isTyping && charIndex === currentSuggestion.length) {
-      timeoutRef.current = setTimeout(() => {
-        setIsTyping(false)
-      }, 2000)
-    } else if (!isTyping) {
-      timeoutRef.current = setTimeout(() => {
-        setDisplayedText("")
-        setCharIndex(0)
-        setCurrentSuggestionIndex((prev) => (prev + 1) % searchSuggestions.length)
-        setIsTyping(true)
-      }, 1000)
-    }
-
-    return () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current)
-      }
-    }
-  }, [isTyping, charIndex, currentSuggestion])
-
-  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchInput(e.target.value)
-    onSearch(e.target.value)
-  }
-
-  const handleFocus = () => {
-    setIsFocused(true)
-  }
-
-  const handleClearSearch = () => {
-    setSearchInput("")
-    onSearch("")
-  }
-
-  const handleCreateBubble = (e: React.MouseEvent<HTMLInputElement>) => {
-    if (!searchInput.trim()) return
-    const rect = (e.currentTarget as HTMLInputElement).getBoundingClientRect()
-    const x = Math.random() * (rect.width - 20) + 10
-    const y = Math.random() * (rect.height - 20) + 10
-    const newBubble = { id: bubbleIdRef.current++, x, y }
-    setBubbles([...bubbles, newBubble])
-    setTimeout(() => {
-      setBubbles((prev) => prev.filter((b) => b.id !== newBubble.id))
-    }, 2000)
-  }
 
   const allSearchSuggestions = useMemo(() => {
     if (!searchInput.trim()) return []
@@ -96,119 +22,226 @@ export default function Header({ onSearch }: HeaderProps) {
     return movies
       .filter((m) => m.title.toLowerCase().includes(query))
       .map((m) => m.title)
-      .slice(0, 5)
   }, [searchInput])
 
+  const searchSuggestions = allSearchSuggestions.slice(0, 5)
+
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value
+    setSearchInput(value)
+    onSearch(value)
+  }
+
+  const createBubbles = () => {
+    if (!isFocused) return
+    const newBubbles = []
+    for (let i = 0; i < 3; i++) {
+      const id = bubbleIdRef.current++
+      const x = Math.random() * 20 - 10
+      newBubbles.push({ id, x, y: Math.random() * 10 })
+      setTimeout(() => {
+        setBubbles((prev) => prev.filter((b) => b.id !== id))
+      }, 800)
+    }
+    setBubbles((prev) => [...prev, ...newBubbles])
+  }
+
+  const handleFocus = () => {
+    setIsFocused(true)
+    createBubbles()
+  }
+
   return (
-    <header className="sticky top-0 z-50 backdrop-blur-2xl bg-black/40 border-b border-white/10 shadow-xl">
+    <header className="sticky top-0 z-40 bg-black/40 backdrop-blur-xl border-b border-white/10 shadow-lg">
       <style>{`
-        @keyframes liquidGlassGlow {
-          0%, 100% {
-            box-shadow: 0 0 20px rgba(34, 197, 94, 0.3), inset 0 0 20px rgba(255, 255, 255, 0.1);
-            border-color: rgba(34, 197, 94, 0.3);
+        @keyframes liquidGlassZoom {
+          0% {
+            transform: scale(1);
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
           }
           50% {
-            box-shadow: 0 0 40px rgba(34, 197, 94, 0.5), inset 0 0 30px rgba(255, 255, 255, 0.15);
-            border-color: rgba(34, 197, 94, 0.5);
+            transform: scale(1.03);
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(25px);
+          }
+          100% {
+            transform: scale(1.06);
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(30px);
+          }
+        }
+
+        @keyframes liquidGlassGlow {
+          0% {
+            box-shadow: 0 0 0 0 rgba(100, 200, 255, 0.3), inset 0 0 20px rgba(255, 255, 255, 0.1);
+          }
+          50% {
+            box-shadow: 0 0 15px 5px rgba(100, 200, 255, 0.2), inset 0 0 30px rgba(255, 255, 255, 0.15);
+          }
+          100% {
+            box-shadow: 0 0 25px 10px rgba(100, 200, 255, 0.1), inset 0 0 40px rgba(255, 255, 255, 0.2);
           }
         }
 
         .liquid-glass-search {
-          background: rgba(15, 23, 42, 0.4);
-          backdrop-filter: blur(30px);
-          border: 1px solid rgba(34, 197, 94, 0.3);
-          animation: liquidGlassGlow 2s ease-in-out infinite;
+          background: rgba(255, 255, 255, 0.05);
+          backdrop-filter: blur(20px);
+          border: 1px solid rgba(255, 255, 255, 0.2);
           transition: all 0.3s ease;
         }
 
         .liquid-glass-search:focus-within {
-          background: rgba(15, 23, 42, 0.6);
-          border-color: rgba(34, 197, 94, 0.6);
-          box-shadow: 0 0 40px rgba(34, 197, 94, 0.4), inset 0 0 30px rgba(255, 255, 255, 0.2);
+          background: rgba(255, 255, 255, 0.08);
+          backdrop-filter: blur(30px);
+          border: 1px solid rgba(100, 200, 255, 0.4);
+          animation: liquidGlassZoom 0.6s ease-out forwards, liquidGlassGlow 0.6s ease-out;
         }
 
         .search-input-liquid {
           background: transparent;
-          color: white;
+          border: none;
         }
 
         .search-input-liquid::placeholder {
-          color: rgba(148, 163, 184, 0.6);
-          font-style: italic;
+          color: rgba(255, 255, 255, 0.5);
         }
 
-        @keyframes float {
-          0% {
-            opacity: 1;
-            transform: translateY(0) scale(1);
-          }
-          100% {
-            opacity: 0;
-            transform: translateY(-30px) scale(0.5);
-          }
+        .search-suggestions {
+          position: absolute;
+          top: 100%;
+          left: 0;
+          right: 0;
+          background: rgba(20, 20, 30, 0.95);
+          backdrop-filter: blur(20px);
+          border: 1px solid rgba(100, 200, 255, 0.3);
+          border-radius: 12px;
+          margin-top: 8px;
+          max-height: 280px;
+          overflow-y: auto;
+          z-index: 50;
+          scrollbar-width: thin;
+          scrollbar-color: rgba(100, 200, 255, 0.5) transparent;
         }
 
-        .bubble {
-          animation: float 2s ease-out forwards;
+        .search-suggestions::-webkit-scrollbar {
+          width: 6px;
+        }
+
+        .search-suggestions::-webkit-scrollbar-track {
+          background: transparent;
+        }
+
+        .search-suggestions::-webkit-scrollbar-thumb {
+          background: rgba(100, 200, 255, 0.5);
+          border-radius: 3px;
+        }
+
+        .search-suggestions::-webkit-scrollbar-thumb:hover {
+          background: rgba(100, 200, 255, 0.7);
+        }
+
+        .search-suggestion-item {
+          padding: 12px 16px;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .search-suggestion-item:hover {
+          background: rgba(100, 200, 255, 0.1);
+        }
+
+        .search-suggestion-item:last-child {
+          border-bottom: none;
         }
       `}</style>
+      <div className="px-4 py-4 flex items-center gap-4">
+        <div className="flex-shrink-0">
+          <img
+            src="https://i.postimg.cc/0yqFXMFW/photo-2025-12-11-09-45-29-removebg-preview.png"
+            alt="MVBD Logo"
+            className="h-10 w-auto object-contain"
+          />
+        </div>
 
-      <div className="px-4 py-4">
-        <div className="max-w-6xl mx-auto">
+        <div className="flex-1 relative">
           <div className="liquid-glass-search rounded-2xl px-4 py-3 flex items-center gap-3">
             <Search className="w-5 h-5 text-slate-300 flex-shrink-0" />
-            <div className="relative flex-1">
-              <input
-                type="text"
-                placeholder={displayedText || "search movie..."}
-                value={searchInput}
-                onChange={handleSearch}
-                onClick={handleCreateBubble}
-                onFocus={handleFocus}
-                onBlur={() => setTimeout(() => setIsFocused(false), 200)}
-                className="search-input-liquid w-full text-white text-sm outline-none transition-all duration-300"
-              />
-              {bubbles.map((bubble) => (
-                <span
-                  key={bubble.id}
-                  className="bubble absolute text-green-400 text-xs font-semibold pointer-events-none"
-                  style={{
-                    left: `${bubble.x}px`,
-                    top: `${bubble.y}px`,
-                  }}
-                >
-                  +1
-                </span>
-              ))}
-            </div>
+            <input
+              type="text"
+              placeholder="মুভি খুঁজুন..."
+              value={searchInput}
+              onChange={handleSearch}
+              onFocus={handleFocus}
+              onBlur={() => setTimeout(() => setIsFocused(false), 200)}
+              className="search-input-liquid w-full text-white text-sm outline-none"
+            />
             {searchInput && (
-              <button onClick={handleClearSearch} className="text-slate-300 hover:text-white transition">
+              <button
+                onClick={() => {
+                  setSearchInput("")
+                  onSearch("")
+                }}
+                className="text-slate-400 hover:text-white transition"
+              >
                 <X className="w-4 h-4" />
               </button>
             )}
+            {bubbles.map((bubble) => (
+              <div
+                key={bubble.id}
+                className="search-bubble"
+                style={{
+                  width: "8px",
+                  height: "8px",
+                  left: `calc(50% + ${bubble.x}px)`,
+                  top: `${bubble.y}px`,
+                  position: "absolute",
+                  borderRadius: "50%",
+                  background: "radial-gradient(circle at 30% 30%, rgba(100, 200, 255, 0.8), rgba(59, 130, 246, 0.3))",
+                  border: "1px solid rgba(100, 200, 255, 0.5)",
+                  boxShadow: "0 0 8px rgba(100, 200, 255, 0.4), inset -2px -2px 4px rgba(0, 0, 0, 0.2)",
+                  animation: "liquidBubbleRise 0.8s ease-out forwards",
+                }}
+              />
+            ))}
           </div>
 
-          {/* Search Suggestions Dropdown */}
           {isFocused && allSearchSuggestions.length > 0 && (
-            <div className="absolute left-4 right-4 top-16 bg-slate-900/95 border border-white/10 rounded-2xl backdrop-blur-xl max-h-48 overflow-y-auto z-40">
-              {allSearchSuggestions.map((suggestion, index) => (
-                <button
-                  key={index}
-                  onClick={() => {
+            <div className="search-suggestions">
+              {allSearchSuggestions.map((suggestion, idx) => (
+                <div
+                  key={idx}
+                  className="search-suggestion-item text-slate-200"
+                  onMouseDown={() => {
                     setSearchInput(suggestion)
                     onSearch(suggestion)
                     setIsFocused(false)
                   }}
-                  className="w-full text-left px-4 py-3 text-white hover:bg-white/10 transition flex items-center gap-2 border-b border-white/5 last:border-b-0"
                 >
-                  <Search className="w-4 h-4 text-slate-400" />
+                  <Search className="w-4 h-4 inline mr-2 text-slate-500" />
                   {suggestion}
-                </button>
+                </div>
               ))}
             </div>
           )}
         </div>
       </div>
+      <style>{`
+        @keyframes liquidBubbleRise {
+          0% {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+            filter: blur(0);
+          }
+          100% {
+            opacity: 0;
+            transform: scale(0.2) translateY(-50px);
+            filter: blur(2px);
+          }
+        }
+      `}</style>
     </header>
   )
 }

@@ -127,14 +127,14 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
 
       <div 
         ref={carouselRef}
-        className="relative overflow-hidden"
+        className="relative overflow-x-auto overflow-y-hidden md:overflow-hidden scrollbar-hide"
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
         onWheel={handleMouseWheel}
-        style={{ touchAction: "pan-y" }}
+        style={{ touchAction: "pan-x" }}
       >
         <div
-          className="flex gap-4 transition-transform duration-1000 ease-in-out"
+          className="flex gap-4 transition-transform duration-1000 ease-in-out md:transition-transform"
           style={{
             transform: `translateX(${offset}%)`,
           }}
@@ -192,6 +192,15 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
             backdrop-filter: blur(25px);
             border: 1px solid rgba(34, 197, 94, 0.6);
             transform: scale(1.1);
+          }
+
+          .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+          }
+
+          .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
           }
         `}</style>
         <button

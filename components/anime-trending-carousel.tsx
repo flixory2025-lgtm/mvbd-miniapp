@@ -82,7 +82,7 @@ export default function AnimeTrendingCarousel({ onAnimeClick }: AnimeTrendingCar
         `}</style>
       </div>
 
-      <div className="relative z-10 overflow-hidden">
+      <div className="carousel-container relative z-10 overflow-hidden">
         <div
           className="flex gap-4 transition-transform duration-1000 ease-in-out"
           style={{

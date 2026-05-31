@@ -2,27 +2,94 @@
 
 import type React from "react"
 
-import { useState, useRef, useMemo } from "react"
+import { useState, useRef, useMemo, useEffect } from "react"
 import { Search, X } from "lucide-react"
 import { movies } from "@/lib/movie-data"
+import { animes } from "@/lib/anime-data"
 
 interface HeaderProps {
   onSearch: (query: string) => void
+  pageType?: "home" | "anime" | "series"
+  searchData?: Array<{ title: string }>
 }
 
-export default function Header({ onSearch }: HeaderProps) {
+const TYPING_SUGGESTIONS_HOME = [
+  "Search movies...",
+  "Find web series...",
+  "Trending now...",
+  "Action movies...",
+  "Drama series...",
+  "Comedy shows...",
+  "Sci-fi films...",
+  "Horror movies...",
+  "Romance dramas...",
+  "Thriller series...",
+]
+
+const TYPING_SUGGESTIONS_ANIME = [
+  "Search anime...",
+  "Find manga...",
+  "Action anime...",
+  "Romance anime...",
+  "Thriller anime...",
+  "Comedy anime...",
+  "School anime...",
+  "Supernatural anime...",
+  "Adventure anime...",
+  "Fantasy anime...",
+]
+
+const TYPING_SUGGESTIONS_SERIES = [
+  "Search series...",
+  "Find seasons...",
+  "Crime series...",
+  "Drama series...",
+  "Thriller series...",
+  "Comedy series...",
+  "Action series...",
+  "Mystery series...",
+  "Horror series...",
+  "Romance series...",
+]
+
+const TYPING_SPEED = 50 // ms per character
+const DELETE_SPEED = 30 // ms per character
+const PAUSE_DURATION = 2500 // ms to show complete text
+
+export default function Header({ onSearch, pageType = "home", searchData }: HeaderProps) {
   const [searchInput, setSearchInput] = useState("")
   const [isFocused, setIsFocused] = useState(false)
   const [bubbles, setBubbles] = useState<Array<{ id: number; x: number; y: number }>>([])
+  const [displayedPlaceholder, setDisplayedPlaceholder] = useState("")
+  const [currentSuggestionIndex, setCurrentSuggestionIndex] = useState(0)
+  const [isTyping, setIsTyping] = useState(true)
+  const placeholderIndexRef = useRef(0)
+  const placeholderTimeoutRef = useRef<NodeJS.Timeout>()
   const bubbleIdRef = useRef(0)
+
+  // Select typing suggestions based on page type
+  const TYPING_SUGGESTIONS =
+    pageType === "anime" ? TYPING_SUGGESTIONS_ANIME :
+    pageType === "series" ? TYPING_SUGGESTIONS_SERIES :
+    TYPING_SUGGESTIONS_HOME
+
+  // Select data source based on page type
+  const dataSource = useMemo(() => {
+    if (searchData) return searchData
+    if (pageType === "anime") return animes
+    if (pageType === "series") {
+      return movies.filter((m) => m.title.toLowerCase().includes("season"))
+    }
+    return movies
+  }, [pageType, searchData])
 
   const allSearchSuggestions = useMemo(() => {
     if (!searchInput.trim()) return []
     const query = searchInput.toLowerCase()
-    return movies
-      .filter((m) => m.title.toLowerCase().includes(query))
-      .map((m) => m.title)
-  }, [searchInput])
+    return dataSource
+      .filter((item) => item.title.toLowerCase().includes(query))
+      .map((item) => item.title)
+  }, [searchInput, dataSource])
 
   const searchSuggestions = allSearchSuggestions.slice(0, 5)
 
@@ -45,6 +112,48 @@ export default function Header({ onSearch }: HeaderProps) {
     }
     setBubbles((prev) => [...prev, ...newBubbles])
   }
+
+  const currentSuggestion = TYPING_SUGGESTIONS[currentSuggestionIndex]
+
+  useEffect(() => {
+    if (placeholderTimeoutRef.current) {
+      clearTimeout(placeholderTimeoutRef.current)
+    }
+
+    if (isTyping) {
+      if (displayedPlaceholder.length < currentSuggestion.length) {
+        // Typing phase - add one character
+        placeholderTimeoutRef.current = setTimeout(() => {
+          setDisplayedPlaceholder(currentSuggestion.slice(0, displayedPlaceholder.length + 1))
+        }, TYPING_SPEED)
+      } else {
+        // Typed complete - pause before deleting
+        placeholderTimeoutRef.current = setTimeout(() => {
+          setIsTyping(false)
+        }, PAUSE_DURATION)
+      }
+    } else {
+      if (displayedPlaceholder.length > 0) {
+        // Deleting phase - remove one character
+        placeholderTimeoutRef.current = setTimeout(() => {
+          setDisplayedPlaceholder(displayedPlaceholder.slice(0, -1))
+        }, DELETE_SPEED)
+      } else {
+        // Done deleting - move to next suggestion and reset
+        placeholderTimeoutRef.current = setTimeout(() => {
+          setCurrentSuggestionIndex((prev) => (prev + 1) % TYPING_SUGGESTIONS.length)
+          setDisplayedPlaceholder("")
+          setIsTyping(true)
+        }, 300)
+      }
+    }
+
+    return () => {
+      if (placeholderTimeoutRef.current) {
+        clearTimeout(placeholderTimeoutRef.current)
+      }
+    }
+  }, [isTyping, displayedPlaceholder, currentSuggestion])
 
   const handleFocus = () => {
     setIsFocused(true)
@@ -155,6 +264,23 @@ export default function Header({ onSearch }: HeaderProps) {
         .search-suggestion-item:last-child {
           border-bottom: none;
         }
+
+        @keyframes liquidBubbleRise {
+          0% {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+            filter: blur(0);
+          }
+          100% {
+            opacity: 0;
+            transform: scale(0.2) translateY(-50px);
+            filter: blur(2px);
+          }
+        }
+
+        .liquid-bubble {
+          animation: liquidBubbleRise 0.8s ease-out forwards;
+        }
       `}</style>
       <div className="px-4 py-4 flex items-center gap-4">
         <div className="flex-shrink-0">
@@ -170,7 +296,7 @@ export default function Header({ onSearch }: HeaderProps) {
             <Search className="w-5 h-5 text-slate-300 flex-shrink-0" />
             <input
               type="text"
-              placeholder="মুভি খুঁজুন..."
+              placeholder={displayedPlaceholder || TYPING_SUGGESTIONS[0]}
               value={searchInput}
               onChange={handleSearch}
               onFocus={handleFocus}
@@ -191,7 +317,7 @@ export default function Header({ onSearch }: HeaderProps) {
             {bubbles.map((bubble) => (
               <div
                 key={bubble.id}
-                className="search-bubble"
+                className="liquid-bubble"
                 style={{
                   width: "8px",
                   height: "8px",
@@ -202,7 +328,6 @@ export default function Header({ onSearch }: HeaderProps) {
                   background: "radial-gradient(circle at 30% 30%, rgba(100, 200, 255, 0.8), rgba(59, 130, 246, 0.3))",
                   border: "1px solid rgba(100, 200, 255, 0.5)",
                   boxShadow: "0 0 8px rgba(100, 200, 255, 0.4), inset -2px -2px 4px rgba(0, 0, 0, 0.2)",
-                  animation: "liquidBubbleRise 0.8s ease-out forwards",
                 }}
               />
             ))}
@@ -228,20 +353,6 @@ export default function Header({ onSearch }: HeaderProps) {
           )}
         </div>
       </div>
-      <style>{`
-        @keyframes liquidBubbleRise {
-          0% {
-            opacity: 1;
-            transform: scale(1) translateY(0);
-            filter: blur(0);
-          }
-          100% {
-            opacity: 0;
-            transform: scale(0.2) translateY(-50px);
-            filter: blur(2px);
-          }
-        }
-      `}</style>
     </header>
   )
 }

@@ -55,27 +55,41 @@ export default function SeriesTrendingCarousel({ onMovieClick }: SeriesTrendingC
   const offset = -currentIndex * (100 / 3)
 
   return (
-    <section className="px-4 py-2">
-      <div className="relative flex justify-center -mt-4 mb-0">
-        <div
-          className="absolute inset-0 -top-20 flex justify-center"
-          style={{
-            backgroundImage: "url('https://i.postimg.cc/tRMc5ZNM/198b2f01e73b905772279616eccc7c65.jpg')",
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-            backgroundRepeat: "no-repeat",
-          }}
-        >
-          <div className="w-full h-96 bg-gradient-to-b from-black/50 via-black/80 to-black rounded-b-3xl" />
+    <section className="px-4 py-0">
+      <div 
+        className="relative mb-0 py-16"
+        style={{
+          backgroundImage: "url('https://i.postimg.cc/tRMc5ZNM/198b2f01e73b905772279616eccc7c65.jpg')",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          backgroundRepeat: "no-repeat",
+        }}
+      >
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/50 to-black" />
+        
+        <div className="relative z-10 flex flex-col items-center justify-center mb-8">
+          <h1 className="text-5xl md:text-6xl font-black text-center mb-4" style={{
+            background: "linear-gradient(135deg, #64c8ff 0%, #22c55e 100%)",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+            backgroundClip: "text",
+            letterSpacing: "-1px"
+          }}>
+            Web Series & TV Shows
+          </h1>
+          <p className="text-cyan-300 text-lg">Explore {totalSeriesCount} amazing series</p>
         </div>
-        <img
-          src="https://i.postimg.cc/xkNsB3Xn/Screenshot-2026-01-25-085543-removebg-preview.png"
-          alt="MoviesVerseBD Series"
-          className="relative z-20 w-72 h-72 object-contain"
-        />
+
+        <div className="relative z-20 flex justify-center">
+          <img
+            src="https://i.postimg.cc/QtV5wBSG/images-removebg-preview.png"
+            alt="MoviesVerseBD Series"
+            className="w-64 h-64 object-contain"
+          />
+        </div>
       </div>
 
-      <div className="relative z-20 -mt-4 mb-1 flex flex-col items-center justify-center">
+      <div className="relative z-20 mb-1 flex flex-col items-center justify-center">
         <h2
           className="text-xl font-bold text-center tracking-wider animate-pulse"
           style={{
@@ -91,22 +105,31 @@ export default function SeriesTrendingCarousel({ onMovieClick }: SeriesTrendingC
         >
           Trending Series
         </h2>
-        <style jsx>{`
-          @keyframes purpleGlow {
-            0% {
-              text-shadow: 0 0 8px rgba(124, 58, 237, 0.7), 0 0 15px rgba(217, 70, 239, 0.5);
-              background: linear-gradient(to right, #7c3aed, #d946ef, #7c3aed);
-              -webkit-background-clip: text;
-              background-clip: text;
-            }
-            100% {
-              text-shadow: 0 0 15px rgba(124, 58, 237, 0.9), 0 0 25px rgba(217, 70, 239, 0.7), 0 0 35px rgba(168, 85, 247, 0.6);
-              background: linear-gradient(to right, #a855f7, #7c3aed, #a855f7);
-              -webkit-background-clip: text;
-              background-clip: text;
-            }
+      <style>{`
+        @keyframes purpleGlow {
+          0% {
+            text-shadow: 0 0 8px rgba(124, 58, 237, 0.7), 0 0 15px rgba(217, 70, 239, 0.5);
+            background: linear-gradient(to right, #7c3aed, #d946ef, #7c3aed);
+            -webkit-background-clip: text;
+            background-clip: text;
           }
-        `}</style>
+          100% {
+            text-shadow: 0 0 15px rgba(124, 58, 237, 0.9), 0 0 25px rgba(217, 70, 239, 0.7), 0 0 35px rgba(168, 85, 247, 0.6);
+            background: linear-gradient(to right, #a855f7, #7c3aed, #a855f7);
+            -webkit-background-clip: text;
+            background-clip: text;
+          }
+        }
+
+        .scrollbar-hide::-webkit-scrollbar {
+          display: none;
+        }
+
+        .scrollbar-hide {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+      `}</style>
       </div>
 
       <p className="text-center text-purple-400 text-sm mb-3 font-medium relative z-20">{totalSeriesCount} Series Uploaded</p>
@@ -127,10 +150,17 @@ export default function SeriesTrendingCarousel({ onMovieClick }: SeriesTrendingC
           {extendedSeries.map((series, idx) => (
             <div
               key={`${series.id}-${idx}`}
-              className="flex-shrink-0 w-1/3 aspect-[2/3] rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-all duration-500 transform hover:scale-105 cursor-pointer relative"
+              className="flex-shrink-0 w-1/3 aspect-[2/3] rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-all duration-500 transform hover:scale-105 cursor-pointer relative bg-gray-800"
               onClick={() => onMovieClick(series)}
             >
-              <img src={series.poster || "/placeholder.svg"} alt={series.title} className="w-full h-full object-cover" />
+              <img 
+                src={series.poster || "https://i.postimg.cc/QtV5wBSG/images-removebg-preview.png"} 
+                alt={series.title} 
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  e.currentTarget.src = "https://i.postimg.cc/QtV5wBSG/images-removebg-preview.png"
+                }}
+              />
 
               {series.language && (
                 <span className="absolute top-1 right-1 bg-black/70 text-white text-[8px] px-1 py-0.5 rounded uppercase font-semibold">
@@ -153,17 +183,6 @@ export default function SeriesTrendingCarousel({ onMovieClick }: SeriesTrendingC
           ))}
         </div>
       </div>
-
-      <style jsx>{`
-        .scrollbar-hide::-webkit-scrollbar {
-          display: none;
-        }
-
-        .scrollbar-hide {
-          -ms-overflow-style: none;
-          scrollbar-width: none;
-        }
-      `}</style>
     </section>
   )
 }

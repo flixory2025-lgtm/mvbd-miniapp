@@ -5,7 +5,7 @@ import Header from "@/components/header"
 import TrendingCarousel from "@/components/trending-carousel"
 import GenreCategories from "@/components/genre-categories"
 import MovieGrid from "@/components/movie-grid"
-import MovieModal from "@/components/movie-modal"
+import MovieDetailPage from "@/components/movie-detail-page"
 import Footer from "@/components/footer"
 import WelcomePopup from "@/components/welcome-popup"
 import BottomNavigation from "@/components/bottom-navigation"
@@ -14,6 +14,9 @@ import ExclusivePage from "@/components/exclusive-page"
 import ProfilePage from "@/components/profile-page"
 import ShortsPage from "@/components/shorts-page"
 import SeriesSection from "@/components/series-section"
+import ContactUsPage from "@/components/contact-us-page"
+import AboutUsPage from "@/components/about-us-page"
+import SettingsPage from "@/components/settings-page"
 import { movies, genres } from "@/lib/movie-data"
 
 export default function Home() {
@@ -26,6 +29,8 @@ export default function Home() {
   const [isSearching, setIsSearching] = useState(false)
   const [showAdultContent, setShowAdultContent] = useState(false)
   const [tabHistory, setTabHistory] = useState<string[]>(["home"])
+  const [showDetailPage, setShowDetailPage] = useState(false)
+  const [profileSubPage, setProfileSubPage] = useState<"main" | "contact" | "about" | "settings">("main")
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" })
@@ -56,7 +61,13 @@ export default function Home() {
       setTabHistory([...tabHistory, newTab])
       setActiveTab(newTab)
       window.history.pushState(null, "", "")
+      setSwipeDirection(null)
+      // Reset profile sub-page when leaving profile tab
+      if (newTab !== "profile") {
+        setProfileSubPage("main")
+      }
     }
+  }
   }
 
   const handleClosePopup = () => {
@@ -111,14 +122,26 @@ export default function Home() {
           </>
         )
       case "profile":
-        return (
-          <>
-            <ProfilePage />
-          </>
-        )
-      default:
-        return (
-          <>
+          return (
+            <>
+              {profileSubPage === "main" && (
+                <ProfilePage onNavigate={(page) => setProfileSubPage(page)} />
+              )}
+              {profileSubPage === "contact" && (
+                <ContactUsPage />
+              )}
+              {profileSubPage === "about" && (
+                <AboutUsPage />
+              )}
+              {profileSubPage === "settings" && (
+                <SettingsPage />
+              )}
+              <Footer />
+            </>
+          )
+        default:
+          return (
+            <>
             <div className="min-h-screen bg-black pb-20">
               <Header onSearch={handleSearch} />
 
@@ -146,7 +169,14 @@ export default function Home() {
                 </div>
               ) : (
                 <>
-                  {!isSearching && <TrendingCarousel onMovieClick={setSelectedMovie} />}
+                  {!isSearching && (
+                    <TrendingCarousel
+                      onMovieClick={(movie) => {
+                        setSelectedMovie(movie)
+                        setShowDetailPage(true)
+                      }}
+                    />
+                  )}
                   {!isSearching && (
                     <GenreCategories
                       genres={genres}
@@ -165,7 +195,10 @@ export default function Home() {
 
                   <MovieGrid
                     movies={paginatedMovies}
-                    onMovieClick={setSelectedMovie}
+                    onMovieClick={(movie) => {
+                      setSelectedMovie(movie)
+                      setShowDetailPage(true)
+                    }}
                     currentPage={currentPage}
                     totalPages={totalPages}
                     onPageChange={setCurrentPage}
@@ -184,20 +217,25 @@ export default function Home() {
 
   return (
     <>
-      {renderContent()}
-
-      <BottomNavigation activeTab={activeTab} onTabChange={handleTabChange} />
-
-      {selectedMovie && activeTab === "home" && (
-        <MovieModal
+      {showDetailPage && selectedMovie ? (
+        <MovieDetailPage
           movie={selectedMovie}
-          onClose={() => setSelectedMovie(null)}
-          onMovieClick={setSelectedMovie}
+          onBack={() => {
+            setShowDetailPage(false)
+            setSelectedMovie(null)
+          }}
+          onMovieClick={(movie) => setSelectedMovie(movie)}
           showAdultContent={showAdultContent}
         />
-      )}
+      ) : (
+        <>
+          {renderContent()}
 
-      {showWelcomePopup && <WelcomePopup onClose={handleClosePopup} />}
+          <BottomNavigation activeTab={activeTab} onTabChange={handleTabChange} />
+
+          {showWelcomePopup && <WelcomePopup onClose={handleClosePopup} />}
+        </>
+      )}
     </>
   )
 }

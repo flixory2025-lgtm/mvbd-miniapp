@@ -2,13 +2,17 @@
 
 import { useState, useEffect } from "react"
 import Image from "next/image"
-import { Phone, User, Mail, Calendar } from "lucide-react"
+import { Phone, User, Mail, Calendar, Settings, MessageCircle, Info } from "lucide-react"
 
 interface ProfileData {
   name: string
   age: string
   email: string
   phone: string
+}
+
+interface ProfilePageProps {
+  onNavigate?: (page: "contact" | "about" | "settings") => void
 }
 
 const socialLinks = [
@@ -82,7 +86,7 @@ const socialLinks = [
   },
 ]
 
-export default function ProfilePage() {
+export default function ProfilePage({ onNavigate }: ProfilePageProps = {}) {
   const [profile, setProfile] = useState<ProfileData>({
     name: "",
     age: "",
@@ -90,6 +94,8 @@ export default function ProfilePage() {
     phone: "",
   })
   const [isEditing, setIsEditing] = useState(false)
+  const [profileImage, setProfileImage] = useState("https://i.postimg.cc/HLmyFnnv/photo-2026-05-31-12-04-09-(2).jpg")
+  const [showSocialLinks, setShowSocialLinks] = useState(false)
 
   useEffect(() => {
     const savedProfile = localStorage.getItem("mvbd_profile")
@@ -108,19 +114,7 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0a0a12] via-[#050508] to-[#020206] pb-24">
-      {/* Header with Liquid Glass Effect */}
-      <div className="sticky top-0 z-40 backdrop-blur-2xl bg-black/40 border-b border-white/10 shadow-xl">
-        <div className="px-4 py-4 flex items-center justify-center">
-          <div className="relative">
-            <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/20 to-cyan-500/20 blur-2xl rounded-full"></div>
-            <div className="relative w-24 h-24 rounded-full overflow-hidden shadow-2xl ring-2 ring-white/20">
-              <Image src="/mvbd-logo.png" alt="MVBD Logo" width={120} height={120} className="w-full h-full object-contain bg-gradient-to-br from-slate-900 to-slate-800" />
-            </div>
-          </div>
-        </div>
-      </div>
-
+    <div className="min-h-screen bg-gradient-to-br from-[#0a0a12] via-[#050508] to-[#020206]">
       <div className="px-4 py-6 max-w-2xl mx-auto space-y-6">
         {/* Profile Section - Liquid Glass Card */}
         <div className="relative overflow-hidden rounded-3xl backdrop-blur-xl bg-white/5 border border-white/10 shadow-2xl transition-all duration-300 hover:shadow-emerald-500/5">
@@ -133,7 +127,7 @@ export default function ProfilePage() {
               <div className="relative">
                 <div className="absolute inset-0 rounded-full bg-gradient-to-r from-emerald-400 to-cyan-500 blur-xl opacity-60 animate-pulse"></div>
                 <div className="relative w-24 h-24 rounded-full overflow-hidden ring-4 ring-white/20 shadow-2xl">
-                  <Image src="/mvbd-logo.png" alt="Profile" width={96} height={96} className="w-full h-full object-cover bg-gradient-to-br from-slate-800 to-slate-900" />
+                  <img src={profileImage} alt="Profile" className="w-full h-full object-cover bg-gradient-to-br from-slate-800 to-slate-900" />
                 </div>
               </div>
               <h2 className="text-white font-bold text-2xl mt-4 bg-gradient-to-r from-white to-white/80 bg-clip-text text-transparent">
@@ -143,9 +137,9 @@ export default function ProfilePage() {
 
             {/* Profile Fields - Liquid Glass Inputs */}
             <div className="space-y-3">
-              <div className="group relative overflow-hidden rounded-2xl backdrop-blur-md bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-300">
-                <div className="flex items-center gap-3 p-4">
-                  <User className="w-5 h-5 text-emerald-400" />
+              <div className="group relative overflow-hidden rounded-xl backdrop-blur-md bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-300">
+                <div className="flex items-center gap-2 p-3">
+                  <User className="w-4 h-4 text-emerald-400 flex-shrink-0" />
                   <div className="flex-1">
                     <label className="text-slate-300 text-xs font-medium tracking-wide">নাম</label>
                     {isEditing ? (
@@ -153,19 +147,19 @@ export default function ProfilePage() {
                         type="text"
                         value={profile.name}
                         onChange={(e) => setProfile({ ...profile, name: e.target.value })}
-                        className="w-full bg-transparent text-white text-base outline-none placeholder:text-slate-500"
+                        className="w-full bg-transparent text-white text-sm outline-none placeholder:text-slate-500"
                         placeholder="আপনার নাম লিখুন"
                       />
                     ) : (
-                      <p className="text-white text-base">{profile.name || <span className="text-slate-400">সেট করা হয়নি</span>}</p>
+                      <p className="text-white text-sm">{profile.name || <span className="text-slate-400">সেট করা হয়নি</span>}</p>
                     )}
                   </div>
                 </div>
               </div>
 
-              <div className="group relative overflow-hidden rounded-2xl backdrop-blur-md bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-300">
-                <div className="flex items-center gap-3 p-4">
-                  <Calendar className="w-5 h-5 text-emerald-400" />
+              <div className="group relative overflow-hidden rounded-xl backdrop-blur-md bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-300">
+                <div className="flex items-center gap-2 p-3">
+                  <Calendar className="w-4 h-4 text-emerald-400 flex-shrink-0" />
                   <div className="flex-1">
                     <label className="text-slate-300 text-xs font-medium tracking-wide">বয়স</label>
                     {isEditing ? (
@@ -173,19 +167,19 @@ export default function ProfilePage() {
                         type="text"
                         value={profile.age}
                         onChange={(e) => setProfile({ ...profile, age: e.target.value })}
-                        className="w-full bg-transparent text-white text-base outline-none placeholder:text-slate-500"
+                        className="w-full bg-transparent text-white text-sm outline-none placeholder:text-slate-500"
                         placeholder="আপনার বয়স লিখুন"
                       />
                     ) : (
-                      <p className="text-white text-base">{profile.age || <span className="text-slate-400">সেট করা হয়নি</span>}</p>
+                      <p className="text-white text-sm">{profile.age || <span className="text-slate-400">সেট করা হয়নি</span>}</p>
                     )}
                   </div>
                 </div>
               </div>
 
-              <div className="group relative overflow-hidden rounded-2xl backdrop-blur-md bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-300">
-                <div className="flex items-center gap-3 p-4">
-                  <Mail className="w-5 h-5 text-emerald-400" />
+              <div className="group relative overflow-hidden rounded-xl backdrop-blur-md bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-300">
+                <div className="flex items-center gap-2 p-3">
+                  <Mail className="w-4 h-4 text-emerald-400 flex-shrink-0" />
                   <div className="flex-1">
                     <label className="text-slate-300 text-xs font-medium tracking-wide">Email</label>
                     {isEditing ? (
@@ -193,19 +187,19 @@ export default function ProfilePage() {
                         type="email"
                         value={profile.email}
                         onChange={(e) => setProfile({ ...profile, email: e.target.value })}
-                        className="w-full bg-transparent text-white text-base outline-none placeholder:text-slate-500"
+                        className="w-full bg-transparent text-white text-sm outline-none placeholder:text-slate-500"
                         placeholder="আপনার email লিখুন"
                       />
                     ) : (
-                      <p className="text-white text-base">{profile.email || <span className="text-slate-400">সেট করা হয়নি</span>}</p>
+                      <p className="text-white text-sm">{profile.email || <span className="text-slate-400">সেট করা হয়নি</span>}</p>
                     )}
                   </div>
                 </div>
               </div>
 
-              <div className="group relative overflow-hidden rounded-2xl backdrop-blur-md bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-300">
-                <div className="flex items-center gap-3 p-4">
-                  <Phone className="w-5 h-5 text-emerald-400" />
+              <div className="group relative overflow-hidden rounded-xl backdrop-blur-md bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-300">
+                <div className="flex items-center gap-2 p-3">
+                  <Phone className="w-4 h-4 text-emerald-400 flex-shrink-0" />
                   <div className="flex-1">
                     <label className="text-slate-300 text-xs font-medium tracking-wide">Phone Number</label>
                     {isEditing ? (
@@ -213,24 +207,24 @@ export default function ProfilePage() {
                         type="tel"
                         value={profile.phone}
                         onChange={(e) => setProfile({ ...profile, phone: e.target.value })}
-                        className="w-full bg-transparent text-white text-base outline-none placeholder:text-slate-500"
+                        className="w-full bg-transparent text-white text-sm outline-none placeholder:text-slate-500"
                         placeholder="আপনার নম্বর লিখুন"
                       />
                     ) : (
-                      <p className="text-white text-base">{profile.phone || <span className="text-slate-400">সেট করা হয়নি</span>}</p>
+                      <p className="text-white text-sm">{profile.phone || <span className="text-slate-400">সেট করা হয়নি</span>}</p>
                     )}
                   </div>
                 </div>
               </div>
 
-              {/* Edit/Save Button - Liquid Glass Style */}
+              {/* Edit/Save Button - Liquid Glass Style - Smaller */}
               <button
                 onClick={isEditing ? handleSave : () => setIsEditing(true)}
-                className="relative w-full py-3.5 mt-4 rounded-2xl font-bold text-white overflow-hidden group transition-all duration-300 transform active:scale-95"
+                className="relative w-full py-2.5 mt-4 rounded-xl font-bold text-white overflow-hidden group transition-all duration-300 transform active:scale-95"
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-emerald-500 to-emerald-600 group-hover:from-emerald-600 group-hover:to-emerald-700 transition-all duration-300"></div>
                 <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                <span className="relative text-lg tracking-wide">
+                <span className="relative text-sm tracking-wide">
                   {isEditing ? "Save Profile" : "Edit Profile"}
                 </span>
               </button>
@@ -238,42 +232,71 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        {/* Contact Us Section - Liquid Glass Card */}
+        {/* Footer Menu Section - Liquid Glass Card */}
         <div className="relative overflow-hidden rounded-3xl backdrop-blur-xl bg-white/5 border border-white/10 shadow-2xl transition-all duration-300 hover:shadow-cyan-500/5">
           <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 via-transparent to-emerald-500/5"></div>
           
           <div className="relative p-6">
-            <h3 className="text-white font-bold text-2xl mb-2 bg-gradient-to-r from-white to-white/80 bg-clip-text text-transparent">Contact Us</h3>
-            <p className="text-slate-300 text-sm mb-6">Get in touch with us</p>
+            <h3 className="text-white font-bold text-2xl mb-6 bg-gradient-to-r from-white to-white/80 bg-clip-text text-transparent">Menu</h3>
 
-            <div className="space-y-3">
-              {socialLinks.map((item) => {
-                const Icon = item.icon
-                return (
-                  <button
-                    key={item.id}
-                    onClick={() => handleLinkClick(item.link)}
-                    className="group w-full flex items-center gap-4 rounded-2xl backdrop-blur-md bg-white/5 border border-white/10 hover:bg-white/10 p-4 transition-all duration-300 transform active:scale-98"
-                  >
-                    <div
-                      className={`w-12 h-12 rounded-full bg-gradient-to-br ${item.iconBg} flex items-center justify-center flex-shrink-0 shadow-lg group-hover:scale-105 transition-transform duration-300`}
-                    >
-                      {typeof Icon === "function" ? <Icon /> : <Icon className="w-6 h-6 text-white" />}
-                    </div>
-                    <div className="text-left flex-1">
-                      <p className="text-white font-semibold text-base">{item.title}</p>
-                      <p className="text-slate-300 text-sm">{item.subtitle}</p>
-                    </div>
-                    <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                      <svg className="w-5 h-5 text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
-                    </div>
-                  </button>
-                )
-              })}
+            <div className="space-y-2.5">
+              {/* Contact Us */}
+              <button
+                onClick={() => onNavigate?.("contact")}
+                className="group w-full flex items-center gap-3 rounded-xl backdrop-blur-md bg-white/5 border border-white/10 hover:bg-white/10 p-3 transition-all duration-300 transform active:scale-98"
+              >
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center flex-shrink-0 shadow-lg group-hover:scale-105 transition-transform duration-300">
+                  <MessageCircle className="w-5 h-5 text-white" />
+                </div>
+                <div className="text-left flex-1">
+                  <p className="text-white font-semibold text-sm">Contact Us</p>
+                  <p className="text-slate-400 text-xs">Get in touch with us</p>
+                </div>
+                <svg className="w-4 h-4 text-white/60 group-hover:text-white/100 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+
+              {/* About Us */}
+              <button
+                onClick={() => onNavigate?.("about")}
+                className="group w-full flex items-center gap-3 rounded-xl backdrop-blur-md bg-white/5 border border-white/10 hover:bg-white/10 p-3 transition-all duration-300 transform active:scale-98"
+              >
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-500 to-green-500 flex items-center justify-center flex-shrink-0 shadow-lg group-hover:scale-105 transition-transform duration-300">
+                  <Info className="w-5 h-5 text-white" />
+                </div>
+                <div className="text-left flex-1">
+                  <p className="text-white font-semibold text-sm">About Us</p>
+                  <p className="text-slate-400 text-xs">Learn about our platform</p>
+                </div>
+                <svg className="w-4 h-4 text-white/60 group-hover:text-white/100 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+
+              {/* Settings */}
+              <button
+                onClick={() => onNavigate?.("settings")}
+                className="group w-full flex items-center gap-3 rounded-xl backdrop-blur-md bg-white/5 border border-white/10 hover:bg-white/10 p-3 transition-all duration-300 transform active:scale-98"
+              >
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-indigo-500 flex items-center justify-center flex-shrink-0 shadow-lg group-hover:scale-105 transition-transform duration-300">
+                  <Settings className="w-5 h-5 text-white" />
+                </div>
+                <div className="text-left flex-1">
+                  <p className="text-white font-semibold text-sm">Settings</p>
+                  <p className="text-slate-400 text-xs">Customize your experience</p>
+                </div>
+                <svg className="w-4 h-4 text-white/60 group-hover:text-white/100 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
             </div>
           </div>
+        </div>
+
+        {/* Footer */}
+        <div className="mt-8 pt-6 border-t border-white/10">
+          <p className="text-center text-slate-400 text-sm">© 2025 MoviesVerse. সর্বাধিকার সংরক্ষিত. All rights reserved.</p>
         </div>
       </div>
 

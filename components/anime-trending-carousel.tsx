@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react"
 import { animes } from "@/lib/anime-data"
 import type { Anime } from "@/lib/anime-data"
 
-const trendingIds = [173, 174, 176, 177, 178, 179, 180, 181, 182, 183, 184, 157, 158, 162, 161,]
+const trendingIds = [173, 174, 176, 177, 178, 179, 180, 181, 182, 183, 184, 157, 158, 162, 161]
 
 interface AnimeTrendingCarouselProps {
   onAnimeClick: (anime: Anime) => void
@@ -37,7 +37,6 @@ export default function AnimeTrendingCarousel({ onAnimeClick }: AnimeTrendingCar
           carouselRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' })
         }
         
-        // Update current index for indicator dots
         const newIndex = Math.round(carouselRef.current.scrollLeft / scrollAmount)
         setCurrentIndex(newIndex % trendingAnimes.length)
       }
@@ -77,7 +76,6 @@ export default function AnimeTrendingCarousel({ onAnimeClick }: AnimeTrendingCar
 
   const handleMouseUp = () => {
     setIsDragging(false)
-    // Resume auto-play after 5 seconds of inactivity
     timeoutRef.current = setTimeout(() => {
       setIsAutoPlaying(true)
     }, 5000)
@@ -252,7 +250,6 @@ export default function AnimeTrendingCarousel({ onAnimeClick }: AnimeTrendingCar
         onTouchEnd={handleTouchEnd}
       >
         <div className="flex gap-4" style={{ width: 'max-content' }}>
-          {/* Triple the animes for seamless infinite scroll */}
           {[...trendingAnimes, ...trendingAnimes, ...trendingAnimes].map((anime, index) => (
             <div
               key={`${anime.id}-${index}`}
@@ -264,7 +261,6 @@ export default function AnimeTrendingCarousel({ onAnimeClick }: AnimeTrendingCar
                 alt={anime.title}
                 className="w-full h-full object-cover"
               />
-              {/* Optional: Add title overlay on hover */}
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
                 <p className="text-white text-sm font-semibold truncate">{anime.title}</p>
               </div>
@@ -288,6 +284,7 @@ export default function AnimeTrendingCarousel({ onAnimeClick }: AnimeTrendingCar
         ))}
       </div>
 
+      {/* Fixed: CSS with proper dot and curly braces */}
       <style jsx>{`
         .hide-scrollbar::-webkit-scrollbar {
           display: none;

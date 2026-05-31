@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { animes } from "@/lib/anime-data"
 import type { Anime } from "@/lib/anime-data"
 
@@ -12,9 +12,34 @@ interface AnimeTrendingCarouselProps {
 
 export default function AnimeTrendingCarousel({ onAnimeClick }: AnimeTrendingCarouselProps) {
   const [currentIndex, setCurrentIndex] = useState(0)
+  const [touchStart, setTouchStart] = useState(0)
+  const [touchEnd, setTouchEnd] = useState(0)
+  const carouselRef = useRef<HTMLDivElement>(null)
   const trendingAnimes = animes.filter((a) => trendingIds.includes(a.id))
 
   const totalAnimeCount = animes.length
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchStart(e.targetTouches[0].clientX)
+  }
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    setTouchEnd(e.changedTouches[0].clientX)
+    handleSwipe()
+  }
+
+  const handleSwipe = () => {
+    if (!touchStart || !touchEnd) return
+    const distance = touchStart - touchEnd
+    const isLeftSwipe = distance > 50
+    const isRightSwipe = distance < -50
+
+    if (isLeftSwipe) {
+      setCurrentIndex((prev) => (prev + 1) % trendingAnimes.length)
+    } else if (isRightSwipe) {
+      setCurrentIndex((prev) => (prev - 1 + trendingAnimes.length) % trendingAnimes.length)
+    }
+  }
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -82,9 +107,15 @@ export default function AnimeTrendingCarousel({ onAnimeClick }: AnimeTrendingCar
         `}</style>
       </div>
 
-      <div className="relative z-10 overflow-hidden">
+      <div 
+        ref={carouselRef}
+        className="relative z-10 overflow-x-auto overflow-y-hidden scrollbar-hide md:overflow-hidden"
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+        style={{ touchAction: "pan-x" }}
+      >
         <div
-          className="flex gap-4 transition-transform duration-1000 ease-in-out"
+          className="flex gap-4 transition-transform duration-1000 ease-in-out md:transition-transform"
           style={{
             transform: `translateX(${offset}%)`,
           }}
@@ -116,6 +147,17 @@ export default function AnimeTrendingCarousel({ onAnimeClick }: AnimeTrendingCar
           />
         ))}
       </div>
+
+      <style jsx>{`
+        .scrollbar-hide::-webkit-scrollbar {
+          display: none;
+        }
+
+        .scrollbar-hide {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+      `}</style>
     </section>
   )
 }

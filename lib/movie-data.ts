@@ -32909,7 +32909,7 @@ export const movies = [
     title: "Lighter & Princess Season 1 (2022) PART:-01",
     poster: "/2535id.jpg",
     trailer: "https://www.youtube.com/embed/mHHdPGO-9io?si",
-    telegramLink: "https://t.me/c/3117912335/12474",
+    telegramLink: "https://t.me/c/3117912335/12585",
     genre: "Romance | Drama | kdrama",
     year: "2022",
     rating: "8.3",

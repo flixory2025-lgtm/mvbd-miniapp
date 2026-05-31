@@ -228,8 +228,19 @@ export default function MovieDetailPage({ movie, onBack, onMovieClick, showAdult
 
       {/* Related Movies Section */}
       {relatedMovies.length > 0 && (
-        <div className="bg-black relative z-10">
-          <div className="max-w-6xl mx-auto px-4 py-12 border-t border-white/20">
+        <div 
+          className="relative z-10"
+          style={{
+            backgroundImage: `url(${movie.poster})`,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            backgroundAttachment: "fixed",
+          }}
+        >
+          {/* Background Overlay - same as top section */}
+          <div className="absolute inset-0 bg-black/75 backdrop-blur-md" />
+          
+          <div className="relative z-10 max-w-6xl mx-auto px-4 py-12 border-t border-white/20">
             <h3 className="text-3xl font-bold text-white mb-8">সম্পর্কিত মুভি</h3>
             <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-4">
               {relatedMovies.map((relatedMovie) => {
@@ -318,7 +329,7 @@ export default function MovieDetailPage({ movie, onBack, onMovieClick, showAdult
       )}
 
       {/* Telegram Popup */}
-      {showTelegramPopup && <TelegramJoinPopup onClose={() => setShowTelegramPopup(false)} movieTitle={movie.title} />}
+      {showTelegramPopup && <TelegramJoinPopup onClose={() => setShowTelegramPopup(false)} movieTitle={movie.title} telegramLink={movie.telegramLink} moviePoster={movie.poster} />}
     </div>
   )
 }

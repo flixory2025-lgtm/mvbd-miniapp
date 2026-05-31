@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo, useEffect, useRef } from "react"
+import { useState, useMemo, useEffect } from "react"
 import Header from "@/components/header"
 import TrendingCarousel from "@/components/trending-carousel"
 import GenreCategories from "@/components/genre-categories"
@@ -15,10 +15,6 @@ import ProfilePage from "@/components/profile-page"
 import ShortsPage from "@/components/shorts-page"
 import SeriesSection from "@/components/series-section"
 import { movies, genres } from "@/lib/movie-data"
-import ContactUsPage from "@/components/contact-us-page"
-import AboutUsPage from "@/components/about-us-page"
-import SettingsPage from "@/components/settings-page"
-import UniversalFooter from "@/components/universal-footer"
 
 export default function Home() {
   const [searchQuery, setSearchQuery] = useState("")
@@ -30,67 +26,6 @@ export default function Home() {
   const [isSearching, setIsSearching] = useState(false)
   const [showAdultContent, setShowAdultContent] = useState(false)
   const [tabHistory, setTabHistory] = useState<string[]>(["home"])
-  const [profileSubTab, setProfileSubTab] = useState<"profile" | "contact" | "about" | "settings">("profile")
-  const [slideDirection, setSlideDirection] = useState<"left" | "right" | "none">("none")
-  const contentRef = useRef<HTMLDivElement>(null)
-
-  // Swipe detection for profile sub-pages
-  const handleProfileSwipeLeft = () => {
-    if (profileSubTab === "profile") {
-      setSlideDirection("left")
-      setTimeout(() => setProfileSubTab("contact"), 150)
-    } else if (profileSubTab === "contact") {
-      setSlideDirection("left")
-      setTimeout(() => setProfileSubTab("about"), 150)
-    } else if (profileSubTab === "about") {
-      setSlideDirection("left")
-      setTimeout(() => setProfileSubTab("settings"), 150)
-    }
-  }
-
-  const handleProfileSwipeRight = () => {
-    if (profileSubTab === "contact") {
-      setSlideDirection("right")
-      setTimeout(() => setProfileSubTab("profile"), 150)
-    } else if (profileSubTab === "about") {
-      setSlideDirection("right")
-      setTimeout(() => setProfileSubTab("contact"), 150)
-    } else if (profileSubTab === "settings") {
-      setSlideDirection("right")
-      setTimeout(() => setProfileSubTab("about"), 150)
-    }
-  }
-
-  // Navigation tab swipe handling
-  const handleNavSwipeLeft = () => {
-    const tabs = ["home", "shorts", "exclusive", "profile"]
-    const currentIndex = tabs.indexOf(activeTab)
-    if (currentIndex < tabs.length - 1) {
-      handleTabChange(tabs[currentIndex + 1])
-    }
-  }
-
-  const handleNavSwipeRight = () => {
-    const tabs = ["home", "shorts", "exclusive", "profile"]
-    const currentIndex = tabs.indexOf(activeTab)
-    if (currentIndex > 0) {
-      handleTabChange(tabs[currentIndex - 1])
-    }
-  }
-
-  // Profile sub-page swipe (only when on profile page)
-  const profileSwipeHandlers = activeTab === "profile" ? {
-    onSwipeLeft: handleProfileSwipeLeft,
-    onSwipeRight: handleProfileSwipeRight,
-  } : {
-    onSwipeLeft: handleNavSwipeLeft,
-    onSwipeRight: handleNavSwipeRight,
-  }
-
-  useSwipe({
-    ...profileSwipeHandlers,
-    threshold: 50,
-  })
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" })
@@ -177,123 +112,9 @@ export default function Home() {
         )
       case "profile":
         return (
-          <div
-            ref={contentRef}
-            className={`transition-all duration-300 ${
-              slideDirection === "left"
-                ? "animate-slideOut"
-                : slideDirection === "right"
-                  ? "animate-slideInRight"
-                  : "animate-slideInLeft"
-            }`}
-          >
-            {profileSubTab === "profile" && (
-              <ProfilePage
-                onNavigateContact={() => {
-                  setSlideDirection("left")
-                  setTimeout(() => setProfileSubTab("contact"), 150)
-                }}
-                onNavigateAbout={() => {
-                  setSlideDirection("left")
-                  setTimeout(() => setProfileSubTab("about"), 150)
-                }}
-                onNavigateSettings={() => {
-                  setSlideDirection("left")
-                  setTimeout(() => setProfileSubTab("settings"), 150)
-                }}
-              />
-            )}
-            {profileSubTab === "contact" && (
-              <div>
-                <button
-                  onClick={() => {
-                    setSlideDirection("right")
-                    setTimeout(() => setProfileSubTab("profile"), 150)
-                  }}
-                  className="fixed top-4 left-4 z-50 text-white bg-black/50 px-4 py-2 rounded-lg hover:bg-black/70 transition"
-                >
-                  ← Back
-                </button>
-                <ContactUsPage />
-              </div>
-            )}
-            {profileSubTab === "about" && (
-              <div>
-                <button
-                  onClick={() => {
-                    setSlideDirection("right")
-                    setTimeout(() => setProfileSubTab("contact"), 150)
-                  }}
-                  className="fixed top-4 left-4 z-50 text-white bg-black/50 px-4 py-2 rounded-lg hover:bg-black/70 transition"
-                >
-                  ← Back
-                </button>
-                <AboutUsPage />
-              </div>
-            )}
-            {profileSubTab === "settings" && (
-              <div>
-                <button
-                  onClick={() => {
-                    setSlideDirection("right")
-                    setTimeout(() => setProfileSubTab("about"), 150)
-                  }}
-                  className="fixed top-4 left-4 z-50 text-white bg-black/50 px-4 py-2 rounded-lg hover:bg-black/70 transition"
-                >
-                  ← Back
-                </button>
-                <SettingsPage />
-              </div>
-            )}
-            <UniversalFooter />
-
-            <style jsx>{`
-              @keyframes slideOut {
-                from {
-                  opacity: 1;
-                  transform: translateX(0);
-                }
-                to {
-                  opacity: 0;
-                  transform: translateX(-100%);
-                }
-              }
-
-              @keyframes slideInLeft {
-                from {
-                  opacity: 0;
-                  transform: translateX(100%);
-                }
-                to {
-                  opacity: 1;
-                  transform: translateX(0);
-                }
-              }
-
-              @keyframes slideInRight {
-                from {
-                  opacity: 0;
-                  transform: translateX(-100%);
-                }
-                to {
-                  opacity: 1;
-                  transform: translateX(0);
-                }
-              }
-
-              .animate-slideOut {
-                animation: slideOut 0.3s ease-out;
-              }
-
-              .animate-slideInLeft {
-                animation: slideInLeft 0.3s ease-out;
-              }
-
-              .animate-slideInRight {
-                animation: slideInRight 0.3s ease-out;
-              }
-            `}</style>
-          </div>
+          <>
+            <ProfilePage />
+          </>
         )
       default:
         return (

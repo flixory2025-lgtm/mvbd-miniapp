@@ -6,6 +6,7 @@ import MovieGrid from "@/components/movie-grid"
 import MovieModal from "@/components/movie-modal"
 import GenreCategories from "@/components/genre-categories"
 import Footer from "@/components/footer"
+import SeriesTrendingCarousel from "@/components/series-trending-carousel"
 import { movies, genres } from "@/lib/movie-data"
 
 export default function SeriesSection() {
@@ -31,11 +32,6 @@ export default function SeriesSection() {
       return matchesSearch && matchesGenre
     })
   }, [allSeries, searchQuery, selectedGenre])
-
-  // Trending series (first 12 from filtered series)
-  const trendingSeries = useMemo(() => {
-    return allSeries.slice(0, 12)
-  }, [allSeries])
 
   const handleSearch = (query: string) => {
     setSearchQuery(query)
@@ -112,41 +108,12 @@ export default function SeriesSection() {
             font-size: 2.5rem;
           }
         }
-
-        .trending-section {
-          margin-top: 40px;
-          margin-bottom: 30px;
-        }
-
-        .trending-label {
-          font-size: 1.5rem;
-          font-weight: 700;
-          color: white;
-          margin-bottom: 16px;
-          padding-left: 16px;
-          text-transform: uppercase;
-          letter-spacing: 1px;
-        }
       `}</style>
 
       {/* Header with Search */}
       <Header onSearch={handleSearch} pageType="series" searchData={allSeries} />
 
-      {/* Series Header Background */}
-      <div className="series-header-background">
-        <div className="series-header-content">
-          {/* Logo */}
-          <div className="flex justify-center mb-4">
-            <img 
-              src="https://i.postimg.cc/BbPgTGsZ/de3c8a1-dca3128d-72e2-431f-87ea-88e9c3b9702b-removebg-preview.png" 
-              alt="Series Logo" 
-              className="h-20 w-auto object-contain drop-shadow-lg"
-            />
-          </div>
-          <h1 className="series-title">Web Series & TV Shows</h1>
-          <p className="text-cyan-300 text-lg mt-4">Explore {allSeries.length} amazing series</p>
-        </div>
-      </div>
+
 
       {/* No Results */}
       {searchQuery.trim() && filteredSeries.length === 0 && (
@@ -158,29 +125,9 @@ export default function SeriesSection() {
       {/* Main Content */}
       {filteredSeries.length > 0 && (
         <>
-          {/* Trending Now */}
-          {!isSearching && trendingSeries.length > 0 && (
-            <div className="trending-section">
-              <div className="trending-label">Trending Now</div>
-              <div className="px-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 mb-8">
-                {trendingSeries.map((series) => (
-                  <div
-                    key={series.id}
-                    className="group cursor-pointer relative rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 aspect-[2/3]"
-                    onClick={() => setSelectedMovie(series)}
-                  >
-                    <img
-                      src={series.poster}
-                      alt={series.title}
-                      className="w-full h-full object-cover"
-                    />
-                    <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                      <p className="text-white text-center text-sm font-semibold px-2">{series.title}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+          {/* Trending Now - Using the same carousel as home page */}
+          {!isSearching && (
+            <SeriesTrendingCarousel onMovieClick={setSelectedMovie} />
           )}
 
           {/* Genre Categories */}

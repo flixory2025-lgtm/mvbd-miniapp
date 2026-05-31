@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo, useEffect } from "react"
+import { useState, useMemo, useEffect, useRef } from "react"
 import Header from "@/components/header"
 import TrendingCarousel from "@/components/trending-carousel"
 import GenreCategories from "@/components/genre-categories"
@@ -31,6 +31,14 @@ export default function Home() {
   const [tabHistory, setTabHistory] = useState<string[]>(["home"])
   const [showDetailPage, setShowDetailPage] = useState(false)
   const [profileSubPage, setProfileSubPage] = useState<"main" | "contact" | "about" | "settings">("main")
+  
+  // Swipe navigation
+  const [touchStart, setTouchStart] = useState(0)
+  const [touchEnd, setTouchEnd] = useState(0)
+  const [isCarouselScrolling, setIsCarouselScrolling] = useState(false)
+  const mainContentRef = useRef<HTMLDivElement>(null)
+
+  const tabs = ["home", "anime", "series", "exclusive", "shorts", "profile"]
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" })
@@ -61,13 +69,41 @@ export default function Home() {
       setTabHistory([...tabHistory, newTab])
       setActiveTab(newTab)
       window.history.pushState(null, "", "")
-      setSwipeDirection(null)
       // Reset profile sub-page when leaving profile tab
       if (newTab !== "profile") {
         setProfileSubPage("main")
       }
     }
   }
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    // Don't start swipe if touch is on a scrollable element (carousel)
+    const target = e.target as HTMLElement
+    if (target.closest(".carousel-container") || target.closest("input")) {
+      return
+    }
+    setTouchStart(e.targetTouches[0].clientX)
+  }
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStart === 0) return
+    
+    setTouchEnd(e.changedTouches[0].clientX)
+    const distance = touchStart - e.changedTouches[0].clientX
+    const isLeftSwipe = distance > 50
+    const isRightSwipe = distance < -50
+
+    if (isLeftSwipe || isRightSwipe) {
+      const currentIndex = tabs.indexOf(activeTab)
+      if (isLeftSwipe && currentIndex < tabs.length - 1) {
+        handleTabChange(tabs[currentIndex + 1])
+      } else if (isRightSwipe && currentIndex > 0) {
+        handleTabChange(tabs[currentIndex - 1])
+      }
+    }
+
+    setTouchStart(0)
+    setTouchEnd(0)
   }
 
   const handleClosePopup = () => {
@@ -128,13 +164,13 @@ export default function Home() {
                 <ProfilePage onNavigate={(page) => setProfileSubPage(page)} />
               )}
               {profileSubPage === "contact" && (
-                <ContactUsPage />
+                <ContactUsPage onBack={() => setProfileSubPage("main")} />
               )}
               {profileSubPage === "about" && (
-                <AboutUsPage />
+                <AboutUsPage onBack={() => setProfileSubPage("main")} />
               )}
               {profileSubPage === "settings" && (
-                <SettingsPage />
+                <SettingsPage onBack={() => setProfileSubPage("main")} />
               )}
               <Footer />
             </>
@@ -143,7 +179,7 @@ export default function Home() {
           return (
             <>
             <div className="min-h-screen bg-black pb-20">
-              <Header onSearch={handleSearch} />
+              <Header onSearch={handleSearch} pageType="home" searchData={movies} />
 
               {searchQuery.trim() && filteredMovies.length === 0 ? (
                 <div className="px-4 py-12 text-center">
@@ -216,7 +252,13 @@ export default function Home() {
   }
 
   return (
-    <>
+    <div 
+      ref={mainContentRef}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+      style={{ touchAction: "pan-y" }}
+      className="w-full"
+    >
       {showDetailPage && selectedMovie ? (
         <MovieDetailPage
           movie={selectedMovie}
@@ -236,6 +278,6 @@ export default function Home() {
           {showWelcomePopup && <WelcomePopup onClose={handleClosePopup} />}
         </>
       )}
-    </>
+    </div>
   )
 }

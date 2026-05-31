@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { animes } from "@/lib/anime-data"
 import type { Anime } from "@/lib/anime-data"
 
@@ -12,19 +12,93 @@ interface AnimeTrendingCarouselProps {
 
 export default function AnimeTrendingCarousel({ onAnimeClick }: AnimeTrendingCarouselProps) {
   const [currentIndex, setCurrentIndex] = useState(0)
+  const [isDragging, setIsDragging] = useState(false)
+  const [startX, setStartX] = useState(0)
+  const [scrollLeft, setScrollLeft] = useState(0)
+  const carouselRef = useRef<HTMLDivElement>(null)
+  
   const trendingAnimes = animes.filter((a) => trendingIds.includes(a.id))
-
   const totalAnimeCount = animes.length
 
+  // Auto-scroll only when not dragging
   useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % trendingAnimes.length)
-    }, 3000)
-    return () => clearInterval(interval)
-  }, [trendingAnimes.length])
+    if (!isDragging) {
+      const interval = setInterval(() => {
+        if (carouselRef.current) {
+          const nextIndex = (currentIndex + 1) % trendingAnimes.length
+          setCurrentIndex(nextIndex)
+          scrollToIndex(nextIndex)
+        }
+      }, 3000)
+      return () => clearInterval(interval)
+    }
+  }, [currentIndex, trendingAnimes.length, isDragging])
 
-  const extendedAnimes = [...trendingAnimes, ...trendingAnimes, ...trendingAnimes]
-  const offset = -currentIndex * (100 / 3)
+  const scrollToIndex = (index: number) => {
+    if (carouselRef.current) {
+      const carousel = carouselRef.current
+      const itemWidth = carousel.clientWidth / 3
+      const scrollPosition = index * itemWidth
+      carousel.scrollTo({
+        left: scrollPosition,
+        behavior: "smooth"
+      })
+    }
+  }
+
+  // Handle manual scroll
+  const handleScroll = () => {
+    if (carouselRef.current && !isDragging) {
+      const carousel = carouselRef.current
+      const itemWidth = carousel.clientWidth / 3
+      const newIndex = Math.round(carousel.scrollLeft / itemWidth)
+      if (newIndex !== currentIndex && newIndex >= 0 && newIndex < trendingAnimes.length) {
+        setCurrentIndex(newIndex)
+      }
+    }
+  }
+
+  // Mouse/Touch drag handlers
+  const handleMouseDown = (e: React.MouseEvent) => {
+    setIsDragging(true)
+    setStartX(e.pageX - (carouselRef.current?.offsetLeft || 0))
+    setScrollLeft(carouselRef.current?.scrollLeft || 0)
+  }
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging) return
+    e.preventDefault()
+    const x = e.pageX - (carouselRef.current?.offsetLeft || 0)
+    const walk = (x - startX) * 1.5
+    if (carouselRef.current) {
+      carouselRef.current.scrollLeft = scrollLeft - walk
+    }
+  }
+
+  const handleMouseUp = () => {
+    setIsDragging(false)
+    handleScroll()
+  }
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setIsDragging(true)
+    setStartX(e.touches[0].pageX - (carouselRef.current?.offsetLeft || 0))
+    setScrollLeft(carouselRef.current?.scrollLeft || 0)
+  }
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!isDragging) return
+    const x = e.touches[0].pageX - (carouselRef.current?.offsetLeft || 0)
+    const walk = (x - startX) * 1.5
+    if (carouselRef.current) {
+      carouselRef.current.scrollLeft = scrollLeft - walk
+    }
+  }
+
+  const handleTouchEnd = () => {
+    setIsDragging(false)
+    handleScroll()
+  }
 
   return (
     <section className="px-4 py-2">
@@ -84,21 +158,32 @@ export default function AnimeTrendingCarousel({ onAnimeClick }: AnimeTrendingCar
 
       <div className="relative z-10 overflow-hidden">
         <div
-          className="flex gap-4 transition-transform duration-1000 ease-in-out"
+          ref={carouselRef}
+          className="flex gap-4 overflow-x-auto scrollbar-hide snap-x snap-mandatory cursor-grab active:cursor-grabbing"
           style={{
-            transform: `translateX(${offset}%)`,
+            scrollBehavior: "smooth",
+            scrollbarWidth: "none",
+            msOverflowStyle: "none",
           }}
+          onScroll={handleScroll}
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+          onMouseLeave={handleMouseUp}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
         >
-          {extendedAnimes.map((anime, index) => (
+          {trendingAnimes.map((anime) => (
             <div
-              key={`${anime.id}-${index}`}
-              className="flex-shrink-0 w-1/3 aspect-[2/3] rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-all duration-500 transform hover:scale-105 cursor-pointer relative"
+              key={anime.id}
+              className="flex-shrink-0 w-1/3 aspect-[2/3] rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-all duration-500 transform hover:scale-105 cursor-pointer snap-start"
               onClick={() => onAnimeClick(anime)}
             >
               <img
                 src={anime.poster || "/placeholder.svg"}
                 alt={anime.title}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover pointer-events-none"
               />
             </div>
           ))}
@@ -110,12 +195,26 @@ export default function AnimeTrendingCarousel({ onAnimeClick }: AnimeTrendingCar
         {trendingAnimes.map((_, index) => (
           <div
             key={index}
-            className={`w-2 h-2 rounded-full transition-all ${
-              index === currentIndex ? "bg-green-500 w-6" : "bg-slate-600"
+            className={`w-2 h-2 rounded-full transition-all cursor-pointer ${
+              index === currentIndex ? "bg-green-500 w-6" : "bg-slate-600 hover:bg-slate-500"
             }`}
+            onClick={() => {
+              setCurrentIndex(index)
+              scrollToIndex(index)
+            }}
           />
         ))}
       </div>
+
+      <style jsx global>{`
+        .scrollbar-hide::-webkit-scrollbar {
+          display: none;
+        }
+        .scrollbar-hide {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+      `}</style>
     </section>
   )
 }

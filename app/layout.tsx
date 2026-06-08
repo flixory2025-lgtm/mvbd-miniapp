@@ -77,7 +77,7 @@ export default function RootLayout({
         />
       </head>
 
-      <body className={${geist.className} antialiased}>
+      <body className={'${geist.className} antialiased'}>
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
           {children}
           <Analytics />

@@ -1,5 +1,6 @@
 import type React from "react"
 import type { Metadata } from "next"
+import Script from "next/script"
 import { Geist, Geist_Mono } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
 import "./globals.css"
@@ -76,11 +77,16 @@ export default function RootLayout({
         />
       </head>
 
-      <body className={`${geist.className} antialiased`}>
+      <body className={${geist.className} antialiased}>
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
           {children}
           <Analytics />
         </ThemeProvider>
+
+        <Script
+          src="https://pl29674302.effectivecpmnetwork.com/7f/9f/24/7f9f249e8d4f21715ca7c8b3cc233497.js"
+          strategy="afterInteractive"
+        />
       </body>
     </html>
   )

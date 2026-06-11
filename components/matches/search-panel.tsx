@@ -1,119 +1,88 @@
 "use client"
 
 import { useState } from "react"
-import useSWR from "swr"
-import { GlassCard, SkeletonList, SearchEmptyState } from "./ui-primitives"
-import { Search, Star, Trophy, Shield } from "lucide-react"
-import { useFavorites, type FavoriteItem } from "@/lib/sports/use-favorites"
-import { cn } from "@/lib/utils"
-import type { SportType } from "@/lib/sports/types"
+import { Search, X } from "lucide-react"
 
-const fetcher = (url: string) => fetch(url).then((r) => r.json())
+// ডেমো সার্চ ডাটা
+const DEMO_SEARCH_DATA = {
+  football: [
+    { id: "1", name: "Manchester City vs Liverpool", type: "match", league: "Premier League" },
+    { id: "2", name: "Real Madrid vs Barcelona", type: "match", league: "La Liga" },
+    { id: "3", name: "Bayern Munich vs Dortmund", type: "match", league: "Bundesliga" },
+    { id: "4", name: "PSG vs Marseille", type: "match", league: "Ligue 1" },
+  ],
+  cricket: [
+    { id: "101", name: "India vs Australia", type: "match", series: "Border-Gavaskar Trophy" },
+    { id: "102", name: "England vs South Africa", type: "match", series: "Test Series" },
+    { id: "103", name: "Pakistan vs New Zealand", type: "match", series: "ODI Series" },
+  ],
+}
 
-export default function SearchPanel({ sport }: { sport: SportType }) {
+export default function SearchPanel({ sport }: { sport: "football" | "cricket" }) {
   const [query, setQuery] = useState("")
-  const [fbType, setFbType] = useState<"team" | "league">("team")
-  const debounced = query.trim()
+  const [results, setResults] = useState<any[]>([])
 
-  const footballKey =
-    sport === "football" && debounced.length >= 3
-      ? `/api/football/search?q=${encodeURIComponent(debounced)}&type=${fbType}`
-      : null
-  const cricketKey =
-    sport === "cricket" && debounced.length >= 3 ? `/api/cricket/search?q=${encodeURIComponent(debounced)}` : null
+  const handleSearch = (searchQuery: string) => {
+    setQuery(searchQuery)
+    if (searchQuery.length < 2) {
+      setResults([])
+      return
+    }
 
-  const { data: fbData, isLoading: fbLoading } = useSWR(footballKey, fetcher)
-  const { data: crData, isLoading: crLoading } = useSWR(cricketKey, fetcher)
-
-  const { isFavorite, toggleFavorite } = useFavorites()
-
-  const teams = fbData?.data?.teams ?? []
-  const leagues = fbData?.data?.leagues ?? []
-  const cricketSeries = crData?.data?.series ?? []
-  const isLoading = fbLoading || crLoading
-
-  function ResultRow({ item, icon }: { item: FavoriteItem; icon: React.ReactNode }) {
-    const fav = isFavorite(item.id)
-    return (
-      <GlassCard className="flex items-center gap-3 p-3.5">
-        {item.logo ? (
-          <img src={item.logo || "/placeholder.svg"} alt="" crossOrigin="anonymous" className="h-8 w-8 rounded-full bg-white/10 object-contain" />
-        ) : (
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-500/15 text-emerald-300">{icon}</div>
-        )}
-        <span className="line-clamp-1 flex-1 text-sm font-medium text-white">{item.name}</span>
-        <button onClick={() => toggleFavorite(item)} aria-label="Toggle favorite" className="text-slate-500 transition hover:text-amber-400">
-          <Star className={cn("h-5 w-5", fav && "fill-amber-400 text-amber-400")} />
-        </button>
-      </GlassCard>
+    const filtered = DEMO_SEARCH_DATA[sport].filter(
+      (item) =>
+        item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (item.league && item.league.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        (item.series && item.series.toLowerCase().includes(searchQuery.toLowerCase()))
     )
+    setResults(filtered)
   }
 
   return (
-    <div>
-      <div className="mb-4 flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.06] px-4 py-2.5 backdrop-blur-xl">
-        <Search className="h-4 w-4 text-slate-400" />
+    <div className="space-y-4">
+      {/* Search Input */}
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
         <input
+          type="text"
           value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder={sport === "football" ? "Search teams or leagues" : "Search tournaments"}
-          className="flex-1 bg-transparent text-sm text-white outline-none placeholder:text-slate-500"
+          onChange={(e) => handleSearch(e.target.value)}
+          placeholder={`Search ${sport} matches, teams, or leagues...`}
+          className="h-10 w-full rounded-lg border border-white/10 bg-white/[0.04] pl-9 pr-8 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
         />
+        {query && (
+          <button onClick={() => handleSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2">
+            <X className="h-4 w-4 text-slate-400" />
+          </button>
+        )}
       </div>
 
-      {sport === "football" && (
-        <div className="mb-4 flex gap-2">
-          {(["team", "league"] as const).map((t) => (
-            <button
-              key={t}
-              onClick={() => setFbType(t)}
-              className={cn(
-                "rounded-full px-4 py-1.5 text-xs font-semibold ring-1 transition",
-                fbType === t ? "bg-emerald-500/25 text-emerald-200 ring-emerald-500/40" : "bg-white/5 text-slate-300 ring-white/10",
-              )}
-            >
-              {t === "team" ? "Teams" : "Leagues"}
-            </button>
-          ))}
+      {/* Results */}
+      {query.length >= 2 && (
+        <div className="space-y-2">
+          {results.length === 0 ? (
+            <div className="rounded-lg border border-white/10 bg-white/[0.04] p-8 text-center">
+              <p className="text-sm text-slate-400">No results found for "{query}"</p>
+            </div>
+          ) : (
+            results.map((result) => (
+              <div
+                key={result.id}
+                className="rounded-lg border border-white/10 bg-white/[0.04] p-3 transition hover:bg-white/[0.08]"
+              >
+                <p className="font-medium">{result.name}</p>
+                <p className="text-xs text-slate-400">{result.league || result.series}</p>
+              </div>
+            ))
+          )}
         </div>
       )}
 
-      {debounced.length < 3 ? (
-        <p className="py-10 text-center text-sm text-slate-400">Type at least 3 characters to search.</p>
-      ) : isLoading ? (
-        <SkeletonList count={5} />
-      ) : (
-        <div className="flex flex-col gap-3">
-          {sport === "football" &&
-            fbType === "team" &&
-            teams.map((t: any) => (
-              <ResultRow
-                key={t.id}
-                icon={<Shield className="h-4 w-4" />}
-                item={{ id: `ft-team-${t.id}`, type: "football-team", name: t.name, logo: t.logo }}
-              />
-            ))}
-          {sport === "football" &&
-            fbType === "league" &&
-            leagues.map((l: any) => (
-              <ResultRow
-                key={l.id}
-                icon={<Trophy className="h-4 w-4" />}
-                item={{ id: `ft-league-${l.id}`, type: "football-league", name: l.name, logo: l.logo }}
-              />
-            ))}
-          {sport === "cricket" &&
-            cricketSeries.map((s: any) => (
-              <ResultRow
-                key={s.id}
-                icon={<Trophy className="h-4 w-4" />}
-                item={{ id: `cr-series-${s.id}`, type: "cricket-series", name: s.name }}
-              />
-            ))}
-
-          {((sport === "football" && fbType === "team" && !teams.length) ||
-            (sport === "football" && fbType === "league" && !leagues.length) ||
-            (sport === "cricket" && !cricketSeries.length)) && <SearchEmptyState query={debounced} />}
+      {/* Initial State */}
+      {query.length < 2 && (
+        <div className="rounded-lg border border-white/10 bg-white/[0.04] p-8 text-center">
+          <Search className="mx-auto h-8 w-8 text-slate-500" />
+          <p className="mt-2 text-sm text-slate-400">Type at least 2 characters to search</p>
         </div>
       )}
     </div>

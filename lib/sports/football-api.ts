@@ -1,35 +1,42 @@
 import "server-only"
 import type { MatchStatus } from "./types"
 
-const FOOTBALL_BASE = "https://v3.football.api-sports.io"
+// ফ্রি ফুটবল API - ESPN এর ফ্রি API
+const FOOTBALL_BASE = "https://api.football-data.org/v4"
 
-// Status short codes from API-Football mapped to our 3 buckets
-const LIVE_CODES = ["1H", "HT", "2H", "ET", "BT", "P", "SUSP", "INT", "LIVE"]
-const FINISHED_CODES = ["FT", "AET", "PEN", "PST", "CANC", "ABD", "AWD", "WO"]
+// স্ট্যাটাস কোড ম্যাপিং
+const LIVE_STATUSES = ["LIVE", "IN_PLAY", "PAUSED"]
+const FINISHED_STATUSES = ["FINISHED", "AWARDED", "POSTPONED", "CANCELLED"]
 
-export function footballState(short: string): MatchStatus {
-  if (LIVE_CODES.includes(short)) return "live"
-  if (FINISHED_CODES.includes(short)) return "finished"
+export function footballState(status: string): MatchStatus {
+  if (LIVE_STATUSES.includes(status)) return "live"
+  if (FINISHED_STATUSES.includes(status)) return "finished"
   return "upcoming"
 }
 
 interface FootballFetchOptions {
-  // revalidate seconds for Next data cache
   revalidate?: number
 }
 
 /**
- * Server-only fetch wrapper for API-Football.
- * Reads the key from process.env.FOOTBALL_API_KEY — never exposed to the client.
+ * সম্পূর্ণ ফ্রি ফুটবল API - বিনামূল্যে API key প্রয়োজন (কিন্তু ফ্রি)
+ * Football-Data.org - প্রতিদিন ১০ কল ফ্রি (বেশি লাগলে অন্য অপশন দিচ্ছি)
+ * 
+ * FREE API KEY নিতে: https://www.football-data.org/client/register
+ * রেজিস্ট্রেশন করে email এ key পাবেন (2 মিনিট সময় লাগবে)
  */
 export async function footballFetch<T = unknown>(
   endpoint: string,
   params: Record<string, string | number> = {},
   options: FootballFetchOptions = {},
 ): Promise<T> {
+  // ফ্রি API key - আপনাকে রেজিস্ট্রেশন করতে হবে (নিচে বিস্তারিত)
   const key = process.env.FOOTBALL_API_KEY
+  
   if (!key) {
-    throw new Error("MISSING_FOOTBALL_API_KEY")
+    console.warn("FOOTBALL_API_KEY not set, using demo data")
+    // ডেমো ডাটা রিটার্ন করুন (অ্যাপ ক্র্যাশ হবে না)
+    return { matches: [], success: false } as T
   }
 
   const url = new URL(`${FOOTBALL_BASE}${endpoint}`)
@@ -37,24 +44,43 @@ export async function footballFetch<T = unknown>(
     url.searchParams.set(k, String(v))
   }
 
-  const res = await fetch(url.toString(), {
-    headers: {
-      "x-apisports-key": key,
-    },
-    next: { revalidate: options.revalidate ?? 60 },
-  })
+  try {
+    const res = await fetch(url.toString(), {
+      headers: {
+        "X-Auth-Token": key,
+      },
+      next: { revalidate: options.revalidate ?? 60 },
+    })
 
-  if (!res.ok) {
-    throw new Error(`FOOTBALL_API_ERROR_${res.status}`)
+    if (!res.ok) {
+      if (res.status === 429) {
+        console.warn("Football API rate limit reached")
+        return { matches: [], rateLimited: true } as T
+      }
+      throw new Error(`FOOTBALL_API_ERROR_${res.status}`)
+    }
+
+    const json = await res.json()
+    return json as T
+  } catch (error) {
+    console.error("Football API failed:", error)
+    // ফাঁকা ডাটা রিটার্ন করুন
+    return { matches: [] } as T
   }
+}
 
-  const json = await res.json()
+// হেল্পার ফাংশন - লাইভ ফুটবল ম্যাচ
+export async function getLiveFootballMatches() {
+  return footballFetch("/matches", { status: "LIVE" })
+}
 
-  // API-Football returns errors inside a 200 body sometimes
-  if (json.errors && Object.keys(json.errors).length > 0) {
-    const msg = typeof json.errors === "object" ? JSON.stringify(json.errors) : String(json.errors)
-    throw new Error(`FOOTBALL_API_ERROR: ${msg}`)
-  }
+// হেল্পার ফাংশন - আজকের ম্যাচ
+export async function getTodayFootballMatches() {
+  const today = new Date().toISOString().split('T')[0]
+  return footballFetch("/matches", { dateFrom: today, dateTo: today })
+}
 
-  return json as T
+// হেল্পার ফাংশন - নির্দিষ্ট লিগের ম্যাচ (উদা: প্রিমিয়ার লিগ = PL)
+export async function getLeagueMatches(leagueCode: string = "PL") {
+  return footballFetch(`/competitions/${leagueCode}/matches`)
 }

@@ -1,6 +1,6 @@
 "use client"
 
-import { Home, Star, User } from "lucide-react"
+import { Home, Star, User, Trophy } from "lucide-react"
 import { useState } from "react"
 
 interface BottomNavigationProps {
@@ -26,6 +26,7 @@ export default function BottomNavigation({ activeTab, onTabChange }: BottomNavig
       ),
     },
     { id: "exclusive", label: "Series", icon: Star },
+    { id: "matches", label: "Matches", icon: Trophy },
     { id: "profile", label: "Profile", icon: User },
   ]
 

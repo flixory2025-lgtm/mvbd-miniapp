@@ -12,6 +12,9 @@ import { CricketSeriesPanel } from "./cricket-panels"
 import SearchPanel from "./search-panel"
 import type { MatchStatus, SportType } from "@/lib/sports/types"
 import { Search } from "lucide-react"
+// নতুন ইম্পোর্ট - LIVE TV ফিচারের জন্য
+import LiveTvPlayer from "@/components/live/LiveTvPlayer"
+import ChannelList from "@/components/live/ChannelList"
 
 const FOOTBALL_TABS = ["Live", "Upcoming", "Finished", "Standings", "Scorers", "Search"] as const
 const CRICKET_TABS = ["Live", "Upcoming", "Results", "Tournaments", "Search"] as const
@@ -33,6 +36,10 @@ export default function MatchesPage() {
   const [crTab, setCrTab] = useState<CricketTab>("Live")
   const [detail, setDetail] = useState<{ sport: SportType; id: string } | null>(null)
   const [retryKey, setRetryKey] = useState(0)
+  
+  // LIVE TV এর জন্য স্টেট
+  const [showChannels, setShowChannels] = useState(false)
+  const [selectedChannel, setSelectedChannel] = useState<any>(null)
 
   if (!online) {
     return (
@@ -120,6 +127,41 @@ export default function MatchesPage() {
           <Content sport={sport} tab={activeTab} onSelect={(id) => setDetail({ sport, id })} />
         </main>
       </div>
+
+      {/* LIVE TV Floating Button */}
+      <button
+        onClick={() => setShowChannels(true)}
+        className="fixed bottom-24 right-4 z-30 rounded-full bg-gradient-to-r from-red-600 to-red-700 px-5 py-3 shadow-lg flex items-center gap-2 hover:from-red-700 hover:to-red-800 transition-all animate-pulse"
+      >
+        <span className="relative flex h-3 w-3">
+          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+          <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+        </span>
+        <span className="font-bold text-sm">LIVE TV</span>
+        <span className="text-xs">📺</span>
+      </button>
+
+      {/* Channel List Modal */}
+      {showChannels && (
+        <ChannelList
+          onSelectChannel={(channel) => {
+            setSelectedChannel(channel)
+            setShowChannels(false)
+          }}
+          onClose={() => setShowChannels(false)}
+        />
+      )}
+
+      {/* Video Player */}
+      {selectedChannel && (
+        <LiveTvPlayer
+          streamUrl={selectedChannel.url}
+          channelName={selectedChannel.name}
+          channelLogo={selectedChannel.logo}
+          category={selectedChannel.category}
+          onClose={() => setSelectedChannel(null)}
+        />
+      )}
     </div>
   )
 }

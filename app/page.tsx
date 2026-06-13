@@ -17,7 +17,6 @@ import SeriesSection from "@/components/series-section"
 import ContactUsPage from "@/components/contact-us-page"
 import AboutUsPage from "@/components/about-us-page"
 import SettingsPage from "@/components/settings-page"
-import MatchesPage from "@/components/matches/matches-page"
 import { movies, genres } from "@/lib/movie-data"
 
 export default function Home() {
@@ -35,7 +34,7 @@ export default function Home() {
   
   const mainContentRef = useRef<HTMLDivElement>(null)
 
-  const tabs = ["home", "anime", "series", "exclusive", "shorts", "matches", "profile"]
+  const tabs = ["home", "anime", "series", "exclusive", "shorts", "profile"]
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" })
@@ -124,8 +123,6 @@ export default function Home() {
             <SeriesSection />
           </>
         )
-      case "matches":
-        return <MatchesPage />
       case "profile":
           return (
             <>

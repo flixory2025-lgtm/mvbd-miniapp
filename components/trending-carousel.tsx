@@ -135,10 +135,81 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
 
         {/* MoviesVerseBD Logo with Player Animation */}
         <div className="relative z-20 w-72 h-72 flex items-center justify-center">
+          {/* Animated Football Layer Above Logo */}
+          <div className="absolute top-0 w-full h-full flex items-center justify-center pointer-events-none">
+            <svg className="w-64 h-64 absolute" viewBox="0 0 300 300" style={{ filter: "drop-shadow(0 0 12px rgba(255, 165, 0, 0.7))" }}>
+              {/* Rotating Footballs Around Circle */}
+              <g style={{ animation: "rotateFootballs 8s linear infinite" }}>
+                {/* Football 1 - Top */}
+                <g transform="translate(150, 40)">
+                  <circle cx="0" cy="0" r="6" fill="#ffffff" stroke="#000" strokeWidth="0.5" />
+                  <line x1="-4" y1="0" x2="4" y2="0" stroke="#000" strokeWidth="0.4" />
+                </g>
+
+                {/* Football 2 - Top Right */}
+                <g transform="translate(220, 80)">
+                  <circle cx="0" cy="0" r="6" fill="#ffffff" stroke="#000" strokeWidth="0.5" />
+                  <line x1="-4" y1="0" x2="4" y2="0" stroke="#000" strokeWidth="0.4" />
+                </g>
+
+                {/* Football 3 - Right */}
+                <g transform="translate(260, 150)">
+                  <circle cx="0" cy="0" r="6" fill="#ffffff" stroke="#000" strokeWidth="0.5" />
+                  <line x1="-4" y1="0" x2="4" y2="0" stroke="#000" strokeWidth="0.4" />
+                </g>
+
+                {/* Football 4 - Bottom Right */}
+                <g transform="translate(220, 220)">
+                  <circle cx="0" cy="0" r="6" fill="#ffffff" stroke="#000" strokeWidth="0.5" />
+                  <line x1="-4" y1="0" x2="4" y2="0" stroke="#000" strokeWidth="0.4" />
+                </g>
+
+                {/* Football 5 - Bottom */}
+                <g transform="translate(150, 260)">
+                  <circle cx="0" cy="0" r="6" fill="#ffffff" stroke="#000" strokeWidth="0.5" />
+                  <line x1="-4" y1="0" x2="4" y2="0" stroke="#000" strokeWidth="0.4" />
+                </g>
+
+                {/* Football 6 - Bottom Left */}
+                <g transform="translate(80, 220)">
+                  <circle cx="0" cy="0" r="6" fill="#ffffff" stroke="#000" strokeWidth="0.5" />
+                  <line x1="-4" y1="0" x2="4" y2="0" stroke="#000" strokeWidth="0.4" />
+                </g>
+
+                {/* Football 7 - Left */}
+                <g transform="translate(40, 150)">
+                  <circle cx="0" cy="0" r="6" fill="#ffffff" stroke="#000" strokeWidth="0.5" />
+                  <line x1="-4" y1="0" x2="4" y2="0" stroke="#000" strokeWidth="0.4" />
+                </g>
+
+                {/* Football 8 - Top Left */}
+                <g transform="translate(80, 80)">
+                  <circle cx="0" cy="0" r="6" fill="#ffffff" stroke="#000" strokeWidth="0.5" />
+                  <line x1="-4" y1="0" x2="4" y2="0" stroke="#000" strokeWidth="0.4" />
+                </g>
+              </g>
+
+              {/* Center Circle */}
+              <circle cx="150" cy="150" r="35" fill="none" stroke="#ffa500" strokeWidth="2" opacity="0.5" style={{ animation: "pulseCenterCircle 2s ease-in-out infinite" }} />
+              <circle cx="150" cy="150" r="25" fill="none" stroke="#ff6b00" strokeWidth="1" opacity="0.3" style={{ animation: "pulseCenterCircle 2s ease-in-out infinite 0.3s" }} />
+
+              <style jsx>{`
+                @keyframes rotateFootballs {
+                  from { transform: rotate(0deg); transform-origin: 150px 150px; }
+                  to { transform: rotate(360deg); transform-origin: 150px 150px; }
+                }
+                @keyframes pulseCenterCircle {
+                  0%, 100% { r: 35px; opacity: 0.5; }
+                  50% { r: 45px; opacity: 0.3; }
+                }
+              `}</style>
+            </svg>
+          </div>
+
           <img
             src="https://i.postimg.cc/LXBMvk6B/photo-2025-12-11-09-16-17-removebg-preview.png"
             alt="MoviesVerseBD Logo"
-            className="w-full h-full object-contain"
+            className="w-full h-full object-contain relative z-10"
           />
           
           {/* FIFA Player Kicking Football Animation */}

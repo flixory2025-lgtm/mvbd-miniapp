@@ -83,98 +83,109 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
           <div className="w-full h-96 bg-gradient-to-b from-black/50 via-black/80 to-black rounded-b-3xl" />
         </div>
 
-        {/* FIFA World Cup 2026 Animated Overlay */}
-        <div className="absolute inset-0 -top-20 flex items-center justify-center pointer-events-none z-10">
-          <div className="relative w-full max-w-3xl mx-auto">
-            {/* Football Field Lines Animation */}
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="w-[80%] h-[60%] border-2 border-green-500/30 rounded-lg animate-pulse">
-                <div className="absolute top-1/2 left-0 w-full h-0.5 bg-green-500/20 transform -translate-y-1/2"></div>
-                <div className="absolute top-1/2 left-1/2 w-16 h-16 border-2 border-green-500/20 rounded-full transform -translate-x-1/2 -translate-y-1/2"></div>
-              </div>
-            </div>
+        {/* FIFA World Cup Football Match Animation */}
+        <div className="relative z-10 w-full flex justify-center -top-20">
+          <svg className="w-64 h-32 absolute top-4" viewBox="0 0 400 200" style={{ filter: "drop-shadow(0 0 10px rgba(255, 165, 0, 0.6))" }}>
+            {/* Field */}
+            <rect x="10" y="40" width="380" height="120" fill="none" stroke="#22c55e" strokeWidth="2" />
+            <line x1="200" y1="40" x2="200" y2="160" stroke="#22c55e" strokeWidth="1" />
+            <circle cx="200" cy="100" r="30" fill="none" stroke="#22c55e" strokeWidth="1" />
+            <circle cx="200" cy="100" r="3" fill="#22c55e" />
 
-            {/* Animated Football Player Kicking Ball */}
-            <div className="relative flex justify-center items-center min-h-[200px]">
-              {/* Player Silhouette with kicking animation */}
-              <div className="relative animate-kickPlayer">
-                <svg
-                  viewBox="0 0 100 100"
-                  className="w-32 h-32 md:w-40 md:h-40 drop-shadow-[0_0_15px_rgba(34,197,94,0.7)]"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  {/* Player Body */}
-                  <g>
-                    {/* Head */}
-                    <circle cx="50" cy="20" r="8" fill="#2d3748" stroke="#4a5568" strokeWidth="1.5" />
-                    {/* Body */}
-                    <path d="M42 30 L58 30 L55 50 L45 50 Z" fill="#2d3748" stroke="#4a5568" strokeWidth="1.5" />
-                    {/* Kicking Leg - Animated */}
-                    <g className="animate-kickingLeg">
-                      <line x1="50" y1="50" x2="35" y2="65" stroke="#2d3748" strokeWidth="4" strokeLinecap="round" />
-                      <line x1="35" y1="65" x2="25" y2="60" stroke="#2d3748" strokeWidth="3" strokeLinecap="round" />
-                    </g>
-                    {/* Standing Leg */}
-                    <line x1="50" y1="50" x2="50" y2="70" stroke="#2d3748" strokeWidth="4" strokeLinecap="round" />
-                    <line x1="50" y1="70" x2="55" y2="75" stroke="#2d3748" strokeWidth="3" strokeLinecap="round" />
-                    {/* Arms */}
-                    <line x1="42" y1="35" x2="30" y2="45" stroke="#2d3748" strokeWidth="3" strokeLinecap="round" />
-                    <line x1="58" y1="35" x2="68" y2="45" stroke="#2d3748" strokeWidth="3" strokeLinecap="round" />
-                  </g>
-                </svg>
-              </div>
+            {/* Left Player */}
+            <g style={{ animation: "movePlayerLeft 2s ease-in-out infinite" }}>
+              <circle cx="80" cy="90" r="6" fill="#ff6b00" />
+              <rect x="76" y="96" width="8" height="15" fill="#ff6b00" />
+              <rect x="70" y="111" width="6" height="12" fill="#ff6b00" />
+              <rect x="80" y="111" width="6" height="12" fill="#ff6b00" />
+            </g>
 
-              {/* Football with shooting animation */}
-              <div className="absolute left-[45%] top-[55%] animate-shootBall">
-                <svg
-                  viewBox="0 0 32 32"
-                  className="w-8 h-8 md:w-10 md:h-10 drop-shadow-[0_0_20px_rgba(255,255,255,0.8)]"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <circle cx="16" cy="16" r="14" fill="white" stroke="black" strokeWidth="1.5" />
-                  <path d="M16 2 L16 30 M2 16 L30 16" stroke="black" strokeWidth="1.2" />
-                  <path d="M7 7 L25 25 M7 25 L25 7" stroke="black" strokeWidth="1.2" />
-                  <path d="M16 2 L23 9 L23 23 L16 30 L9 23 L9 9 Z" stroke="black" strokeWidth="1" fill="none" />
-                  <circle cx="16" cy="16" r="4" fill="none" stroke="black" strokeWidth="0.8" />
-                </svg>
-              </div>
+            {/* Right Player */}
+            <g style={{ animation: "movePlayerRight 2s ease-in-out infinite" }}>
+              <circle cx="320" cy="90" r="6" fill="#0066ff" />
+              <rect x="316" y="96" width="8" height="15" fill="#0066ff" />
+              <rect x="310" y="111" width="6" height="12" fill="#0066ff" />
+              <rect x="320" y="111" width="6" height="12" fill="#0066ff" />
+            </g>
 
-              {/* Speed Lines */}
-              <div className="absolute left-[60%] top-[55%] flex gap-1 animate-speedLines">
-                <div className="w-3 h-0.5 bg-yellow-400 rounded-full"></div>
-                <div className="w-5 h-0.5 bg-yellow-400 rounded-full"></div>
-                <div className="w-4 h-0.5 bg-yellow-400 rounded-full"></div>
-                <div className="w-2 h-0.5 bg-yellow-400 rounded-full"></div>
-              </div>
-            </div>
+            {/* Football */}
+            <g style={{ animation: "ballMove 2s ease-in-out infinite" }}>
+              <circle cx="150" cy="100" r="4" fill="#ffffff" stroke="#000" strokeWidth="0.5" />
+              <line x1="148" y1="100" x2="152" y2="100" stroke="#000" strokeWidth="0.5" />
+            </g>
 
-            {/* Goal Explosion Effect */}
-            <div className="absolute right-0 top-1/2 transform -translate-y-1/2 animate-goalFlash">
-              <div className="relative">
-                <div className="absolute w-8 h-8 bg-yellow-400 rounded-full blur-md animate-ping"></div>
-                <div className="absolute w-12 h-12 bg-yellow-500 rounded-full blur-lg animate-pulse opacity-50"></div>
-                <span className="relative text-yellow-400 font-bold text-xl md:text-3xl animate-bounce drop-shadow-lg">
-                  ⚽ GOAL! 🎉
-                </span>
-              </div>
-            </div>
-
-            {/* FIFA World Cup Text */}
-            <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 text-center whitespace-nowrap">
-              <div className="text-xs md:text-sm font-bold text-white bg-black/50 px-3 py-1 rounded-full backdrop-blur-sm animate-textGlow">
-                FIFA World Cup 2026 🔥
-              </div>
-            </div>
-          </div>
+            <style jsx>{`
+              @keyframes movePlayerLeft {
+                0%, 100% { transform: translateX(0px); }
+                50% { transform: translateX(30px); }
+              }
+              @keyframes movePlayerRight {
+                0%, 100% { transform: translateX(0px); }
+                50% { transform: translateX(-30px); }
+              }
+              @keyframes ballMove {
+                0%, 100% { transform: translateX(0px) translateY(0px); }
+                25% { transform: translateX(40px) translateY(-10px); }
+                50% { transform: translateX(100px) translateY(0px); }
+                75% { transform: translateX(40px) translateY(-10px); }
+              }
+            `}</style>
+          </svg>
         </div>
 
-        <img
-          src="https://i.postimg.cc/LXBMvk6B/photo-2025-12-11-09-16-17-removebg-preview.png"
-          alt="MoviesVerseBD Logo"
-          className="relative z-20 w-72 h-72 object-contain"
-        />
+        {/* MoviesVerseBD Logo with Player Animation */}
+        <div className="relative z-20 w-72 h-72 flex items-center justify-center">
+          <img
+            src="https://i.postimg.cc/LXBMvk6B/photo-2025-12-11-09-16-17-removebg-preview.png"
+            alt="MoviesVerseBD Logo"
+            className="w-full h-full object-contain"
+          />
+          
+          {/* FIFA Player Kicking Football Animation */}
+          <svg 
+            className="absolute bottom-2 right-4 w-20 h-20" 
+            viewBox="0 0 100 100"
+            style={{ filter: "drop-shadow(0 0 8px rgba(255, 165, 0, 0.8))" }}
+          >
+            {/* Player Body */}
+            <g style={{ animation: "playerKick 1.5s ease-in-out infinite" }}>
+              {/* Head */}
+              <circle cx="50" cy="20" r="8" fill="#ffdbac" />
+              {/* Body */}
+              <rect x="46" y="28" width="8" height="18" fill="#ff6b00" />
+              {/* Arms */}
+              <rect x="32" y="32" width="14" height="4" fill="#ffdbac" />
+              {/* Left Leg */}
+              <rect x="42" y="46" width="4" height="20" fill="#000080" />
+              {/* Right Leg (Kicking) */}
+              <g style={{ transformOrigin: "48px 46px", animation: "kickLeg 1.5s ease-in-out infinite" }}>
+                <rect x="48" y="46" width="4" height="20" fill="#000080" />
+              </g>
+            </g>
+
+            {/* Football */}
+            <g style={{ animation: "footballFly 1.5s ease-in-out infinite" }}>
+              <circle cx="50" cy="80" r="5" fill="#ffffff" stroke="#000" strokeWidth="0.5" />
+              <path d="M 48 80 Q 50 78 52 80" stroke="#000" strokeWidth="0.3" fill="none" />
+            </g>
+
+            <style jsx>{`
+              @keyframes playerKick {
+                0%, 100% { transform: scaleX(1) translateY(0px); }
+                50% { transform: scaleX(1) translateY(-3px); }
+              }
+              @keyframes kickLeg {
+                0%, 100% { transform: rotate(0deg); }
+                50% { transform: rotate(45deg); }
+              }
+              @keyframes footballFly {
+                0% { transform: translateX(0px) translateY(0px); opacity: 1; }
+                50% { transform: translateX(40px) translateY(-25px); opacity: 1; }
+                100% { transform: translateX(0px) translateY(0px); opacity: 0; }
+              }
+            `}</style>
+          </svg>
+        </div>
       </div>
 
       <div className="relative z-20 -mt-4 mb-1 flex flex-col items-center justify-center">
@@ -256,7 +267,7 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
           ))}
         </div>
 
-        {/* CSS Animations */}
+        {/* Navigation Buttons */}
         <style>{`
           @keyframes carouselNavGlow {
             0%, 100% {
@@ -265,68 +276,6 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
             50% {
               box-shadow: 0 0 25px rgba(34, 197, 94, 0.8), inset 0 0 30px rgba(255, 255, 255, 0.15);
             }
-          }
-
-          @keyframes kickPlayer {
-            0%, 100% { transform: translateX(0) rotate(0deg); }
-            50% { transform: translateX(-5px) rotate(-5deg); }
-          }
-
-          @keyframes kickingLeg {
-            0%, 100% { transform: rotate(0deg); transform-origin: 50px 50px; }
-            50% { transform: rotate(30deg); transform-origin: 50px 50px; }
-          }
-
-          @keyframes shootBall {
-            0% { transform: translate(0, 0) scale(1); opacity: 1; }
-            20% { transform: translate(15px, -5px) scale(1.1); }
-            50% { transform: translate(60px, -15px) scale(0.9); opacity: 0.8; }
-            80% { transform: translate(100px, -20px) scale(0.8); opacity: 0.5; }
-            100% { transform: translate(140px, -25px) scale(0.6); opacity: 0; }
-          }
-
-          @keyframes speedLines {
-            0% { opacity: 0; transform: translateX(0); }
-            20% { opacity: 1; transform: translateX(15px); }
-            80% { opacity: 1; transform: translateX(80px); }
-            100% { opacity: 0; transform: translateX(120px); }
-          }
-
-          @keyframes goalFlash {
-            0%, 100% { opacity: 0; transform: scale(0.8) translateY(-50%); }
-            40% { opacity: 0; }
-            60% { opacity: 1; transform: scale(1.2) translateY(-50%); }
-            80% { opacity: 1; transform: scale(1) translateY(-50%); }
-            100% { opacity: 0; transform: scale(0.8) translateY(-50%); }
-          }
-
-          @keyframes textGlow {
-            0%, 100% { text-shadow: 0 0 5px #22c55e, 0 0 10px #22c55e; }
-            50% { text-shadow: 0 0 15px #22c55e, 0 0 25px #22c55e; }
-          }
-
-          .animate-kickPlayer {
-            animation: kickPlayer 0.8s ease-in-out infinite;
-          }
-
-          .animate-kickingLeg {
-            animation: kickingLeg 0.8s ease-in-out infinite;
-          }
-
-          .animate-shootBall {
-            animation: shootBall 1.5s ease-in-out infinite;
-          }
-
-          .animate-speedLines {
-            animation: speedLines 1.5s ease-in-out infinite;
-          }
-
-          .animate-goalFlash {
-            animation: goalFlash 1.5s ease-in-out infinite;
-          }
-
-          .animate-textGlow {
-            animation: textGlow 1.5s ease-in-out infinite;
           }
 
           .carousel-nav-button {

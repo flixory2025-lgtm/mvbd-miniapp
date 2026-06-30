@@ -53,7 +53,7 @@ export default function Footer() {
     },
     {
       icon: Music,
-      url: "https://www.tiktok.com/@moviesversebd?_r=1&_t=ZS-96egIldETCO",
+      url: "https://www.tiktok.com/@mvbdstudio?is_from_webapp=1&sender_device=pc",
       label: "TikTok",
       color: "hover:text-slate-300",
     },

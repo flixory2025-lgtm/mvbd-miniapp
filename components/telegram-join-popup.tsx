@@ -20,7 +20,7 @@ export default function TelegramJoinPopup({ movieTitle, telegramLink, moviePoste
   }
 
   const handleJoinChannel = () => {
-    window.open("https://t.me/+O-A7AGa-gWNiZWY1", "_blank")
+    window.open("https://t.me/+O2fkek28lBJmZTU1", "_blank")
     setHasJoined(true)
   }
 

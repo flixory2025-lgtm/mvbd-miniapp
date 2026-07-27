@@ -36539,7 +36539,7 @@ export const movies = [
     trailer: "https://www.youtube.com/embed/rz6R2AwQY4A?si",
     telegramLink: "https://t.me/c/4420216553/14058",
     genre: "Thriller | Mystery",
-    year: 2019",
+    year: "2019",
     rating: "5.7",
     language: "Bangla",
     description: "নির্জন বনের একটি কেবিন পাহারা দিতে গিয়ে এক ব্যক্তি অদ্ভুত ও রহস্যময় ঘটনার মুখোমুখি হয়। ধীরে ধীরে উন্মোচিত হতে থাকে ভয়ংকর এক গোপন সত্য। 🌲🏚️🔦",

@@ -15,7 +15,7 @@ export default function TelegramJoinPopup({ movieTitle, telegramLink, moviePoste
 
   const handleWatchNow = () => {
     // Open the telegram movie link if available, otherwise default channel
-    const linkToOpen = telegramLink || "https://t.me/+O-A7AGa-gWNiZWY1"
+    const linkToOpen = telegramLink || "https://t.me/+O2fkek28lBJmZTU1"
     window.open(linkToOpen, "_blank")
   }
 

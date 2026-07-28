@@ -25595,7 +25595,7 @@ export const movies = [
     genre: "Horror | Mystery | Thriller | kdrama",
     year: "2025",
     rating: "6.4",
-    language: "Korean",
+    language: "Hindi org",
     description: "রাতের অন্ধকারে ছুটে চলা এক পরিত্যক্ত ট্রেনকে ঘিরে রহস্যময় ঘটনা শুরু হয়। যারা সেই ট্রেনে ওঠে, তারা প্রত্যেকেই অদ্ভুত ও ভয়ংকর অভিজ্ঞতার মুখোমুখি হয়—অতীতের অভিশাপ কি এখনো বেঁচে আছে? 🚆👻",
     views: 23847,
   },

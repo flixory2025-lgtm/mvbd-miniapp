@@ -37783,7 +37783,7 @@ export const movies = [
   {
     id: 2910,
     title: "Paint on Dry Leaf (2026)",
-    poster: "/2910id.jpg",
+    poster: "/2910aid.jpg",
     trailer: "https://www.youtube.com/embed/aEGfH-yd4HU?si",
     telegramLink: "https://t.me/c/4420216553/14507",
     genre: "Drama | Romance | bangla",

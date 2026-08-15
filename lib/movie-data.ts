@@ -38489,7 +38489,7 @@ export const movies = [
     trailer: "https://www.youtube.com/embed/oRsAMzfvVGk?si",
     telegramLink: "https://t.me/c/4420216553/14785",
     genre: "Drama | History | War | Period",
-    year: 2026",
+    year: "2026",
     rating: "5.3",
     language: "Hindi",
     description: "১৯৪৭ সালের দেশভাগের ভয়াবহ সময়ে লাহোরে এক মুসলিম পরিবারের পূর্বপুরুষের বাড়িতে হিন্দু শরণার্থী পরিবার এসে ওঠে। বিভাজনের হিংসা ও অস্থিরতার মাঝেও দুই পরিবারের গল্পে ফুটে ওঠে মানবতা, সহমর্মিতা ও টিকে থাকার লড়াই।",

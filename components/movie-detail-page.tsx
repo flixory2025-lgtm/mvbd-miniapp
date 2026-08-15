@@ -99,7 +99,7 @@ export default function MovieDetailPage({ movie, onBack, onMovieClick, showAdult
         }}
       >
         {/* Background Overlay */}
-        <div className="absolute inset-0 bg-black/75 backdrop-blur-md" />
+        <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
 
         {/* Movie Details Section */}
         <div className="relative z-10 px-4 py-12">
@@ -107,7 +107,7 @@ export default function MovieDetailPage({ movie, onBack, onMovieClick, showAdult
             {/* Main Layout - Poster + Details */}
             <div className="flex flex-col md:flex-row gap-8 items-start">
               {/* Left - Poster */}
-              <div className="w-32 md:w-48 flex-shrink-0">
+              <div className="w-44 md:w-64 lg:w-72 flex-shrink-0">
                 <div className="relative w-full aspect-[2/3] overflow-hidden rounded-xl shadow-2xl">
                   <img
                     src={movie.poster || "/placeholder.svg"}
@@ -238,7 +238,7 @@ export default function MovieDetailPage({ movie, onBack, onMovieClick, showAdult
           }}
         >
           {/* Background Overlay - same as top section */}
-          <div className="absolute inset-0 bg-black/75 backdrop-blur-md" />
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
           
           <div className="relative z-10 max-w-6xl mx-auto px-4 py-12 border-t border-white/20">
             <h3 className="text-3xl font-bold text-white mb-8">সম্পর্কিত মুভি</h3>

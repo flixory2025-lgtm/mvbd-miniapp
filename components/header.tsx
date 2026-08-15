@@ -10,7 +10,7 @@ import { animes } from "@/lib/anime-data"
 interface HeaderProps {
   onSearch: (query: string) => void
   pageType?: "home" | "anime" | "series"
-  searchData?: Array<{ title: string }>
+  searchData?: Array<{ title: string; poster?: string }>
 }
 
 const TYPING_SUGGESTIONS_HOME = [
@@ -86,9 +86,7 @@ export default function Header({ onSearch, pageType = "home", searchData }: Head
   const allSearchSuggestions = useMemo(() => {
     if (!searchInput.trim()) return []
     const query = searchInput.toLowerCase()
-    return dataSource
-      .filter((item) => item.title.toLowerCase().includes(query))
-      .map((item) => item.title)
+    return dataSource.filter((item) => item.title.toLowerCase().includes(query))
   }, [searchInput, dataSource])
 
   const searchSuggestions = allSearchSuggestions.slice(0, 5)
@@ -335,18 +333,22 @@ export default function Header({ onSearch, pageType = "home", searchData }: Head
 
           {isFocused && allSearchSuggestions.length > 0 && (
             <div className="search-suggestions">
-              {allSearchSuggestions.map((suggestion, idx) => (
+              {searchSuggestions.map((suggestion, idx) => (
                 <div
-                  key={idx}
-                  className="search-suggestion-item text-slate-200"
+                  key={`${suggestion.title}-${idx}`}
+                  className="search-suggestion-item flex items-center gap-3 text-slate-200"
                   onMouseDown={() => {
-                    setSearchInput(suggestion)
-                    onSearch(suggestion)
+                    setSearchInput(suggestion.title)
+                    onSearch(suggestion.title)
                     setIsFocused(false)
                   }}
                 >
-                  <Search className="w-4 h-4 inline mr-2 text-slate-500" />
-                  {suggestion}
+                  {suggestion.poster ? (
+                    <img src={suggestion.poster} alt="" className="h-10 w-7 flex-shrink-0 rounded object-cover" />
+                  ) : (
+                    <Search className="h-4 w-4 flex-shrink-0 text-slate-500" />
+                  )}
+                  <span>{suggestion.title}</span>
                 </div>
               ))}
             </div>

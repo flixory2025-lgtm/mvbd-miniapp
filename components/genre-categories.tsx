@@ -157,7 +157,7 @@ export default function GenreCategories({
                 <ul className="mt-4 list-disc space-y-2 pl-5 leading-6 text-slate-400">
                   <li>দ্রুত ও সহজে মুভি এবং সিরিজ খুঁজে দেখুন</li>
                   <li>মোবাইলের জন্য তৈরি স্মুথ অ্যাপ অভিজ্ঞতা</li>
-                  <li>নতুন কনটেন্ট ও আপডেট সহজে পেয়ে যান</li>
+                  <li>অবশ্যই মিনি অ্যাপ টি ডাউনলোড করতে হলে আপনাকে chrome browser এ গিয়ে mvbds.xyz ওখান থেকে আমাদের সাইট এ প্রবেশ করে এরপর ডাউনলোড বাটন এ ক্লিক করলে ডিরেক্ট ডাউনলোড হবে।</li>
                 </ul>
                 <a
                   href={apkDownloadUrl}

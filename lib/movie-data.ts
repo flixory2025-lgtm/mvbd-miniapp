@@ -35644,7 +35644,7 @@ export const movies = [
     genre: "Horror | Sci-Fi | Psychological Thriller",
     year: "2026",
     rating: "7.1",
-    language: "English",
+    language: "Hindi",
     description: "এক রহস্যময় দরজা পেরিয়ে এক থেরাপিস্ট প্রবেশ করে বাস্তবতার বাইরে থাকা অন্তহীন গোলকধাঁধার মতো এক জগতে, যেখানে নিখোঁজ রোগীকে খুঁজতে গিয়ে তাকে অজানা আতঙ্ক, বিভ্রম ও প্রাণঘাতী রহস্যের মুখোমুখি হতে হয়। 🚪🌫️👁️😨",
     views: 23847,
   },

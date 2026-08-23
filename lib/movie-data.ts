@@ -38906,7 +38906,7 @@ export const movies = [
     telegramLink: "https://t.me/c/4420216553/15011",
     genre: "Drama | Family | Romance | bangla",
     year: "2026",
-    rating: 7.8",
+    rating: "7.8",
     language: "Bangla",
     description: "পরিবার, সম্পর্ক ও ভালোবাসার টানাপোড়েনকে কেন্দ্র করে এগিয়ে চলে এক আবেগঘন গল্প। জীবনের কঠিন পরিস্থিতির মধ্যেও সম্পর্কের বন্ধন কীভাবে মানুষকে একসঙ্গে ধরে রাখে, সেটিই গল্পের মূল বিষয়। ❤️🏡🧵✨",
     views: 23847,

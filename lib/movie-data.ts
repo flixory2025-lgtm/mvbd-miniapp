@@ -39074,7 +39074,7 @@ export const movies = [
     trailer: "https://www.youtube.com/embed/Ky4W6uxM868?si",
     telegramLink: "https://t.me/c/4420216553/15093",
     genre: "Horror | Supernatural | Thriller",
-    year: 2026",
+    year: "2026",
     rating: "7.8",
     language: "Hindi",
     description: "The Further-এর অন্ধকার জগত থেকে এবার আরও ভয়ংকর এক অতিপ্রাকৃত হুমকি বাস্তব জগতে প্রবেশের চেষ্টা করে। এক পরিবারকে ঘিরে শুরু হয় ভয়, রহস্য ও অশুভ শক্তির বিরুদ্ধে বেঁচে থাকার লড়াই। 👻🚪🌑🔥",

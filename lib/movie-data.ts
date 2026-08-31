@@ -191,7 +191,7 @@ export const movies = [
     title: "School 2017 (𝙎𝙚𝙖𝙨𝙤𝙣 𝟭)",
     poster: "/school2017season1.jpg",
     trailer: "https://www.youtube.com/embed/JV04wyVD1zQ",
-    telegramLink: "https://t.me/c/4420216553/11",
+    telegramLink: "http://t.me/mvbdstore_bot?start=f_OCw0MA",
     genre: "Comedy | Drama | Mystery | kdrama",
     year: "2027",
     rating: "7.1",

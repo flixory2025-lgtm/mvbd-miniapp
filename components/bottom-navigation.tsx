@@ -1,228 +1,754 @@
 "use client"
 
 import { Home, Star, User } from "lucide-react"
-import { useState } from "react"
+import React, {
+  useEffect,
+  useRef,
+  useState,
+} from "react"
 
 interface BottomNavigationProps {
   activeTab: string
   onTabChange: (tab: string) => void
 }
 
-export default function BottomNavigation({ activeTab, onTabChange }: BottomNavigationProps) {
-  const [clickedTab, setClickedTab] = useState<string | null>(null)
-  const [bubbles, setBubbles] = useState<Array<{ id: number; tabId: string }>>([])
+export default function BottomNavigation({
+  activeTab,
+  onTabChange,
+}: BottomNavigationProps) {
+
+  const navRef = useRef<HTMLDivElement>(null)
+
+  const buttonRefs =
+    useRef<Record<string, HTMLButtonElement | null>>({})
+
+  const indicatorRef =
+    useRef<HTMLDivElement>(null)
+
+  const previousTabRef =
+    useRef(activeTab)
+
+  const [clickedTab, setClickedTab] =
+    useState<string | null>(null)
+
+  const [bubbles, setBubbles] =
+    useState<
+      Array<{
+        id: number
+        tabId: string
+        x: number
+        y: number
+      }>
+    >([])
 
   const tabs = [
-    { id: "home", label: "Home", icon: Home },
+    {
+      id: "home",
+      label: "Home",
+      icon: Home,
+    },
+
     {
       id: "shorts",
       label: "Anime",
-      icon: ({ className }: { className?: string }) => (
+      icon: ({
+        className,
+      }: {
+        className?: string
+      }) => (
         <img
           src="https://i.postimg.cc/qMRsY9Zh/360-F-616340820-puy-Fuujd-Aam-JVt-Ct9sr-V1dc-PVrku-Kg-Z6-removebg-preview.png"
           alt="Anime Logo"
-          className={`w-6 h-6 object-contain ${className || ""}`}
+          className={`w-6 h-6 object-contain ${
+            className || ""
+          }`}
         />
       ),
     },
-    { id: "exclusive", label: "Series", icon: Star },
-    { id: "profile", label: "Profile", icon: User },
+
+    {
+      id: "exclusive",
+      label: "Series",
+      icon: Star,
+    },
+
+    {
+      id: "profile",
+      label: "Profile",
+      icon: User,
+    },
   ]
 
-  const handleTabClick = (tabId: string) => {
-    setClickedTab(tabId)
-    onTabChange(tabId)
 
-    // Create water bubbles
-    const newBubbles = Array.from({ length: 6 }).map((_, i) => ({
-      id: Date.now() + i,
-      tabId,
-    }))
-    setBubbles([...bubbles, ...newBubbles])
+  /* =========================================================
+     LIQUID INDICATOR POSITION
+     ========================================================= */
 
-    // Remove bubbles after animation
-    setTimeout(() => {
-      setBubbles([])
-    }, 800)
+  const moveIndicator = (
+    tabId: string,
+    animate = true
+  ) => {
+
+    const nav =
+      navRef.current
+
+    const indicator =
+      indicatorRef.current
+
+    const target =
+      buttonRefs.current[tabId]
+
+    if (
+      !nav ||
+      !indicator ||
+      !target
+    ) {
+      return
+    }
+
+    const navRect =
+      nav.getBoundingClientRect()
+
+    const targetRect =
+      target.getBoundingClientRect()
+
+    const targetLeft =
+      targetRect.left -
+      navRect.left
+
+    const targetWidth =
+      targetRect.width
+
+
+    if (!animate) {
+
+      indicator.style.left =
+        `${targetLeft}px`
+
+      indicator.style.width =
+        `${targetWidth}px`
+
+      indicator.style.transform =
+        "translateZ(0) scaleX(1) scaleY(1)"
+
+      return
+    }
+
+
+    const previousTab =
+      previousTabRef.current
+
+    const previous =
+      buttonRefs.current[previousTab]
+
+    const previousRect =
+      previous?.getBoundingClientRect()
+
+
+    const startLeft =
+      previousRect
+        ? previousRect.left -
+          navRect.left
+        : targetLeft
+
+    const startWidth =
+      previousRect
+        ? previousRect.width
+        : targetWidth
+
+
+    const distance =
+      Math.abs(
+        targetLeft - startLeft
+      )
+
+
+    /*
+     * Longer distance = slightly longer
+     * liquid travel.
+     */
+
+    const duration =
+      Math.min(
+        1050,
+        Math.max(
+          680,
+          650 + distance * 1.2
+        )
+      )
+
+
+    /*
+     * Cancel previous animation.
+     */
+
+    try {
+      indicator
+        .getAnimations()
+        .forEach(animation =>
+          animation.cancel()
+        )
+    } catch {}
+
+
+    /*
+     * REALISTIC LIQUID MOVEMENT
+     *
+     * Start
+     * ↓
+     * Stretch
+     * ↓
+     * Flow
+     * ↓
+     * Blob
+     * ↓
+     * Contract
+     * ↓
+     * Settle
+     */
+
+    indicator.animate(
+      [
+        {
+          left:
+            `${startLeft}px`,
+
+          width:
+            `${startWidth}px`,
+
+          borderRadius:
+            "24px",
+
+          transform:
+            "translateZ(0) scaleX(1) scaleY(1)",
+        },
+
+        {
+          left:
+            `${startLeft +
+              (targetLeft -
+                startLeft) *
+                0.18}px`,
+
+          width:
+            `${Math.max(
+              startWidth,
+              targetWidth
+            ) * 1.25}px`,
+
+          borderRadius:
+            "30px",
+
+          transform:
+            "translateZ(0) scaleX(1.08) scaleY(1.05)",
+
+          offset: 0.20,
+        },
+
+        {
+          left:
+            `${startLeft +
+              (targetLeft -
+                startLeft) *
+                0.48}px`,
+
+          width:
+            `${Math.max(
+              startWidth,
+              targetWidth
+            ) * 1.55}px`,
+
+          borderRadius:
+            "36px",
+
+          transform:
+            "translateZ(0) scaleX(1.04) scaleY(.94)",
+
+          offset: 0.48,
+        },
+
+        {
+          left:
+            `${startLeft +
+              (targetLeft -
+                startLeft) *
+                0.78}px`,
+
+          width:
+            `${Math.max(
+              startWidth,
+              targetWidth
+            ) * 1.30}px`,
+
+          borderRadius:
+            "31px",
+
+          transform:
+            "translateZ(0) scaleX(1.02) scaleY(1.04)",
+
+          offset: 0.76,
+        },
+
+        {
+          left:
+            `${targetLeft}px`,
+
+          width:
+            `${targetWidth}px`,
+
+          borderRadius:
+            "24px",
+
+          transform:
+            "translateZ(0) scaleX(1) scaleY(1)",
+        },
+      ],
+      {
+        duration,
+        easing:
+          "cubic-bezier(.16, 1, .3, 1)",
+
+        fill: "forwards",
+      }
+    )
+
+
+    /*
+     * Moving liquid highlight
+     */
+
+    const highlight =
+      document.createElement("span")
+
+    highlight.className =
+      "mvbd-liquid-moving-highlight"
+
+    indicator.appendChild(
+      highlight
+    )
+
+
+    highlight.animate(
+      [
+        {
+          left: "5%",
+          opacity: 0.2,
+          transform:
+            "translateX(0) scale(.7)",
+        },
+
+        {
+          left: "45%",
+          opacity: 0.9,
+          transform:
+            "translateX(0) scale(1.15)",
+        },
+
+        {
+          left: "88%",
+          opacity: 0.15,
+          transform:
+            "translateX(0) scale(.7)",
+        },
+      ],
+      {
+        duration,
+        easing:
+          "cubic-bezier(.16, 1, .3, 1)",
+      }
+    )
+
+
+    window.setTimeout(() => {
+      highlight.remove()
+    }, duration + 100)
+
+
+    previousTabRef.current =
+      tabId
   }
 
+
+  /* =========================================================
+     INITIAL POSITION
+     ========================================================= */
+
+  useEffect(() => {
+
+    requestAnimationFrame(() => {
+
+      moveIndicator(
+        activeTab,
+        false
+      )
+
+    })
+
+  }, [])
+
+
+  /* =========================================================
+     EXTERNAL activeTab CHANGE
+     ========================================================= */
+
+  useEffect(() => {
+
+    if (
+      previousTabRef.current !==
+      activeTab
+    ) {
+
+      moveIndicator(
+        activeTab,
+        true
+      )
+
+      setClickedTab(
+        activeTab
+      )
+    }
+
+  }, [activeTab])
+
+
+  /* =========================================================
+     RESPONSIVE POSITION
+     ========================================================= */
+
+  useEffect(() => {
+
+    const handleResize =
+      () => {
+
+        moveIndicator(
+          activeTab,
+          false
+        )
+      }
+
+    window.addEventListener(
+      "resize",
+      handleResize
+    )
+
+    return () => {
+
+      window.removeEventListener(
+        "resize",
+        handleResize
+      )
+
+    }
+
+  }, [activeTab])
+
+
+  /* =========================================================
+     LIQUID TOUCH EFFECT
+     ========================================================= */
+
+  const createLiquidTouch =
+    (
+      event:
+        React.PointerEvent<HTMLButtonElement>
+    ) => {
+
+      const nav =
+        navRef.current
+
+      if (!nav) return
+
+      const rect =
+        nav.getBoundingClientRect()
+
+      const x =
+        event.clientX -
+        rect.left
+
+      const y =
+        event.clientY -
+        rect.top
+
+
+      const id =
+        Date.now() +
+        Math.random()
+
+
+      setBubbles(
+        previous => [
+          ...previous,
+          {
+            id,
+            tabId: activeTab,
+            x,
+            y,
+          },
+        ]
+      )
+
+
+      window.setTimeout(() => {
+
+        setBubbles(
+          previous =>
+            previous.filter(
+              bubble =>
+                bubble.id !== id
+            )
+        )
+
+      }, 950)
+    }
+
+
+  /* =========================================================
+     TAB CLICK
+     ========================================================= */
+
+  const handleTabClick = (
+    tabId: string,
+    event:
+      React.PointerEvent<HTMLButtonElement>
+  ) => {
+
+    createLiquidTouch(
+      event
+    )
+
+
+    setClickedTab(
+      tabId
+    )
+
+
+    /*
+     * Let parent update activeTab.
+     */
+
+    onTabChange(
+      tabId
+    )
+
+
+    /*
+     * Small cleanup.
+     */
+
+    window.setTimeout(() => {
+
+      setClickedTab(
+        null
+      )
+
+    }, 900)
+  }
+
+
   return (
-    <>
-      <style>{`
-        @keyframes waterBubbleRise {
-          0% {
-            opacity: 1;
-            transform: translate(0, 0) scale(1);
-            filter: blur(0);
-          }
-          100% {
-            opacity: 0;
-            transform: translate(var(--tx), -50px) scale(0.3);
-            filter: blur(1px);
-          }
-        }
+    <nav
+      className="
+        fixed
+        bottom-0
+        left-0
+        right-0
+        z-50
+        safe-area-bottom
+        flex
+        items-end
+        justify-center
+        pb-3
+        px-4
+        pointer-events-none
+      "
+    >
 
-        @keyframes navPulse {
-          0% {
-            transform: scale(1);
-          }
-          50% {
-            transform: scale(1.08);
-          }
-          100% {
-            transform: scale(1);
-          }
-        }
+      <div
+        ref={navRef}
+        className="
+          mvbd-liquid-nav
+          relative
+          pointer-events-auto
+          w-full
+          max-w-[390px]
+          h-[70px]
+          px-2
+          sm:max-w-[430px]
+        "
+      >
 
-        @keyframes bubbleGlow {
-          0% {
-            box-shadow: 0 0 4px rgba(59, 130, 246, 0.6), inset -1px -1px 2px rgba(0, 0, 0, 0.2);
-          }
-          100% {
-            box-shadow: 0 0 12px rgba(96, 165, 250, 0.3), inset -1px -1px 2px rgba(0, 0, 0, 0.1);
-          }
-        }
+        {/* =================================================
+            MOVING LIQUID GLASS
+            ================================================= */}
 
-        .nav-bubble {
-          position: absolute;
-          width: 10px;
-          height: 10px;
-          background: radial-gradient(circle at 35% 35%, rgba(96, 165, 250, 0.9), rgba(59, 130, 246, 0.4));
-          border-radius: 50%;
-          border: 1px solid rgba(96, 165, 250, 0.5);
-          pointer-events: none;
-          box-shadow: 0 0 6px rgba(59, 130, 246, 0.5), 
-                      inset -2px -2px 3px rgba(0, 0, 0, 0.15),
-                      inset 1px 1px 2px rgba(255, 255, 255, 0.1);
-        }
+        <div
+          ref={indicatorRef}
+          className="
+            mvbd-liquid-indicator
+          "
+          aria-hidden="true"
+        />
 
-        .nav-bubble.active {
-          animation: waterBubbleRise 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-        }
 
-        .nav-button.clicked {
-          animation: navPulse 0.4s ease-out;
-        }
-      `}</style>
+        {/* =================================================
+            TOUCH LIQUID EFFECTS
+            ================================================= */}
 
-      <nav className="fixed bottom-0 left-0 right-0 z-50 safe-area-bottom flex items-end justify-center pb-3 px-4">
-        <style>{`
-          @keyframes liquidButtonZoom {
-            0% {
-              transform: scale(1);
-              background: rgba(255, 255, 255, 0.05);
-              backdrop-filter: blur(20px);
-            }
-            50% {
-              transform: scale(1.12);
-              background: rgba(255, 255, 255, 0.1);
-              backdrop-filter: blur(25px);
-            }
-            100% {
-              transform: scale(1.15);
-              background: rgba(255, 255, 255, 0.12);
-              backdrop-filter: blur(30px);
-            }
-          }
+        {bubbles.map(
+          bubble => (
+            <React.Fragment
+              key={bubble.id}
+            >
 
-          .nav-pill-container {
-            background: rgba(30, 30, 40, 0.5);
-            backdrop-filter: blur(25px);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            border-radius: 50px;
-            padding: 8px 16px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-          }
+              <span
+                className="
+                  mvbd-liquid-ripple
+                "
+                style={{
+                  left:
+                    `${bubble.x}px`,
+                  top:
+                    `${bubble.y}px`,
+                }}
+              />
 
-          .liquid-nav-button {
-            background: rgba(255, 255, 255, 0.08);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            transition: all 0.3s ease;
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 4px;
-            width: 50px;
-            height: 50px;
-            border-radius: 25px;
-            cursor: pointer;
-            padding: 0;
-          }
+              <span
+                className="
+                  mvbd-liquid-pressure
+                "
+                style={{
+                  left:
+                    `${bubble.x}px`,
+                  top:
+                    `${bubble.y}px`,
+                }}
+              />
 
-          .liquid-nav-button .icon {
-            width: 24px;
-            height: 24px;
-          }
+            </React.Fragment>
+          )
+        )}
 
-          .liquid-nav-button .label {
-            font-size: 10px;
-            font-weight: 600;
-            line-height: 1;
-          }
 
-          .liquid-nav-button:hover {
-            background: rgba(255, 255, 255, 0.12);
-            backdrop-filter: blur(25px);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            transform: scale(1.05);
-          }
+        {/* =================================================
+            NAVIGATION ITEMS
+            ================================================= */}
 
-          @keyframes greenFirePulse {
-            0%, 100% {
-              box-shadow: 0 0 15px rgba(34, 197, 94, 0.6), inset 0 0 20px rgba(255, 255, 255, 0.1);
-            }
-            50% {
-              box-shadow: 0 0 25px rgba(34, 197, 94, 0.8), inset 0 0 30px rgba(255, 255, 255, 0.15);
-            }
-          }
+        <div
+          className="
+            relative
+            z-10
+            h-full
+            grid
+            grid-cols-4
+            items-center
+          "
+        >
 
-          .liquid-nav-button.active {
-            background: rgba(34, 197, 94, 0.2);
-            backdrop-filter: blur(30px);
-            border: 1px solid rgba(34, 197, 94, 0.5);
-            animation: liquidButtonZoom 0.5s ease-out, greenFirePulse 0.8s ease-in-out infinite;
-          }
-        `}</style>
-        <div className="nav-pill-container">
-          {tabs.map((tab) => {
-            const Icon = tab.icon
-            const isActive = activeTab === tab.id
-            return (
-              <div key={tab.id} className="relative">
+          {tabs.map(
+            tab => {
+
+              const Icon =
+                tab.icon
+
+              const isActive =
+                activeTab ===
+                tab.id
+
+              const isClicked =
+                clickedTab ===
+                tab.id
+
+
+              return (
                 <button
-                  onClick={() => handleTabClick(tab.id)}
-                  className={`liquid-nav-button ${isActive ? "active" : ""} ${clickedTab === tab.id ? "clicked" : ""}`}
+                  key={tab.id}
+                  ref={element => {
+
+                    buttonRefs.current[
+                      tab.id
+                    ] = element
+
+                  }}
+
+                  type="button"
+
+                  onPointerDown={event =>
+                    handleTabClick(
+                      tab.id,
+                      event
+                    )
+                  }
+
+                  className={`
+                    mvbd-liquid-nav-item
+                    relative
+                    h-full
+                    w-full
+                    flex
+                    flex-col
+                    items-center
+                    justify-center
+                    gap-[3px]
+                    select-none
+                    outline-none
+                    ${
+                      isActive
+                        ? "active"
+                        : ""
+                    }
+                  `}
                   title={tab.label}
                 >
-                  <Icon className="icon" />
-                  <span className="label">{tab.label}</span>
-                </button>
 
-                {/* Liquid Glass Bubbles */}
-                {bubbles
-                  .filter((b) => b.tabId === tab.id)
-                  .map((bubble, idx) => (
-                    <div
-                      key={bubble.id}
-                      className="nav-bubble active"
-                      style={{
-                        left: `calc(50% + ${(idx - 2.5) * 8}px)`,
-                        top: "-20px",
-                        "--tx": `${(idx - 2.5) * 15}px`,
-                      } as React.CSSProperties & { "--tx": string }}
+                  {/* ICON */}
+
+                  <span
+                    className={`
+                      mvbd-liquid-nav-icon
+                      ${
+                        isActive ||
+                        isClicked
+                          ? "mvbd-liquid-icon-zoom"
+                          : ""
+                      }
+                    `}
+                  >
+                    <Icon
+                      className="
+                        w-6
+                        h-6
+                      "
                     />
-                  ))}
-              </div>
-            )
-          })}
+                  </span>
+
+
+                  {/* LABEL */}
+
+                  <span
+                    className={`
+                      mvbd-liquid-nav-label
+                      text-[10px]
+                      font-semibold
+                      leading-none
+                      ${
+                        isActive ||
+                        isClicked
+                          ? "mvbd-liquid-text-zoom"
+                          : ""
+                      }
+                    `}
+                  >
+                    {tab.label}
+                  </span>
+
+                </button>
+              )
+            }
+          )}
+
         </div>
-      </nav>
-    </>
+
+      </div>
+    </nav>
   )
 }

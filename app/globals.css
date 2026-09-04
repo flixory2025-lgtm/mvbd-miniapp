@@ -3,32 +3,47 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* =========================================================
+   MVBD GLOBAL THEME
+   ========================================================= */
+
 :root {
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
+
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);
+
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
+
   --primary: oklch(0.205 0 0);
   --primary-foreground: oklch(0.985 0 0);
+
   --secondary: oklch(0.97 0 0);
   --secondary-foreground: oklch(0.205 0 0);
+
   --muted: oklch(0.97 0 0);
   --muted-foreground: oklch(0.556 0 0);
+
   --accent: oklch(0.97 0 0);
   --accent-foreground: oklch(0.205 0 0);
+
   --destructive: oklch(0.577 0.245 27.325);
   --destructive-foreground: oklch(0.577 0.245 27.325);
+
   --border: oklch(0.922 0 0);
   --input: oklch(0.922 0 0);
   --ring: oklch(0.708 0 0);
+
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);
   --chart-4: oklch(0.828 0.189 84.429);
   --chart-5: oklch(0.769 0.188 70.08);
+
   --radius: 0.625rem;
+
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.145 0 0);
   --sidebar-primary: oklch(0.205 0 0);
@@ -39,72 +54,103 @@
   --sidebar-ring: oklch(0.708 0 0);
 }
 
+
+/* =========================================================
+   DARK THEME
+   ========================================================= */
+
 .dark {
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.985 0 0);
+
   --card: oklch(0.145 0 0);
   --card-foreground: oklch(0.985 0 0);
+
   --popover: oklch(0.145 0 0);
   --popover-foreground: oklch(0.985 0 0);
+
   --primary: oklch(0.985 0 0);
   --primary-foreground: oklch(0.205 0 0);
+
   --secondary: oklch(0.269 0 0);
   --secondary-foreground: oklch(0.985 0 0);
+
   --muted: oklch(0.269 0 0);
   --muted-foreground: oklch(0.708 0 0);
+
   --accent: oklch(0.269 0 0);
   --accent-foreground: oklch(0.985 0 0);
+
   --destructive: oklch(0.396 0.141 25.723);
   --destructive-foreground: oklch(0.637 0.237 25.331);
+
   --border: oklch(0.269 0 0);
   --input: oklch(0.269 0 0);
   --ring: oklch(0.439 0 0);
+
   --chart-1: oklch(0.488 0.243 264.376);
   --chart-2: oklch(0.696 0.17 162.48);
   --chart-3: oklch(0.769 0.188 70.08);
   --chart-4: oklch(0.627 0.265 303.9);
   --chart-5: oklch(0.645 0.246 16.439);
+
   --sidebar: oklch(0.205 0 0);
   --sidebar-foreground: oklch(0.985 0 0);
   --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
   --sidebar-accent: oklch(0.269 0 0);
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(0.269 0 0);
   --sidebar-ring: oklch(0.439 0 0);
 }
 
+
+/* =========================================================
+   TAILWIND THEME
+   ========================================================= */
+
 @theme inline {
   --font-sans: "Geist", "Geist Fallback";
   --font-mono: "Geist Mono", "Geist Mono Fallback";
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+
   --color-card: var(--card);
   --color-card-foreground: var(--card-foreground);
+
   --color-popover: var(--popover);
   --color-popover-foreground: var(--popover-foreground);
+
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
+
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
+
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
+
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
+
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
+
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
   --color-chart-3: var(--chart-3);
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
+
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
+
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-primary: var(--sidebar-primary);
@@ -115,37 +161,92 @@
   --color-sidebar-ring: var(--sidebar-ring);
 }
 
+
+/* =========================================================
+   BASE
+   ========================================================= */
+
 @layer base {
+
   * {
     @apply border-border outline-ring/50;
   }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
   body {
     @apply bg-background text-foreground;
+
+    overflow-x: hidden;
+
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  button,
+  a {
+    -webkit-tap-highlight-color: transparent;
   }
 }
 
-/* Added green fire animation for bottom navigation */
+
+/* =========================================================
+   FIRE ANIMATION
+   YOUR ORIGINAL SYSTEM
+   ========================================================= */
+
 @layer utilities {
+
   @keyframes fire-rise {
+
     0% {
-      transform: translateY(0) scale(1);
+      transform:
+        translateY(0)
+        scale(1);
+
       opacity: 1;
     }
+
     100% {
-      transform: translateY(-40px) scale(0.5);
+      transform:
+        translateY(-40px)
+        scale(.5);
+
       opacity: 0;
     }
   }
 
+
   .fire-particle {
+
     position: absolute;
+
     width: 8px;
     height: 12px;
-    background: linear-gradient(to top, #22c55e, #10b981, #fbbf24);
-    border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
-    animation: fire-rise 0.6s ease-out forwards;
+
+    background:
+      linear-gradient(
+        to top,
+        #22c55e,
+        #10b981,
+        #fbbf24
+      );
+
+    border-radius:
+      50% 50% 50% 50% /
+      60% 60% 40% 40%;
+
+    animation:
+      fire-rise
+      .6s
+      ease-out
+      forwards;
+
     pointer-events: none;
   }
+
 
   .fire-1 {
     bottom: 50%;
@@ -156,48 +257,80 @@
   .fire-2 {
     bottom: 50%;
     left: 40%;
-    animation-delay: 0.1s;
+    animation-delay: .1s;
   }
 
   .fire-3 {
     bottom: 50%;
     left: 60%;
-    animation-delay: 0.2s;
+    animation-delay: .2s;
   }
 
   .fire-4 {
     bottom: 50%;
     left: 35%;
-    animation-delay: 0.15s;
+    animation-delay: .15s;
   }
 
   .fire-5 {
     bottom: 50%;
     left: 65%;
-    animation-delay: 0.25s;
+    animation-delay: .25s;
   }
 
-  /* Added continuous burning fire animation for selected categories */
+
+  /* =======================================================
+     CONTINUOUS FIRE
+     ======================================================= */
+
   @keyframes fire-continuous-rise {
+
     0% {
-      transform: translateY(0) scale(1);
+      transform:
+        translateY(0)
+        scale(1);
+
       opacity: 1;
     }
+
     100% {
-      transform: translateY(-30px) scale(0.3);
+      transform:
+        translateY(-30px)
+        scale(.3);
+
       opacity: 0;
     }
   }
 
+
   .fire-continuous {
+
     position: absolute;
+
     width: 6px;
     height: 10px;
-    background: linear-gradient(to top, #22c55e, #10b981, #fbbf24);
-    border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
-    animation: fire-continuous-rise 1s ease-out infinite;
+
+    background:
+      linear-gradient(
+        to top,
+        #22c55e,
+        #10b981,
+        #fbbf24
+      );
+
+    border-radius:
+      50% 50% 50% 50% /
+      60% 60% 40% 40%;
+
+    animation:
+      fire-continuous-rise
+      1s
+      ease-out
+      infinite;
+
     pointer-events: none;
   }
+
 
   .fire-continuous-1 {
     bottom: 0;
@@ -208,194 +341,979 @@
   .fire-continuous-2 {
     bottom: 0;
     left: 40%;
-    animation-delay: 0.2s;
+    animation-delay: .2s;
   }
 
   .fire-continuous-3 {
     bottom: 0;
     left: 60%;
-    animation-delay: 0.4s;
+    animation-delay: .4s;
   }
 
   .fire-continuous-4 {
     bottom: 0;
     left: 30%;
-    animation-delay: 0.6s;
+    animation-delay: .6s;
   }
 
   .fire-continuous-5 {
     bottom: 0;
     left: 70%;
-    animation-delay: 0.8s;
+    animation-delay: .8s;
   }
+
 
   .burning-fire {
-    box-shadow: 0 0 15px rgba(34, 197, 94, 0.5);
+
+    box-shadow:
+      0 0 15px
+      rgba(34,197,94,.5);
   }
+
 
   .fire-animation {
-    animation: pulse 0.3s ease-in-out;
+
+    animation:
+      pulse
+      .3s
+      ease-in-out;
   }
 
+
   @keyframes pulse {
+
     0%,
     100% {
       transform: scale(1);
     }
+
     50% {
       transform: scale(1.1);
     }
   }
 
-  /* Water Bubble Animation for Search Bar */
+
+  /* =======================================================
+     SEARCH WATER BUBBLE
+     ======================================================= */
+
   @keyframes water-bubble-pulse {
+
     0% {
-      box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4),
-                  0 0 0 0 rgba(96, 165, 250, 0.2);
+      box-shadow:
+        0 0 0 0
+        rgba(59,130,246,.4),
+
+        0 0 0 0
+        rgba(96,165,250,.2);
     }
+
     50% {
-      box-shadow: 0 0 10px 4px rgba(59, 130, 246, 0.3),
-                  0 0 20px 10px rgba(96, 165, 250, 0.1);
+      box-shadow:
+        0 0 10px 4px
+        rgba(59,130,246,.3),
+
+        0 0 20px 10px
+        rgba(96,165,250,.1);
     }
+
     100% {
-      box-shadow: 0 0 20px 8px rgba(59, 130, 246, 0.1),
-                  0 0 40px 20px rgba(96, 165, 250, 0);
+      box-shadow:
+        0 0 20px 8px
+        rgba(59,130,246,.1),
+
+        0 0 40px 20px
+        rgba(96,165,250,0);
     }
   }
+
 
   .search-bubble {
-    animation: water-bubble-pulse 0.6s ease-out forwards;
+
+    animation:
+      water-bubble-pulse
+      .6s
+      ease-out
+      forwards;
   }
 
-  /* Water Bubble Animation for Navigation Buttons */
+
+  /* =======================================================
+     NAVIGATION WATER BUBBLES
+     ======================================================= */
+
   @keyframes bubble-rise {
+
     0% {
-      transform: translateY(0) translateX(0) scale(1);
+      transform:
+        translateY(0)
+        translateX(0)
+        scale(1);
+
       opacity: 1;
     }
+
     100% {
-      transform: translateY(-50px) translateX(var(--tx, 0)) scale(0.3);
+      transform:
+        translateY(-50px)
+        translateX(var(--tx, 0))
+        scale(.3);
+
       opacity: 0;
     }
   }
 
+
   .nav-bubble {
+
     position: absolute;
+
     width: 12px;
     height: 12px;
-    background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.8), rgba(59, 130, 246, 0.4));
+
+    background:
+      radial-gradient(
+        circle at 30% 30%,
+        rgba(255,255,255,.8),
+        rgba(59,130,246,.4)
+      );
+
     border-radius: 50%;
-    border: 1px solid rgba(96, 165, 250, 0.5);
+
+    border:
+      1px solid
+      rgba(96,165,250,.5);
+
     pointer-events: none;
-    animation: bubble-rise 0.8s ease-out forwards;
-    box-shadow: 0 0 8px rgba(59, 130, 246, 0.3),
-                inset -1px -1px 3px rgba(0, 0, 0, 0.1);
+
+    animation:
+      bubble-rise
+      .8s
+      ease-out
+      forwards;
+
+    box-shadow:
+      0 0 8px
+      rgba(59,130,246,.3),
+
+      inset -1px -1px 3px
+      rgba(0,0,0,.1);
   }
 
-  /* Water Bubble Glow for Header Search Focus */
+
+  /* =======================================================
+     HEADER SEARCH
+     ======================================================= */
+
   @keyframes header-glow {
+
     0% {
-      box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.5);
+      box-shadow:
+        0 0 0 0
+        rgba(59,130,246,.5);
     }
+
     100% {
-      box-shadow: 0 0 20px 8px rgba(59, 130, 246, 0),
-                  inset 0 0 10px rgba(59, 130, 246, 0.2);
+      box-shadow:
+        0 0 20px 8px
+        rgba(59,130,246,0),
+
+        inset 0 0 10px
+        rgba(59,130,246,.2);
     }
   }
+
 
   .header-search-active {
-    animation: header-glow 0.6s ease-out;
+
+    animation:
+      header-glow
+      .6s
+      ease-out;
   }
 
-  /* Water Ripple Effect for Footer Buttons */
+
+  /* =======================================================
+     FOOTER RIPPLE
+     ======================================================= */
+
   @keyframes water-ripple {
+
     0% {
       transform: scale(0);
       opacity: 1;
     }
+
     100% {
       transform: scale(2);
       opacity: 0;
     }
   }
 
+
   .footer-ripple {
+
     position: absolute;
+
     border-radius: 50%;
-    background: radial-gradient(circle, rgba(59, 130, 246, 0.4), transparent);
+
+    background:
+      radial-gradient(
+        circle,
+        rgba(59,130,246,.4),
+        transparent
+      );
+
     pointer-events: none;
-    animation: water-ripple 0.6s ease-out forwards;
+
+    animation:
+      water-ripple
+      .6s
+      ease-out
+      forwards;
   }
 
-  /* iOS 26 Liquid Glass Morphism */
-  @keyframes liquidGlassScale {
+
+  /* =======================================================
+     GENERAL LIQUID GLASS
+     ======================================================= */
+
+  .liquid-glass-container {
+
+    position: relative;
+
+    overflow: hidden;
+
+    background:
+      linear-gradient(
+        135deg,
+        rgba(255,255,255,.15),
+        rgba(255,255,255,.045)
+      );
+
+    border:
+      1px solid
+      rgba(255,255,255,.20);
+
+    border-radius:
+      24px;
+
+    backdrop-filter:
+      blur(25px)
+      saturate(180%);
+
+    -webkit-backdrop-filter:
+      blur(25px)
+      saturate(180%);
+
+    box-shadow:
+      inset 0 1px
+      rgba(255,255,255,.25),
+
+      inset 0 -1px
+      rgba(255,255,255,.05),
+
+      0 15px 45px
+      rgba(0,0,0,.25);
+
+    transition:
+      transform .45s
+      cubic-bezier(.16,1,.3,1),
+
+      background .35s ease;
+  }
+
+
+  .liquid-glass-container:hover {
+
+    background:
+      linear-gradient(
+        135deg,
+        rgba(255,255,255,.19),
+        rgba(255,255,255,.065)
+      );
+
+    transform:
+      scale(1.015);
+  }
+
+
+  .liquid-glass-interactive {
+
+    position: relative;
+
+    overflow: hidden;
+
+    touch-action:
+      manipulation;
+
+    -webkit-tap-highlight-color:
+      transparent;
+  }
+
+
+  .liquid-glass-interactive:active {
+
+    transform:
+      scale(.98);
+  }
+
+
+  /* =======================================================
+     MVBD REALISTIC LIQUID NAVIGATION
+     ======================================================= */
+
+  .mvbd-liquid-nav {
+
+    position: relative;
+
+    overflow: hidden;
+
+    border-radius:
+      32px;
+
+    background:
+      linear-gradient(
+        135deg,
+        rgba(255,255,255,.16),
+        rgba(255,255,255,.045)
+      );
+
+    border:
+      1px solid
+      rgba(255,255,255,.20);
+
+    backdrop-filter:
+      blur(30px)
+      saturate(190%);
+
+    -webkit-backdrop-filter:
+      blur(30px)
+      saturate(190%);
+
+    box-shadow:
+      inset 0 1px 0
+      rgba(255,255,255,.32),
+
+      inset 0 -1px 0
+      rgba(255,255,255,.06),
+
+      0 18px 50px
+      rgba(0,0,0,.38);
+
+    isolation: isolate;
+  }
+
+
+  /* =======================================================
+     LIQUID MOVING INDICATOR
+     ======================================================= */
+
+  .mvbd-liquid-indicator {
+
+    position: absolute;
+
+    top: 7px;
+    left: 0;
+
+    width: 0;
+
+    height:
+      calc(100% - 14px);
+
+    z-index: 1;
+
+    pointer-events: none;
+
+    border-radius:
+      24px;
+
+    background:
+      radial-gradient(
+        circle at 30% 20%,
+        rgba(255,255,255,.38),
+        transparent 28%
+      ),
+
+      linear-gradient(
+        135deg,
+        rgba(255,255,255,.25),
+        rgba(255,255,255,.07)
+      );
+
+    border:
+      1px solid
+      rgba(255,255,255,.28);
+
+    backdrop-filter:
+      blur(20px)
+      saturate(210%);
+
+    -webkit-backdrop-filter:
+      blur(20px)
+      saturate(210%);
+
+    box-shadow:
+      inset 0 1px 0
+      rgba(255,255,255,.42),
+
+      inset 0 -4px 12px
+      rgba(0,0,0,.08),
+
+      0 4px 18px
+      rgba(0,0,0,.16);
+
+    will-change:
+      left,
+      width,
+      transform;
+
+    overflow: hidden;
+  }
+
+
+  /* =======================================================
+     INDICATOR LIGHT
+     ======================================================= */
+
+  .mvbd-liquid-indicator::before {
+
+    content: "";
+
+    position: absolute;
+
+    top: 6px;
+    left: 12%;
+
+    width: 48%;
+    height: 2px;
+
+    border-radius:
+      999px;
+
+    background:
+      rgba(255,255,255,.58);
+
+    filter:
+      blur(1px);
+
+    opacity: .7;
+
+    pointer-events:
+      none;
+  }
+
+
+  .mvbd-liquid-indicator::after {
+
+    content: "";
+
+    position: absolute;
+
+    inset: -25%;
+
+    border-radius:
+      inherit;
+
+    background:
+      radial-gradient(
+        circle at 30% 25%,
+        rgba(255,255,255,.28),
+        transparent 30%
+      );
+
+    filter:
+      blur(7px);
+
+    opacity:
+      .65;
+
+    pointer-events:
+      none;
+  }
+
+
+  /* =======================================================
+     MOVING HIGHLIGHT
+     ======================================================= */
+
+  .mvbd-liquid-moving-highlight {
+
+    position: absolute;
+
+    top: 7px;
+    left: 5%;
+
+    width: 45px;
+    height: 3px;
+
+    border-radius:
+      999px;
+
+    background:
+      rgba(255,255,255,.65);
+
+    filter:
+      blur(1.5px);
+
+    pointer-events:
+      none;
+
+    z-index: 5;
+  }
+
+
+  /* =======================================================
+     NAV ITEM
+     ======================================================= */
+
+  .mvbd-liquid-nav-item {
+
+    position: relative;
+
+    color:
+      rgba(255,255,255,.56);
+
+    background:
+      transparent;
+
+    border: 0;
+
+    outline: none;
+
+    -webkit-tap-highlight-color:
+      transparent;
+
+    touch-action:
+      manipulation;
+
+    user-select:
+      none;
+
+    transition:
+      color .4s ease;
+  }
+
+
+  .mvbd-liquid-nav-item.active {
+
+    color:
+      rgba(255,255,255,.98);
+  }
+
+
+  /* =======================================================
+     NAV ICON
+     ======================================================= */
+
+  .mvbd-liquid-nav-icon {
+
+    display:
+      inline-flex;
+
+    align-items:
+      center;
+
+    justify-content:
+      center;
+
+    transform:
+      scale(1);
+
+    transform-origin:
+      center;
+
+    transition:
+      transform .65s
+      cubic-bezier(.16,1,.3,1),
+
+      filter .45s ease;
+  }
+
+
+  .mvbd-liquid-nav-item.active
+  .mvbd-liquid-nav-icon {
+
+    transform:
+      scale(1.08);
+
+    filter:
+      drop-shadow(
+        0 0 7px
+        rgba(255,255,255,.18)
+      );
+  }
+
+
+  /* =======================================================
+     NAV LABEL
+     ======================================================= */
+
+  .mvbd-liquid-nav-label {
+
+    display:
+      block;
+
+    transform:
+      scale(1);
+
+    transform-origin:
+      center;
+
+    transition:
+      transform .6s
+      cubic-bezier(.16,1,.3,1);
+  }
+
+
+  .mvbd-liquid-nav-item.active
+  .mvbd-liquid-nav-label {
+
+    transform:
+      scale(1.035);
+  }
+
+
+  /* =======================================================
+     ICON LIQUID ZOOM
+     ======================================================= */
+
+  .mvbd-liquid-icon-zoom {
+
+    animation:
+      mvbd-icon-liquid-zoom
+      .85s
+      cubic-bezier(.16,1,.3,1);
+  }
+
+
+  @keyframes mvbd-icon-liquid-zoom {
+
     0% {
-      transform: scale(1);
-      background: rgba(255, 255, 255, 0.05);
-      backdrop-filter: blur(20px);
+      transform:
+        scale(.92);
     }
+
+    45% {
+      transform:
+        scale(1.18);
+    }
+
     100% {
-      transform: scale(1.2);
-      background: rgba(255, 255, 255, 0.12);
-      backdrop-filter: blur(40px);
+      transform:
+        scale(1.08);
     }
   }
 
-  @keyframes liquidGlassRotate {
+
+  /* =======================================================
+     TEXT LIQUID ZOOM
+     ======================================================= */
+
+  .mvbd-liquid-text-zoom {
+
+    animation:
+      mvbd-text-liquid-zoom
+      .82s
+      cubic-bezier(.16,1,.3,1);
+  }
+
+
+  @keyframes mvbd-text-liquid-zoom {
+
     0% {
-      transform: rotate(0deg) scale(1);
+      transform:
+        scale(.94);
+
+      filter:
+        blur(.8px);
+    }
+
+    45% {
+      transform:
+        scale(1.09);
+
+      filter:
+        blur(.1px);
+    }
+
+    100% {
+      transform:
+        scale(1.035);
+
+      filter:
+        blur(0);
+    }
+  }
+
+
+  /* =======================================================
+     LIQUID TOUCH RIPPLE
+     ======================================================= */
+
+  .mvbd-liquid-ripple {
+
+    position: absolute;
+
+    width: 20px;
+    height: 20px;
+
+    border-radius:
+      50%;
+
+    z-index: 30;
+
+    pointer-events:
+      none;
+
+    transform:
+      translate(-50%, -50%)
+      scale(.1);
+
+    background:
+      radial-gradient(
+        circle,
+
+        rgba(255,255,255,.82) 0%,
+
+        rgba(134,239,172,.40) 24%,
+
+        rgba(255,255,255,.12) 52%,
+
+        transparent 72%
+      );
+
+    filter:
+      blur(1px);
+
+    animation:
+      mvbd-liquid-ripple-animation
+      .9s
+      cubic-bezier(.08,.8,.2,1)
+      forwards;
+  }
+
+
+  @keyframes mvbd-liquid-ripple-animation {
+
+    0% {
+      transform:
+        translate(-50%, -50%)
+        scale(.1);
+
       opacity: 1;
     }
+
+    25% {
+      opacity: .9;
+    }
+
     100% {
-      transform: rotate(5deg) scale(0.8);
+      transform:
+        translate(-50%, -50%)
+        scale(14);
+
       opacity: 0;
     }
   }
 
-  .liquid-glass-container {
-    background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 24px;
-    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* =======================================================
+     LIQUID PRESSURE
+     ======================================================= */
+
+  .mvbd-liquid-pressure {
+
+    position: absolute;
+
+    width: 95px;
+    height: 95px;
+
+    border-radius:
+      50%;
+
+    z-index: 29;
+
+    pointer-events:
+      none;
+
+    transform:
+      translate(-50%, -50%)
+      scale(.25);
+
+    background:
+      radial-gradient(
+        circle,
+        rgba(134,239,172,.35),
+        transparent 68%
+      );
+
+    filter:
+      blur(12px);
+
+    animation:
+      mvbd-liquid-pressure-animation
+      .72s
+      ease-out
+      forwards;
   }
 
-  .liquid-glass-container:hover {
-    background: rgba(255, 255, 255, 0.08);
-    backdrop-filter: blur(30px);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    transform: scale(1.02);
-  }
 
-  .liquid-glass-interactive {
-    position: relative;
-    overflow: hidden;
-  }
+  @keyframes mvbd-liquid-pressure-animation {
 
-  .liquid-glass-interactive:active {
-    animation: liquidGlassScale 0.5s ease-out forwards;
-  }
+    0% {
+      transform:
+        translate(-50%, -50%)
+        scale(.25);
 
-  /* Long press zoom effect for desktop */
-  @media (min-width: 1024px) {
-    .liquid-glass-interactive:active::after {
-      content: '';
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      width: 200%;
-      height: 200%;
-      background: radial-gradient(circle, rgba(255, 255, 255, 0.15) 0%, transparent 70%);
-      transform: translate(-50%, -50%) scale(0);
-      animation: liquidGlassRotate 0.8s ease-out;
-      pointer-events: none;
+      opacity: .9;
+    }
+
+    100% {
+      transform:
+        translate(-50%, -50%)
+        scale(2.7);
+
+      opacity: 0;
     }
   }
 
-  /* Touch/Mobile long press effect */
-  @supports (touch-action: manipulation) {
-    .liquid-glass-interactive {
-      touch-action: manipulation;
+
+  /* =======================================================
+     EXTRA GLASS SHINE
+     ======================================================= */
+
+  .mvbd-liquid-nav::before {
+
+    content: "";
+
+    position: absolute;
+
+    inset: 0;
+
+    pointer-events:
+      none;
+
+    z-index: 0;
+
+    background:
+      linear-gradient(
+        115deg,
+        rgba(255,255,255,.15),
+        transparent 27%,
+        transparent 67%,
+        rgba(255,255,255,.045)
+      );
+
+    opacity:
+      .7;
+  }
+
+
+  .mvbd-liquid-nav::after {
+
+    content: "";
+
+    position: absolute;
+
+    top: 5px;
+    left: 17%;
+
+    width: 30%;
+    height: 2px;
+
+    border-radius:
+      999px;
+
+    background:
+      rgba(255,255,255,.35);
+
+    filter:
+      blur(1px);
+
+    opacity:
+      .55;
+
+    pointer-events:
+      none;
+
+    z-index: 4;
+  }
+
+
+  /* =======================================================
+     MOBILE
+     ======================================================= */
+
+  @media (max-width: 480px) {
+
+    .mvbd-liquid-nav {
+
+      height:
+        68px;
+
+      border-radius:
+        30px;
+    }
+
+    .mvbd-liquid-indicator {
+
+      top: 6px;
+
+      height:
+        calc(100% - 12px);
+
+      border-radius:
+        23px;
+    }
+  }
+
+
+  /* =======================================================
+     TABLET / DESKTOP
+     ======================================================= */
+
+  @media (min-width: 768px) {
+
+    .mvbd-liquid-nav {
+
+      backdrop-filter:
+        blur(34px)
+        saturate(200%);
+
+      -webkit-backdrop-filter:
+        blur(34px)
+        saturate(200%);
+    }
+  }
+
+
+  /* =======================================================
+     REDUCED MOTION
+     ======================================================= */
+
+  @media (prefers-reduced-motion: reduce) {
+
+    html {
+      scroll-behavior:
+        auto;
+    }
+
+    .mvbd-liquid-ripple,
+    .mvbd-liquid-pressure,
+    .mvbd-liquid-icon-zoom,
+    .mvbd-liquid-text-zoom {
+
+      animation:
+        none !important;
+    }
+
+    .mvbd-liquid-nav-item,
+    .mvbd-liquid-nav-icon,
+    .mvbd-liquid-nav-label {
+
+      transition:
+        none !important;
     }
   }
 }

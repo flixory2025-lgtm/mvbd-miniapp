@@ -3,6 +3,7 @@
 
 @custom-variant dark (&:is(.dark *));
 
+
 /* =========================================================
    MVBD GLOBAL THEME
    ========================================================= */
@@ -35,12 +36,6 @@
   --border: oklch(0.922 0 0);
   --input: oklch(0.922 0 0);
   --ring: oklch(0.708 0 0);
-
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
 
   --radius: 0.625rem;
 
@@ -87,12 +82,6 @@
   --border: oklch(0.269 0 0);
   --input: oklch(0.269 0 0);
   --ring: oklch(0.439 0 0);
-
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
 
   --sidebar: oklch(0.205 0 0);
   --sidebar-foreground: oklch(0.985 0 0);
@@ -154,7 +143,6 @@
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
   --color-sidebar-accent: var(--sidebar-accent);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
@@ -170,42 +158,51 @@
 
   * {
     @apply border-border outline-ring/50;
+    box-sizing: border-box;
   }
 
   html {
     scroll-behavior: smooth;
+    background: #000;
   }
 
   body {
     @apply bg-background text-foreground;
 
+    margin: 0;
+    padding: 0;
+
     overflow-x: hidden;
 
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+
+    background: #000;
   }
 
   button,
   a {
     -webkit-tap-highlight-color: transparent;
   }
+
+  img {
+    user-select: none;
+    -webkit-user-drag: none;
+  }
 }
 
 
 /* =========================================================
    FIRE ANIMATION
-   YOUR ORIGINAL SYSTEM
    ========================================================= */
 
 @layer utilities {
 
   @keyframes fire-rise {
-
     0% {
       transform:
         translateY(0)
         scale(1);
-
       opacity: 1;
     }
 
@@ -213,16 +210,12 @@
       transform:
         translateY(-40px)
         scale(.5);
-
       opacity: 0;
     }
   }
 
-
   .fire-particle {
-
     position: absolute;
-
     width: 8px;
     height: 12px;
 
@@ -246,7 +239,6 @@
 
     pointer-events: none;
   }
-
 
   .fire-1 {
     bottom: 50%;
@@ -289,7 +281,6 @@
       transform:
         translateY(0)
         scale(1);
-
       opacity: 1;
     }
 
@@ -297,14 +288,11 @@
       transform:
         translateY(-30px)
         scale(.3);
-
       opacity: 0;
     }
   }
 
-
   .fire-continuous {
-
     position: absolute;
 
     width: 6px;
@@ -330,7 +318,6 @@
 
     pointer-events: none;
   }
-
 
   .fire-continuous-1 {
     bottom: 0;
@@ -362,23 +349,18 @@
     animation-delay: .8s;
   }
 
-
   .burning-fire {
-
     box-shadow:
       0 0 15px
       rgba(34,197,94,.5);
   }
 
-
   .fire-animation {
-
     animation:
       pulse
       .3s
       ease-in-out;
   }
-
 
   @keyframes pulse {
 
@@ -427,109 +409,12 @@
     }
   }
 
-
   .search-bubble {
-
     animation:
       water-bubble-pulse
       .6s
       ease-out
       forwards;
-  }
-
-
-  /* =======================================================
-     NAVIGATION WATER BUBBLES
-     ======================================================= */
-
-  @keyframes bubble-rise {
-
-    0% {
-      transform:
-        translateY(0)
-        translateX(0)
-        scale(1);
-
-      opacity: 1;
-    }
-
-    100% {
-      transform:
-        translateY(-50px)
-        translateX(var(--tx, 0))
-        scale(.3);
-
-      opacity: 0;
-    }
-  }
-
-
-  .nav-bubble {
-
-    position: absolute;
-
-    width: 12px;
-    height: 12px;
-
-    background:
-      radial-gradient(
-        circle at 30% 30%,
-        rgba(255,255,255,.8),
-        rgba(59,130,246,.4)
-      );
-
-    border-radius: 50%;
-
-    border:
-      1px solid
-      rgba(96,165,250,.5);
-
-    pointer-events: none;
-
-    animation:
-      bubble-rise
-      .8s
-      ease-out
-      forwards;
-
-    box-shadow:
-      0 0 8px
-      rgba(59,130,246,.3),
-
-      inset -1px -1px 3px
-      rgba(0,0,0,.1);
-  }
-
-
-  /* =======================================================
-     HEADER SEARCH
-     ======================================================= */
-
-  @keyframes header-glow {
-
-    0% {
-      box-shadow:
-        0 0 0 0
-        rgba(59,130,246,.5);
-    }
-
-    100% {
-      box-shadow:
-        0 0 20px 8px
-        rgba(59,130,246,0),
-
-        inset 0 0 10px
-        rgba(59,130,246,.2);
-    }
-  }
-
-
-  .header-search-active {
-
-    animation:
-      header-glow
-      .6s
-      ease-out;
   }
 
 
@@ -550,9 +435,7 @@
     }
   }
 
-
   .footer-ripple {
-
     position: absolute;
 
     border-radius: 50%;
@@ -579,9 +462,7 @@
      ======================================================= */
 
   .liquid-glass-container {
-
     position: relative;
-
     overflow: hidden;
 
     background:
@@ -595,8 +476,7 @@
       1px solid
       rgba(255,255,255,.20);
 
-    border-radius:
-      24px;
+    border-radius: 24px;
 
     backdrop-filter:
       blur(25px)
@@ -607,25 +487,17 @@
       saturate(180%);
 
     box-shadow:
-      inset 0 1px
-      rgba(255,255,255,.25),
-
-      inset 0 -1px
-      rgba(255,255,255,.05),
-
-      0 15px 45px
-      rgba(0,0,0,.25);
+      inset 0 1px rgba(255,255,255,.25),
+      inset 0 -1px rgba(255,255,255,.05),
+      0 15px 45px rgba(0,0,0,.25);
 
     transition:
       transform .45s
       cubic-bezier(.16,1,.3,1),
-
       background .35s ease;
   }
 
-
   .liquid-glass-container:hover {
-
     background:
       linear-gradient(
         135deg,
@@ -638,39 +510,16 @@
   }
 
 
-  .liquid-glass-interactive {
-
-    position: relative;
-
-    overflow: hidden;
-
-    touch-action:
-      manipulation;
-
-    -webkit-tap-highlight-color:
-      transparent;
-  }
-
-
-  .liquid-glass-interactive:active {
-
-    transform:
-      scale(.98);
-  }
-
-
   /* =======================================================
-     MVBD REALISTIC LIQUID NAVIGATION
+     MVBD LIQUID NAVIGATION
      ======================================================= */
 
   .mvbd-liquid-nav {
-
     position: relative;
 
     overflow: hidden;
 
-    border-radius:
-      32px;
+    border-radius: 25px;
 
     background:
       linear-gradient(
@@ -693,52 +542,79 @@
 
     box-shadow:
       inset 0 1px 0
-      rgba(255,255,255,.32),
+      rgba(255,255,255,.30),
 
       inset 0 -1px 0
-      rgba(255,255,255,.06),
+      rgba(255,255,255,.05),
 
-      0 18px 50px
-      rgba(0,0,0,.38);
+      0 14px 38px
+      rgba(0,0,0,.42);
 
     isolation: isolate;
   }
 
 
   /* =======================================================
-     LIQUID MOVING INDICATOR
+     NAV TOP GLASS LIGHT
+     ======================================================= */
+
+  .mvbd-nav-glass-light {
+    position: absolute;
+
+    top: 0;
+    left: 8%;
+
+    width: 84%;
+    height: 1px;
+
+    border-radius: 999px;
+
+    background:
+      rgba(255,255,255,.45);
+
+    filter: blur(.7px);
+
+    opacity: .55;
+
+    pointer-events: none;
+
+    z-index: 5;
+  }
+
+
+  /* =======================================================
+     LIQUID INDICATOR
      ======================================================= */
 
   .mvbd-liquid-indicator {
-
     position: absolute;
 
-    top: 7px;
+    top: 5px;
+
     left: 0;
 
-    width: 0;
+    width: 25%;
 
     height:
-      calc(100% - 14px);
+      calc(100% - 10px);
 
     z-index: 1;
 
     pointer-events: none;
 
-    border-radius:
-      24px;
+    border-radius: 20px;
 
     background:
       radial-gradient(
-        circle at 30% 20%,
-        rgba(255,255,255,.38),
-        transparent 28%
+        circle at 30% 18%,
+        rgba(255,255,255,.42),
+        transparent 30%
       ),
 
       linear-gradient(
         135deg,
         rgba(255,255,255,.25),
-        rgba(255,255,255,.07)
+        rgba(255,255,255,.065)
       );
 
     border:
@@ -746,11 +622,11 @@
       rgba(255,255,255,.28);
 
     backdrop-filter:
-      blur(20px)
+      blur(22px)
       saturate(210%);
 
     -webkit-backdrop-filter:
-      blur(20px)
+      blur(22px)
       saturate(210%);
 
     box-shadow:
@@ -758,17 +634,17 @@
       rgba(255,255,255,.42),
 
       inset 0 -4px 12px
-      rgba(0,0,0,.08),
+      rgba(0,0,0,.10),
 
-      0 4px 18px
-      rgba(0,0,0,.16);
+      0 3px 15px
+      rgba(0,0,0,.18);
 
     will-change:
       left,
       width,
       transform;
 
-    overflow: hidden;
+    transform-origin: center;
   }
 
 
@@ -777,43 +653,36 @@
      ======================================================= */
 
   .mvbd-liquid-indicator::before {
-
     content: "";
 
     position: absolute;
 
-    top: 6px;
+    top: 5px;
     left: 12%;
 
     width: 48%;
     height: 2px;
 
-    border-radius:
-      999px;
+    border-radius: 999px;
 
     background:
-      rgba(255,255,255,.58);
+      rgba(255,255,255,.62);
 
-    filter:
-      blur(1px);
+    filter: blur(1px);
 
-    opacity: .7;
+    opacity: .72;
 
-    pointer-events:
-      none;
+    pointer-events: none;
   }
 
-
   .mvbd-liquid-indicator::after {
-
     content: "";
 
     position: absolute;
 
     inset: -25%;
 
-    border-radius:
-      inherit;
+    border-radius: inherit;
 
     background:
       radial-gradient(
@@ -822,44 +691,11 @@
         transparent 30%
       );
 
-    filter:
-      blur(7px);
+    filter: blur(7px);
 
-    opacity:
-      .65;
+    opacity: .65;
 
-    pointer-events:
-      none;
-  }
-
-
-  /* =======================================================
-     MOVING HIGHLIGHT
-     ======================================================= */
-
-  .mvbd-liquid-moving-highlight {
-
-    position: absolute;
-
-    top: 7px;
-    left: 5%;
-
-    width: 45px;
-    height: 3px;
-
-    border-radius:
-      999px;
-
-    background:
-      rgba(255,255,255,.65);
-
-    filter:
-      blur(1.5px);
-
-    pointer-events:
-      none;
-
-    z-index: 5;
+    pointer-events: none;
   }
 
 
@@ -868,35 +704,40 @@
      ======================================================= */
 
   .mvbd-liquid-nav-item {
-
     position: relative;
 
-    color:
-      rgba(255,255,255,.56);
+    height: 100%;
+    width: 100%;
 
-    background:
-      transparent;
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+    justify-content: center;
+
+    gap: 2px;
+
+    color:
+      rgba(255,255,255,.55);
+
+    background: transparent;
 
     border: 0;
-
     outline: none;
+
+    user-select: none;
 
     -webkit-tap-highlight-color:
       transparent;
 
-    touch-action:
-      manipulation;
-
-    user-select:
-      none;
+    touch-action: manipulation;
 
     transition:
-      color .4s ease;
+      color .35s ease;
   }
 
-
   .mvbd-liquid-nav-item.active {
-
     color:
       rgba(255,255,255,.98);
   }
@@ -907,40 +748,32 @@
      ======================================================= */
 
   .mvbd-liquid-nav-icon {
+    display: inline-flex;
 
-    display:
-      inline-flex;
-
-    align-items:
-      center;
-
-    justify-content:
-      center;
+    align-items: center;
+    justify-content: center;
 
     transform:
       scale(1);
 
-    transform-origin:
-      center;
+    transform-origin: center;
 
     transition:
-      transform .65s
+      transform .45s
       cubic-bezier(.16,1,.3,1),
 
-      filter .45s ease;
+      filter .35s ease;
   }
-
 
   .mvbd-liquid-nav-item.active
   .mvbd-liquid-nav-icon {
-
     transform:
       scale(1.08);
 
     filter:
       drop-shadow(
         0 0 7px
-        rgba(255,255,255,.18)
+        rgba(255,255,255,.20)
       );
   }
 
@@ -950,171 +783,28 @@
      ======================================================= */
 
   .mvbd-liquid-nav-label {
+    display: block;
 
-    display:
-      block;
+    font-size: 9px;
+
+    line-height: 1;
+
+    font-weight: 600;
 
     transform:
       scale(1);
 
-    transform-origin:
-      center;
+    transform-origin: center;
 
     transition:
-      transform .6s
+      transform .45s
       cubic-bezier(.16,1,.3,1);
   }
-
 
   .mvbd-liquid-nav-item.active
   .mvbd-liquid-nav-label {
-
     transform:
-      scale(1.035);
-  }
-
-
-  /* =======================================================
-     ICON LIQUID ZOOM
-     ======================================================= */
-
-  .mvbd-liquid-icon-zoom {
-
-    animation:
-      mvbd-icon-liquid-zoom
-      .85s
-      cubic-bezier(.16,1,.3,1);
-  }
-
-
-  @keyframes mvbd-icon-liquid-zoom {
-
-    0% {
-      transform:
-        scale(.92);
-    }
-
-    45% {
-      transform:
-        scale(1.18);
-    }
-
-    100% {
-      transform:
-        scale(1.08);
-    }
-  }
-
-
-  /* =======================================================
-     TEXT LIQUID ZOOM
-     ======================================================= */
-
-  .mvbd-liquid-text-zoom {
-
-    animation:
-      mvbd-text-liquid-zoom
-      .82s
-      cubic-bezier(.16,1,.3,1);
-  }
-
-
-  @keyframes mvbd-text-liquid-zoom {
-
-    0% {
-      transform:
-        scale(.94);
-
-      filter:
-        blur(.8px);
-    }
-
-    45% {
-      transform:
-        scale(1.09);
-
-      filter:
-        blur(.1px);
-    }
-
-    100% {
-      transform:
-        scale(1.035);
-
-      filter:
-        blur(0);
-    }
-  }
-
-
-  /* =======================================================
-     LIQUID TOUCH RIPPLE
-     ======================================================= */
-
-  .mvbd-liquid-ripple {
-
-    position: absolute;
-
-    width: 20px;
-    height: 20px;
-
-    border-radius:
-      50%;
-
-    z-index: 30;
-
-    pointer-events:
-      none;
-
-    transform:
-      translate(-50%, -50%)
-      scale(.1);
-
-    background:
-      radial-gradient(
-        circle,
-
-        rgba(255,255,255,.82) 0%,
-
-        rgba(134,239,172,.40) 24%,
-
-        rgba(255,255,255,.12) 52%,
-
-        transparent 72%
-      );
-
-    filter:
-      blur(1px);
-
-    animation:
-      mvbd-liquid-ripple-animation
-      .9s
-      cubic-bezier(.08,.8,.2,1)
-      forwards;
-  }
-
-
-  @keyframes mvbd-liquid-ripple-animation {
-
-    0% {
-      transform:
-        translate(-50%, -50%)
-        scale(.1);
-
-      opacity: 1;
-    }
-
-    25% {
-      opacity: .9;
-    }
-
-    100% {
-      transform:
-        translate(-50%, -50%)
-        scale(14);
-
-      opacity: 0;
-    }
+      scale(1.04);
   }
 
 
@@ -1123,19 +813,16 @@
      ======================================================= */
 
   .mvbd-liquid-pressure {
-
     position: absolute;
 
     width: 95px;
     height: 95px;
 
-    border-radius:
-      50%;
+    border-radius: 50%;
 
     z-index: 29;
 
-    pointer-events:
-      none;
+    pointer-events: none;
 
     transform:
       translate(-50%, -50%)
@@ -1148,8 +835,7 @@
         transparent 68%
       );
 
-    filter:
-      blur(12px);
+    filter: blur(12px);
 
     animation:
       mvbd-liquid-pressure-animation
@@ -1157,7 +843,6 @@
       ease-out
       forwards;
   }
-
 
   @keyframes mvbd-liquid-pressure-animation {
 
@@ -1180,64 +865,185 @@
 
 
   /* =======================================================
-     EXTRA GLASS SHINE
+     LIQUID RIPPLE
+     ======================================================= */
+
+  .mvbd-liquid-ripple {
+    position: absolute;
+
+    width: 20px;
+    height: 20px;
+
+    border-radius: 50%;
+
+    z-index: 30;
+
+    pointer-events: none;
+
+    transform:
+      translate(-50%, -50%)
+      scale(.1);
+
+    background:
+      radial-gradient(
+        circle,
+
+        rgba(255,255,255,.82) 0%,
+
+        rgba(134,239,172,.40) 24%,
+
+        rgba(255,255,255,.12) 52%,
+
+        transparent 72%
+      );
+
+    filter: blur(1px);
+
+    animation:
+      mvbd-liquid-ripple-animation
+      .9s
+      cubic-bezier(.08,.8,.2,1)
+      forwards;
+  }
+
+  @keyframes mvbd-liquid-ripple-animation {
+
+    0% {
+      transform:
+        translate(-50%, -50%)
+        scale(.1);
+
+      opacity: 1;
+    }
+
+    100% {
+      transform:
+        translate(-50%, -50%)
+        scale(14);
+
+      opacity: 0;
+    }
+  }
+
+
+  /* =======================================================
+     EXTRA NAV GLASS SHINE
      ======================================================= */
 
   .mvbd-liquid-nav::before {
-
     content: "";
 
     position: absolute;
 
     inset: 0;
 
-    pointer-events:
-      none;
+    pointer-events: none;
 
     z-index: 0;
 
     background:
       linear-gradient(
         115deg,
-        rgba(255,255,255,.15),
+        rgba(255,255,255,.14),
         transparent 27%,
         transparent 67%,
         rgba(255,255,255,.045)
       );
 
-    opacity:
-      .7;
+    opacity: .7;
   }
 
-
   .mvbd-liquid-nav::after {
-
     content: "";
 
     position: absolute;
 
-    top: 5px;
-    left: 17%;
+    top: 4px;
+    left: 18%;
 
-    width: 30%;
+    width: 28%;
     height: 2px;
 
-    border-radius:
-      999px;
+    border-radius: 999px;
 
     background:
-      rgba(255,255,255,.35);
+      rgba(255,255,255,.32);
 
-    filter:
-      blur(1px);
+    filter: blur(1px);
 
-    opacity:
-      .55;
+    opacity: .5;
 
-    pointer-events:
-      none;
+    pointer-events: none;
 
     z-index: 4;
+  }
+
+
+  /* =======================================================
+     PAGE SWIPE SYSTEM
+     ======================================================= */
+
+  .mvbd-swipe-viewport {
+    position: relative;
+
+    width: 100%;
+
+    overflow-x: hidden;
+    overflow-y: visible;
+
+    touch-action: pan-y;
+
+    overscroll-behavior-x: none;
+  }
+
+
+  .mvbd-page-track {
+    display: flex;
+
+    width: 400vw;
+
+    min-height: 100vh;
+
+    transform:
+      translate3d(0,0,0);
+
+    will-change:
+      transform;
+
+    backface-visibility: hidden;
+
+    -webkit-backface-visibility: hidden;
+
+    perspective: 1000px;
+  }
+
+
+  /*
+   * Finger ছাড়ার পরে smooth settle
+   */
+  .mvbd-page-track.is-animating {
+    transition:
+      transform
+      520ms
+      cubic-bezier(.16,1,.3,1);
+  }
+
+
+  .mvbd-page {
+    flex:
+      0 0 100vw;
+
+    width: 100vw;
+
+    min-width: 100vw;
+
+    min-height: 100vh;
+
+    overflow: visible;
+
+    backface-visibility: hidden;
+
+    -webkit-backface-visibility: hidden;
   }
 
 
@@ -1248,23 +1054,35 @@
   @media (max-width: 480px) {
 
     .mvbd-liquid-nav {
+      height: 58px;
 
-      height:
-        68px;
+      max-width: 350px;
 
-      border-radius:
-        30px;
+      border-radius: 24px;
     }
 
     .mvbd-liquid-indicator {
-
-      top: 6px;
+      top: 5px;
 
       height:
-        calc(100% - 12px);
+        calc(100% - 10px);
 
-      border-radius:
-        23px;
+      border-radius: 19px;
+    }
+
+    .mvbd-liquid-nav-label {
+      font-size: 9px;
+    }
+
+    .mvbd-liquid-nav-icon {
+      transform:
+        scale(.98);
+    }
+
+    .mvbd-liquid-nav-item.active
+    .mvbd-liquid-nav-icon {
+      transform:
+        scale(1.06);
     }
   }
 
@@ -1276,7 +1094,6 @@
   @media (min-width: 768px) {
 
     .mvbd-liquid-nav {
-
       backdrop-filter:
         blur(34px)
         saturate(200%);
@@ -1295,25 +1112,14 @@
   @media (prefers-reduced-motion: reduce) {
 
     html {
-      scroll-behavior:
-        auto;
-    }
-
-    .mvbd-liquid-ripple,
-    .mvbd-liquid-pressure,
-    .mvbd-liquid-icon-zoom,
-    .mvbd-liquid-text-zoom {
-
-      animation:
-        none !important;
+      scroll-behavior: auto;
     }
 
     .mvbd-liquid-nav-item,
     .mvbd-liquid-nav-icon,
-    .mvbd-liquid-nav-label {
-
-      transition:
-        none !important;
+    .mvbd-liquid-nav-label,
+    .mvbd-page-track {
+      transition: none !important;
     }
   }
 }

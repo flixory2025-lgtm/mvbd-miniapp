@@ -1,7 +1,6 @@
 "use client"
 
-import { Home, Star, User, Film, Tv, Play } from "lucide-react"
-import type { CSSProperties } from "react"
+import { Home, Star, User } from "lucide-react"
 import { useEffect, useState } from "react"
 
 interface BottomNavigationProps {
@@ -16,24 +15,14 @@ const tabs = [
     icon: Home,
   },
   {
-    id: "anime",
+    id: "shorts",
     label: "Anime",
-    icon: Play,
-  },
-  {
-    id: "series",
-    label: "Series",
-    icon: Tv,
+    icon: null,
   },
   {
     id: "exclusive",
-    label: "Exclusive",
+    label: "Series",
     icon: Star,
-  },
-  {
-    id: "shorts",
-    label: "Shorts",
-    icon: Film,
   },
   {
     id: "profile",
@@ -46,55 +35,55 @@ export default function BottomNavigation({
   activeTab,
   onTabChange,
 }: BottomNavigationProps) {
-  const [pressedTab, setPressedTab] = useState<string | null>(null)
-  const [liquidX, setLiquidX] = useState(0)
+  const [activeIndex, setActiveIndex] = useState(0)
+  const [pressed, setPressed] = useState(false)
 
   useEffect(() => {
     const index = tabs.findIndex((tab) => tab.id === activeTab)
 
-    if (index >= 0) {
-      setLiquidX(index)
+    if (index !== -1) {
+      setActiveIndex(index)
     }
   }, [activeTab])
 
   const handleClick = (tabId: string) => {
     if (tabId === activeTab) return
 
-    setPressedTab(tabId)
+    setPressed(true)
     onTabChange(tabId)
 
-    setTimeout(() => {
-      setPressedTab(null)
+    window.setTimeout(() => {
+      setPressed(false)
     }, 450)
   }
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-[100] px-3 pb-3 safe-area-bottom pointer-events-none">
-      <div className="mx-auto w-full max-w-xl pointer-events-auto">
-        <div className="relative overflow-hidden rounded-[32px] border border-white/10 bg-black/60 p-1.5 shadow-[0_10px_40px_rgba(0,0,0,0.5)] backdrop-blur-2xl">
+    <nav className="fixed bottom-0 left-0 right-0 z-[100] px-3 pb-3 pointer-events-none safe-area-bottom">
+      <div className="mx-auto w-full max-w-md pointer-events-auto">
 
-          {/* Moving liquid glass */}
+        <div className="mvbd-nav-shell">
+
+          {/* Moving Liquid Glass */}
           <div
-            className="pointer-events-none absolute inset-y-1.5 rounded-[26px] transition-all duration-500 ease-[cubic-bezier(.22,1,.36,1)]"
+            className="mvbd-liquid-indicator"
             style={{
-              width: `calc((100% - 12px) / ${tabs.length})`,
-              left: `calc(6px + ${liquidX} * ((100% - 12px) / ${tabs.length}))`,
+              width: "calc((100% - 12px) / 4)",
+              transform: `translateX(calc(${activeIndex} * 100%))`,
             }}
           >
-            <div className="absolute inset-0 rounded-[26px] bg-white/[0.10] backdrop-blur-xl" />
+            <div className="mvbd-liquid-inner" />
 
-            <div className="absolute inset-0 rounded-[26px] border border-white/15" />
+            <div className="mvbd-liquid-shine" />
 
-            <div className="absolute -inset-3 rounded-full bg-emerald-400/10 blur-xl" />
-
-            <div className="absolute left-[15%] right-[15%] top-0 h-[1px] rounded-full bg-white/30" />
+            <div className="mvbd-liquid-glow" />
           </div>
 
-          <div className="relative flex items-center justify-between gap-0.5">
+          {/* Navigation buttons */}
+          <div className="relative z-10 flex w-full items-center">
+
             {tabs.map((tab) => {
+              const isActive = activeTab === tab.id
               const Icon = tab.icon
-              const active = activeTab === tab.id
-              const pressed = pressedTab === tab.id
 
               return (
                 <button
@@ -102,48 +91,40 @@ export default function BottomNavigation({
                   type="button"
                   onClick={() => handleClick(tab.id)}
                   className={`
-                    relative z-10 flex min-w-0 flex-1
-                    flex-col items-center justify-center
-                    rounded-[26px] py-2
-                    transition-all duration-500
-                    ease-[cubic-bezier(.22,1,.36,1)]
-                    select-none
-                    active:scale-90
-                    ${active ? "text-white" : "text-white/45"}
-                    ${pressed ? "scale-95" : ""}
+                    mvbd-nav-button
+                    ${isActive ? "mvbd-nav-active" : ""}
+                    ${pressed && isActive ? "mvbd-nav-pressed" : ""}
                   `}
-                  aria-label={tab.label}
                 >
-                  <span
-                    className={`
-                      relative flex h-7 w-7 items-center justify-center
-                      transition-all duration-500
-                      ease-[cubic-bezier(.22,1,.36,1)]
-                      ${active ? "scale-110" : "scale-100"}
-                    `}
-                  >
-                    <Icon
-                      size={21}
-                      strokeWidth={active ? 2.4 : 1.8}
-                    />
 
-                    {active && (
-                      <span className="pointer-events-none absolute inset-[-8px] rounded-full bg-emerald-400/10 blur-md" />
-                    )}
-                  </span>
+                  {/* Anime Logo */}
+                  {tab.id === "shorts" ? (
+                    <span className="mvbd-anime-icon">
+                      <img
+                        src="https://i.postimg.cc/qMRsY9Zh/360-F-616340820-puy-Fuujd-Aam-JVt-Ct9sr-V1dc-PVrku-Kg-Z6-removebg-preview.png"
+                        alt="Anime"
+                      />
+                    </span>
+                  ) : (
+                    Icon && (
+                      <Icon
+                        size={22}
+                        strokeWidth={isActive ? 2.5 : 1.8}
+                      />
+                    )
+                  )}
 
-                  <span
-                    className={`
-                      mt-0.5 text-[9px] font-medium
-                      transition-all duration-500
-                      ${active ? "opacity-100" : "opacity-70"}
-                    `}
-                  >
-                    {tab.label}
-                  </span>
+                  <span>{tab.label}</span>
+
+                  {/* Active glow */}
+                  {isActive && (
+                    <span className="mvbd-active-dot" />
+                  )}
+
                 </button>
               )
             })}
+
           </div>
         </div>
       </div>

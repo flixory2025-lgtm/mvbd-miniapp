@@ -1125,7 +1125,7 @@ export default function Home() {
               }
               onLostPointerCapture={
                 handlePointerCancel
-              }}
+              }
             >
               {renderPageContent(
                 activeTab

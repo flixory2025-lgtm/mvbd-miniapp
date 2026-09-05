@@ -67,8 +67,8 @@ export default function BottomNavigation({
   )
 
   /* =========================================================
-     LIQUID INDICATOR
-     ========================================================= */
+     INDICATOR UPDATE
+  ========================================================= */
 
   useEffect(() => {
     const nav =
@@ -81,27 +81,37 @@ export default function BottomNavigation({
       return
     }
 
-    const rawPosition =
-      typeof swipePosition ===
-      "number"
-        ? swipePosition
-        : activeIndex
-
-    const position =
-      Math.max(
-        0,
-        Math.min(
-          tabs.length - 1,
-          rawPosition
-        )
-      )
-
     const navWidth =
       nav.clientWidth
 
     if (navWidth <= 0) {
       return
     }
+
+    /*
+     * VERY IMPORTANT:
+     *
+     * Swipe চলার সময়:
+     *    swipePosition ব্যবহার হবে
+     *
+     * Swipe শেষ হলে:
+     *    activeIndex ব্যবহার হবে
+     *
+     * এতে পুরোনো fractional position
+     * আর আটকে থাকবে না।
+     */
+
+    const position = isSwiping
+      ? Math.max(
+          0,
+          Math.min(
+            tabs.length - 1,
+            typeof swipePosition === "number"
+              ? swipePosition
+              : activeIndex
+          )
+        )
+      : activeIndex
 
     const itemWidth =
       navWidth / tabs.length
@@ -110,16 +120,19 @@ export default function BottomNavigation({
       itemWidth * position +
       itemWidth / 2
 
-    const fractional =
-      Math.abs(
-        position -
-          Math.round(position)
-      )
-
     /*
-     * Finger drag করলে indicator
-     * সামান্য liquid stretch করবে।
+     * Liquid stretch শুধুমাত্র
+     * finger drag করার সময়।
      */
+
+    const fractional =
+      isSwiping
+        ? Math.abs(
+            position -
+              Math.round(position)
+          )
+        : 0
+
     const stretch =
       isSwiping
         ? Math.min(
@@ -136,20 +149,24 @@ export default function BottomNavigation({
       center -
       indicatorWidth / 2
 
+    /*
+     * Swipe চললে:
+     * একদম immediate movement
+     *
+     * Swipe শেষ হলে:
+     * smooth transition
+     */
+
+    indicator.style.transition =
+      isSwiping
+        ? "none"
+        : "left 380ms cubic-bezier(0.22, 1, 0.36, 1), width 380ms cubic-bezier(0.22, 1, 0.36, 1), transform 380ms cubic-bezier(0.22, 1, 0.36, 1)"
+
     indicator.style.left =
       `${left}px`
 
     indicator.style.width =
       `${indicatorWidth}px`
-
-    /*
-     * Finger-এর সাথে movement
-     * একদম immediate।
-     */
-    indicator.style.transition =
-      isSwiping
-        ? "none"
-        : "left 500ms cubic-bezier(.16,1,.3,1), width 500ms cubic-bezier(.16,1,.3,1)"
 
     const scaleX =
       isSwiping
@@ -164,19 +181,20 @@ export default function BottomNavigation({
         : 1
 
     indicator.style.transform = `
-      translateZ(0)
+      translate3d(0, 0, 0)
       scaleX(${scaleX})
       scaleY(${scaleY})
     `
   }, [
-    swipePosition,
+    activeTab,
     activeIndex,
+    swipePosition,
     isSwiping,
   ])
 
   /* =========================================================
      RESIZE
-     ========================================================= */
+  ========================================================= */
 
   useEffect(() => {
     const handleResize = () => {
@@ -190,24 +208,33 @@ export default function BottomNavigation({
         return
       }
 
-      const rawPosition =
-        typeof swipePosition ===
-        "number"
-          ? swipePosition
-          : activeIndex
+      const navWidth =
+        nav.clientWidth
+
+      if (navWidth <= 0) {
+        return
+      }
+
+      /*
+       * Resize-এর সময়ও stale swipePosition
+       * ব্যবহার করব না যদি swipe না চলে।
+       */
 
       const position =
-        Math.max(
-          0,
-          Math.min(
-            tabs.length - 1,
-            rawPosition
-          )
-        )
+        isSwiping &&
+        typeof swipePosition ===
+          "number"
+          ? Math.max(
+              0,
+              Math.min(
+                tabs.length - 1,
+                swipePosition
+              )
+            )
+          : activeIndex
 
       const itemWidth =
-        nav.clientWidth /
-        tabs.length
+        navWidth / tabs.length
 
       const center =
         itemWidth * position +
@@ -234,11 +261,80 @@ export default function BottomNavigation({
   }, [
     activeIndex,
     swipePosition,
+    isSwiping,
+  ])
+
+  /* =========================================================
+     FORCE SYNC AFTER SWIPE
+  ========================================================= */
+
+  useEffect(() => {
+    /*
+     * Swipe শেষ হওয়ার পর এক frame পরে
+     * indicator-কে activeTab-এর exact
+     * position-এ force করে দিচ্ছি।
+     *
+     * এতে:
+     * Home -> Anime
+     * Anime -> Series
+     * Series -> Profile
+     *
+     * কোনো অবস্থাতেই bubble আগের page-এ
+     * আটকে থাকবে না।
+     */
+
+    if (isSwiping) {
+      return
+    }
+
+    const nav =
+      navRef.current
+
+    const indicator =
+      indicatorRef.current
+
+    if (!nav || !indicator) {
+      return
+    }
+
+    const sync = () => {
+      const itemWidth =
+        nav.clientWidth /
+        tabs.length
+
+      const left =
+        itemWidth *
+          activeIndex
+
+      indicator.style.left =
+        `${left}px`
+
+      indicator.style.width =
+        `${itemWidth}px`
+
+      indicator.style.transform =
+        "translate3d(0, 0, 0) scaleX(1) scaleY(1)"
+    }
+
+    const frame =
+      window.requestAnimationFrame(
+        sync
+      )
+
+    return () => {
+      window.cancelAnimationFrame(
+        frame
+      )
+    }
+  }, [
+    activeTab,
+    activeIndex,
+    isSwiping,
   ])
 
   /* =========================================================
      RENDER
-     ========================================================= */
+  ========================================================= */
 
   return (
     <nav
@@ -354,9 +450,7 @@ export default function BottomNavigation({
                   </span>
 
                   <span className="mvbd-liquid-nav-label">
-                    {
-                      tab.label
-                    }
+                    {tab.label}
                   </span>
                 </button>
               )

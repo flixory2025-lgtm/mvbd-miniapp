@@ -626,6 +626,7 @@ export default function Home() {
           target
         ) {
           setActiveTab(target)
+          setSwipePosition(tabs.indexOf(target))
 
           if (target !== "profile") {
             setProfileSubPage("main")

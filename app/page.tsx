@@ -266,6 +266,7 @@ export default function Home() {
     setSwipePosition(tabs.indexOf(targetTab))
 
     setActiveTab(targetTab)
+    setSwipePosition(tabs.indexOf(targetTab))
 
     if (addHistory) {
       setTabHistory((previous) => [

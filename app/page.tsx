@@ -5,6 +5,7 @@ import {
   useMemo,
   useEffect,
   useRef,
+  type PointerEvent as ReactPointerEvent,
 } from "react"
 
 import Header from "@/components/header"
@@ -24,6 +25,11 @@ import SettingsPage from "@/components/settings-page"
 
 import { movies, genres } from "@/lib/movie-data"
 
+
+/* =========================================================
+   ONLY 4 MAIN PAGES
+   ========================================================= */
+
 const tabs = [
   "home",
   "shorts",
@@ -31,12 +37,14 @@ const tabs = [
   "profile",
 ] as const
 
-type TabId = (typeof tabs)[number]
+type Tab = (typeof tabs)[number]
+
 
 export default function Home() {
-  /* =========================================================
+
+  /* =======================================================
      BASIC STATE
-     ========================================================= */
+     ======================================================= */
 
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedGenre, setSelectedGenre] =
@@ -51,7 +59,7 @@ export default function Home() {
     useState(false)
 
   const [activeTab, setActiveTab] =
-    useState<TabId>("home")
+    useState<Tab>("home")
 
   const [isSearching, setIsSearching] =
     useState(false)
@@ -60,7 +68,7 @@ export default function Home() {
     useState(false)
 
   const [tabHistory, setTabHistory] =
-    useState<TabId[]>(["home"])
+    useState<Tab[]>(["home"])
 
   const [showDetailPage, setShowDetailPage] =
     useState(false)
@@ -70,25 +78,14 @@ export default function Home() {
       "main" | "contact" | "about" | "settings"
     >("main")
 
-  /* =========================================================
+
+  /* =======================================================
      SWIPE STATE
-     ========================================================= */
+     ======================================================= */
 
   const [dragX, setDragX] = useState(0)
-  const [isSwiping, setIsSwiping] =
-    useState(false)
-
-  const [isAnimating, setIsAnimating] =
-    useState(false)
-
-  /*
-   * IMPORTANT:
-   * window.innerWidth সরাসরি render-এর সময় ব্যবহার করছি না।
-   * ফলে Next.js SSR / prerender-এ "window is not defined"
-   * error হবে না।
-   */
-  const [viewportWidth, setViewportWidth] =
-    useState(390)
+  const [isSwiping, setIsSwiping] = useState(false)
+  const [isSettling, setIsSettling] = useState(false)
 
   const swipeStartX = useRef(0)
   const swipeStartY = useRef(0)
@@ -98,70 +95,56 @@ export default function Home() {
 
   const velocityX = useRef(0)
 
-  const pointerIdRef =
-    useRef<number | null>(null)
+  const pointerIdRef = useRef<number | null>(null)
 
-  const animationTimerRef =
-    useRef<ReturnType<typeof setTimeout> | null>(
-      null
-    )
+  /*
+   * Once a gesture becomes vertical or protected,
+   * page swipe is permanently disabled for that gesture.
+   */
+  const gestureLockedRef = useRef(false)
 
-  /* =========================================================
-     VIEWPORT WIDTH
-     ========================================================= */
+  /*
+   * Used so pointerup doesn't fire twice after
+   * pointercancel/lostpointercapture.
+   */
+  const endingGestureRef = useRef(false)
 
-  useEffect(() => {
-    const updateWidth = () => {
-      setViewportWidth(
-        Math.max(1, window.innerWidth)
-      )
-    }
 
-    updateWidth()
-
-    window.addEventListener(
-      "resize",
-      updateWidth
-    )
-
-    return () => {
-      window.removeEventListener(
-        "resize",
-        updateWidth
-      )
-    }
-  }, [])
-
-  /* =========================================================
-     CLEANUP ANIMATION TIMER
-     ========================================================= */
-
-  useEffect(() => {
-    return () => {
-      if (animationTimerRef.current) {
-        clearTimeout(
-          animationTimerRef.current
-        )
-      }
-    }
-  }, [])
-
-  /* =========================================================
+  /* =======================================================
      ACTIVE INDEX
-     ========================================================= */
+     ======================================================= */
 
   const activeIndex = Math.max(
     0,
     tabs.indexOf(activeTab)
   )
 
-  /* =========================================================
+
+  /* =======================================================
+     NEXT / PREVIOUS TAB
+     ======================================================= */
+
+  const previousTab =
+    activeIndex > 0
+      ? tabs[activeIndex - 1]
+      : null
+
+  const nextTab =
+    activeIndex < tabs.length - 1
+      ? tabs[activeIndex + 1]
+      : null
+
+
+  /* =======================================================
      BROWSER BACK BUTTON
-     ========================================================= */
+     ======================================================= */
 
   useEffect(() => {
+
     const handlePopState = () => {
+
       setTabHistory((history) => {
+
         if (history.length <= 1) {
           return history
         }
@@ -169,12 +152,18 @@ export default function Home() {
         const newHistory =
           history.slice(0, -1)
 
-        const previousTab =
-          newHistory[
-            newHistory.length - 1
-          ]
+        const previous =
+          newHistory[newHistory.length - 1]
 
-        setActiveTab(previousTab)
+        setActiveTab(previous)
+
+        setDragX(0)
+        setIsSwiping(false)
+        setIsSettling(false)
+
+        if (previous !== "profile") {
+          setProfileSubPage("main")
+        }
 
         return newHistory
       })
@@ -191,19 +180,75 @@ export default function Home() {
         handlePopState
       )
     }
+
   }, [])
 
-  /* =========================================================
-     PROTECTED SWIPE AREA
-     =========================================================
-     
-     TrendingCarousel-এর ভিতর swipe করলে
-     main page swipe বন্ধ থাকবে।
-     ========================================================= */
 
-  const isInsideProtectedSwipeArea = (
+  /* =======================================================
+     TAB CHANGE
+     ======================================================= */
+
+  const handleTabChange = (
+    newTab: string,
+    addHistory = true
+  ) => {
+
+    if (!tabs.includes(newTab as Tab)) {
+      return
+    }
+
+    const targetTab = newTab as Tab
+
+    if (targetTab === activeTab) {
+      return
+    }
+
+    setIsSwiping(false)
+    setIsSettling(false)
+    setDragX(0)
+
+    setActiveTab(targetTab)
+
+    if (addHistory) {
+
+      setTabHistory((previous) => [
+        ...previous,
+        targetTab,
+      ])
+
+      window.history.pushState(
+        null,
+        "",
+        ""
+      )
+    }
+
+    if (targetTab !== "profile") {
+      setProfileSubPage("main")
+    }
+
+    /*
+     * New page starts from top.
+     * This also prevents the new page from appearing
+     * at an unexpected vertical position.
+     */
+    window.requestAnimationFrame(() => {
+      window.scrollTo({
+        top: 0,
+        behavior: "auto",
+      })
+    })
+  }
+
+
+  /* =======================================================
+     CHECK PROTECTED AREAS
+     ======================================================= */
+
+  const isProtectedSwipeArea = (
     target: EventTarget | null
   ) => {
+
     if (!(target instanceof Element)) {
       return false
     }
@@ -215,77 +260,17 @@ export default function Home() {
     )
   }
 
-  /* =========================================================
-     TAB CHANGE
-     ========================================================= */
 
-  const handleTabChange = (
-    newTab: string,
-    addHistory = true
-  ) => {
-    if (
-      !tabs.includes(
-        newTab as TabId
-      )
-    ) {
-      return
-    }
-
-    const nextTab =
-      newTab as TabId
-
-    if (nextTab === activeTab) {
-      return
-    }
-
-    if (animationTimerRef.current) {
-      clearTimeout(
-        animationTimerRef.current
-      )
-    }
-
-    setIsAnimating(true)
-    setIsSwiping(false)
-    setDragX(0)
-
-    setActiveTab(nextTab)
-
-    if (addHistory) {
-      setTabHistory((previous) => [
-        ...previous,
-        nextTab,
-      ])
-
-      window.history.pushState(
-        null,
-        "",
-        ""
-      )
-    }
-
-    if (nextTab !== "profile") {
-      setProfileSubPage("main")
-    }
-
-    animationTimerRef.current =
-      setTimeout(() => {
-        setIsAnimating(false)
-      }, 520)
-  }
-
-  /* =========================================================
+  /* =======================================================
      POINTER DOWN
-     ========================================================= */
+     ======================================================= */
 
   const handlePointerDown = (
-    event: React.PointerEvent<HTMLDivElement>
+    event: ReactPointerEvent<HTMLDivElement>
   ) => {
-    if (showDetailPage) {
-      return
-    }
 
     /*
-     * Mouse-এর ক্ষেত্রে শুধু left button
+     * Ignore secondary mouse buttons.
      */
     if (
       event.pointerType === "mouse" &&
@@ -295,16 +280,38 @@ export default function Home() {
     }
 
     /*
-     * Trending / protected carousel-এর
-     * ভিতর থেকে event এলে page swipe শুরু হবে না।
+     * Movie detail page = no page swipe.
+     */
+    if (showDetailPage) {
+      return
+    }
+
+    /*
+     * Trending carousel / other protected
+     * horizontal areas = no page swipe.
      */
     if (
-      isInsideProtectedSwipeArea(
+      isProtectedSwipeArea(
         event.target
       )
     ) {
+      pointerIdRef.current = null
+      gestureLockedRef.current = true
       return
     }
+
+    /*
+     * Don't start a new swipe while settling.
+     */
+    if (isSettling) {
+      return
+    }
+
+    pointerIdRef.current =
+      event.pointerId
+
+    endingGestureRef.current = false
+    gestureLockedRef.current = false
 
     swipeStartX.current =
       event.clientX
@@ -320,32 +327,31 @@ export default function Home() {
 
     velocityX.current = 0
 
-    pointerIdRef.current =
-      event.pointerId
-
-    setIsSwiping(false)
     setDragX(0)
+    setIsSwiping(false)
 
     /*
-     * Finger movement-এর সময় pointer হারিয়ে যাবে না।
+     * Keep receiving pointer events even if
+     * finger leaves the element.
      */
     try {
       event.currentTarget.setPointerCapture(
         event.pointerId
       )
     } catch {
-      // কিছু browser capture support না করলে
-      // swipe তবুও কাজ করবে।
+      // Safe fallback for unsupported situations.
     }
   }
 
-  /* =========================================================
+
+  /* =======================================================
      POINTER MOVE
-     ========================================================= */
+     ======================================================= */
 
   const handlePointerMove = (
-    event: React.PointerEvent<HTMLDivElement>
+    event: ReactPointerEvent<HTMLDivElement>
   ) => {
+
     if (
       pointerIdRef.current !==
       event.pointerId
@@ -353,18 +359,11 @@ export default function Home() {
       return
     }
 
-    if (showDetailPage) {
+    if (gestureLockedRef.current) {
       return
     }
 
-    /*
-     * Protected carousel হলে main page swipe বন্ধ।
-     */
-    if (
-      isInsideProtectedSwipeArea(
-        event.target
-      )
-    ) {
+    if (showDetailPage) {
       return
     }
 
@@ -376,67 +375,46 @@ export default function Home() {
       event.clientY -
       swipeStartY.current
 
+    const absX = Math.abs(deltaX)
+    const absY = Math.abs(deltaY)
+
+
     /*
-     * Vertical scroll detect.
+     * Don't steal vertical scrolling.
+     *
+     * Once vertical movement clearly wins,
+     * this gesture is locked as a normal scroll.
      */
     if (
       !isSwiping &&
-      Math.abs(deltaY) >
-        Math.abs(deltaX) &&
-      Math.abs(deltaY) > 10
+      absY > absX &&
+      absY > 10
     ) {
+      gestureLockedRef.current = true
       pointerIdRef.current = null
-
-      try {
-        event.currentTarget.releasePointerCapture(
-          event.pointerId
-        )
-      } catch {
-        // ignore
-      }
-
       return
     }
 
+
     /*
-     * Tiny movement ignore.
+     * Ignore tiny finger movement.
      */
     if (
       !isSwiping &&
-      Math.abs(deltaX) < 7
+      absX < 8
     ) {
       return
     }
 
+
+    /*
+     * At this point it is a horizontal swipe.
+     */
     setIsSwiping(true)
 
-    /*
-     * Edge resistance.
-     */
-    let resistance = 1
-
-    if (
-      activeIndex === 0 &&
-      deltaX > 0
-    ) {
-      resistance = 0.22
-    }
-
-    if (
-      activeIndex ===
-        tabs.length - 1 &&
-      deltaX < 0
-    ) {
-      resistance = 0.22
-    }
-
-    const adjustedX =
-      deltaX * resistance
-
-    setDragX(adjustedX)
 
     /*
-     * Velocity calculation.
+     * Calculate velocity.
      */
     const now =
       performance.now()
@@ -445,144 +423,309 @@ export default function Home() {
       now - lastTime.current
 
     if (dt > 0) {
+
       velocityX.current =
-        (event.clientX -
-          lastX.current) /
-        dt
+        (
+          event.clientX -
+          lastX.current
+        ) / dt
     }
 
     lastX.current =
       event.clientX
 
-    lastTime.current = now
+    lastTime.current =
+      now
+
 
     /*
-     * Custom horizontal gesture.
+     * Boundary resistance.
+     *
+     * First page can't move further right.
+     * Last page can't move further left.
+     */
+    let resistance = 1
+
+    if (
+      activeIndex === 0 &&
+      deltaX > 0
+    ) {
+      resistance = 0.18
+    }
+
+    if (
+      activeIndex === tabs.length - 1 &&
+      deltaX < 0
+    ) {
+      resistance = 0.18
+    }
+
+
+    /*
+     * Real-time finger position.
+     */
+    const adjustedX =
+      deltaX * resistance
+
+    setDragX(adjustedX)
+
+
+    /*
+     * Prevent browser horizontal gesture
+     * once our custom horizontal gesture is active.
      */
     if (
-      event.cancelable
+      event.cancelable &&
+      Math.abs(deltaX) > absY
     ) {
       event.preventDefault()
     }
   }
 
-  /* =========================================================
-     POINTER END
-     ========================================================= */
+
+  /* =======================================================
+     FINISH SWIPE
+     ======================================================= */
 
   const finishSwipe = (
-    event: React.PointerEvent<HTMLDivElement>
+    event?: ReactPointerEvent<HTMLDivElement>
   ) => {
-    if (
-      pointerIdRef.current !==
-      event.pointerId
-    ) {
+
+    if (endingGestureRef.current) {
       return
     }
+
+    endingGestureRef.current = true
+
+    const pointerId =
+      pointerIdRef.current
 
     pointerIdRef.current = null
 
-    try {
-      event.currentTarget.releasePointerCapture(
-        event.pointerId
-      )
-    } catch {
-      // ignore
+
+    /*
+     * Release pointer capture.
+     */
+    if (
+      event &&
+      pointerId !== null
+    ) {
+      try {
+
+        if (
+          event.currentTarget.hasPointerCapture(
+            pointerId
+          )
+        ) {
+          event.currentTarget.releasePointerCapture(
+            pointerId
+          )
+        }
+
+      } catch {
+        // Safe fallback.
+      }
     }
 
-    if (!isSwiping) {
+
+    if (
+      !isSwiping ||
+      gestureLockedRef.current
+    ) {
       setDragX(0)
+      setIsSwiping(false)
+      setIsSettling(false)
       return
     }
 
+
     const distance =
-      event.clientX -
-      swipeStartX.current
+      event
+        ? event.clientX -
+          swipeStartX.current
+        : dragX
+
+
+    /*
+     * Use a fixed percentage threshold.
+     * 20% is enough for a normal swipe.
+     */
+    const screenWidth =
+      typeof window !== "undefined"
+        ? window.innerWidth
+        : 390
 
     const threshold =
-      viewportWidth * 0.20
+      Math.max(
+        72,
+        screenWidth * 0.20
+      )
+
 
     /*
      * Fast flick.
      */
-    const fastSwipe =
-      Math.abs(
-        velocityX.current
-      ) > 0.55
+    const fastLeft =
+      velocityX.current < -0.55
 
-    let nextIndex =
+    const fastRight =
+      velocityX.current > 0.55
+
+
+    let targetIndex =
       activeIndex
 
+
+    /*
+     * Swipe left → next page.
+     */
     if (
       (
         distance < -threshold ||
-        (
-          fastSwipe &&
-          velocityX.current < -0.55
-        )
+        fastLeft
       ) &&
       activeIndex <
         tabs.length - 1
     ) {
-      nextIndex =
+
+      targetIndex =
         activeIndex + 1
-    } else if (
+    }
+
+
+    /*
+     * Swipe right → previous page.
+     */
+    else if (
       (
         distance > threshold ||
-        (
-          fastSwipe &&
-          velocityX.current > 0.55
-        )
+        fastRight
       ) &&
       activeIndex > 0
     ) {
-      nextIndex =
+
+      targetIndex =
         activeIndex - 1
     }
 
-    setIsSwiping(false)
 
     /*
-     * Page change.
+     * Start smooth settling animation.
+     */
+    setIsSwiping(false)
+    setIsSettling(true)
+
+
+    /*
+     * We intentionally animate the current page
+     * back to zero first when the swipe is rejected.
      */
     if (
-      nextIndex !== activeIndex
+      targetIndex === activeIndex
     ) {
-      handleTabChange(
-        tabs[nextIndex],
-        true
-      )
+
+      setDragX(0)
+
+      window.setTimeout(() => {
+
+        setIsSettling(false)
+
+      }, 360)
 
       return
     }
 
+
     /*
-     * Same page-এ smooth return.
+     * Commit new page after the visual swipe
+     * has reached the edge.
      */
-    setIsAnimating(true)
-    setDragX(0)
+    const targetTab =
+      tabs[targetIndex]
 
-    if (animationTimerRef.current) {
-      clearTimeout(
-        animationTimerRef.current
+
+    const direction =
+      targetIndex > activeIndex
+        ? -1
+        : 1
+
+
+    const finalWidth =
+      typeof window !== "undefined"
+        ? window.innerWidth
+        : 390
+
+
+    /*
+     * Finish the current swipe visually.
+     */
+    setDragX(
+      direction * finalWidth
+    )
+
+
+    /*
+     * Wait for the 240ms settle animation,
+     * then replace the page.
+     */
+    window.setTimeout(() => {
+
+      setActiveTab(targetTab)
+
+      setDragX(0)
+      setIsSettling(false)
+
+      setTabHistory((previous) => [
+        ...previous,
+        targetTab,
+      ])
+
+      window.history.pushState(
+        null,
+        "",
+        ""
       )
-    }
 
-    animationTimerRef.current =
-      setTimeout(() => {
-        setIsAnimating(false)
-      }, 420)
+      if (
+        targetTab !== "profile"
+      ) {
+        setProfileSubPage("main")
+      }
+
+      /*
+       * New page at top.
+       */
+      window.requestAnimationFrame(() => {
+        window.scrollTo({
+          top: 0,
+          behavior: "auto",
+        })
+      })
+
+    }, 240)
   }
 
+
+  /* =======================================================
+     POINTER UP
+     ======================================================= */
+
   const handlePointerUp = (
-    event: React.PointerEvent<HTMLDivElement>
+    event: ReactPointerEvent<HTMLDivElement>
   ) => {
+
     finishSwipe(event)
   }
 
+
+  /* =======================================================
+     POINTER CANCEL
+     ======================================================= */
+
   const handlePointerCancel = (
-    event: React.PointerEvent<HTMLDivElement>
+    event: ReactPointerEvent<HTMLDivElement>
   ) => {
+
     if (
       pointerIdRef.current !==
       event.pointerId
@@ -590,37 +733,59 @@ export default function Home() {
       return
     }
 
+    endingGestureRef.current = true
     pointerIdRef.current = null
 
-    try {
-      event.currentTarget.releasePointerCapture(
-        event.pointerId
-      )
-    } catch {
-      // ignore
-    }
-
     setIsSwiping(false)
-    setIsAnimating(true)
+    setIsSettling(true)
     setDragX(0)
 
-    if (animationTimerRef.current) {
-      clearTimeout(
-        animationTimerRef.current
-      )
-    }
-
-    animationTimerRef.current =
-      setTimeout(() => {
-        setIsAnimating(false)
-      }, 420)
+    window.setTimeout(() => {
+      setIsSettling(false)
+    }, 300)
   }
 
-  /* =========================================================
+
+  /* =======================================================
+     LOST POINTER CAPTURE
+     ======================================================= */
+
+  const handleLostPointerCapture = () => {
+
+    /*
+     * If pointerup already handled the gesture,
+     * don't handle it again.
+     */
+    if (
+      endingGestureRef.current
+    ) {
+      return
+    }
+
+    if (
+      pointerIdRef.current === null
+    ) {
+      return
+    }
+
+    pointerIdRef.current = null
+
+    setIsSwiping(false)
+    setIsSettling(true)
+    setDragX(0)
+
+    window.setTimeout(() => {
+      setIsSettling(false)
+    }, 300)
+  }
+
+
+  /* =======================================================
      WELCOME POPUP
-     ========================================================= */
+     ======================================================= */
 
   useEffect(() => {
+
     const hasVisited =
       localStorage.getItem(
         "mvbd_visited"
@@ -629,9 +794,12 @@ export default function Home() {
     if (!hasVisited) {
       setShowWelcomePopup(true)
     }
+
   }, [])
 
+
   const handleClosePopup = () => {
+
     localStorage.setItem(
       "mvbd_visited",
       "true"
@@ -640,23 +808,24 @@ export default function Home() {
     setShowWelcomePopup(false)
   }
 
-  /* =========================================================
+
+  /* =======================================================
      SEARCH
-     ========================================================= */
+     ======================================================= */
 
   const filteredMovies = useMemo(() => {
+
     let filtered = movies
 
     if (searchQuery.trim()) {
+
       filtered =
-        filtered.filter(
-          (movie) =>
-            movie.title
-              .toLowerCase()
-              .includes(
-                searchQuery
-                  .toLowerCase()
-              )
+        filtered.filter((movie) =>
+          movie.title
+            .toLowerCase()
+            .includes(
+              searchQuery.toLowerCase()
+            )
         )
     }
 
@@ -664,22 +833,24 @@ export default function Home() {
       selectedGenre &&
       !searchQuery.trim()
     ) {
+
       filtered =
-        filtered.filter(
-          (movie) =>
-            movie.genre.includes(
-              selectedGenre
-            )
+        filtered.filter((movie) =>
+          movie.genre.includes(
+            selectedGenre
+          )
         )
     }
 
     return [...filtered].sort(
       (a, b) => b.id - a.id
     )
+
   }, [
     searchQuery,
     selectedGenre,
   ])
+
 
   const itemsPerPage = 30
 
@@ -689,6 +860,7 @@ export default function Home() {
         itemsPerPage
     )
 
+
   const paginatedMovies =
     filteredMovies.slice(
       (currentPage - 1) *
@@ -697,47 +869,65 @@ export default function Home() {
         itemsPerPage
     )
 
+
   const handleSearch = (
     query: string
   ) => {
+
     setSearchQuery(query)
     setCurrentPage(1)
+
     setIsSearching(
       query.trim().length > 0
     )
   }
 
+
   const handleGenreSelect = (
     genre: string | null
   ) => {
+
     setSelectedGenre(genre)
     setCurrentPage(1)
+
     setShowAdultContent(
       genre === "Adult"
     )
   }
 
-  /* =========================================================
+
+  /* =======================================================
      HOME PAGE
-     ========================================================= */
+     ======================================================= */
 
   const renderHomePage = () => (
+
     <div className="min-h-screen bg-black pb-20">
+
       <Header
         onSearch={handleSearch}
         pageType="home"
         searchData={movies}
       />
 
-      {searchQuery.trim() &&
-      filteredMovies.length === 0 ? (
+
+      {
+        searchQuery.trim() &&
+        filteredMovies.length === 0
+      ? (
+
         <div className="px-4 py-12 text-center">
+
           <p className="text-lg text-slate-300 mb-6">
+
             আমরা দুঃখিত! এই নামের কোনো মুভি
             আমাদের কালেকশনে নেই
+
           </p>
 
+
           <div className="flex gap-4 justify-center flex-wrap">
+
             <a
               href="https://www.facebook.com/groups/733950559669339/?ref=share&mibextid=NSMWBT"
               target="_blank"
@@ -755,6 +945,7 @@ export default function Home() {
               Facebook Group
             </a>
 
+
             <a
               href="https://t.me/moviesversebdreq"
               target="_blank"
@@ -771,56 +962,80 @@ export default function Home() {
             >
               Telegram Group
             </a>
+
           </div>
+
         </div>
+
       ) : (
+
         <>
-          {!isSearching && (
-            /*
-             * IMPORTANT:
-             * এই wrapper-এর ভিতরের horizontal gesture
-             * main page swipe থেকে protected থাকবে।
-             */
-            <div
-              data-no-page-swipe
-              className="mvbd-trending-protected"
-            >
-              <TrendingCarousel
-                onMovieClick={(movie) => {
-                  setSelectedMovie(movie)
-                  setShowDetailPage(true)
-                }}
+
+          {
+            !isSearching && (
+
+              /*
+               * IMPORTANT:
+               * Trending carousel is completely protected
+               * from the main page swipe.
+               */
+              <div
+                data-no-page-swipe
+                className="w-full mvbd-trending-protected"
+              >
+                <TrendingCarousel
+                  onMovieClick={(movie) => {
+                    setSelectedMovie(movie)
+                    setShowDetailPage(true)
+                  }}
+                />
+              </div>
+
+            )
+          }
+
+
+          {
+            !isSearching && (
+
+              <GenreCategories
+                genres={genres}
+                selectedGenre={selectedGenre}
+                onGenreSelect={
+                  handleGenreSelect
+                }
+                showAdultContent={
+                  showAdultContent
+                }
               />
-            </div>
-          )}
 
-          {!isSearching && (
-            <GenreCategories
-              genres={genres}
-              selectedGenre={
-                selectedGenre
-              }
-              onGenreSelect={
-                handleGenreSelect
-              }
-              showAdultContent={
-                showAdultContent
-              }
-            />
-          )}
+            )
+          }
 
-          {isSearching && (
-            <div className="px-4 pt-4">
-              <h2 className="text-xl font-bold text-white mb-2">
-                সার্চ রেজাল্ট: "{searchQuery}"
-              </h2>
 
-              <p className="text-slate-400 text-sm mb-4">
-                {filteredMovies.length} টি
-                মুভি পাওয়া গেছে
-              </p>
-            </div>
-          )}
+          {
+            isSearching && (
+
+              <div className="px-4 pt-4">
+
+                <h2 className="text-xl font-bold text-white mb-2">
+
+                  সার্চ রেজাল্ট: "{searchQuery}"
+
+                </h2>
+
+                <p className="text-slate-400 text-sm mb-4">
+
+                  {filteredMovies.length}
+                  টি মুভি পাওয়া গেছে
+
+                </p>
+
+              </div>
+
+            )
+          }
+
 
           <MovieGrid
             movies={paginatedMovies}
@@ -830,95 +1045,136 @@ export default function Home() {
             }}
             currentPage={currentPage}
             totalPages={totalPages}
-            onPageChange={
-              setCurrentPage
-            }
+            onPageChange={setCurrentPage}
             showAdultContent={
               showAdultContent
             }
-            isSearching={
-              isSearching
-            }
+            isSearching={isSearching}
           />
+
         </>
+
       )}
 
+
       <Footer />
+
     </div>
   )
 
-  /* =========================================================
+
+  /* =======================================================
+     ANIME PAGE
+     ======================================================= */
+
+  const renderAnimePage = () => (
+
+    <div className="min-h-screen bg-black pb-20">
+
+      <AnimePage />
+
+    </div>
+  )
+
+
+  /* =======================================================
+     SERIES PAGE
+     ======================================================= */
+
+  const renderSeriesPage = () => (
+
+    <div className="min-h-screen bg-black pb-20">
+
+      <SeriesSection />
+
+    </div>
+  )
+
+
+  /* =======================================================
      PROFILE PAGE
-     ========================================================= */
+     ======================================================= */
 
   const renderProfilePage = () => (
+
     <div className="min-h-screen bg-black pb-20">
-      {profileSubPage === "main" && (
-        <ProfilePage
-          onNavigate={(page) =>
-            setProfileSubPage(page)
-          }
-        />
-      )}
 
-      {profileSubPage === "contact" && (
-        <ContactUsPage
-          onBack={() =>
-            setProfileSubPage(
-              "main"
-            )
-          }
-        />
-      )}
+      {
+        profileSubPage === "main" && (
 
-      {profileSubPage === "about" && (
-        <AboutUsPage
-          onBack={() =>
-            setProfileSubPage(
-              "main"
-            )
-          }
-        />
-      )}
+          <ProfilePage
+            onNavigate={(page) =>
+              setProfileSubPage(page)
+            }
+          />
 
-      {profileSubPage === "settings" && (
-        <SettingsPage
-          onBack={() =>
-            setProfileSubPage(
-              "main"
-            )
-          }
-        />
-      )}
+        )
+      }
+
+
+      {
+        profileSubPage === "contact" && (
+
+          <ContactUsPage
+            onBack={() =>
+              setProfileSubPage("main")
+            }
+          />
+
+        )
+      }
+
+
+      {
+        profileSubPage === "about" && (
+
+          <AboutUsPage
+            onBack={() =>
+              setProfileSubPage("main")
+            }
+          />
+
+        )
+      }
+
+
+      {
+        profileSubPage === "settings" && (
+
+          <SettingsPage
+            onBack={() =>
+              setProfileSubPage("main")
+            }
+          />
+
+        )
+      }
+
 
       <Footer />
+
     </div>
   )
 
-  /* =========================================================
-     PAGE CONTENT
-     ========================================================= */
+
+  /* =======================================================
+     RENDER ACTIVE PAGE
+     ======================================================= */
 
   const renderPageContent = (
-    tab: TabId
+    tab: Tab
   ) => {
+
     switch (tab) {
+
       case "home":
         return renderHomePage()
 
       case "shorts":
-        return (
-          <div className="min-h-screen bg-black pb-20">
-            <AnimePage />
-          </div>
-        )
+        return renderAnimePage()
 
       case "exclusive":
-        return (
-          <div className="min-h-screen bg-black pb-20">
-            <SeriesSection />
-          </div>
-        )
+        return renderSeriesPage()
 
       case "profile":
         return renderProfilePage()
@@ -928,18 +1184,58 @@ export default function Home() {
     }
   }
 
-  /* =========================================================
-     PAGE TRACK
-     ========================================================= */
 
-  const trackTransform = `translate3d(calc(-${
-    activeIndex * 100
-  }vw + ${dragX}px), 0, 0)`
+  /* =======================================================
+     SWIPE TRANSFORMS
+     ======================================================= */
 
   /*
-   * Bottom navigation-এর liquid indicator
-   * finger-এর সাথে live move করবে।
+   * Current page follows the finger.
    */
+  const currentTransform =
+    `translate3d(${dragX}px, 0, 0)`
+
+
+  /*
+   * Previous page sits immediately to the left.
+   */
+  const previousTransform =
+    previousTab
+      ? `translate3d(calc(-100% + ${dragX}px), 0, 0)`
+      : "translate3d(-100%, 0, 0)"
+
+
+  /*
+   * Next page sits immediately to the right.
+   */
+  const nextTransform =
+    nextTab
+      ? `translate3d(calc(100% + ${dragX}px), 0, 0)`
+      : "translate3d(100%, 0, 0)"
+
+
+  /*
+   * During normal state only the active page is visible.
+   * During swipe, adjacent page becomes visible.
+   */
+  const showPrevious =
+    isSwiping &&
+    Boolean(previousTab)
+
+  const showNext =
+    isSwiping &&
+    Boolean(nextTab)
+
+
+  /* =======================================================
+     BOTTOM NAV SWIPE POSITION
+     ======================================================= */
+
+  const viewportWidth =
+    typeof window !== "undefined"
+      ? window.innerWidth
+      : 390
+
   const swipePosition =
     activeIndex -
     dragX /
@@ -948,121 +1244,253 @@ export default function Home() {
         viewportWidth
       )
 
-  /* =========================================================
-     RENDER
-     ========================================================= */
 
-  return (
-    <div className="w-full min-h-screen bg-black overflow-x-hidden">
-      {showDetailPage &&
-      selectedMovie ? (
+  /* =======================================================
+     DETAIL PAGE
+     ======================================================= */
+
+  if (
+    showDetailPage &&
+    selectedMovie
+  ) {
+
+    return (
+
+      <div className="w-full min-h-screen bg-black">
+
         <MovieDetailPage
           movie={selectedMovie}
+
           onBack={() => {
             setShowDetailPage(false)
             setSelectedMovie(null)
           }}
+
           onMovieClick={(movie) =>
             setSelectedMovie(movie)
           }
+
           showAdultContent={
             showAdultContent
           }
         />
-      ) : (
-        <>
-          {/* =================================================
-              PAGE SWIPE VIEWPORT
-              ================================================= */}
 
-          <div className="mvbd-swipe-viewport">
+      </div>
+
+    )
+  }
+
+
+  /* =======================================================
+     MAIN RETURN
+     ======================================================= */
+
+  return (
+
+    <div className="w-full min-h-screen bg-black">
+
+      {/* =================================================
+          PAGE SWIPE AREA
+          ================================================= */}
+
+      <div
+        className="
+          mvbd-single-page-swipe
+          relative
+          w-full
+          overflow-x-hidden
+        "
+        style={{
+          touchAction: "pan-y",
+        }}
+
+        onPointerDown={
+          handlePointerDown
+        }
+
+        onPointerMove={
+          handlePointerMove
+        }
+
+        onPointerUp={
+          handlePointerUp
+        }
+
+        onPointerCancel={
+          handlePointerCancel
+        }
+
+        onLostPointerCapture={
+          handleLostPointerCapture
+        }}
+      >
+
+        {/* =================================================
+            PREVIOUS PAGE PREVIEW
+            ================================================= */}
+
+        {
+          showPrevious &&
+          previousTab && (
+
             <div
-              className={`
-                mvbd-page-track
-                ${
-                  isAnimating
-                    ? "is-animating"
-                    : ""
-                }
-              `}
+              className="
+                absolute
+                top-0
+                left-0
+                w-full
+                min-h-full
+                bg-black
+                z-[5]
+              "
               style={{
                 transform:
-                  trackTransform,
+                  previousTransform,
+
+                transition:
+                  isSwiping
+                    ? "none"
+                    : "transform 240ms cubic-bezier(.22,1,.36,1)",
+
+                willChange:
+                  "transform",
+
+                pointerEvents:
+                  "none",
               }}
-              onPointerDown={
-                handlePointerDown
-              }
-              onPointerMove={
-                handlePointerMove
-              }
-              onPointerUp={
-                handlePointerUp
-              }
-              onPointerCancel={
-                handlePointerCancel
-              }
-              onLostPointerCapture={
-                handlePointerCancel
-              }
+              aria-hidden="true"
             >
-              {/* HOME */}
-              <section className="mvbd-page">
-                {renderPageContent(
-                  "home"
-                )}
-              </section>
 
-              {/* ANIME */}
-              <section className="mvbd-page">
-                {renderPageContent(
-                  "shorts"
-                )}
-              </section>
+              {renderPageContent(
+                previousTab
+              )}
 
-              {/* SERIES */}
-              <section className="mvbd-page">
-                {renderPageContent(
-                  "exclusive"
-                )}
-              </section>
-
-              {/* PROFILE */}
-              <section className="mvbd-page">
-                {renderPageContent(
-                  "profile"
-                )}
-              </section>
             </div>
-          </div>
 
-          {/* =================================================
-              BOTTOM NAVIGATION
-              ================================================= */}
+          )
+        }
 
-          <BottomNavigation
-            activeTab={activeTab}
-            onTabChange={
-              handleTabChange
+
+        {/* =================================================
+            NEXT PAGE PREVIEW
+            ================================================= */}
+
+        {
+          showNext &&
+          nextTab && (
+
+            <div
+              className="
+                absolute
+                top-0
+                left-0
+                w-full
+                min-h-full
+                bg-black
+                z-[5]
+              "
+              style={{
+                transform:
+                  nextTransform,
+
+                transition:
+                  isSwiping
+                    ? "none"
+                    : "transform 240ms cubic-bezier(.22,1,.36,1)",
+
+                willChange:
+                  "transform",
+
+                pointerEvents:
+                  "none",
+              }}
+              aria-hidden="true"
+            >
+
+              {renderPageContent(
+                nextTab
+              )}
+
+            </div>
+
+          )
+        }
+
+
+        {/* =================================================
+            CURRENT ACTIVE PAGE
+            ================================================= */}
+
+        <div
+          className="
+            relative
+            z-[10]
+            w-full
+            min-h-screen
+            bg-black
+          "
+          style={{
+            transform:
+              currentTransform,
+
+            transition:
+              isSwiping
+                ? "none"
+                : "transform 240ms cubic-bezier(.22,1,.36,1)",
+
+            willChange:
+              "transform",
+
+            backfaceVisibility:
+              "hidden",
+
+            WebkitBackfaceVisibility:
+              "hidden",
+          }}
+        >
+
+          {renderPageContent(
+            activeTab
+          )}
+
+        </div>
+
+      </div>
+
+
+      {/* =================================================
+          BOTTOM NAVIGATION
+          ================================================= */}
+
+      <BottomNavigation
+        activeTab={activeTab}
+        onTabChange={handleTabChange}
+        swipePosition={
+          swipePosition
+        }
+        isSwiping={
+          isSwiping
+        }
+      />
+
+
+      {/* =================================================
+          WELCOME POPUP
+          ================================================= */}
+
+      {
+        showWelcomePopup && (
+
+          <WelcomePopup
+            onClose={
+              handleClosePopup
             }
-            swipePosition={
-              swipePosition
-            }
-            isSwiping={isSwiping}
           />
 
-          {/* =================================================
-              WELCOME POPUP
-              ================================================= */}
+        )
+      }
 
-          {showWelcomePopup && (
-            <WelcomePopup
-              onClose={
-                handleClosePopup
-              }
-            />
-          )}
-        </>
-      )}
     </div>
+
   )
 }

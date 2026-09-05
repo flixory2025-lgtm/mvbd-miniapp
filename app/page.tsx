@@ -1322,7 +1322,7 @@ export default function Home() {
 
         onLostPointerCapture={
           handleLostPointerCapture
-        }}
+        }
       >
 
         {/* =================================================

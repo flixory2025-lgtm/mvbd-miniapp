@@ -12993,7 +12993,8 @@ export const movies1 = [
 
 
 import { movies2 } from "@/lib/movie-data2"
+import { movies3 } from "@/lib/movie-data3"
 
-export const movies = [...movies1, ...movies2]
+export const movies = [...movies1, ...movies2, ...movies3,]
 
 export type Movie = (typeof movies)[number]

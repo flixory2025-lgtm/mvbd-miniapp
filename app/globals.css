@@ -1319,3 +1319,668 @@
     }
   }
 }
+/* =========================================================
+   MVBD — FINAL LIQUID GLASS BOTTOM NAVIGATION
+   ========================================================= */
+
+/* ---------------------------------------------------------
+   NAV CONTAINER
+   --------------------------------------------------------- */
+
+.mvbd-liquid-nav {
+  position: relative;
+  height: 52px;
+
+  border-radius: 18px;
+
+  overflow: hidden;
+
+  /*
+   * Glass background
+   */
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.105),
+      rgba(255, 255, 255, 0.045)
+    );
+
+  /*
+   * iOS-like glass blur
+   */
+  -webkit-backdrop-filter:
+    blur(22px)
+    saturate(165%);
+
+  backdrop-filter:
+    blur(22px)
+    saturate(165%);
+
+  /*
+   * Soft glass border
+   */
+  border:
+    1px solid
+    rgba(255, 255, 255, 0.13);
+
+  /*
+   * Depth
+   */
+  box-shadow:
+    0 8px 28px
+      rgba(0, 0, 0, 0.38),
+    inset 0 1px 0
+      rgba(255, 255, 255, 0.12),
+    inset 0 -1px 0
+      rgba(255, 255, 255, 0.035);
+
+  isolation: isolate;
+
+  transform:
+    translate3d(0, 0, 0);
+
+  will-change:
+    transform;
+}
+
+
+/* ---------------------------------------------------------
+   EXTRA BLURRED GLASS LAYER
+   --------------------------------------------------------- */
+
+.mvbd-nav-glass-light {
+  position: absolute;
+
+  inset: 0;
+
+  z-index: 1;
+
+  pointer-events: none;
+
+  border-radius: inherit;
+
+  /*
+   * Soft top reflection
+   */
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.075),
+      rgba(255, 255, 255, 0.018) 48%,
+      rgba(255, 255, 255, 0.008)
+    );
+
+  /*
+   * Slight internal blur
+   */
+  -webkit-backdrop-filter:
+    blur(8px)
+    saturate(135%);
+
+  backdrop-filter:
+    blur(8px)
+    saturate(135%);
+
+  opacity: 0.95;
+}
+
+
+/* ---------------------------------------------------------
+   LIQUID INDICATOR
+   --------------------------------------------------------- */
+
+.mvbd-liquid-indicator {
+  position: absolute;
+
+  top: 4px;
+  bottom: 4px;
+
+  left: 0;
+
+  width: 25%;
+
+  z-index: 2;
+
+  pointer-events: none;
+
+  border-radius: 14px;
+
+  /*
+   * Main liquid glass
+   */
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.19),
+      rgba(255, 255, 255, 0.075)
+    );
+
+  /*
+   * Stronger glass blur
+   */
+  -webkit-backdrop-filter:
+    blur(14px)
+    saturate(180%);
+
+  backdrop-filter:
+    blur(14px)
+    saturate(180%);
+
+  /*
+   * Glass border
+   */
+  border:
+    1px solid
+    rgba(255, 255, 255, 0.14);
+
+  /*
+   * iOS-like inner light
+   */
+  box-shadow:
+    inset 0 1px 1px
+      rgba(255, 255, 255, 0.30),
+
+    inset 0 -1px 2px
+      rgba(255, 255, 255, 0.055),
+
+    inset 0 0 10px
+      rgba(255, 255, 255, 0.035),
+
+    0 0 9px
+      rgba(255, 255, 255, 0.065);
+
+  /*
+   * Default state
+   */
+  transform:
+    translate3d(0, 0, 0)
+    scaleX(1)
+    scaleY(1);
+
+  transform-origin:
+    center center;
+
+  will-change:
+    left,
+    width,
+    transform,
+    filter,
+    box-shadow;
+
+  /*
+   * GPU compositing
+   */
+  backface-visibility: hidden;
+
+  -webkit-backface-visibility: hidden;
+
+  /*
+   * Don't let animation override
+   * JS-controlled left/width.
+   */
+  animation-fill-mode: both;
+}
+
+
+/* ---------------------------------------------------------
+   iOS LIQUID PAGE-CHANGE ANIMATION
+   --------------------------------------------------------- */
+
+@keyframes mvbd-liquid-indicator-settle {
+  0% {
+    transform:
+      translate3d(0, 0, 0)
+      scaleX(0.91)
+      scaleY(0.94);
+
+    filter:
+      brightness(1.02)
+      saturate(1.08);
+
+    box-shadow:
+      inset 0 1px 1px
+        rgba(255, 255, 255, 0.22),
+
+      inset 0 -1px 2px
+        rgba(255, 255, 255, 0.04),
+
+      0 0 6px
+        rgba(255, 255, 255, 0.045);
+  }
+
+  22% {
+    transform:
+      translate3d(0, 0, 0)
+      scaleX(1.045)
+      scaleY(1.025);
+
+    filter:
+      brightness(1.09)
+      saturate(1.20);
+
+    box-shadow:
+      inset 0 1px 2px
+        rgba(255, 255, 255, 0.33),
+
+      inset 0 -1px 2px
+        rgba(255, 255, 255, 0.065),
+
+      0 0 13px
+        rgba(255, 255, 255, 0.115);
+  }
+
+  43% {
+    transform:
+      translate3d(0, 0, 0)
+      scaleX(1.095)
+      scaleY(1.035);
+
+    filter:
+      brightness(1.13)
+      saturate(1.28);
+
+    box-shadow:
+      inset 0 1px 2px
+        rgba(255, 255, 255, 0.40),
+
+      inset 0 -1px 2px
+        rgba(255, 255, 255, 0.075),
+
+      0 0 17px
+        rgba(255, 255, 255, 0.145);
+  }
+
+  62% {
+    transform:
+      translate3d(0, 0, 0)
+      scaleX(0.985)
+      scaleY(0.992);
+
+    filter:
+      brightness(1.085)
+      saturate(1.20);
+
+    box-shadow:
+      inset 0 1px 1px
+        rgba(255, 255, 255, 0.31),
+
+      inset 0 -1px 2px
+        rgba(255, 255, 255, 0.055),
+
+      0 0 11px
+        rgba(255, 255, 255, 0.095);
+  }
+
+  80% {
+    transform:
+      translate3d(0, 0, 0)
+      scaleX(1.018)
+      scaleY(1.008);
+
+    filter:
+      brightness(1.075)
+      saturate(1.18);
+
+    box-shadow:
+      inset 0 1px 1px
+        rgba(255, 255, 255, 0.30),
+
+      inset 0 -1px 2px
+        rgba(255, 255, 255, 0.05),
+
+      0 0 10px
+        rgba(255, 255, 255, 0.085);
+  }
+
+  100% {
+    transform:
+      translate3d(0, 0, 0)
+      scaleX(1)
+      scaleY(1);
+
+    filter:
+      brightness(1)
+      saturate(1);
+
+    box-shadow:
+      inset 0 1px 1px
+        rgba(255, 255, 255, 0.30),
+
+      inset 0 -1px 2px
+        rgba(255, 255, 255, 0.055),
+
+      0 0 9px
+        rgba(255, 255, 255, 0.065);
+  }
+}
+
+
+/* ---------------------------------------------------------
+   ANIMATION CLASS
+   --------------------------------------------------------- */
+
+.mvbd-liquid-indicator.mvbd-indicator-settle {
+  animation:
+    mvbd-liquid-indicator-settle
+    430ms
+    cubic-bezier(
+      0.22,
+      1,
+      0.36,
+      1
+    );
+}
+
+
+/* ---------------------------------------------------------
+   NAV ITEM
+   --------------------------------------------------------- */
+
+.mvbd-liquid-nav-item {
+  position: relative;
+
+  display: flex;
+
+  height: 100%;
+
+  flex-direction: column;
+
+  align-items: center;
+
+  justify-content: center;
+
+  gap: 1px;
+
+  padding:
+    4px
+    2px;
+
+  border: 0;
+
+  outline: none;
+
+  background: transparent;
+
+  color:
+    rgba(255, 255, 255, 0.56);
+
+  cursor: pointer;
+
+  -webkit-tap-highlight-color:
+    transparent;
+
+  user-select: none;
+
+  touch-action: manipulation;
+
+  transition:
+    color 220ms
+      cubic-bezier(
+        0.22,
+        1,
+        0.36,
+        1
+      );
+}
+
+
+/* ---------------------------------------------------------
+   ACTIVE NAV ITEM
+   --------------------------------------------------------- */
+
+.mvbd-liquid-nav-item.active {
+  color:
+    rgba(255, 255, 255, 0.98);
+}
+
+
+/* ---------------------------------------------------------
+   ICON
+   --------------------------------------------------------- */
+
+.mvbd-liquid-nav-icon {
+  display: flex;
+
+  width: 20px;
+  height: 20px;
+
+  align-items: center;
+  justify-content: center;
+
+  transform:
+    translate3d(0, 0, 0)
+    scale(1);
+
+  transform-origin:
+    center center;
+
+  transition:
+    transform 280ms
+      cubic-bezier(
+        0.22,
+        1,
+        0.36,
+        1
+      ),
+    filter 280ms
+      cubic-bezier(
+        0.22,
+        1,
+        0.36,
+        1
+      );
+}
+
+
+/* ---------------------------------------------------------
+   ACTIVE ICON
+   --------------------------------------------------------- */
+
+.mvbd-liquid-nav-item.active
+.mvbd-liquid-nav-icon {
+  transform:
+    translate3d(0, 0, 0)
+    scale(1.045);
+
+  filter:
+    brightness(1.08);
+}
+
+
+/* ---------------------------------------------------------
+   LABEL
+   --------------------------------------------------------- */
+
+.mvbd-liquid-nav-label {
+  display: block;
+
+  max-width: 100%;
+
+  overflow: hidden;
+
+  text-overflow: ellipsis;
+
+  white-space: nowrap;
+
+  font-size: 8.5px;
+
+  line-height: 11px;
+
+  font-weight: 500;
+
+  letter-spacing: 0.01em;
+
+  transition:
+    opacity 220ms
+      cubic-bezier(
+        0.22,
+        1,
+        0.36,
+        1
+      ),
+    transform 220ms
+      cubic-bezier(
+        0.22,
+        1,
+        0.36,
+        1
+      );
+}
+
+
+/* ---------------------------------------------------------
+   ACTIVE LABEL
+   --------------------------------------------------------- */
+
+.mvbd-liquid-nav-item.active
+.mvbd-liquid-nav-label {
+  font-weight: 600;
+
+  transform:
+    translate3d(0, -0.2px, 0);
+}
+
+
+/* ---------------------------------------------------------
+   ANIME IMAGE
+   --------------------------------------------------------- */
+
+.mvbd-anime-nav-image {
+  width: 19px;
+  height: 19px;
+
+  object-fit: contain;
+
+  display: block;
+
+  transform:
+    translate3d(0, 0, 0);
+
+  transition:
+    transform 280ms
+      cubic-bezier(
+        0.22,
+        1,
+        0.36,
+        1
+      ),
+    filter 280ms
+      cubic-bezier(
+        0.22,
+        1,
+        0.36,
+        1
+      );
+}
+
+
+/* ---------------------------------------------------------
+   ACTIVE ANIME IMAGE
+   --------------------------------------------------------- */
+
+.mvbd-liquid-nav-item.active
+.mvbd-anime-nav-image {
+  transform:
+    scale(1.055);
+
+  filter:
+    brightness(1.08)
+    saturate(1.08);
+}
+
+
+/* ---------------------------------------------------------
+   PRESS / TAP FEEDBACK
+   --------------------------------------------------------- */
+
+.mvbd-liquid-nav-item:active
+.mvbd-liquid-nav-icon {
+  transform:
+    scale(0.91);
+
+  transition-duration:
+    90ms;
+}
+
+
+/* ---------------------------------------------------------
+   MOBILE
+   --------------------------------------------------------- */
+
+@media (max-width: 480px) {
+  .mvbd-liquid-nav {
+    width:
+      calc(100vw - 34px);
+
+    max-width:
+      320px;
+
+    height:
+      52px;
+
+    border-radius:
+      18px;
+  }
+
+  .mvbd-liquid-nav-label {
+    font-size:
+      8.5px;
+  }
+}
+
+
+/* ---------------------------------------------------------
+   VERY SMALL SCREEN
+   --------------------------------------------------------- */
+
+@media (max-width: 360px) {
+  .mvbd-liquid-nav {
+    width:
+      calc(100vw - 24px);
+
+    height:
+      50px;
+
+    border-radius:
+      17px;
+  }
+
+  .mvbd-liquid-nav-icon {
+    width:
+      19px;
+
+    height:
+      19px;
+  }
+
+  .mvbd-liquid-nav-label {
+    font-size:
+      8px;
+
+    line-height:
+      10px;
+  }
+}
+
+
+/* ---------------------------------------------------------
+   REDUCED MOTION
+   --------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .mvbd-liquid-indicator {
+    animation:
+      none !important;
+
+    transition:
+      none !important;
+  }
+
+  .mvbd-liquid-nav-item,
+  .mvbd-liquid-nav-icon,
+  .mvbd-anime-nav-image,
+  .mvbd-liquid-nav-label {
+    transition:
+      none !important;
+  }
+}

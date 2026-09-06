@@ -43,7 +43,7 @@ export default function BottomNavigation({
     },
     {
       id: "exclusive",
-      label: "Series",
+      label: "subscriptions",
       icon: Star,
     },
     {

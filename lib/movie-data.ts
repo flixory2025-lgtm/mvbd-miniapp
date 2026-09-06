@@ -12994,7 +12994,7 @@ export const movies1 = [
 
 import { movies2 } from "@/lib/movie-data2"
 import { movies3 } from "@/lib/movie-data3"
-import { movies3 } from "@/lib/movie-data4"
+import { movies4 } from "@/lib/movie-data4"
 
 export const movies = [...movies1, ...movies2, ...movies3, ...movies4,]
 

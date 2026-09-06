@@ -103,7 +103,7 @@ export default function SeriesSection() {
         setTimeout(() => {
           setShowProcessing(false)
           setShowSuccess(true)
-        }, 650)
+        }, 600)
       }
     }, 100)
   }
@@ -118,66 +118,81 @@ export default function SeriesSection() {
   return (
     <main className="mvbd-premium-page">
       <style jsx>{`
+        /* =====================================================
+           DARK LIQUID GLASS PREMIUM PAGE
+        ===================================================== */
+
         .mvbd-premium-page {
-          min-height: 100vh;
           position: relative;
+          min-height: 100vh;
           overflow: hidden;
           background:
             radial-gradient(
-              circle at 15% 15%,
-              rgba(113, 80, 255, 0.18),
+              circle at 50% -10%,
+              rgba(86, 59, 135, 0.16),
+              transparent 32%
+            ),
+            radial-gradient(
+              circle at 10% 45%,
+              rgba(46, 63, 110, 0.09),
               transparent 28%
             ),
             radial-gradient(
-              circle at 85% 18%,
-              rgba(255, 115, 175, 0.12),
-              transparent 27%
-            ),
-            radial-gradient(
-              circle at 50% 78%,
-              rgba(255, 153, 95, 0.13),
+              circle at 90% 60%,
+              rgba(117, 58, 48, 0.08),
               transparent 30%
             ),
-            #06060b;
-          color: #fff;
-          padding: 24px 18px 70px;
+            #020204;
+          color: white;
+          padding: 18px 16px 70px;
+          isolation: isolate;
         }
+
+        /* Dark liquid aurora */
 
         .mvbd-premium-page::before {
           content: "";
           position: fixed;
-          inset: -30%;
-          z-index: 0;
+          inset: -45%;
+          z-index: -2;
           pointer-events: none;
           background:
             radial-gradient(
-              circle at 20% 30%,
-              rgba(255, 118, 92, 0.12),
+              circle at 30% 30%,
+              rgba(95, 65, 160, 0.13),
               transparent 25%
             ),
             radial-gradient(
-              circle at 80% 25%,
-              rgba(125, 93, 255, 0.13),
-              transparent 28%
+              circle at 70% 35%,
+              rgba(40, 91, 145, 0.09),
+              transparent 25%
             ),
             radial-gradient(
-              circle at 50% 80%,
-              rgba(91, 153, 255, 0.08),
-              transparent 25%
+              circle at 50% 75%,
+              rgba(151, 77, 55, 0.07),
+              transparent 23%
             );
-          filter: blur(55px);
-          animation: mvbdAurora 15s ease-in-out infinite alternate;
+          filter: blur(75px);
+          animation: liquidAurora 18s ease-in-out infinite alternate;
         }
 
-        @keyframes mvbdAurora {
-          from {
-            transform: translate3d(-2%, 0, 0) scale(1);
+        @keyframes liquidAurora {
+          0% {
+            transform: translate3d(-2%, -1%, 0) scale(1);
           }
 
-          to {
+          50% {
             transform: translate3d(3%, 2%, 0) scale(1.08);
           }
+
+          100% {
+            transform: translate3d(-1%, 4%, 0) scale(1.03);
+          }
         }
+
+        /* =====================================================
+           STAR BACKGROUND
+        ===================================================== */
 
         .mvbd-stars {
           position: absolute;
@@ -187,210 +202,295 @@ export default function SeriesSection() {
           height: 610px;
           overflow: hidden;
           pointer-events: none;
-          z-index: 1;
+          z-index: 0;
         }
 
         .mvbd-stars::before {
           content: "";
           position: absolute;
           inset: 0;
+
           background-image:
             radial-gradient(
               circle,
-              rgba(170, 140, 255, 0.95) 0 1px,
+              rgba(166, 139, 255, 0.65) 0 1px,
               transparent 1.8px
             ),
             radial-gradient(
               circle,
-              rgba(100, 165, 255, 0.8) 0 1px,
+              rgba(116, 153, 255, 0.5) 0 1px,
               transparent 1.8px
             ),
             radial-gradient(
               circle,
-              rgba(255, 255, 255, 0.7) 0 1px,
+              rgba(255, 255, 255, 0.4) 0 1px,
               transparent 1.7px
             );
+
           background-size:
-            83px 91px,
-            127px 119px,
-            173px 157px;
+            91px 103px,
+            137px 127px,
+            181px 171px;
+
           background-position:
-            10px 8px,
-            42px 31px,
-            90px 50px;
-          opacity: 0.5;
-          animation: mvbdStarMove 24s linear infinite;
+            12px 7px,
+            37px 29px,
+            79px 43px;
+
+          opacity: 0.32;
+
+          animation: starsDrift 30s linear infinite;
         }
 
-        .mvbd-stars::after {
-          content: "";
-          position: absolute;
-          inset: -10%;
-          background:
-            radial-gradient(
-              circle at 20% 20%,
-              rgba(144, 111, 255, 0.15),
-              transparent 20%
-            ),
-            radial-gradient(
-              circle at 80% 30%,
-              rgba(102, 164, 255, 0.1),
-              transparent 22%
-            );
-          filter: blur(22px);
-        }
-
-        @keyframes mvbdStarMove {
+        @keyframes starsDrift {
           from {
             transform: translateY(0);
           }
 
           to {
-            transform: translateY(91px);
+            transform: translateY(100px);
           }
         }
 
         .mvbd-star {
           position: absolute;
-          width: 5px;
-          height: 5px;
+          width: 4px;
+          height: 4px;
           border-radius: 50%;
-          background: linear-gradient(135deg, #fff, #a88cff);
-          box-shadow: 0 0 13px rgba(147, 118, 255, 0.95);
-          animation: mvbdTwinkle var(--duration) ease-in-out infinite
-            alternate;
-          opacity: 0.65;
+          background: #c7bbff;
+          box-shadow:
+            0 0 8px rgba(139, 119, 255, 0.75),
+            0 0 18px rgba(139, 119, 255, 0.3);
+
+          opacity: 0.5;
+
+          animation:
+            starLiquid var(--duration) ease-in-out infinite alternate,
+            starFloat 7s ease-in-out infinite;
         }
 
-        @keyframes mvbdTwinkle {
-          from {
-            transform: scale(0.35);
-            opacity: 0.18;
+        @keyframes starLiquid {
+          0% {
+            transform: scale(0.25);
+            opacity: 0.12;
           }
 
-          to {
-            transform: scale(1.55);
-            opacity: 1;
+          50% {
+            transform: scale(1);
+            opacity: 0.55;
+          }
+
+          100% {
+            transform: scale(1.6);
+            opacity: 0.85;
           }
         }
+
+        @keyframes starFloat {
+          50% {
+            translate: 0 -5px;
+          }
+        }
+
+        /* =====================================================
+           MAIN CONTAINER
+        ===================================================== */
 
         .mvbd-container {
           position: relative;
-          z-index: 3;
+          z-index: 2;
           width: min(1120px, 100%);
           margin: 0 auto;
         }
+
+        /* =====================================================
+           NAV
+        ===================================================== */
 
         .mvbd-nav {
           display: flex;
           align-items: center;
           justify-content: space-between;
-          padding: 12px 14px;
+
+          padding: 11px 13px;
+
+          border: 1px solid rgba(255, 255, 255, 0.105);
           border-radius: 28px;
-          border: 1px solid rgba(255, 255, 255, 0.15);
-          background: rgba(255, 255, 255, 0.065);
-          backdrop-filter: blur(30px) saturate(160%);
-          -webkit-backdrop-filter: blur(30px) saturate(160%);
+
+          background:
+            linear-gradient(
+              135deg,
+              rgba(255, 255, 255, 0.075),
+              rgba(255, 255, 255, 0.025)
+            );
+
+          backdrop-filter: blur(35px) saturate(150%);
+          -webkit-backdrop-filter: blur(35px) saturate(150%);
+
           box-shadow:
-            0 20px 70px rgba(0, 0, 0, 0.32),
-            inset 0 1px rgba(255, 255, 255, 0.13);
+            0 20px 70px rgba(0, 0, 0, 0.55),
+            inset 0 1px rgba(255, 255, 255, 0.11);
         }
 
         .mvbd-brand {
           display: flex;
           align-items: center;
           gap: 10px;
-          font-size: 15px;
+          font-size: 14px;
           font-weight: 800;
         }
 
         .mvbd-logo {
-          width: 40px;
-          height: 40px;
+          width: 39px;
+          height: 39px;
+
           display: grid;
           place-items: center;
+
           border-radius: 14px;
-          background: linear-gradient(145deg, #ffc395, #ff6e8f);
-          box-shadow: 0 9px 28px rgba(255, 116, 126, 0.3);
+
+          background:
+            linear-gradient(
+              145deg,
+              rgba(255, 196, 158, 0.9),
+              rgba(169, 103, 255, 0.82)
+            );
+
+          box-shadow:
+            0 9px 35px rgba(152, 91, 255, 0.18),
+            inset 0 1px rgba(255, 255, 255, 0.35);
         }
 
         .mvbd-nav-badge {
           padding: 8px 12px;
           border-radius: 999px;
-          border: 1px solid rgba(255, 255, 255, 0.14);
-          background: rgba(255, 255, 255, 0.07);
-          color: rgba(255, 255, 255, 0.68);
-          font-size: 11px;
-          font-weight: 700;
+
+          border: 1px solid rgba(255, 255, 255, 0.09);
+
+          background: rgba(255, 255, 255, 0.045);
+
+          color: rgba(255, 255, 255, 0.5);
+
+          font-size: 10px;
+          font-weight: 750;
         }
+
+        /* =====================================================
+           HERO
+        ===================================================== */
 
         .mvbd-hero {
           position: relative;
           text-align: center;
-          padding: 75px 8px 42px;
+          padding: 78px 8px 44px;
         }
 
         .mvbd-hero-glow {
           position: absolute;
-          width: 340px;
-          height: 190px;
-          top: 85px;
+
+          width: 360px;
+          height: 220px;
+
           left: 50%;
+          top: 65px;
+
           transform: translateX(-50%);
+
           border-radius: 50%;
-          background: radial-gradient(
-            circle,
-            rgba(255, 151, 118, 0.2),
-            transparent 68%
-          );
-          filter: blur(18px);
-          pointer-events: none;
+
+          background:
+            radial-gradient(
+              circle,
+              rgba(147, 103, 255, 0.13),
+              rgba(255, 139, 103, 0.035) 45%,
+              transparent 70%
+            );
+
+          filter: blur(25px);
+
+          animation: heroLiquid 7s ease-in-out infinite alternate;
+        }
+
+        @keyframes heroLiquid {
+          from {
+            transform: translateX(-50%) scale(0.95);
+          }
+
+          to {
+            transform: translateX(-50%) scale(1.13);
+          }
         }
 
         .mvbd-eyebrow {
           position: relative;
+
           display: inline-flex;
           align-items: center;
           gap: 7px;
+
           padding: 8px 13px;
-          border: 1px solid rgba(255, 255, 255, 0.17);
+
           border-radius: 999px;
-          background: rgba(255, 255, 255, 0.07);
-          backdrop-filter: blur(18px);
-          color: #ffe1d0;
-          font-size: 12px;
+
+          border: 1px solid rgba(255, 255, 255, 0.11);
+
+          background: rgba(255, 255, 255, 0.045);
+
+          backdrop-filter: blur(22px);
+
+          color: rgba(255, 218, 198, 0.82);
+
+          font-size: 11px;
           font-weight: 700;
+
+          box-shadow:
+            inset 0 1px rgba(255, 255, 255, 0.08),
+            0 8px 35px rgba(0, 0, 0, 0.25);
         }
 
         .mvbd-live-dot {
-          width: 7px;
-          height: 7px;
+          width: 6px;
+          height: 6px;
+
           border-radius: 50%;
-          background: #ffc49f;
-          box-shadow: 0 0 17px #ff9d79;
-          animation: mvbdDotPulse 1.6s ease-in-out infinite;
+
+          background: #d5b0ff;
+
+          box-shadow:
+            0 0 9px #a77aff,
+            0 0 20px rgba(167, 122, 255, 0.45);
+
+          animation: livePulse 1.8s ease-in-out infinite;
         }
 
-        @keyframes mvbdDotPulse {
+        @keyframes livePulse {
           50% {
-            transform: scale(1.5);
-            opacity: 0.5;
+            transform: scale(1.6);
+            opacity: 0.45;
           }
         }
 
         .mvbd-hero h1 {
           position: relative;
-          margin: 21px 0 14px;
+
+          margin: 22px 0 15px;
+
           font-size: clamp(43px, 8vw, 76px);
+
           line-height: 0.94;
+
           letter-spacing: -4px;
+
           font-weight: 900;
-          background: linear-gradient(
-            100deg,
-            #ffffff 5%,
-            #ffe1ce 45%,
-            #ff9877 82%
-          );
+
+          background:
+            linear-gradient(
+              100deg,
+              #ffffff 5%,
+              #ded5ff 43%,
+              #ffb99e 90%
+            );
+
           -webkit-background-clip: text;
           background-clip: text;
           color: transparent;
@@ -398,160 +498,319 @@ export default function SeriesSection() {
 
         .mvbd-premium-title {
           position: relative;
+
           margin-bottom: 17px;
-          color: rgba(255, 255, 255, 0.82);
-          font-size: clamp(14px, 2vw, 19px);
+
+          color: rgba(255, 255, 255, 0.74);
+
+          font-size: clamp(13px, 2vw, 18px);
+
           font-weight: 850;
+
           letter-spacing: 7px;
         }
 
         .mvbd-subtitle {
-          max-width: 650px;
-          margin: 0 auto;
-          color: rgba(255, 255, 255, 0.63);
-          font-size: 15px;
-          line-height: 1.7;
+          max-width: 640px;
+
+          margin: auto;
+
+          color: rgba(255, 255, 255, 0.43);
+
+          font-size: 14px;
+
+          line-height: 1.75;
         }
 
         .mvbd-trial {
           display: inline-flex;
+
           margin-top: 20px;
-          padding: 10px 14px;
+
+          padding: 9px 14px;
+
           border-radius: 999px;
-          border: 1px solid rgba(185, 246, 207, 0.22);
-          background: rgba(185, 246, 207, 0.07);
-          color: #c9f8d8;
-          font-size: 12px;
+
+          border: 1px solid rgba(191, 255, 214, 0.13);
+
+          background: rgba(191, 255, 214, 0.035);
+
+          color: rgba(204, 255, 220, 0.74);
+
+          font-size: 11px;
           font-weight: 750;
         }
 
+        /* =====================================================
+           PLANS
+        ===================================================== */
+
         .mvbd-plans {
           display: grid;
+
           grid-template-columns: repeat(3, 1fr);
-          gap: 16px;
+
+          gap: 15px;
         }
 
         .mvbd-card {
           position: relative;
+
           overflow: hidden;
+
           padding: 24px;
-          border-radius: 32px;
-          border: 1px solid rgba(255, 255, 255, 0.15);
-          background: linear-gradient(
-            145deg,
-            rgba(255, 255, 255, 0.115),
-            rgba(255, 255, 255, 0.04)
-          );
-          backdrop-filter: blur(30px) saturate(155%);
-          -webkit-backdrop-filter: blur(30px) saturate(155%);
+
+          border-radius: 31px;
+
+          border: 1px solid rgba(255, 255, 255, 0.105);
+
+          background:
+            linear-gradient(
+              145deg,
+              rgba(255, 255, 255, 0.075),
+              rgba(255, 255, 255, 0.025)
+            );
+
+          backdrop-filter: blur(34px) saturate(150%);
+          -webkit-backdrop-filter: blur(34px) saturate(150%);
+
           box-shadow:
-            0 28px 90px rgba(0, 0, 0, 0.34),
-            inset 0 1px rgba(255, 255, 255, 0.13);
+            0 28px 90px rgba(0, 0, 0, 0.5),
+            inset 0 1px rgba(255, 255, 255, 0.08);
+
           transition:
-            transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1),
-            border-color 0.45s,
-            box-shadow 0.45s;
+            transform 0.55s cubic-bezier(0.2, 0.8, 0.2, 1),
+            border-color 0.4s,
+            box-shadow 0.5s;
+        }
+
+        .mvbd-card::before {
+          content: "";
+
+          position: absolute;
+
+          width: 180px;
+          height: 180px;
+
+          right: -100px;
+          top: -100px;
+
+          border-radius: 50%;
+
+          background:
+            radial-gradient(
+              circle,
+              rgba(174, 129, 255, 0.13),
+              transparent 70%
+            );
+
+          filter: blur(20px);
+
+          animation: cardBlob 8s ease-in-out infinite alternate;
+        }
+
+        @keyframes cardBlob {
+          to {
+            transform: translate(-45px, 50px) scale(1.3);
+          }
         }
 
         .mvbd-card:hover {
-          transform: translateY(-8px);
-          border-color: rgba(255, 184, 150, 0.38);
+          transform: translateY(-7px);
+
+          border-color: rgba(207, 183, 255, 0.24);
+
           box-shadow:
-            0 38px 110px rgba(0, 0, 0, 0.42),
-            inset 0 1px rgba(255, 255, 255, 0.15);
+            0 38px 110px rgba(0, 0, 0, 0.62),
+            0 0 45px rgba(129, 91, 255, 0.06),
+            inset 0 1px rgba(255, 255, 255, 0.12);
         }
 
         .mvbd-card-popular {
-          border-color: rgba(255, 174, 133, 0.48);
-          background: linear-gradient(
-            145deg,
-            rgba(255, 150, 110, 0.17),
-            rgba(255, 255, 255, 0.05)
-          );
+          border-color: rgba(255, 174, 140, 0.28);
+
+          background:
+            linear-gradient(
+              145deg,
+              rgba(255, 156, 120, 0.085),
+              rgba(143, 102, 255, 0.035)
+            );
         }
 
         .mvbd-ribbon {
           position: absolute;
+
           right: 17px;
           top: 17px;
+
           padding: 7px 10px;
+
           border-radius: 999px;
-          background: linear-gradient(135deg, #ffd19c, #ff806e);
-          color: #35140d;
-          font-size: 10px;
+
+          background:
+            linear-gradient(
+              135deg,
+              rgba(255, 215, 173, 0.95),
+              rgba(255, 139, 112, 0.9)
+            );
+
+          color: #2c120c;
+
+          font-size: 9px;
           font-weight: 900;
-          box-shadow: 0 8px 25px rgba(255, 126, 92, 0.23);
+
+          box-shadow:
+            0 8px 30px rgba(255, 125, 91, 0.13);
         }
 
         .mvbd-plan-name {
-          color: #ffd8c5;
-          font-size: 12px;
+          color: rgba(255, 210, 190, 0.72);
+
+          font-size: 11px;
+
           font-weight: 850;
+
           letter-spacing: 0.8px;
         }
 
         .mvbd-price {
           margin: 14px 0 2px;
-          font-size: 47px;
+
+          font-size: 46px;
+
           font-weight: 900;
+
           letter-spacing: -2px;
         }
 
         .mvbd-price small {
-          color: rgba(255, 255, 255, 0.62);
-          font-size: 13px;
+          color: rgba(255, 255, 255, 0.4);
+
+          font-size: 12px;
+
           font-weight: 600;
+
           letter-spacing: 0;
         }
 
         .mvbd-save {
           min-height: 17px;
-          color: #c9f8d8;
-          font-size: 11px;
+
+          color: rgba(200, 255, 217, 0.72);
+
+          font-size: 10px;
         }
 
         .mvbd-description {
           margin-top: 12px;
+
           min-height: 39px;
-          color: rgba(255, 255, 255, 0.52);
+
+          color: rgba(255, 255, 255, 0.39);
+
           font-size: 12px;
+
           line-height: 1.6;
         }
 
         .mvbd-features {
           list-style: none;
+
           margin: 12px 0 16px;
+
           padding: 0;
-          color: rgba(255, 255, 255, 0.65);
-          font-size: 13px;
+
+          color: rgba(255, 255, 255, 0.48);
+
+          font-size: 12px;
+
           line-height: 2;
         }
 
         .mvbd-features li::before {
           content: "✓";
-          margin-right: 9px;
-          color: #d5ffe2;
+
+          margin-right: 8px;
+
+          color: rgba(201, 255, 218, 0.8);
+
           font-weight: 900;
         }
 
+        /* Liquid Button */
+
         .mvbd-choose {
+          position: relative;
+
+          overflow: hidden;
+
           width: 100%;
+
           border: 0;
+
           border-radius: 17px;
+
           padding: 14px;
+
           cursor: pointer;
-          color: #29130c;
-          background: linear-gradient(135deg, #ffe0b8, #ff9976);
-          box-shadow: 0 13px 35px rgba(255, 128, 89, 0.2);
-          font-size: 14px;
+
+          color: #21100b;
+
+          background:
+            linear-gradient(
+              135deg,
+              #ffe0c0,
+              #ff9c7c 48%,
+              #d6b5ff
+            );
+
+          box-shadow:
+            0 13px 35px rgba(255, 126, 92, 0.12),
+            inset 0 1px rgba(255, 255, 255, 0.65);
+
+          font-size: 13px;
+
           font-weight: 900;
+
           transition:
-            transform 0.25s,
-            filter 0.25s;
+            transform 0.3s,
+            filter 0.3s;
+        }
+
+        .mvbd-choose::after {
+          content: "";
+
+          position: absolute;
+
+          top: -80%;
+          left: -60%;
+
+          width: 35%;
+          height: 260%;
+
+          transform: rotate(25deg);
+
+          background: rgba(255, 255, 255, 0.38);
+
+          filter: blur(10px);
+
+          animation: buttonShine 4.8s ease-in-out infinite;
+        }
+
+        @keyframes buttonShine {
+          0%,
+          55% {
+            left: -70%;
+          }
+
+          100% {
+            left: 145%;
+          }
         }
 
         .mvbd-choose:hover {
-          filter: brightness(1.05);
+          filter: brightness(1.07);
+
           transform: scale(1.015);
         }
 
@@ -559,324 +818,753 @@ export default function SeriesSection() {
           transform: scale(0.97);
         }
 
+        /* =====================================================
+           INFO
+        ===================================================== */
+
         .mvbd-info {
-          margin-top: 18px;
-          padding: 19px;
-          border: 1px solid rgba(255, 255, 255, 0.14);
-          border-radius: 27px;
-          background: rgba(255, 255, 255, 0.05);
+          margin-top: 16px;
+
+          padding: 18px;
+
+          border: 1px solid rgba(255, 255, 255, 0.075);
+
+          border-radius: 25px;
+
+          background: rgba(255, 255, 255, 0.028);
+
           backdrop-filter: blur(25px);
+
           text-align: center;
-          color: rgba(255, 255, 255, 0.58);
-          font-size: 12px;
-          line-height: 1.65;
+
+          color: rgba(255, 255, 255, 0.38);
+
+          font-size: 11px;
+
+          line-height: 1.7;
         }
 
         .mvbd-info strong {
-          color: #fff0e6;
+          color: rgba(255, 237, 224, 0.8);
         }
 
         .mvbd-footer {
-          padding: 28px 0 0;
+          padding: 27px 0 0;
+
           text-align: center;
-          color: rgba(255, 255, 255, 0.32);
-          font-size: 11px;
+
+          color: rgba(255, 255, 255, 0.2);
+
+          font-size: 10px;
         }
 
-        /* Modal */
+        /* =====================================================
+           LIQUID MODAL
+           IMPORTANT: viewport centered
+        ===================================================== */
+
         .mvbd-overlay {
-          position: fixed;
-          inset: 0;
-          z-index: 100;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          padding: 18px;
-          background: rgba(4, 3, 8, 0.64);
-          backdrop-filter: blur(20px) saturate(135%);
-          -webkit-backdrop-filter: blur(20px) saturate(135%);
-          animation: mvbdOverlayIn 0.28s ease;
+          position: fixed !important;
+
+          inset: 0 !important;
+
+          width: 100vw !important;
+          height: 100dvh !important;
+
+          min-height: 100dvh !important;
+
+          z-index: 999999 !important;
+
+          display: flex !important;
+
+          align-items: center !important;
+          justify-content: center !important;
+
+          padding:
+            max(16px, env(safe-area-inset-top))
+            max(16px, env(safe-area-inset-right))
+            max(16px, env(safe-area-inset-bottom))
+            max(16px, env(safe-area-inset-left));
+
+          box-sizing: border-box;
+
+          background:
+            radial-gradient(
+              circle at 50% 45%,
+              rgba(96, 65, 150, 0.075),
+              transparent 34%
+            ),
+            rgba(0, 0, 0, 0.82);
+
+          backdrop-filter: blur(28px) saturate(120%);
+          -webkit-backdrop-filter: blur(28px) saturate(120%);
+
+          animation: liquidOverlayIn 0.38s ease forwards;
         }
 
-        @keyframes mvbdOverlayIn {
+        @keyframes liquidOverlayIn {
           from {
             opacity: 0;
+            backdrop-filter: blur(0);
           }
+
           to {
             opacity: 1;
+            backdrop-filter: blur(28px) saturate(120%);
           }
         }
+
+        /*
+          The sheet itself is also explicitly centered.
+          This prevents page/container centering issues.
+        */
 
         .mvbd-sheet {
-          width: min(470px, 100%);
-          max-height: 90vh;
-          overflow: auto;
+          position: relative !important;
+
+          left: auto !important;
+          top: auto !important;
+
+          width: min(470px, calc(100vw - 30px));
+
+          max-width: calc(100vw - 30px);
+
+          max-height: min(88dvh, 720px);
+
+          overflow-x: hidden;
+          overflow-y: auto;
+
+          box-sizing: border-box;
+
           padding: 24px;
-          border: 1px solid rgba(255, 255, 255, 0.18);
-          border-radius: 32px;
-          background: rgba(28, 20, 24, 0.8);
-          backdrop-filter: blur(40px) saturate(160%);
-          -webkit-backdrop-filter: blur(40px) saturate(160%);
+
+          border: 1px solid rgba(255, 255, 255, 0.14);
+
+          border-radius: 34px;
+
+          background:
+            linear-gradient(
+              145deg,
+              rgba(28, 26, 35, 0.88),
+              rgba(9, 9, 13, 0.92)
+            );
+
+          backdrop-filter: blur(45px) saturate(145%);
+          -webkit-backdrop-filter: blur(45px) saturate(145%);
+
           box-shadow:
-            0 35px 120px rgba(0, 0, 0, 0.58),
-            inset 0 1px rgba(255, 255, 255, 0.16);
-          animation: mvbdSheetIn 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+            0 45px 150px rgba(0, 0, 0, 0.75),
+            0 0 80px rgba(111, 79, 180, 0.07),
+            inset 0 1px rgba(255, 255, 255, 0.13);
+
+          animation: liquidSheetIn
+            0.58s
+            cubic-bezier(0.16, 1, 0.3, 1)
+            forwards;
+
+          isolation: isolate;
         }
 
-        @keyframes mvbdSheetIn {
-          from {
-            opacity: 0;
-            transform: translateY(24px) scale(0.96);
+        /* Liquid blob inside modal */
+
+        .mvbd-sheet::before {
+          content: "";
+
+          position: absolute;
+
+          z-index: -1;
+
+          width: 230px;
+          height: 230px;
+
+          right: -100px;
+          top: -110px;
+
+          border-radius: 46% 54% 62% 38% / 42% 37% 63% 58%;
+
+          background:
+            radial-gradient(
+              circle at 30% 30%,
+              rgba(174, 130, 255, 0.18),
+              rgba(112, 78, 190, 0.055) 50%,
+              transparent 70%
+            );
+
+          filter: blur(12px);
+
+          animation: modalBlobOne 8s ease-in-out infinite alternate;
+        }
+
+        .mvbd-sheet::after {
+          content: "";
+
+          position: absolute;
+
+          z-index: -1;
+
+          width: 190px;
+          height: 190px;
+
+          left: -100px;
+          bottom: -110px;
+
+          border-radius: 61% 39% 43% 57% / 51% 62% 38% 49%;
+
+          background:
+            radial-gradient(
+              circle,
+              rgba(255, 142, 108, 0.09),
+              transparent 68%
+            );
+
+          filter: blur(18px);
+
+          animation: modalBlobTwo 9s ease-in-out infinite alternate;
+        }
+
+        @keyframes modalBlobOne {
+          0% {
+            transform: translate(0, 0) rotate(0deg) scale(1);
           }
-          to {
+
+          100% {
+            transform: translate(-45px, 55px)
+              rotate(25deg)
+              scale(1.22);
+          }
+        }
+
+        @keyframes modalBlobTwo {
+          0% {
+            transform: translate(0, 0) rotate(0deg);
+          }
+
+          100% {
+            transform: translate(50px, -30px)
+              rotate(-20deg)
+              scale(1.25);
+          }
+        }
+
+        @keyframes liquidSheetIn {
+          0% {
+            opacity: 0;
+
+            transform:
+              translateY(25px)
+              scale(0.91);
+
+            filter: blur(14px);
+          }
+
+          55% {
             opacity: 1;
-            transform: translateY(0) scale(1);
+
+            transform:
+              translateY(-4px)
+              scale(1.015);
+
+            filter: blur(0);
+          }
+
+          100% {
+            opacity: 1;
+
+            transform:
+              translateY(0)
+              scale(1);
+
+            filter: blur(0);
           }
         }
 
         .mvbd-close {
           float: right;
-          width: 35px;
-          height: 35px;
-          border: 0;
+
+          width: 36px;
+          height: 36px;
+
+          border: 1px solid rgba(255, 255, 255, 0.08);
+
           border-radius: 50%;
-          background: rgba(255, 255, 255, 0.1);
-          color: #fff;
-          font-size: 21px;
+
+          background: rgba(255, 255, 255, 0.055);
+
+          color: rgba(255, 255, 255, 0.8);
+
+          font-size: 20px;
+
           cursor: pointer;
+
+          transition:
+            transform 0.3s,
+            background 0.3s;
+        }
+
+        .mvbd-close:hover {
+          transform: rotate(90deg) scale(1.05);
+
+          background: rgba(255, 255, 255, 0.1);
         }
 
         .mvbd-sheet h2 {
           margin: 3px 42px 7px 0;
-          font-size: 25px;
+
+          font-size: 24px;
+
           letter-spacing: -1px;
         }
 
         .mvbd-muted {
-          color: rgba(255, 255, 255, 0.62);
-          font-size: 13px;
-          line-height: 1.65;
+          color: rgba(255, 255, 255, 0.46);
+
+          font-size: 12px;
+
+          line-height: 1.7;
         }
 
         .mvbd-selected {
           display: flex;
+
           align-items: center;
+
           justify-content: space-between;
+
           margin: 17px 0;
+
           padding: 15px;
-          border: 1px solid rgba(255, 255, 255, 0.12);
-          border-radius: 19px;
-          background: rgba(255, 255, 255, 0.07);
+
+          border: 1px solid rgba(255, 255, 255, 0.08);
+
+          border-radius: 20px;
+
+          background: rgba(255, 255, 255, 0.045);
+
+          box-shadow:
+            inset 0 1px rgba(255, 255, 255, 0.06);
         }
 
         .mvbd-selected-price {
-          color: #ffd0b0;
+          color: #ffd0b9;
+
           font-weight: 900;
         }
 
         .mvbd-payment-box {
           margin-top: 13px;
+
           padding: 17px;
-          border: 1px solid rgba(255, 255, 255, 0.13);
+
+          border: 1px solid rgba(255, 255, 255, 0.08);
+
           border-radius: 21px;
-          background: rgba(255, 255, 255, 0.06);
+
+          background: rgba(255, 255, 255, 0.04);
+
+          box-shadow:
+            inset 0 1px rgba(255, 255, 255, 0.05);
         }
 
         .mvbd-label {
-          color: rgba(255, 255, 255, 0.55);
-          font-size: 10px;
+          color: rgba(255, 255, 255, 0.4);
+
+          font-size: 9px;
+
           font-weight: 800;
+
           letter-spacing: 0.8px;
+
           text-transform: uppercase;
         }
 
         .mvbd-number-row {
           display: flex;
+
           align-items: center;
+
           justify-content: space-between;
+
           gap: 8px;
+
           margin-top: 8px;
         }
 
         .mvbd-number {
-          font-size: 20px;
+          font-size: 19px;
+
           font-weight: 900;
-          letter-spacing: 0.3px;
+
+          letter-spacing: 0.2px;
         }
 
         .mvbd-copy {
-          border: 0;
+          border: 1px solid rgba(255, 255, 255, 0.08);
+
           border-radius: 12px;
+
           padding: 9px 11px;
-          background: rgba(255, 255, 255, 0.1);
-          color: #fff;
-          font-size: 11px;
+
+          background: rgba(255, 255, 255, 0.06);
+
+          color: rgba(255, 255, 255, 0.82);
+
+          font-size: 10px;
+
           cursor: pointer;
         }
 
         .mvbd-input {
           width: 100%;
+
+          box-sizing: border-box;
+
           margin-top: 12px;
+
           padding: 14px 15px;
-          border: 1px solid rgba(255, 255, 255, 0.16);
+
+          border: 1px solid rgba(255, 255, 255, 0.09);
+
           border-radius: 17px;
+
           outline: none;
-          background: rgba(0, 0, 0, 0.2);
-          color: #fff;
-          font-size: 15px;
+
+          background: rgba(0, 0, 0, 0.27);
+
+          color: white;
+
+          font-size: 14px;
+
+          transition:
+            border-color 0.3s,
+            box-shadow 0.3s;
         }
 
         .mvbd-input::placeholder {
-          color: rgba(255, 255, 255, 0.38);
+          color: rgba(255, 255, 255, 0.27);
         }
 
         .mvbd-input:focus {
-          border-color: rgba(255, 175, 140, 0.55);
-          box-shadow: 0 0 0 4px rgba(255, 145, 110, 0.08);
+          border-color: rgba(191, 157, 255, 0.38);
+
+          box-shadow:
+            0 0 0 4px rgba(141, 104, 255, 0.055),
+            inset 0 1px rgba(255, 255, 255, 0.06);
         }
 
         .mvbd-error {
           margin-top: 8px;
-          color: #ffaaa0;
-          font-size: 11px;
+
+          color: #ffaaa1;
+
+          font-size: 10px;
         }
 
         .mvbd-send {
+          position: relative;
+
+          overflow: hidden;
+
           width: 100%;
+
           margin-top: 12px;
+
           padding: 14px;
+
           border: 0;
+
           border-radius: 17px;
-          background: linear-gradient(135deg, #ffd7ad, #ff8f73);
-          color: #2b120b;
+
+          background:
+            linear-gradient(
+              135deg,
+              #ffe0bd,
+              #ff9877,
+              #c4a6ff
+            );
+
+          color: #25110b;
+
           font-weight: 900;
+
           cursor: pointer;
+
+          box-shadow:
+            0 15px 38px rgba(255, 124, 93, 0.11),
+            inset 0 1px rgba(255, 255, 255, 0.6);
+        }
+
+        .mvbd-send::after {
+          content: "";
+
+          position: absolute;
+
+          width: 25%;
+
+          height: 220%;
+
+          top: -60%;
+
+          left: -40%;
+
+          transform: rotate(25deg);
+
+          background: rgba(255, 255, 255, 0.35);
+
+          filter: blur(8px);
+
+          animation: sendShine 4s ease-in-out infinite;
+        }
+
+        @keyframes sendShine {
+          0%,
+          58% {
+            left: -45%;
+          }
+
+          100% {
+            left: 140%;
+          }
         }
 
         .mvbd-note {
-          margin-top: 11px;
-          color: rgba(255, 255, 255, 0.38);
-          font-size: 10px;
+          margin-top: 10px;
+
+          color: rgba(255, 255, 255, 0.24);
+
+          font-size: 9px;
+
           line-height: 1.5;
+
           text-align: center;
         }
 
-        /* Processing */
+        /* =====================================================
+           PROCESSING LIQUID
+        ===================================================== */
+
         .mvbd-processing {
           text-align: center;
-          padding: 14px 5px 4px;
+
+          padding: 20px 5px 5px;
         }
 
         .mvbd-orb {
           position: relative;
+
           width: 92px;
           height: 92px;
-          margin: 7px auto 20px;
-          border-radius: 50%;
-          background: conic-gradient(
-            from 0deg,
-            #ff9c7a,
-            #9e7cff,
-            #63b4ff,
-            #ff9c7a
-          );
-          animation: mvbdSpin 1.1s linear infinite;
-          box-shadow: 0 0 55px rgba(157, 118, 255, 0.3);
+
+          margin: 6px auto 22px;
+
+          border-radius: 44% 56% 62% 38% /
+            55% 43% 57% 45%;
+
+          background:
+            conic-gradient(
+              from 0deg,
+              #ff9b79,
+              #b07cff,
+              #6eaaff,
+              #ff9b79
+            );
+
+          animation:
+            liquidOrbSpin 3s linear infinite,
+            liquidOrbMorph 4.5s ease-in-out infinite alternate;
+
+          box-shadow:
+            0 0 55px rgba(141, 101, 255, 0.19);
         }
 
         .mvbd-orb::after {
           content: "";
+
           position: absolute;
+
           inset: 8px;
-          border-radius: 50%;
-          background: #1d151a;
-          box-shadow: inset 0 0 25px rgba(255, 255, 255, 0.08);
+
+          border-radius: inherit;
+
+          background:
+            radial-gradient(
+              circle at 35% 25%,
+              rgba(255, 255, 255, 0.07),
+              #08080c 62%
+            );
+
+          box-shadow:
+            inset 0 0 25px rgba(255, 255, 255, 0.06);
         }
 
         .mvbd-orb::before {
           content: "";
+
           position: absolute;
-          inset: -11px;
-          border: 1px solid rgba(255, 255, 255, 0.16);
-          border-radius: 50%;
-          animation: mvbdPulse 1.5s ease-in-out infinite;
+
+          inset: -12px;
+
+          border: 1px solid rgba(255, 255, 255, 0.09);
+
+          border-radius: 48% 52% 40% 60% /
+            55% 38% 62% 45%;
+
+          animation:
+            liquidRing 2.5s ease-in-out infinite alternate;
         }
 
-        @keyframes mvbdSpin {
+        @keyframes liquidOrbSpin {
           to {
             transform: rotate(360deg);
           }
         }
 
-        @keyframes mvbdPulse {
-          50% {
-            transform: scale(1.08);
-            opacity: 0.35;
+        @keyframes liquidOrbMorph {
+          from {
+            border-radius: 44% 56% 62% 38% /
+              55% 43% 57% 45%;
+          }
+
+          to {
+            border-radius: 62% 38% 44% 56% /
+              38% 59% 41% 62%;
+          }
+        }
+
+        @keyframes liquidRing {
+          to {
+            transform: scale(1.12) rotate(-20deg);
+
+            opacity: 0.28;
           }
         }
 
         .mvbd-progress {
           height: 5px;
+
           margin: 22px 0 9px;
+
           overflow: hidden;
-          border-radius: 99px;
-          background: rgba(255, 255, 255, 0.1);
+
+          border-radius: 999px;
+
+          background: rgba(255, 255, 255, 0.07);
         }
 
         .mvbd-progress-bar {
           height: 100%;
+
           border-radius: inherit;
-          background: linear-gradient(90deg, #ff9d78, #a77cff, #68b5ff);
+
+          background:
+            linear-gradient(
+              90deg,
+              #ff9d79,
+              #a77cff,
+              #69b5ff
+            );
+
+          box-shadow:
+            0 0 14px rgba(167, 124, 255, 0.4);
+
           transition: width 0.12s linear;
         }
 
         .mvbd-percent {
-          color: rgba(255, 255, 255, 0.42);
-          font-size: 11px;
+          color: rgba(255, 255, 255, 0.28);
+
+          font-size: 10px;
         }
+
+        /* =====================================================
+           SUCCESS
+        ===================================================== */
 
         .mvbd-success-icon {
           width: 74px;
           height: 74px;
+
           display: grid;
           place-items: center;
-          margin: 8px auto 17px;
-          border: 1px solid rgba(180, 255, 208, 0.3);
+
+          margin: 7px auto 17px;
+
+          border: 1px solid rgba(180, 255, 208, 0.18);
+
           border-radius: 50%;
-          background: rgba(180, 255, 208, 0.1);
-          color: #bfffd4;
-          font-size: 35px;
-          box-shadow: 0 0 45px rgba(105, 255, 160, 0.12);
-          animation: mvbdSuccessPop 0.55s cubic-bezier(0.2, 0.8, 0.2, 1);
+
+          background:
+            radial-gradient(
+              circle,
+              rgba(180, 255, 208, 0.09),
+              rgba(180, 255, 208, 0.025)
+            );
+
+          color: #bfffd3;
+
+          font-size: 34px;
+
+          box-shadow:
+            0 0 50px rgba(105, 255, 160, 0.08),
+            inset 0 1px rgba(255, 255, 255, 0.08);
+
+          animation: successLiquid 0.65s
+            cubic-bezier(0.16, 1, 0.3, 1);
         }
 
-        @keyframes mvbdSuccessPop {
-          from {
-            transform: scale(0.5);
+        @keyframes successLiquid {
+          0% {
             opacity: 0;
+            transform: scale(0.5) rotate(-12deg);
           }
-          to {
-            transform: scale(1);
+
+          70% {
+            transform: scale(1.08) rotate(3deg);
+          }
+
+          100% {
             opacity: 1;
+            transform: scale(1) rotate(0);
           }
         }
 
         .mvbd-done {
           width: 100%;
+
           margin-top: 18px;
+
           padding: 13px;
-          border: 0;
+
+          border: 1px solid rgba(255, 255, 255, 0.08);
+
           border-radius: 16px;
-          background: rgba(255, 255, 255, 0.1);
-          color: #fff;
+
+          background: rgba(255, 255, 255, 0.055);
+
+          color: white;
+
           font-weight: 800;
+
           cursor: pointer;
+
+          transition:
+            background 0.3s,
+            transform 0.3s;
         }
+
+        .mvbd-done:hover {
+          background: rgba(255, 255, 255, 0.09);
+
+          transform: scale(1.01);
+        }
+
+        /* =====================================================
+           MOBILE
+        ===================================================== */
 
         @media (max-width: 760px) {
           .mvbd-premium-page {
-            padding-left: 14px;
-            padding-right: 14px;
+            padding-left: 12px;
+            padding-right: 12px;
           }
 
           .mvbd-plans {
@@ -892,13 +1580,33 @@ export default function SeriesSection() {
           }
 
           .mvbd-hero h1 {
-            letter-spacing: -2.5px;
+            letter-spacing: -2.7px;
           }
 
           .mvbd-stars {
-            height: 590px;
+            height: 570px;
+          }
+
+          .mvbd-sheet {
+            width: calc(100vw - 24px);
+
+            max-width: calc(100vw - 24px);
+
+            max-height: 86dvh;
+
+            padding: 21px;
+
+            border-radius: 30px;
+          }
+
+          .mvbd-number {
+            font-size: 17px;
           }
         }
+
+        /* =====================================================
+           REDUCED MOTION
+        ===================================================== */
 
         @media (prefers-reduced-motion: reduce) {
           *,
@@ -911,7 +1619,10 @@ export default function SeriesSection() {
         }
       `}</style>
 
-      {/* Animated Star Background */}
+      {/* =====================================================
+          LIVE STARS
+      ===================================================== */}
+
       <div className="mvbd-stars" aria-hidden="true">
         {Array.from({ length: 34 }).map((_, index) => (
           <span
@@ -921,7 +1632,7 @@ export default function SeriesSection() {
               {
                 left: `${(index * 31.7) % 100}%`,
                 top: `${(index * 67.3) % 570}px`,
-                ["--duration" as string]: `${1.6 + (index % 5) * 0.65}s`,
+                ["--duration" as string]: `${1.7 + (index % 5) * 0.7}s`,
                 animationDelay: `${-(index % 6) * 0.55}s`,
               } as React.CSSProperties
             }
@@ -930,17 +1641,22 @@ export default function SeriesSection() {
       </div>
 
       <div className="mvbd-container">
-        {/* Navigation */}
+
+        {/* NAV */}
+
         <nav className="mvbd-nav">
           <div className="mvbd-brand">
             <div className="mvbd-logo">M</div>
             <span>MoviesVerseBD</span>
           </div>
 
-          <div className="mvbd-nav-badge">Premium Access</div>
+          <div className="mvbd-nav-badge">
+            Premium Access
+          </div>
         </nav>
 
-        {/* Hero */}
+        {/* HERO */}
+
         <section className="mvbd-hero">
           <div className="mvbd-hero-glow" />
 
@@ -955,11 +1671,13 @@ export default function SeriesSection() {
             perfect plan.
           </h1>
 
-          <div className="mvbd-premium-title">MVBD PREMIUM</div>
+          <div className="mvbd-premium-title">
+            MVBD PREMIUM
+          </div>
 
           <p className="mvbd-subtitle">
-            Enjoy a beautiful premium experience with uninterrupted access
-            to your authorized MVBD library.
+            Enjoy a beautiful premium experience with
+            uninterrupted access to your authorized MVBD library.
           </p>
 
           <div className="mvbd-trial">
@@ -967,7 +1685,8 @@ export default function SeriesSection() {
           </div>
         </section>
 
-        {/* Plans */}
+        {/* PLANS */}
+
         <section className="mvbd-plans">
           {plans.map((plan) => (
             <article
@@ -977,14 +1696,20 @@ export default function SeriesSection() {
               }`}
             >
               {plan.popular && (
-                <div className="mvbd-ribbon">MOST POPULAR</div>
+                <div className="mvbd-ribbon">
+                  MOST POPULAR
+                </div>
               )}
 
-              <div className="mvbd-plan-name">{plan.name}</div>
+              <div className="mvbd-plan-name">
+                {plan.name}
+              </div>
 
               <div className="mvbd-price">
                 {plan.price}{" "}
-                <small>/ {plan.duration}</small>
+                <small>
+                  / {plan.duration}
+                </small>
               </div>
 
               <div className="mvbd-save">
@@ -1013,11 +1738,11 @@ export default function SeriesSection() {
           ))}
         </section>
 
-        {/* Info */}
         <div className="mvbd-info">
-          <strong>New here?</strong> Start with your 7-day free trial.
-          After your trial ends, an active subscription is required for
-          premium access.
+          <strong>New here?</strong>{" "}
+          Start with your 7-day free trial.
+          After your trial ends, an active subscription is
+          required for premium access.
           <br />
           After payment, submit your transaction ID for admin review.
         </div>
@@ -1027,7 +1752,10 @@ export default function SeriesSection() {
         </div>
       </div>
 
-      {/* Payment Popup */}
+      {/* =====================================================
+          PAYMENT POPUP
+      ===================================================== */}
+
       {showPayment && selectedPlan && (
         <div
           className="mvbd-overlay"
@@ -1047,25 +1775,32 @@ export default function SeriesSection() {
               ×
             </button>
 
-            <h2>Complete your payment</h2>
+            <h2>
+              Complete your payment
+            </h2>
 
             <p className="mvbd-muted">
-              Send Money to the MVBD payment number and then paste your
-              transaction ID below.
+              Send Money to the payment number and then paste
+              your transaction ID below.
             </p>
 
             <div className="mvbd-selected">
               <span>{selectedPlan.name}</span>
+
               <span className="mvbd-selected-price">
                 {selectedPlan.price}
               </span>
             </div>
 
             <div className="mvbd-payment-box">
-              <div className="mvbd-label">Send Money — bKash</div>
+              <div className="mvbd-label">
+                Send Money — bKash
+              </div>
 
               <div className="mvbd-number-row">
-                <span className="mvbd-number">01865522275</span>
+                <span className="mvbd-number">
+                  01865522275
+                </span>
 
                 <button
                   type="button"
@@ -1090,7 +1825,11 @@ export default function SeriesSection() {
               }}
             />
 
-            {error && <div className="mvbd-error">{error}</div>}
+            {error && (
+              <div className="mvbd-error">
+                {error}
+              </div>
+            )}
 
             <button
               type="button"
@@ -1101,39 +1840,51 @@ export default function SeriesSection() {
             </button>
 
             <div className="mvbd-note">
-              Please make sure your transaction ID is correct before
-              submitting.
+              Please make sure your transaction ID is correct
+              before submitting.
             </div>
           </div>
         </div>
       )}
 
-      {/* Processing Popup */}
+      {/* =====================================================
+          PROCESSING POPUP
+      ===================================================== */}
+
       {showProcessing && (
         <div className="mvbd-overlay">
           <div className="mvbd-sheet mvbd-processing">
             <div className="mvbd-orb" />
 
-            <h2>Processing payment…</h2>
+            <h2>
+              Processing payment…
+            </h2>
 
             <p className="mvbd-muted">
-              Please wait while your payment submission is being prepared
-              for admin review.
+              Please wait while your payment submission is
+              being prepared for admin review.
             </p>
 
             <div className="mvbd-progress">
               <div
                 className="mvbd-progress-bar"
-                style={{ width: `${progress}%` }}
+                style={{
+                  width: `${progress}%`,
+                }}
               />
             </div>
 
-            <div className="mvbd-percent">{progress}%</div>
+            <div className="mvbd-percent">
+              {progress}%
+            </div>
           </div>
         </div>
       )}
 
-      {/* Success Popup */}
+      {/* =====================================================
+          SUCCESS POPUP
+      ===================================================== */}
+
       {showSuccess && (
         <div
           className="mvbd-overlay"
@@ -1144,16 +1895,23 @@ export default function SeriesSection() {
           }}
         >
           <div className="mvbd-sheet mvbd-processing">
-            <div className="mvbd-success-icon">✓</div>
+            <div className="mvbd-success-icon">
+              ✓
+            </div>
 
-            <h2>Payment sent for review</h2>
+            <h2>
+              Payment sent for review
+            </h2>
 
             <p className="mvbd-muted">
-              Your payment details have been sent to the admin team.
+              Your payment details have been sent to the
+              admin team.
               <br />
               <br />
-              They are currently <strong>under review</strong> and will be
-              approved as soon as possible if everything is correct.
+              They are currently{" "}
+              <strong>under review</strong> and will be
+              approved as soon as possible if everything
+              is correct.
               <br />
               <br />
               Please wait until the review is completed.

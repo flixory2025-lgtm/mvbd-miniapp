@@ -4,6 +4,8 @@ import { useState, useEffect } from "react"
 import { Play, Eye, ArrowLeft } from "lucide-react"
 import { movies } from "@/lib/movie-data"
 import TelegramJoinPopup from "./telegram-join-popup"
+import AuthModal from "./auth-modal"
+import { useAuth } from "./auth-provider"
 
 interface MovieDetailPageProps {
   movie: {
@@ -28,6 +30,8 @@ export default function MovieDetailPage({ movie, onBack, onMovieClick, showAdult
   const [viewCount, setViewCount] = useState(Math.floor(Math.random() * 1000) + 1)
   const [isAddedToWatchLater, setIsAddedToWatchLater] = useState(false)
   const [showTelegramPopup, setShowTelegramPopup] = useState(false)
+  const [showAuthModal, setShowAuthModal] = useState(false)
+  const { user, entitlement } = useAuth()
 
   useEffect(() => {
     window.scrollTo(0, 0)
@@ -43,6 +47,14 @@ export default function MovieDetailPage({ movie, onBack, onMovieClick, showAdult
   }
 
   const handleWatchNow = () => {
+    if (!user) {
+      setShowAuthModal(true)
+      return
+    }
+    if (!entitlement.hasWatchAccess) {
+      window.alert("An active trial or subscription is required to watch this movie.")
+      return
+    }
     setShowTelegramPopup(true)
   }
 
@@ -327,6 +339,8 @@ export default function MovieDetailPage({ movie, onBack, onMovieClick, showAdult
           </div>
         </div>
       )}
+
+      {showAuthModal && <AuthModal open={showAuthModal} onOpenChange={setShowAuthModal} />}
 
       {/* Telegram Popup */}
       {showTelegramPopup && <TelegramJoinPopup onClose={() => setShowTelegramPopup(false)} movieTitle={movie.title} telegramLink={movie.telegramLink} moviePoster={movie.poster} />}

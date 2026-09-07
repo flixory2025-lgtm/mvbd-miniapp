@@ -1,0 +1,37 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() { return request.auth != null; }
+    function isOwner(uid) { return signedIn() && request.auth.uid == uid; }
+    function isAdmin() { return signedIn() && request.auth.token.admin == true; }
+
+    match /users/{uid} {
+      allow read: if isOwner(uid) || isAdmin();
+      allow create: if isOwner(uid) && request.resource.data.uid == uid;
+      allow update: if isOwner(uid)
+        && request.resource.data.uid == resource.data.uid
+        && request.resource.data.mvbdId == resource.data.mvbdId
+        && request.resource.data.trialStartedAt == resource.data.trialStartedAt
+        && request.resource.data.trialExpiresAt == resource.data.trialExpiresAt
+        && request.resource.data.accessType == resource.data.accessType
+        && request.resource.data.subscriptionStatus == resource.data.subscriptionStatus
+        && request.resource.data.subscriptionPlan == resource.data.subscriptionPlan
+        && request.resource.data.subscriptionStartedAt == resource.data.subscriptionStartedAt
+        && request.resource.data.subscriptionExpiresAt == resource.data.subscriptionExpiresAt;
+      allow delete: if false;
+    }
+
+    match /paymentRequests/{requestId} {
+      allow create: if signedIn() && request.resource.data.uid == request.auth.uid && request.resource.data.status == 'pending';
+      allow read: if signedIn() && (resource.data.uid == request.auth.uid || isAdmin());
+      allow update, delete: if isAdmin();
+    }
+
+    match /notifications/{notificationId} {
+      allow read: if signedIn() && (resource.data.uid == request.auth.uid || isAdmin());
+      allow update: if signedIn() && resource.data.uid == request.auth.uid && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read']);
+      allow create: if isAdmin();
+      allow delete: if false;
+    }
+  }
+}

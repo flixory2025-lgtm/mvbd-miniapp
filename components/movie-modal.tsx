@@ -5,6 +5,8 @@ import { useState, useEffect } from "react"
 import { movies } from "@/lib/movie-data"
 import { incrementMovieView } from "@/lib/firebase"
 import TelegramJoinPopup from "./telegram-join-popup"
+import AuthModal from "./auth-modal"
+import { useAuth } from "./auth-provider"
 
 interface MovieModalProps {
   movie: {
@@ -34,6 +36,8 @@ export default function MovieModal({ movie, onClose, onMovieClick, showAdultCont
   const [showJoinPopup, setShowJoinPopup] = useState(false)
   const [isAddedToWatchLater, setIsAddedToWatchLater] = useState(false)
   const [viewCount, setViewCount] = useState(0)
+  const [showAuthModal, setShowAuthModal] = useState(false)
+  const { user, entitlement } = useAuth()
 
   const movieGenres = movie.genre.split(" | ").map((g) => g.trim())
   const isAdult = isAdultMovie(movie.genre)
@@ -54,6 +58,14 @@ export default function MovieModal({ movie, onClose, onMovieClick, showAdultCont
   }, [movie.id])
 
   const handleWatchNow = () => {
+    if (!user) {
+      setShowAuthModal(true)
+      return
+    }
+    if (!entitlement.hasWatchAccess) {
+      window.alert("An active trial or subscription is required to watch this movie.")
+      return
+    }
     setShowJoinPopup(true)
   }
 
@@ -291,6 +303,8 @@ export default function MovieModal({ movie, onClose, onMovieClick, showAdultCont
           </div>
         </div>
       )}
+
+      {showAuthModal && <AuthModal open={showAuthModal} onOpenChange={setShowAuthModal} />}
 
       {showJoinPopup && (
         <TelegramJoinPopup

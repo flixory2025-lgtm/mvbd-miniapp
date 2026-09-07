@@ -2,7 +2,9 @@
 
 import { useState, useEffect } from "react"
 import Image from "next/image"
-import { Phone, User, Mail, Calendar, Settings, MessageCircle, Info } from "lucide-react"
+import { Phone, User, Mail, Calendar, Settings, MessageCircle, Info, LogIn, LogOut } from "lucide-react"
+import AuthModal from "@/components/auth-modal"
+import { useAuth } from "@/components/auth-provider"
 
 interface ProfileData {
   name: string
@@ -87,6 +89,8 @@ const socialLinks = [
 ]
 
 export default function ProfilePage({ onNavigate }: ProfilePageProps = {}) {
+  const { user, signOut } = useAuth()
+  const [showAuthModal, setShowAuthModal] = useState(false)
   const [profile, setProfile] = useState<ProfileData>({
     name: "",
     age: "",
@@ -114,7 +118,8 @@ export default function ProfilePage({ onNavigate }: ProfilePageProps = {}) {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0a0a12] via-[#050508] to-[#020206]">
+    <>
+      <div className="min-h-screen bg-gradient-to-br from-[#0a0a12] via-[#050508] to-[#020206]">
       <div className="px-4 py-6 max-w-2xl mx-auto space-y-6">
         {/* Profile Section - Liquid Glass Card */}
         <div className="relative overflow-hidden rounded-3xl backdrop-blur-xl bg-white/5 border border-white/10 shadow-2xl transition-all duration-300 hover:shadow-emerald-500/5">
@@ -122,6 +127,28 @@ export default function ProfilePage({ onNavigate }: ProfilePageProps = {}) {
           <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 via-transparent to-cyan-500/5"></div>
           
           <div className="relative p-6">
+            <div className="mb-5 flex justify-end">
+              {user ? (
+                <button
+                  type="button"
+                  onClick={() => void signOut()}
+                  className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-2 text-sm text-slate-200 transition hover:bg-white/10"
+                >
+                  <LogOut className="size-4" />
+                  Sign out
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setShowAuthModal(true)}
+                  className="flex items-center gap-2 rounded-full border border-emerald-400/30 bg-emerald-500/10 px-3 py-2 text-sm text-emerald-300 transition hover:bg-emerald-500/20"
+                >
+                  <LogIn className="size-4" />
+                  Sign in
+                </button>
+              )}
+            </div>
+
             {/* Profile Picture with Liquid Glass Ring */}
             <div className="flex flex-col items-center mb-6">
               <div className="relative">
@@ -324,6 +351,8 @@ export default function ProfilePage({ onNavigate }: ProfilePageProps = {}) {
           animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
         }
       `}</style>
-    </div>
+      </div>
+      <AuthModal open={showAuthModal} onOpenChange={setShowAuthModal} />
+    </>
   )
 }

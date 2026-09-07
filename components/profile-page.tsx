@@ -5,12 +5,14 @@ import Image from "next/image"
 import { Phone, User, Mail, Calendar, Settings, MessageCircle, Info, LogIn, LogOut } from "lucide-react"
 import AuthModal from "@/components/auth-modal"
 import { useAuth } from "@/components/auth-provider"
+import { updateUserProfile } from "@/lib/user-profile"
 
 interface ProfileData {
   name: string
   age: string
   email: string
   phone: string
+  dateOfBirth: string
 }
 
 interface ProfilePageProps {
@@ -89,27 +91,50 @@ const socialLinks = [
 ]
 
 export default function ProfilePage({ onNavigate }: ProfilePageProps = {}) {
-  const { user, signOut } = useAuth()
+  const { user, profile: firestoreProfile, entitlement, loading: authLoading, signOut } = useAuth()
   const [showAuthModal, setShowAuthModal] = useState(false)
   const [profile, setProfile] = useState<ProfileData>({
     name: "",
     age: "",
     email: "",
     phone: "",
+    dateOfBirth: "",
   })
   const [isEditing, setIsEditing] = useState(false)
   const [profileImage, setProfileImage] = useState("https://i.postimg.cc/HLmyFnnv/photo-2026-05-31-12-04-09-(2).jpg")
   const [showSocialLinks, setShowSocialLinks] = useState(false)
 
   useEffect(() => {
+    if (firestoreProfile) {
+      setProfile((current) => ({
+        ...current,
+        name: firestoreProfile.name,
+        email: firestoreProfile.email,
+        dateOfBirth: firestoreProfile.dateOfBirth,
+      }))
+      setProfileImage(firestoreProfile.photoURL || "https://i.postimg.cc/HLmyFnnv/photo-2026-05-31-12-04-09-(2).jpg")
+      return
+    }
+
     const savedProfile = localStorage.getItem("mvbd_profile")
     if (savedProfile) {
-      setProfile(JSON.parse(savedProfile))
+      try {
+        setProfile((current) => ({ ...current, ...JSON.parse(savedProfile) }))
+      } catch {
+        localStorage.removeItem("mvbd_profile")
+      }
     }
-  }, [])
+  }, [firestoreProfile])
 
-  const handleSave = () => {
-    localStorage.setItem("mvbd_profile", JSON.stringify(profile))
+  const handleSave = async () => {
+    if (user) {
+      await updateUserProfile(user.uid, {
+        name: profile.name.trim(),
+        dateOfBirth: profile.dateOfBirth.trim(),
+      })
+    } else {
+      localStorage.setItem("mvbd_profile", JSON.stringify(profile))
+    }
     setIsEditing(false)
   }
 

@@ -63,7 +63,8 @@ export default function MovieModal({ movie, onClose, onMovieClick, showAdultCont
       return
     }
     if (!entitlement.hasWatchAccess) {
-      window.alert("An active trial or subscription is required to watch this movie.")
+      window.dispatchEvent(new CustomEvent("mvbd:open-subscriptions"))
+      onClose()
       return
     }
     setShowJoinPopup(true)

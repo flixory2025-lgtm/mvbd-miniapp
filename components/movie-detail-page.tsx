@@ -52,7 +52,8 @@ export default function MovieDetailPage({ movie, onBack, onMovieClick, showAdult
       return
     }
     if (!entitlement.hasWatchAccess) {
-      window.alert("An active trial or subscription is required to watch this movie.")
+      window.dispatchEvent(new CustomEvent("mvbd:open-subscriptions"))
+      onBack()
       return
     }
     setShowTelegramPopup(true)

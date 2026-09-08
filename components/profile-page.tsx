@@ -6,6 +6,7 @@ import { Phone, User, Mail, Calendar, Settings, MessageCircle, Info, LogIn, LogO
 import AuthModal from "@/components/auth-modal"
 import { useAuth } from "@/components/auth-provider"
 import { updateUserProfile } from "@/lib/user-profile"
+import AccessStatusCard from "@/components/access-status-card"
 
 interface ProfileData {
   name: string
@@ -283,6 +284,8 @@ export default function ProfilePage({ onNavigate }: ProfilePageProps = {}) {
             </div>
           </div>
         </div>
+
+        <AccessStatusCard />
 
         {/* Footer Menu Section - Liquid Glass Card */}
         <div className="relative overflow-hidden rounded-3xl backdrop-blur-xl bg-white/5 border border-white/10 shadow-2xl transition-all duration-300 hover:shadow-cyan-500/5">

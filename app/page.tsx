@@ -76,6 +76,17 @@ export default function Home() {
 
   const activeIndex = Math.max(0, tabs.indexOf(activeTab))
 
+  useEffect(() => {
+    const openSubscriptions = () => {
+      setSelectedMovie(null)
+      setShowDetailPage(false)
+      setActiveTab("exclusive")
+      setSwipePosition(tabs.indexOf("exclusive"))
+    }
+    window.addEventListener("mvbd:open-subscriptions", openSubscriptions)
+    return () => window.removeEventListener("mvbd:open-subscriptions", openSubscriptions)
+  }, [])
+
   /* =========================================================
      DOM REFS
   ========================================================= */

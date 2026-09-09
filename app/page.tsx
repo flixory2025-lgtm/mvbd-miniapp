@@ -25,25 +25,36 @@ import SettingsPage from "@/components/settings-page"
 
 import { movies, genres } from "@/lib/movie-data"
 
-const tabs = ["home", "shorts", "exclusive", "profile"] as const
+const tabs = [
+  "home",
+  "shorts",
+  "exclusive",
+  "profile",
+] as const
 
 type TabId = (typeof tabs)[number]
 
-type SettleMode = "commit" | "cancel" | null
+type SettleMode =
+  | "commit"
+  | "cancel"
+  | null
 
 export default function Home() {
   /* =========================================================
      BASIC PAGE STATE
   ========================================================= */
 
-  const [searchQuery, setSearchQuery] = useState("")
-  const [selectedGenre, setSelectedGenre] = useState<string | null>(null)
+  const [searchQuery, setSearchQuery] =
+    useState("")
 
-  const [selectedMovie, setSelectedMovie] = useState<
-    (typeof movies)[0] | null
-  >(null)
+  const [selectedGenre, setSelectedGenre] =
+    useState<string | null>(null)
 
-  const [currentPage, setCurrentPage] = useState(1)
+  const [selectedMovie, setSelectedMovie] =
+    useState<(typeof movies)[0] | null>(null)
+
+  const [currentPage, setCurrentPage] =
+    useState(1)
 
   const [showWelcomePopup, setShowWelcomePopup] =
     useState(false)
@@ -84,8 +95,10 @@ export default function Home() {
   const [viewportWidth, setViewportWidth] =
     useState(390)
 
-  const activeIndex =
-    Math.max(0, tabs.indexOf(activeTab))
+  const activeIndex = Math.max(
+    0,
+    tabs.indexOf(activeTab)
+  )
 
   /* =========================================================
      OPEN SUBSCRIPTIONS EVENT
@@ -95,10 +108,14 @@ export default function Home() {
     const openSubscriptions = () => {
       setSelectedMovie(null)
       setShowDetailPage(false)
+
       setActiveTab("exclusive")
+
       setSwipePosition(
         tabs.indexOf("exclusive")
       )
+
+      setProfileSubPage("main")
     }
 
     window.addEventListener(
@@ -159,7 +176,9 @@ export default function Home() {
     useRef(false)
 
   const activeSwipeDirectionRef =
-    useRef<"previous" | "next" | null>(null)
+    useRef<
+      "previous" | "next" | null
+    >(null)
 
   const settleTargetRef =
     useRef<TabId | null>(null)
@@ -174,7 +193,10 @@ export default function Home() {
   useEffect(() => {
     const updateViewportWidth = () => {
       setViewportWidth(
-        Math.max(1, window.innerWidth)
+        Math.max(
+          1,
+          window.innerWidth
+        )
       )
     }
 
@@ -224,7 +246,9 @@ export default function Home() {
           history.slice(0, -1)
 
         const previousTab =
-          newHistory[newHistory.length - 1]
+          newHistory[
+            newHistory.length - 1
+          ]
 
         if (previousTab) {
           setActiveTab(previousTab)
@@ -249,8 +273,8 @@ export default function Home() {
 
   /* =========================================================
      WELCOME POPUP
-
-     Shows every time the page mounts.
+     
+     Shows every time page mounts.
   ========================================================= */
 
   useEffect(() => {
@@ -276,12 +300,13 @@ export default function Home() {
     let filtered = movies
 
     if (searchQuery.trim()) {
-      filtered = filtered.filter((movie) =>
-        movie.title
-          .toLowerCase()
-          .includes(
-            searchQuery.toLowerCase()
-          )
+      filtered = filtered.filter(
+        (movie) =>
+          movie.title
+            .toLowerCase()
+            .includes(
+              searchQuery.toLowerCase()
+            )
       )
     }
 
@@ -289,10 +314,11 @@ export default function Home() {
       selectedGenre &&
       !searchQuery.trim()
     ) {
-      filtered = filtered.filter((movie) =>
-        movie.genre.includes(
-          selectedGenre
-        )
+      filtered = filtered.filter(
+        (movie) =>
+          movie.genre.includes(
+            selectedGenre
+          )
       )
     }
 
@@ -306,11 +332,10 @@ export default function Home() {
 
   const itemsPerPage = 30
 
-  const totalPages =
-    Math.ceil(
-      filteredMovies.length /
-        itemsPerPage
-    )
+  const totalPages = Math.ceil(
+    filteredMovies.length /
+      itemsPerPage
+  )
 
   const paginatedMovies =
     filteredMovies.slice(
@@ -329,6 +354,7 @@ export default function Home() {
   ) => {
     setSearchQuery(query)
     setCurrentPage(1)
+
     setIsSearching(
       query.trim().length > 0
     )
@@ -343,6 +369,7 @@ export default function Home() {
   ) => {
     setSelectedGenre(genre)
     setCurrentPage(1)
+
     setShowAdultContent(
       genre === "Adult"
     )
@@ -411,10 +438,6 @@ export default function Home() {
 
   /* =========================================================
      PROTECTED SWIPE AREAS
-     
-     Trending carousel uses this.
-     Anything marked data-no-page-swipe
-     will not trigger page swipe.
   ========================================================= */
 
   const isProtectedSwipeTarget = (
@@ -434,10 +457,7 @@ export default function Home() {
   }
 
   /* =========================================================
-     APPLY SWIPE POSITION DIRECTLY
-
-     No React state for every pixel.
-     This keeps movement smooth.
+     APPLY SWIPE POSITION
   ========================================================= */
 
   const applySwipePosition = (
@@ -497,7 +517,7 @@ export default function Home() {
       finalX
 
     /* -----------------------------------------
-       Current page follows finger
+       Current page
     ----------------------------------------- */
 
     current.style.transform =
@@ -723,10 +743,6 @@ export default function Home() {
         : "cancel"
     )
 
-    /* -----------------------------------------
-       CSS transition only during settling
-    ----------------------------------------- */
-
     current.style.transition =
       `transform ${duration}ms ${easing}`
 
@@ -925,20 +941,6 @@ export default function Home() {
 
   /* =========================================================
      POINTER DOWN
-     
-     IMPORTANT FIX:
-     No interactive-target blocking.
-     
-     Therefore:
-     - movie cards
-     - buttons
-     - links
-     - bottom navigation
-     - empty areas
-     
-     can all begin a page swipe.
-     
-     Trending remains protected separately.
   ========================================================= */
 
   const handlePointerDown = (
@@ -956,10 +958,6 @@ export default function Home() {
       return
     }
 
-    /* -----------------------------------------
-       Protected horizontal components
-    ----------------------------------------- */
-
     if (
       isProtectedSwipeTarget(
         event.target
@@ -968,19 +966,11 @@ export default function Home() {
       return
     }
 
-    /* -----------------------------------------
-       Don't start during settling
-    ----------------------------------------- */
-
     if (
       settleMode !== null
     ) {
       return
     }
-
-    /* -----------------------------------------
-       Start gesture
-    ----------------------------------------- */
 
     pointerIdRef.current =
       event.pointerId
@@ -1009,9 +999,7 @@ export default function Home() {
     activeSwipeDirectionRef.current =
       null
 
-    setIsSwiping(
-      false
-    )
+    setIsSwiping(false)
 
     setSwipePosition(
       activeIndex
@@ -1020,9 +1008,6 @@ export default function Home() {
 
   /* =========================================================
      POINTER MOVE
-     
-     Uses pointer capture after horizontal direction
-     has been confirmed.
   ========================================================= */
 
   const handlePointerMove = (
@@ -1048,7 +1033,7 @@ export default function Home() {
       startYRef.current
 
     /* -----------------------------------------
-       Wait for movement threshold
+       Movement threshold
     ----------------------------------------- */
 
     if (
@@ -1062,7 +1047,7 @@ export default function Home() {
       }
 
       /* ---------------------------------------
-         Vertical gesture -> browser scroll
+         Vertical gesture
       --------------------------------------- */
 
       if (
@@ -1075,10 +1060,6 @@ export default function Home() {
         return
       }
 
-      /* ---------------------------------------
-         Lock horizontal gesture
-      --------------------------------------- */
-
       horizontalLockRef.current =
         true
 
@@ -1087,12 +1068,10 @@ export default function Home() {
           event.pointerId
         )
       } catch {
-        // Ignore capture errors.
+        // Ignore.
       }
 
-      setIsSwiping(
-        true
-      )
+      setIsSwiping(true)
     }
 
     /* -----------------------------------------
@@ -1150,14 +1129,6 @@ export default function Home() {
       deltaX,
       viewportWidth
     )
-
-    /* -----------------------------------------
-       Stop browser horizontal gesture
-       after horizontal lock.
-       
-       Vertical scrolling is still available
-       before the lock is established.
-    ----------------------------------------- */
 
     if (
       event.cancelable
@@ -1279,9 +1250,7 @@ export default function Home() {
       }
     }
 
-    setIsSwiping(
-      false
-    )
+    setIsSwiping(false)
 
     if (direction) {
       finishSwipe(
@@ -1336,9 +1305,7 @@ export default function Home() {
     horizontalLockRef.current =
       false
 
-    setIsSwiping(
-      false
-    )
+    setIsSwiping(false)
 
     finishSwipe(
       false,
@@ -1348,10 +1315,13 @@ export default function Home() {
 
   /* =========================================================
      HOME PAGE
+     
+     FIX:
+     Home keeps the small bottom spacing.
   ========================================================= */
 
   const renderHomePage = () => (
-    <div className="min-h-[100svh] bg-black pb-[76px]">
+    <div className="bg-black pb-[76px]">
       <Header
         onSearch={handleSearch}
         pageType="home"
@@ -1361,7 +1331,7 @@ export default function Home() {
       {searchQuery.trim() &&
       filteredMovies.length === 0 ? (
         <div className="px-4 py-12 text-center">
-          <p className="text-lg text-slate-300 mb-6">
+          <p className="mb-6 text-lg text-slate-300">
             আমরা দুঃখিত! এই নামের কোনো মুভি আমাদের
             কালেকশনে নেই
           </p>
@@ -1389,11 +1359,6 @@ export default function Home() {
       ) : (
         <>
           {!isSearching && (
-            /*
-              Trending carousel is protected.
-              Its own horizontal swipe will NOT
-              move the entire page.
-            */
             <div
               data-no-page-swipe
               className="w-full"
@@ -1486,30 +1451,39 @@ export default function Home() {
 
   /* =========================================================
      ANIME PAGE
+     
+     FIX:
+     Same bottom spacing as Home.
   ========================================================= */
 
   const renderAnimePage = () => (
-    <div className="min-h-[100svh] bg-black">
+    <div className="bg-black pb-[76px]">
       <AnimePage />
     </div>
   )
 
   /* =========================================================
-     SERIES PAGE
+     SERIES / SUBSCRIPTION PAGE
+     
+     FIX:
+     Same bottom spacing as Home.
   ========================================================= */
 
   const renderSeriesPage = () => (
-    <div className="min-h-[100svh] bg-black pb-[76px]">
+    <div className="bg-black pb-[76px]">
       <SeriesSection />
     </div>
   )
 
   /* =========================================================
      PROFILE PAGE
+     
+     FIX:
+     Same bottom spacing as Home.
   ========================================================= */
 
   const renderProfilePage = () => (
-    <div className="min-h-[100svh] bg-black">
+    <div className="bg-black pb-[76px]">
       {profileSubPage ===
         "main" && (
         <ProfilePage
@@ -1588,11 +1562,6 @@ export default function Home() {
   ========================================================= */
 
   useEffect(() => {
-    /*
-      Don't interfere while the previous
-      page is finishing its transition.
-    */
-
     if (
       settleMode !== null
     ) {
@@ -1707,20 +1676,21 @@ export default function Home() {
 
   /* =========================================================
      MAIN RENDER
+     
+     FIX:
+     Removed min-h-[100svh].
+     This prevents the swipe shell from creating
+     unnecessary document height.
   ========================================================= */
 
   return (
-    <div className="w-full min-h-screen bg-black">
+    <div className="w-full bg-black">
       <div
         ref={
           swipeShellRef
         }
-        className="relative w-full min-h-[100svh]"
+        className="relative w-full"
         style={{
-          /*
-            Browser handles vertical scrolling.
-            Our custom system handles horizontal swipe.
-          */
           touchAction:
             "pan-y pinch-zoom",
 
@@ -1732,10 +1702,6 @@ export default function Home() {
           overscrollBehaviorX:
             "none",
 
-          /*
-            Prevent browser selection while a
-            horizontal gesture is being performed.
-          */
           WebkitUserSelect:
             isSwiping
               ? "none"
@@ -1746,14 +1712,6 @@ export default function Home() {
               ? "none"
               : "auto",
         }}
-        /*
-          IMPORTANT:
-          Capture phase is used here.
-
-          This means page swipe detection can start
-          even when the pointer begins on a child
-          button/card/link.
-        */
         onPointerDownCapture={
           handlePointerDown
         }
@@ -1884,9 +1842,6 @@ export default function Home() {
 
         {/* =====================================================
             BOTTOM NAVIGATION
-
-            It is INSIDE the swipe shell so its area can
-            also participate in the page swipe gesture.
         ===================================================== */}
 
         <div
@@ -1896,10 +1851,6 @@ export default function Home() {
             touchAction:
               "pan-y",
 
-            /*
-              Make sure page swipe can start from
-              this entire navigation area.
-            */
             WebkitUserSelect:
               "none",
 

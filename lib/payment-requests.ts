@@ -1,202 +1,112 @@
 import {
   addDoc,
   collection,
-  onSnapshot,
-  orderBy,
+  getDocs,
+  limit,
   query,
   serverTimestamp,
   where,
-  type Unsubscribe,
+  type DocumentData,
 } from "firebase/firestore"
+import type { User } from "firebase/auth"
 
-import { db } from "./firebase"
-
+import { db } from "@/lib/firebase"
 import {
   getSubscriptionPlan,
-  type PaymentRequestStatus,
+  type PaymentRequest,
   type SubscriptionPlanId,
-} from "./subscription-plans"
+} from "@/lib/subscription-plans"
+import type { UserProfile } from "@/lib/user-profile"
 
-/*
- * =========================================================
- * PAYMENT REQUEST TYPE
- * =========================================================
- */
-
-export interface PaymentRequest {
-  id: string
-
-  uid: string
-
-  mvbdId: string
-
-  userName: string
-
-  userEmail: string
-
-  planId: SubscriptionPlanId
-
-  planName: string
-
-  amount: number
-
-  transactionId: string
-
-  status: PaymentRequestStatus
-
-  createdAt: any
-
-  reviewedAt: any
-
-  reviewedBy: string | null
-
-  rejectionReason: string | null
+function normalizeRequest(data: DocumentData, requestId: string): PaymentRequest {
+  return {
+    requestId,
+    uid: String(data.uid),
+    mvbdId: String(data.mvbdId),
+    userName: typeof data.userName === "string" ? data.userName : "",
+    planId: data.planId,
+    planName: typeof data.planName === "string" ? data.planName : "",
+    amount: typeof data.amount === "number" ? data.amount : 0,
+    transactionId: typeof data.transactionId === "string" ? data.transactionId : "",
+    status: data.status,
+    createdAt: data.createdAt ?? null,
+    reviewedAt: data.reviewedAt ?? null,
+    reviewedBy: typeof data.reviewedBy === "string" ? data.reviewedBy : null,
+    adminNote: typeof data.adminNote === "string" ? data.adminNote : null,
+  }
 }
 
-/*
- * =========================================================
- * CREATE PAYMENT REQUEST
- * =========================================================
- *
- * NOTE:
- * এই function UI/client থেকে ব্যবহার করা যেতে পারে,
- * কিন্তু production security-এর জন্য পরে API route
- * দিয়ে payment creation enforce করব।
- */
-
-export async function createPaymentRequest({
-  uid,
-  mvbdId,
-  userName,
-  userEmail,
+export async function createPendingPaymentRequest({
+  user,
+  profile,
   planId,
   transactionId,
 }: {
-  uid: string
-  mvbdId: string
-  userName: string
-  userEmail: string
+  user: User
+  profile: UserProfile
   planId: SubscriptionPlanId
   transactionId: string
 }) {
-  const plan =
-    getSubscriptionPlan(planId)
+  const plan = getSubscriptionPlan(planId)
+  const normalizedTransactionId = transactionId.trim()
 
-  if (!plan) {
-    throw new Error(
-      "Invalid subscription plan."
-    )
+  if (!plan || plan.planId === "trial") throw new Error("Please select a paid subscription plan.")
+  if (normalizedTransactionId.length < 3) {
+    throw new Error("Please enter a valid transaction ID.")
   }
 
-  const cleanTransactionId =
-    transactionId.trim()
-
-  if (!cleanTransactionId) {
-    throw new Error(
-      "Transaction ID is required."
-    )
-  }
-
-  if (cleanTransactionId.length < 4) {
-    throw new Error(
-      "Invalid transaction ID."
-    )
-  }
-
-  const paymentRef =
-    collection(
-      db,
-      "paymentRequests"
-    )
-
-  const document = await addDoc(
-    paymentRef,
-    {
-      uid,
-
-      mvbdId,
-
-      userName,
-
-      userEmail,
-
-      planId: plan.id,
-
-      planName: plan.name,
-
-      amount: plan.price,
-
-      transactionId:
-        cleanTransactionId,
-
-      status: "pending",
-
-      createdAt:
-        serverTimestamp(),
-
-      reviewedAt: null,
-
-      reviewedBy: null,
-
-      rejectionReason: null,
-    }
+  const duplicateQuery = query(
+    collection(db, "paymentRequests"),
+    where("uid", "==", user.uid),
+    where("planId", "==", plan.planId),
+    where("transactionId", "==", normalizedTransactionId),
+    where("status", "==", "pending"),
+    limit(1),
   )
+  const duplicateSnapshot = await getDocs(duplicateQuery)
+  if (!duplicateSnapshot.empty) {
+    throw new Error("This payment request is already pending review.")
+  }
 
-  return document.id
+  const request = {
+    uid: user.uid,
+    mvbdId: profile.mvbdId,
+    userName: profile.name || user.displayName || "MVBD user",
+    planId: plan.planId,
+    planName: plan.planName,
+    amount: plan.amount,
+    transactionId: normalizedTransactionId,
+    status: "pending" as const,
+    createdAt: serverTimestamp(),
+    reviewedAt: null,
+    reviewedBy: null,
+    adminNote: null,
+  }
+
+  const created = await addDoc(collection(db, "paymentRequests"), request)
+  return { ...request, requestId: created.id }
 }
 
-/*
- * =========================================================
- * REALTIME USER PAYMENT REQUESTS
- * =========================================================
- */
-
-export function listenToMyPaymentRequests(
-  uid: string,
-  callback: (
-    requests: PaymentRequest[]
-  ) => void,
-  onError?: (error: Error) => void
-): Unsubscribe {
-  const paymentQuery = query(
-    collection(
-      db,
-      "paymentRequests"
+export async function getMyPaymentRequests(uid: string) {
+  const snapshot = await getDocs(
+    query(
+      collection(db, "paymentRequests"),
+      where("uid", "==", uid),
+      limit(25),
     ),
-
-    where(
-      "uid",
-      "==",
-      uid
-    ),
-
-    orderBy(
-      "createdAt",
-      "desc"
-    )
   )
 
+  return snapshot.docs.map((item) => normalizeRequest(item.data(), item.id))
+}
+
+export function subscribeToMyPaymentRequests(
+  uid: string,
+  onChange: (requests: PaymentRequest[]) => void,
+  onError?: (error: Error) => void,
+) {
   return onSnapshot(
-    paymentQuery,
-    (snapshot) => {
-      const requests =
-        snapshot.docs.map(
-          (item) =>
-            ({
-              id: item.id,
-              ...item.data(),
-            }) as PaymentRequest
-        )
-
-      callback(requests)
-    },
-    (error) => {
-      console.error(
-        "Payment request listener error:",
-        error
-      )
-
-      onError?.(error)
-    }
+    query(collection(db, "paymentRequests"), where("uid", "==", uid), limit(25)),
+    (snapshot) => onChange(snapshot.docs.map((item) => normalizeRequest(item.data(), item.id))),
+    (error) => onError?.(error),
   )
 }

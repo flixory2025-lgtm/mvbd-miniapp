@@ -1,457 +1,176 @@
 import {
   doc,
   getDoc,
+  onSnapshot,
   runTransaction,
-  serverTimestamp,
   Timestamp,
-  updateDoc,
+  type DocumentData,
+  type DocumentReference,
+  type Unsubscribe,
 } from "firebase/firestore"
+import type { User } from "firebase/auth"
 
-import { db } from "./firebase"
+import { db } from "@/lib/firebase"
 
-/* =========================================================
-   TYPES
-========================================================= */
+export const TRIAL_DURATION_MS = 7 * 24 * 60 * 60 * 1000
 
-export type AccessType =
-  | "trial"
-  | "subscription"
-  | null
+export type AccessType = "trial" | "subscription" | null
+export type SubscriptionStatus = "inactive" | "active" | "expired" | "pending" | null
 
-export type SubscriptionStatus =
-  | "inactive"
-  | "active"
-  | "expired"
-  | "pending"
-  | null
-
-export type SubscriptionPlanId =
-  | "monthly"
-  | "two_months"
-  | "three_months"
-
-export interface UserProfile {
+export type UserProfile = {
   uid: string
-
   mvbdId: string
-
   name: string
-
   email: string
-
   photoURL: string | null
-
-  dateOfBirth: string | null
-
-  createdAt: Timestamp | null
-
-  updatedAt: Timestamp | null
-
-  /* -------------------------
-     ACCESS
-  ------------------------- */
-
+  dateOfBirth: string
+  createdAt: Timestamp
   accessType: AccessType
-
   subscriptionStatus: SubscriptionStatus
-
-  subscriptionPlan: SubscriptionPlanId | null
-
-  /* -------------------------
-     SUBSCRIPTION
-  ------------------------- */
-
+  subscriptionPlan: string | null
   subscriptionStartedAt: Timestamp | null
-
   subscriptionExpiresAt: Timestamp | null
-
-  /* -------------------------
-     TRIAL
-  ------------------------- */
-
-  trialStartedAt: Timestamp | null
-
-  trialExpiresAt: Timestamp | null
-
-  /* -------------------------
-     REFERRAL
-  ------------------------- */
-
-  referralCode: string | null
-
-  referredBy: string | null
-
+  trialStartedAt: Timestamp
+  trialExpiresAt: Timestamp
+  referralCode: string
   successfulReferrals: number
 }
 
-/* =========================================================
-   MVBD ID
-========================================================= */
+function generateMvbdId() {
+  const randomId = typeof crypto !== "undefined" && "randomUUID" in crypto
+    ? crypto.randomUUID().replaceAll("-", "").slice(0, 16).toUpperCase()
+    : Math.random().toString(36).slice(2, 18).toUpperCase()
 
-function generateMVBDId(): string {
-  const random = Math.random()
-    .toString(36)
-    .substring(2, 8)
-    .toUpperCase()
-
-  return `MVBD-${random}`
+  return `MVBD-${randomId}`
 }
 
-/* =========================================================
-   NORMALIZE PROFILE
-========================================================= */
+function asTimestamp(value: unknown): Timestamp | null {
+  return value instanceof Timestamp ? value : null
+}
 
-export function normalizeProfile(
-  data: Record<string, any>
-): UserProfile {
+function normalizeProfile(data: DocumentData): UserProfile {
   return {
-    uid: data.uid || "",
-
-    mvbdId: data.mvbdId || "",
-
-    name: data.name || "User",
-
-    email: data.email || "",
-
-    photoURL: data.photoURL || null,
-
-    dateOfBirth: data.dateOfBirth || null,
-
-    createdAt:
-      data.createdAt instanceof Timestamp
-        ? data.createdAt
-        : null,
-
-    updatedAt:
-      data.updatedAt instanceof Timestamp
-        ? data.updatedAt
-        : null,
-
-    /*
-     * IMPORTANT:
-     * New users DO NOT automatically receive trial.
-     */
-
-    accessType:
-      data.accessType === "trial" ||
-      data.accessType === "subscription"
-        ? data.accessType
-        : null,
-
-    subscriptionStatus:
-      data.subscriptionStatus === "active" ||
-      data.subscriptionStatus === "expired" ||
-      data.subscriptionStatus === "pending" ||
-      data.subscriptionStatus === "inactive"
-        ? data.subscriptionStatus
-        : null,
-
-    subscriptionPlan:
-      data.subscriptionPlan === "monthly" ||
-      data.subscriptionPlan === "two_months" ||
-      data.subscriptionPlan === "three_months"
-        ? data.subscriptionPlan
-        : null,
-
-    subscriptionStartedAt:
-      data.subscriptionStartedAt instanceof Timestamp
-        ? data.subscriptionStartedAt
-        : null,
-
-    subscriptionExpiresAt:
-      data.subscriptionExpiresAt instanceof Timestamp
-        ? data.subscriptionExpiresAt
-        : null,
-
-    trialStartedAt:
-      data.trialStartedAt instanceof Timestamp
-        ? data.trialStartedAt
-        : null,
-
-    trialExpiresAt:
-      data.trialExpiresAt instanceof Timestamp
-        ? data.trialExpiresAt
-        : null,
-
-    referralCode:
-      typeof data.referralCode === "string"
-        ? data.referralCode
-        : null,
-
-    referredBy:
-      typeof data.referredBy === "string"
-        ? data.referredBy
-        : null,
-
-    successfulReferrals:
-      typeof data.successfulReferrals === "number"
-        ? data.successfulReferrals
-        : 0,
+    uid: String(data.uid),
+    mvbdId: String(data.mvbdId),
+    name: typeof data.name === "string" ? data.name : "",
+    email: typeof data.email === "string" ? data.email : "",
+    photoURL: typeof data.photoURL === "string" ? data.photoURL : null,
+    dateOfBirth: typeof data.dateOfBirth === "string" ? data.dateOfBirth : "",
+    createdAt: asTimestamp(data.createdAt) ?? Timestamp.now(),
+    accessType: data.accessType === "trial" || data.accessType === "subscription" ? data.accessType : null,
+    subscriptionStatus: ["inactive", "active", "expired", "pending"].includes(data.subscriptionStatus)
+      ? data.subscriptionStatus
+      : null,
+    subscriptionPlan: typeof data.subscriptionPlan === "string" ? data.subscriptionPlan : null,
+    subscriptionStartedAt: asTimestamp(data.subscriptionStartedAt),
+    subscriptionExpiresAt: asTimestamp(data.subscriptionExpiresAt),
+    trialStartedAt: asTimestamp(data.trialStartedAt) ?? Timestamp.now(),
+    trialExpiresAt: asTimestamp(data.trialExpiresAt) ?? Timestamp.now(),
+    referralCode: typeof data.referralCode === "string" ? data.referralCode : String(data.mvbdId || "MVBD-PENDING"),
+    successfulReferrals: typeof data.successfulReferrals === "number" ? data.successfulReferrals : 0,
   }
 }
 
-/* =========================================================
-   CREATE / ENSURE USER PROFILE
-========================================================= */
+export async function ensureUserProfile(user: User, legacyProfile?: Partial<Pick<UserProfile, "name" | "email" | "photoURL" | "dateOfBirth" | "referralCode">>) {
+  const profileRef = doc(db, "users", user.uid)
 
-export async function ensureUserProfile({
-  uid,
-  email,
-  name,
-  photoURL = null,
-  dateOfBirth = null,
-  referralCode = null,
-}: {
-  uid: string
-  email: string
-  name: string
-  photoURL?: string | null
-  dateOfBirth?: string | null
-  referralCode?: string | null
-}): Promise<UserProfile> {
-  const userRef = doc(db, "users", uid)
+  return runTransaction(db, async (transaction) => {
+    const existing = await transaction.get(profileRef)
+    if (existing.exists()) return normalizeProfile(existing.data())
 
-  const profile = await runTransaction(
-    db,
-    async (transaction) => {
-      const snapshot = await transaction.get(userRef)
-
-      /*
-       * EXISTING USER
-       *
-       * Never reset their subscription/trial/access.
-       */
-
-      if (snapshot.exists()) {
-        return normalizeProfile({
-          uid,
-          ...snapshot.data(),
-        })
-      }
-
-      /*
-       * NEW USER
-       */
-
-      const mvbdId = generateMVBDId()
-
-      const newProfile = {
-        uid,
-
-        mvbdId,
-
-        name: name.trim() || "User",
-
-        email: email.trim(),
-
-        photoURL: photoURL || null,
-
-        dateOfBirth: dateOfBirth || null,
-
-        createdAt: serverTimestamp(),
-
-        updatedAt: serverTimestamp(),
-
-        /*
-         * New account starts as NORMAL USER.
-         */
-
-        accessType: null,
-
-        subscriptionStatus: "inactive",
-
-        subscriptionPlan: null,
-
-        subscriptionStartedAt: null,
-
-        subscriptionExpiresAt: null,
-
-        /*
-         * Trial is NOT automatically activated.
-         */
-
-        trialStartedAt: null,
-
-        trialExpiresAt: null,
-
-        /*
-         * Referral information.
-         */
-
-        referralCode:
-          generateReferralCode(mvbdId),
-
-        referredBy:
-          referralCode || null,
-
-        successfulReferrals: 0,
-      }
-
-      transaction.set(userRef, newProfile)
-
-      return normalizeProfile({
-        uid,
-        ...newProfile,
-
-        /*
-         * serverTimestamp() values are unresolved
-         * during the transaction, therefore use now
-         * for the returned local object.
-         */
-
-        createdAt: Timestamp.now(),
-
-        updatedAt: Timestamp.now(),
-      })
+    const trialStartedAt = Timestamp.now()
+    const profile: UserProfile = {
+      uid: user.uid,
+      mvbdId: generateMvbdId(),
+      name: legacyProfile?.name || user.displayName || "",
+      email: user.email || legacyProfile?.email || "",
+      photoURL: user.photoURL || legacyProfile?.photoURL || null,
+      dateOfBirth: legacyProfile?.dateOfBirth || "",
+      createdAt: trialStartedAt,
+      accessType: null,
+      subscriptionStatus: "inactive",
+      subscriptionPlan: null,
+      subscriptionStartedAt: null,
+      subscriptionExpiresAt: null,
+      trialStartedAt,
+      trialExpiresAt: Timestamp.fromMillis(trialStartedAt.toMillis() + TRIAL_DURATION_MS),
+      referralCode: legacyProfile?.referralCode || `MVBD-${generateMvbdId().slice(-6)}`,
+      successfulReferrals: 0,
     }
-  )
 
-  return profile
-}
-
-/* =========================================================
-   REFERRAL CODE GENERATOR
-========================================================= */
-
-function generateReferralCode(
-  mvbdId: string
-): string {
-  const suffix = mvbdId
-    .replace("MVBD-", "")
-    .substring(0, 6)
-
-  return `MVBD${suffix}`
-}
-
-/* =========================================================
-   GET USER PROFILE
-========================================================= */
-
-export async function getUserProfile(
-  uid: string
-): Promise<UserProfile | null> {
-  const userRef = doc(db, "users", uid)
-
-  const snapshot = await getDoc(userRef)
-
-  if (!snapshot.exists()) {
-    return null
-  }
-
-  return normalizeProfile({
-    uid,
-    ...snapshot.data(),
+    transaction.set(profileRef, profile)
+    return profile
   })
 }
 
-/* =========================================================
-   UPDATE SAFE PROFILE FIELDS
-========================================================= */
+export async function getUserProfile(uid: string) {
+  const profileSnapshot = await getDoc(doc(db, "users", uid))
+  return profileSnapshot.exists() ? normalizeProfile(profileSnapshot.data()) : null
+}
+
+export function subscribeToUserProfile(
+  uid: string,
+  onChange: (profile: UserProfile | null) => void,
+  onError?: (error: Error) => void,
+): Unsubscribe {
+  return onSnapshot(
+    doc(db, "users", uid),
+    (snapshot) => onChange(snapshot.exists() ? normalizeProfile(snapshot.data()) : null),
+    (error) => onError?.(error),
+  )
+}
+
+export async function activateTrial(uid: string) {
+  const profileRef: DocumentReference<UserProfile> = doc(db, "users", uid) as DocumentReference<UserProfile>
+  return runTransaction(db, async (transaction) => {
+    const existing = await transaction.get(profileRef)
+    if (!existing.exists()) throw new Error("Your profile is not available yet.")
+    const profile = normalizeProfile(existing.data())
+    if (profile.accessType === "trial" && profile.trialExpiresAt.toMillis() > Date.now()) return profile
+    if (profile.accessType === "subscription" && profile.subscriptionStatus === "active") {
+      throw new Error("Your paid membership is already active.")
+    }
+    const trialStartedAt = Timestamp.now()
+    transaction.update(profileRef, {
+      accessType: "trial",
+      subscriptionStatus: "inactive",
+      trialStartedAt,
+      trialExpiresAt: Timestamp.fromMillis(trialStartedAt.toMillis() + TRIAL_DURATION_MS),
+    })
+    return { ...profile, accessType: "trial" as const, subscriptionStatus: "inactive" as const, trialStartedAt, trialExpiresAt: Timestamp.fromMillis(trialStartedAt.toMillis() + TRIAL_DURATION_MS) }
+  })
+}
 
 export async function updateUserProfile(
   uid: string,
-  updates: {
-    name?: string
-    dateOfBirth?: string | null
-    photoURL?: string | null
-  }
-): Promise<void> {
-  const userRef = doc(db, "users", uid)
-
-  const safeUpdates: Record<string, any> = {
-    updatedAt: serverTimestamp(),
-  }
-
-  if (typeof updates.name === "string") {
-    safeUpdates.name = updates.name.trim()
-  }
-
-  if (
-    updates.dateOfBirth === null ||
-    typeof updates.dateOfBirth === "string"
-  ) {
-    safeUpdates.dateOfBirth =
-      updates.dateOfBirth
-  }
-
-  if (
-    updates.photoURL === null ||
-    typeof updates.photoURL === "string"
-  ) {
-    safeUpdates.photoURL =
-      updates.photoURL
-  }
-
-  await updateDoc(
-    userRef,
-    safeUpdates
-  )
+  updates: Partial<Pick<UserProfile, "name" | "dateOfBirth">>,
+) {
+  const profileRef: DocumentReference<UserProfile> = doc(db, "users", uid) as DocumentReference<UserProfile>
+  await runTransaction(db, async (transaction) => {
+    const existing = await transaction.get(profileRef)
+    if (!existing.exists()) throw new Error("Your profile is not available yet.")
+    transaction.update(profileRef, updates)
+  })
 }
 
-/* =========================================================
-   CHECK TRIAL CLAIMED
-========================================================= */
+export function getLegacyProfile() {
+  if (typeof window === "undefined") return undefined
 
-export async function hasClaimedTrial(
-  uid: string
-): Promise<boolean> {
-  const profile = await getUserProfile(uid)
-
-  if (!profile) {
-    return false
+  try {
+    const savedProfile = window.localStorage.getItem("mvbd_profile")
+    if (!savedProfile) return undefined
+    const parsed = JSON.parse(savedProfile) as Record<string, unknown>
+    return {
+      name: typeof parsed.name === "string" ? parsed.name : "",
+      email: typeof parsed.email === "string" ? parsed.email : "",
+      photoURL: typeof parsed.photoURL === "string" ? parsed.photoURL : "",
+      dateOfBirth: typeof parsed.dateOfBirth === "string" ? parsed.dateOfBirth : "",
+    }
+  } catch {
+    return undefined
   }
-
-  return !!profile.trialStartedAt
 }
 
-/* =========================================================
-   CHECK SUBSCRIPTION ACTIVE
-========================================================= */
-
-export function isSubscriptionActive(
-  profile: UserProfile
-): boolean {
-  if (
-    profile.accessType !== "subscription"
-  ) {
-    return false
-  }
-
-  if (
-    profile.subscriptionStatus !== "active"
-  ) {
-    return false
-  }
-
-  if (!profile.subscriptionExpiresAt) {
-    return false
-  }
-
-  return (
-    profile.subscriptionExpiresAt.toMillis() >
-    Date.now()
-  )
-}
-
-/* =========================================================
-   CHECK TRIAL ACTIVE
-========================================================= */
-
-export function isTrialActive(
-  profile: UserProfile
-): boolean {
-  if (
-    profile.accessType !== "trial"
-  ) {
-    return false
-  }
-
-  if (!profile.trialExpiresAt) {
-    return false
-  }
-
-  return (
-    profile.trialExpiresAt.toMillis() >
-    Date.now()
-  )
+export function clearLegacyProfile() {
+  if (typeof window !== "undefined") window.localStorage.removeItem("mvbd_profile")
 }

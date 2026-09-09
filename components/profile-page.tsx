@@ -29,7 +29,7 @@ import {
   subscribeToMyNotifications,
   markNotificationRead,
   type NotificationItem,
-} from "@/lib/notifications"
+} from "@/lib/notifications";
 
 interface ProfileData {
   name: string

@@ -19,17 +19,32 @@ import {
   Clock3,
   ShieldCheck,
   X,
+  Send,
+  Loader2,
 } from "lucide-react"
 
-import AuthModal from "@/components/auth-modal"
-import AccessStatusCard from "@/components/access-status-card"
 import { useAuth } from "@/components/auth-provider"
 import { updateUserProfile } from "@/lib/user-profile"
+import { db, auth } from "@/lib/firebase"
+
 import {
-  subscribeToMyNotifications,
-  markNotificationRead,
-  type NotificationItem,
-} from "@/lib/notifications"
+  collection,
+  query,
+  where,
+  orderBy,
+  limit,
+  onSnapshot,
+  addDoc,
+  updateDoc,
+  doc,
+  serverTimestamp,
+} from "firebase/firestore"
+
+import {
+  signInWithEmailAndPassword,
+  GoogleAuthProvider,
+  signInWithPopup,
+} from "firebase/auth"
 
 interface ProfileData {
   name: string
@@ -43,6 +58,51 @@ interface ProfilePageProps {
   onNavigate?: (
     page: "contact" | "about" | "settings"
   ) => void
+}
+
+interface NotificationItem {
+  id: string
+  uid?: string
+  title: string
+  message: string
+  type?: string
+  read?: boolean
+  createdAt?: unknown
+}
+
+interface SupportMessage {
+  id: string
+  uid?: string
+  senderUid?: string
+  senderName?: string
+  senderRole?: "user" | "admin"
+  message: string
+  createdAt?: unknown
+}
+
+interface ExtendedProfile {
+  uid?: string
+  mvbdId?: string
+  name?: string
+  email?: string
+  photoURL?: string
+  dateOfBirth?: string
+  phone?: string
+
+  accessType?: "trial" | "subscription" | null
+  subscriptionStatus?: string | null
+  subscriptionPlan?: string | null
+
+  subscriptionStartedAt?: unknown
+  subscriptionExpiresAt?: unknown
+
+  trialStartedAt?: unknown
+  trialExpiresAt?: unknown
+
+  referralCode?: string
+  promoCode?: string
+  referralCount?: number
+  successfulReferrals?: number
 }
 
 const DEFAULT_PROFILE_IMAGE =
@@ -61,15 +121,7 @@ const socialLinks = [
     id: "fb-page1",
     title: "Facebook Page 1",
     subtitle: "Visit our page",
-    icon: () => (
-      <svg
-        viewBox="0 0 24 24"
-        className="w-6 h-6 fill-white"
-        aria-hidden="true"
-      >
-        <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
-      </svg>
-    ),
+    icon: "facebook",
     iconBg: "from-blue-500 to-blue-700",
     link: "https://www.facebook.com/share/14V2B4K8zkC/",
   },
@@ -77,15 +129,7 @@ const socialLinks = [
     id: "fb-page2",
     title: "Facebook Page 2",
     subtitle: "Visit our page",
-    icon: () => (
-      <svg
-        viewBox="0 0 24 24"
-        className="w-6 h-6 fill-white"
-        aria-hidden="true"
-      >
-        <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
-      </svg>
-    ),
+    icon: "facebook",
     iconBg: "from-blue-500 to-blue-700",
     link: "https://www.facebook.com/share/1AWJvyVYZt/",
   },
@@ -93,15 +137,7 @@ const socialLinks = [
     id: "private-group",
     title: "Private Request Group",
     subtitle: "Join our private group",
-    icon: () => (
-      <svg
-        viewBox="0 0 24 24"
-        className="w-6 h-6 fill-white"
-        aria-hidden="true"
-      >
-        <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
-      </svg>
-    ),
+    icon: "facebook",
     iconBg: "from-blue-500 to-blue-700",
     link: "https://www.facebook.com/groups/963258709145001/?ref=share&mibextid=NSMWBT",
   },
@@ -109,15 +145,7 @@ const socialLinks = [
     id: "public-group",
     title: "Public Request Group",
     subtitle: "Join our public group",
-    icon: () => (
-      <svg
-        viewBox="0 0 24 24"
-        className="w-6 h-6 fill-white"
-        aria-hidden="true"
-      >
-        <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
-      </svg>
-    ),
+    icon: "facebook",
     iconBg: "from-blue-500 to-blue-700",
     link: "https://www.facebook.com/groups/733950559669339/?ref=share&mibextid=NSMWBT",
   },
@@ -125,15 +153,7 @@ const socialLinks = [
     id: "telegram",
     title: "Telegram Channels",
     subtitle: "Join all our channels",
-    icon: () => (
-      <svg
-        viewBox="0 0 24 24"
-        className="w-6 h-6 fill-white"
-        aria-hidden="true"
-      >
-        <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z" />
-      </svg>
-    ),
+    icon: "telegram",
     iconBg: "from-sky-500 to-blue-500",
     link: "https://t.me/addlist/KsvYsf4YPzliZjY1",
   },
@@ -165,15 +185,11 @@ function getTimestampMillis(value: unknown): number {
     value !== null &&
     "seconds" in value
   ) {
-    const seconds = Number(
-      (
-        value as {
-          seconds?: number
-        }
-      ).seconds ?? 0
+    return (
+      Number(
+        (value as { seconds?: number }).seconds ?? 0
+      ) * 1000
     )
-
-    return seconds * 1000
   }
 
   if (typeof value === "string") {
@@ -210,8 +226,10 @@ function calculateAge(dateOfBirth: string): string {
 
   if (
     monthDifference < 0 ||
-    (monthDifference === 0 &&
-      today.getDate() < birthDate.getDate())
+    (
+      monthDifference === 0 &&
+      today.getDate() < birthDate.getDate()
+    )
   ) {
     age--
   }
@@ -267,11 +285,14 @@ function formatDate(value: unknown): string {
     return "—"
   }
 
-  return new Intl.DateTimeFormat("en-GB", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  }).format(new Date(milliseconds))
+  return new Intl.DateTimeFormat(
+    "en-GB",
+    {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    }
+  ).format(new Date(milliseconds))
 }
 
 export default function ProfilePage({
@@ -285,8 +306,8 @@ export default function ProfilePage({
     signOut,
   } = useAuth()
 
-  const [showAuthModal, setShowAuthModal] =
-    useState(false)
+  const liveProfile =
+    firestoreProfile as ExtendedProfile | null
 
   const [profile, setProfile] =
     useState<ProfileData>({
@@ -319,68 +340,67 @@ export default function ProfilePage({
     useState(false)
 
   const [now, setNow] =
-    useState(() => Date.now())
+    useState(Date.now())
+
+  const [showSupport, setShowSupport] =
+    useState(false)
+
+  const [supportMessages, setSupportMessages] =
+    useState<SupportMessage[]>([])
+
+  const [supportText, setSupportText] =
+    useState("")
+
+  const [sendingSupport, setSendingSupport] =
+    useState(false)
+
+  const [showLogin, setShowLogin] =
+    useState(false)
+
+  const [loginEmail, setLoginEmail] =
+    useState("")
+
+  const [loginPassword, setLoginPassword] =
+    useState("")
+
+  const [loginLoading, setLoginLoading] =
+    useState(false)
+
+  const [loginError, setLoginError] =
+    useState("")
 
   /*
-   * Firebase profile → local profile state
+   * Firebase profile → local state
    */
   useEffect(() => {
-    if (firestoreProfile) {
-      const dateOfBirth =
-        typeof firestoreProfile.dateOfBirth ===
-        "string"
-          ? firestoreProfile.dateOfBirth
-          : ""
-
-      const age =
-        calculateAge(dateOfBirth)
-
-      const firebasePhone =
-        (
-          firestoreProfile as unknown as {
-            phone?: string
-          }
-        ).phone || ""
-
-      setProfile({
-        name: firestoreProfile.name || "",
-        age,
-        email: firestoreProfile.email || "",
-        phone: firebasePhone,
-        dateOfBirth,
-      })
-
-      setProfileImage(
-        firestoreProfile.photoURL ||
-          DEFAULT_PROFILE_IMAGE
-      )
-
+    if (!liveProfile) {
       return
     }
 
-    if (!user) {
-      const savedProfile =
-        localStorage.getItem(
-          "mvbd_profile"
-        )
+    const dateOfBirth =
+      liveProfile.dateOfBirth || ""
 
-      if (savedProfile) {
-        try {
-          const saved =
-            JSON.parse(savedProfile)
+    setProfile({
+      name: liveProfile.name || "",
+      age: calculateAge(dateOfBirth),
+      email:
+        liveProfile.email ||
+        user?.email ||
+        "",
+      phone:
+        liveProfile.phone || "",
+      dateOfBirth,
+    })
 
-          setProfile((current) => ({
-            ...current,
-            ...saved,
-          }))
-        } catch {
-          localStorage.removeItem(
-            "mvbd_profile"
-          )
-        }
-      }
-    }
-  }, [firestoreProfile, user])
+    setProfileImage(
+      liveProfile.photoURL ||
+        user?.photoURL ||
+        DEFAULT_PROFILE_IMAGE
+    )
+  }, [
+    liveProfile,
+    user,
+  ])
 
   /*
    * Keep age synced with DOB.
@@ -390,25 +410,22 @@ export default function ProfilePage({
       return
     }
 
-    const nextAge =
-      calculateAge(
-        profile.dateOfBirth
-      )
-
-    setProfile((current) => {
-      if (current.age === nextAge) {
-        return current
-      }
-
-      return {
-        ...current,
-        age: nextAge,
-      }
-    })
-  }, [profile.dateOfBirth])
+    setProfile((current) => ({
+      ...current,
+      age: calculateAge(
+        current.dateOfBirth
+      ),
+    }))
+  }, [
+    profile.dateOfBirth,
+  ])
 
   /*
    * Firebase realtime notifications.
+   *
+   * Direct Firestore listener is intentionally used here
+   * so this page does not depend on a separate
+   * notifications helper function.
    */
   useEffect(() => {
     if (!user?.uid) {
@@ -416,149 +433,252 @@ export default function ProfilePage({
       return
     }
 
-    let unsubscribe:
-      | (() => void)
-      | undefined
-
-    try {
-      unsubscribe =
-        subscribeToMyNotifications(
-          user.uid,
-          (items) => {
-            setNotifications(
-              Array.isArray(items)
-                ? items
-                : []
-            )
-          },
-          (error) => {
-            console.error(
-              "Notification realtime listener error:",
-              error
-            )
-          }
-        )
-    } catch (error) {
-      console.error(
-        "Failed to subscribe to notifications:",
-        error
+    const notificationsQuery =
+      query(
+        collection(
+          db,
+          "notifications"
+        ),
+        where(
+          "uid",
+          "==",
+          user.uid
+        ),
+        limit(50)
       )
-    }
+
+    const unsubscribe =
+      onSnapshot(
+        notificationsQuery,
+        (snapshot) => {
+          const items =
+            snapshot.docs.map(
+              (item) => {
+                const data =
+                  item.data()
+
+                return {
+                  id: item.id,
+                  uid: data.uid,
+                  title:
+                    data.title ||
+                    "MVBD Notification",
+                  message:
+                    data.message ||
+                    "",
+                  type:
+                    data.type ||
+                    "system",
+                  read:
+                    Boolean(data.read),
+                  createdAt:
+                    data.createdAt,
+                }
+              }
+            )
+
+          items.sort(
+            (a, b) =>
+              getTimestampMillis(
+                b.createdAt
+              ) -
+              getTimestampMillis(
+                a.createdAt
+              )
+          )
+
+          setNotifications(
+            items
+          )
+        },
+        (error) => {
+          console.error(
+            "Notification listener:",
+            error
+          )
+
+          setNotifications([])
+        }
+      )
 
     return () => {
-      if (unsubscribe) {
-        unsubscribe()
-      }
+      unsubscribe()
     }
-  }, [user?.uid])
+  }, [
+    user?.uid,
+  ])
 
   /*
-   * Update countdown every second.
+   * Firebase realtime support chat.
+   */
+  useEffect(() => {
+    if (!user?.uid) {
+      setSupportMessages([])
+      return
+    }
+
+    const supportQuery =
+      query(
+        collection(
+          db,
+          "supportMessages"
+        ),
+        where(
+          "uid",
+          "==",
+          user.uid
+        ),
+        limit(100)
+      )
+
+    const unsubscribe =
+      onSnapshot(
+        supportQuery,
+        (snapshot) => {
+          const messages =
+            snapshot.docs.map(
+              (item) => {
+                const data =
+                  item.data()
+
+                return {
+                  id: item.id,
+                  uid: data.uid,
+                  senderUid:
+                    data.senderUid,
+                  senderName:
+                    data.senderName,
+                  senderRole:
+                    data.senderRole ||
+                    "user",
+                  message:
+                    data.message ||
+                    "",
+                  createdAt:
+                    data.createdAt,
+                }
+              }
+            )
+
+          messages.sort(
+            (a, b) =>
+              getTimestampMillis(
+                a.createdAt
+              ) -
+              getTimestampMillis(
+                b.createdAt
+              )
+          )
+
+          setSupportMessages(
+            messages
+          )
+        },
+        (error) => {
+          console.error(
+            "Support listener:",
+            error
+          )
+        }
+      )
+
+    return () => {
+      unsubscribe()
+    }
+  }, [
+    user?.uid,
+  ])
+
+  /*
+   * Countdown.
    */
   useEffect(() => {
     const timer =
       window.setInterval(() => {
-        setNow(Date.now())
+        setNow(
+          Date.now()
+        )
       }, 1000)
 
     return () => {
-      window.clearInterval(timer)
+      window.clearInterval(
+        timer
+      )
     }
   }, [])
 
   /*
-   * Unread notification count.
+   * Unread notifications.
    */
   const unreadNotificationCount =
     useMemo(() => {
       return notifications.filter(
-        (notification) =>
-          !notification.read
+        (item) =>
+          !item.read
       ).length
-    }, [notifications])
+    }, [
+      notifications,
+    ])
 
   /*
-   * Referral information.
+   * Referral.
    */
-  const extendedProfile =
-    firestoreProfile as unknown as
-      | {
-          referralCode?: string
-          promoCode?: string
-          successfulReferrals?: number
-          referralCount?: number
-        }
-      | null
-
   const referralCode =
-    extendedProfile?.referralCode ||
-    extendedProfile?.promoCode ||
+    liveProfile?.referralCode ||
+    liveProfile?.promoCode ||
     ""
 
-  const referralCount = Number(
-    extendedProfile?.successfulReferrals ??
-      extendedProfile?.referralCount ??
-      0
-  )
+  const referralCount =
+    Number(
+      liveProfile
+        ?.successfulReferrals ??
+        liveProfile
+          ?.referralCount ??
+        0
+    )
 
   /*
-   * Subscription information.
+   * Subscription.
    */
   const subscriptionPlan =
-    firestoreProfile?.subscriptionPlan ||
+    liveProfile
+      ?.subscriptionPlan ||
     ""
-
-  const subscriptionExpiresAt =
-    firestoreProfile?.subscriptionExpiresAt ||
-    null
-
-  const trialExpiresAt =
-    firestoreProfile?.trialExpiresAt ||
-    null
 
   const subscriptionExpiryMillis =
     getTimestampMillis(
-      subscriptionExpiresAt
+      liveProfile
+        ?.subscriptionExpiresAt
     )
 
   const trialExpiryMillis =
     getTimestampMillis(
-      trialExpiresAt
+      liveProfile
+        ?.trialExpiresAt
     )
 
-  /*
-   * Premium status.
-   */
   const hasActiveSubscription =
     Boolean(
-      entitlement?.hasPremiumAccess ===
-        true ||
-        (
-          entitlement
-            ?.subscriptionStatus ===
-            "active" &&
-          subscriptionExpiryMillis > now
-        ) ||
-        (
-          firestoreProfile
-            ?.subscriptionStatus ===
-            "active" &&
-          subscriptionExpiryMillis > now
-        )
+      entitlement?.hasPremiumAccess ||
+      (
+        liveProfile
+          ?.subscriptionStatus ===
+          "active" &&
+        subscriptionExpiryMillis >
+          now
+      )
     )
 
-  /*
-   * Trial status.
-   */
   const hasActiveTrial =
     Boolean(
-      entitlement?.isTrialActive ===
-        true ||
-        (
-          firestoreProfile
-            ?.accessType === "trial" &&
-          trialExpiryMillis > now
-        )
+      entitlement?.isTrialActive ||
+      (
+        liveProfile
+          ?.accessType ===
+          "trial" &&
+        trialExpiryMillis >
+          now
+      )
     )
 
   const accessExpiryMillis =
@@ -569,7 +689,8 @@ export default function ProfilePage({
         : 0
 
   const remainingMilliseconds =
-    accessExpiryMillis - now
+    accessExpiryMillis -
+    now
 
   const accessStatus =
     hasActiveSubscription
@@ -599,11 +720,7 @@ export default function ProfilePage({
     setSaving(true)
 
     try {
-      if (user) {
-        /*
-         * Keep the known profile fields
-         * handled by the existing helper.
-         */
+      if (user?.uid) {
         await updateUserProfile(
           user.uid,
           {
@@ -613,34 +730,50 @@ export default function ProfilePage({
           }
         )
 
-        setProfile((current) => ({
-          ...current,
-          name: cleanName,
-          age: calculateAge(
-            current.dateOfBirth
-          ),
-        }))
+        /*
+         * Phone is an additional Firebase
+         * profile field.
+         */
+        try {
+          await updateDoc(
+            doc(
+              db,
+              "users",
+              user.uid
+            ),
+            {
+              phone:
+                profile.phone.trim(),
+            }
+          )
+        } catch (phoneError) {
+          console.warn(
+            "Phone field could not be updated:",
+            phoneError
+          )
+        }
       } else {
-        const nextProfile = {
+        const localProfile = {
           ...profile,
           name: cleanName,
-          age: calculateAge(
-            profile.dateOfBirth
-          ),
         }
 
         localStorage.setItem(
           "mvbd_profile",
-          JSON.stringify(nextProfile)
+          JSON.stringify(
+            localProfile
+          )
         )
 
-        setProfile(nextProfile)
+        setProfile(
+          localProfile
+        )
       }
 
       setIsEditing(false)
     } catch (error) {
       console.error(
-        "Failed to save profile:",
+        "Profile save error:",
         error
       )
     } finally {
@@ -649,68 +782,7 @@ export default function ProfilePage({
   }
 
   /*
-   * Open social/external link.
-   */
-  const handleLinkClick = (
-    link: string
-  ) => {
-    window.open(
-      link,
-      "_blank",
-      "noopener,noreferrer"
-    )
-  }
-
-  /*
-   * Mark notification as read.
-   */
-  const handleNotificationClick =
-    async (
-      notification: NotificationItem
-    ) => {
-      if (notification.read) {
-        return
-      }
-
-      try {
-        await markNotificationRead(
-          notification.id
-        )
-      } catch (error) {
-        console.error(
-          "Failed to mark notification as read:",
-          error
-        )
-      }
-    }
-
-  /*
-   * Mark all notifications as read.
-   */
-  const handleMarkAllRead =
-    async () => {
-      const unread =
-        notifications.filter(
-          (notification) =>
-            !notification.read
-        )
-
-      if (!unread.length) {
-        return
-      }
-
-      await Promise.allSettled(
-        unread.map(
-          (notification) =>
-            markNotificationRead(
-              notification.id
-            )
-        )
-      )
-    }
-
-  /*
-   * Copy referral code.
+   * Copy referral.
    */
   const handleCopyReferral =
     async () => {
@@ -725,26 +797,238 @@ export default function ProfilePage({
 
         setCopied(true)
 
-        window.setTimeout(() => {
-          setCopied(false)
-        }, 1800)
+        window.setTimeout(
+          () => {
+            setCopied(false)
+          },
+          1800
+        )
       } catch (error) {
         console.error(
-          "Failed to copy referral code:",
+          "Copy error:",
           error
         )
       }
     }
 
   /*
-   * Auth loading screen.
+   * Mark notification read.
    */
+  const handleNotificationClick =
+    async (
+      notification: NotificationItem
+    ) => {
+      if (
+        notification.read
+      ) {
+        return
+      }
+
+      try {
+        await updateDoc(
+          doc(
+            db,
+            "notifications",
+            notification.id
+          ),
+          {
+            read: true,
+            readAt:
+              serverTimestamp(),
+          }
+        )
+      } catch (error) {
+        console.error(
+          "Notification read error:",
+          error
+        )
+      }
+    }
+
+  /*
+   * Mark all notifications read.
+   */
+  const handleMarkAllRead =
+    async () => {
+      const unread =
+        notifications.filter(
+          (item) =>
+            !item.read
+        )
+
+      await Promise.allSettled(
+        unread.map(
+          (item) =>
+            updateDoc(
+              doc(
+                db,
+                "notifications",
+                item.id
+              ),
+              {
+                read: true,
+                readAt:
+                  serverTimestamp(),
+              }
+            )
+        )
+      )
+    }
+
+  /*
+   * Send support message.
+   */
+  const handleSendSupport =
+    async () => {
+      const message =
+        supportText.trim()
+
+      if (
+        !message ||
+        !user?.uid ||
+        sendingSupport
+      ) {
+        return
+      }
+
+      setSendingSupport(true)
+
+      try {
+        await addDoc(
+          collection(
+            db,
+            "supportMessages"
+          ),
+          {
+            uid:
+              user.uid,
+            senderUid:
+              user.uid,
+            senderName:
+              liveProfile
+                ?.name ||
+              user.displayName ||
+              "MVBD User",
+            senderRole:
+              "user",
+            message,
+            createdAt:
+              serverTimestamp(),
+          }
+        )
+
+        setSupportText("")
+      } catch (error) {
+        console.error(
+          "Support message error:",
+          error
+        )
+      } finally {
+        setSendingSupport(
+          false
+        )
+      }
+    }
+
+  /*
+   * Login.
+   */
+  const handleLogin =
+    async () => {
+      const email =
+        loginEmail.trim()
+
+      if (
+        !email ||
+        !loginPassword
+      ) {
+        setLoginError(
+          "Email এবং password দিন।"
+        )
+        return
+      }
+
+      setLoginLoading(true)
+      setLoginError("")
+
+      try {
+        await signInWithEmailAndPassword(
+          auth,
+          email,
+          loginPassword
+        )
+
+        setShowLogin(false)
+        setLoginEmail("")
+        setLoginPassword("")
+      } catch (error) {
+        console.error(
+          "Login error:",
+          error
+        )
+
+        setLoginError(
+          "Email অথবা password সঠিক নয়।"
+        )
+      } finally {
+        setLoginLoading(
+          false
+        )
+      }
+    }
+
+  /*
+   * Google login.
+   */
+  const handleGoogleLogin =
+    async () => {
+      setLoginLoading(true)
+      setLoginError("")
+
+      try {
+        const provider =
+          new GoogleAuthProvider()
+
+        await signInWithPopup(
+          auth,
+          provider
+        )
+
+        setShowLogin(false)
+      } catch (error) {
+        console.error(
+          "Google login error:",
+          error
+        )
+
+        setLoginError(
+          "Google sign in সম্পন্ন করা যায়নি।"
+        )
+      } finally {
+        setLoginLoading(
+          false
+        )
+      }
+    }
+
+  /*
+   * External links.
+   */
+  const handleLinkClick =
+    (link: string) => {
+      window.open(
+        link,
+        "_blank",
+        "noopener,noreferrer"
+      )
+    }
+
   if (authLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#0a0a12] via-[#050508] to-[#020206] flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <div className="relative w-12 h-12">
-            <div className="absolute inset-0 rounded-full border-2 border-emerald-400/20" />
+            <div className="absolute inset-0 rounded-full border-2 border-white/10" />
 
             <div className="absolute inset-0 rounded-full border-2 border-transparent border-t-emerald-400 animate-spin" />
           </div>
@@ -762,21 +1046,23 @@ export default function ProfilePage({
       <div className="min-h-screen bg-gradient-to-br from-[#0a0a12] via-[#050508] to-[#020206]">
         <div className="px-4 py-6 max-w-2xl mx-auto space-y-6">
 
-          {/* PROFILE CARD */}
-          <div className="relative overflow-hidden rounded-3xl backdrop-blur-xl bg-white/5 border border-white/10 shadow-2xl transition-all duration-300 hover:shadow-emerald-500/5">
+          {/* PROFILE */}
+          <div className="relative overflow-hidden rounded-3xl backdrop-blur-xl bg-white/5 border border-white/10 shadow-2xl">
             <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 via-transparent to-cyan-500/5" />
 
             <div className="relative p-6">
 
-              {/* Top actions */}
               <div className="mb-5 flex items-center justify-between gap-2">
+
                 {user ? (
                   <button
                     type="button"
                     onClick={() =>
-                      setShowNotifications(true)
+                      setShowNotifications(
+                        true
+                      )
                     }
-                    className="relative flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-2 text-sm text-slate-200 transition hover:bg-white/10"
+                    className="relative flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-2 text-sm text-slate-200 hover:bg-white/10 transition"
                   >
                     <Bell className="size-4" />
 
@@ -804,7 +1090,7 @@ export default function ProfilePage({
                     onClick={() =>
                       void signOut()
                     }
-                    className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-2 text-sm text-slate-200 transition hover:bg-white/10"
+                    className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-2 text-sm text-slate-200 hover:bg-white/10 transition"
                   >
                     <LogOut className="size-4" />
                     Sign out
@@ -813,9 +1099,9 @@ export default function ProfilePage({
                   <button
                     type="button"
                     onClick={() =>
-                      setShowAuthModal(true)
+                      setShowLogin(true)
                     }
-                    className="flex items-center gap-2 rounded-full border border-emerald-400/30 bg-emerald-500/10 px-3 py-2 text-sm text-emerald-300 transition hover:bg-emerald-500/20"
+                    className="flex items-center gap-2 rounded-full border border-emerald-400/30 bg-emerald-500/10 px-3 py-2 text-sm text-emerald-300 hover:bg-emerald-500/20 transition"
                   >
                     <LogIn className="size-4" />
                     Sign in
@@ -823,16 +1109,17 @@ export default function ProfilePage({
                 )}
               </div>
 
-              {/* Profile image */}
+              {/* IMAGE */}
               <div className="flex flex-col items-center mb-6">
                 <div className="relative">
-                  <div className="absolute inset-0 rounded-full bg-gradient-to-r from-emerald-400 to-cyan-500 blur-xl opacity-60 animate-pulse" />
+
+                  <div className="absolute inset-0 rounded-full bg-gradient-to-r from-emerald-400 to-cyan-500 blur-xl opacity-50 animate-pulse" />
 
                   <div className="relative w-24 h-24 rounded-full overflow-hidden ring-4 ring-white/20 shadow-2xl">
                     <img
                       src={profileImage}
                       alt="Profile"
-                      className="w-full h-full object-cover bg-gradient-to-br from-slate-800 to-slate-900"
+                      className="w-full h-full object-cover bg-slate-900"
                     />
                   </div>
 
@@ -854,7 +1141,7 @@ export default function ProfilePage({
                   </div>
                 </div>
 
-                <h2 className="text-white font-bold text-2xl mt-4 bg-gradient-to-r from-white to-white/80 bg-clip-text text-transparent">
+                <h2 className="text-white font-bold text-2xl mt-4">
                   {profile.name ||
                     "আপনার নাম"}
                 </h2>
@@ -884,16 +1171,16 @@ export default function ProfilePage({
                 </div>
               </div>
 
-              {/* Profile fields */}
+              {/* FIELDS */}
               <div className="space-y-3">
 
-                {/* Name */}
-                <div className="group relative overflow-hidden rounded-xl backdrop-blur-md bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-300">
+                {/* NAME */}
+                <div className="rounded-xl bg-white/5 border border-white/10">
                   <div className="flex items-center gap-2 p-3">
-                    <User className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+                    <User className="w-4 h-4 text-emerald-400" />
 
                     <div className="flex-1">
-                      <label className="text-slate-300 text-xs font-medium tracking-wide">
+                      <label className="text-slate-300 text-xs">
                         নাম
                       </label>
 
@@ -901,81 +1188,68 @@ export default function ProfilePage({
                         <input
                           type="text"
                           value={profile.name}
-                          onChange={(event) =>
-                            setProfile(
-                              (
-                                current
-                              ) => ({
-                                ...current,
-                                name: event.target.value,
-                              })
-                            )
+                          onChange={(e) =>
+                            setProfile({
+                              ...profile,
+                              name:
+                                e.target.value,
+                            })
                           }
-                          className="w-full bg-transparent text-white text-sm outline-none placeholder:text-slate-500"
-                          placeholder="আপনার নাম লিখুন"
+                          className="w-full bg-transparent text-white text-sm outline-none"
                         />
                       ) : (
                         <p className="text-white text-sm">
-                          {profile.name || (
-                            <span className="text-slate-400">
-                              সেট করা হয়নি
-                            </span>
-                          )}
+                          {profile.name ||
+                            "সেট করা হয়নি"}
                         </p>
                       )}
                     </div>
                   </div>
                 </div>
 
-                {/* Age */}
-                <div className="group relative overflow-hidden rounded-xl backdrop-blur-md bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-300">
+                {/* AGE */}
+                <div className="rounded-xl bg-white/5 border border-white/10">
                   <div className="flex items-center gap-2 p-3">
-                    <Calendar className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+                    <Calendar className="w-4 h-4 text-emerald-400" />
 
-                    <div className="flex-1">
-                      <label className="text-slate-300 text-xs font-medium tracking-wide">
+                    <div>
+                      <label className="text-slate-300 text-xs">
                         বয়স
                       </label>
 
                       <p className="text-white text-sm">
-                        {profile.age || (
-                          <span className="text-slate-400">
-                            সেট করা হয়নি
-                          </span>
-                        )}
+                        {profile.age ||
+                          "সেট করা হয়নি"}
                       </p>
                     </div>
                   </div>
                 </div>
 
-                {/* Email */}
-                <div className="group relative overflow-hidden rounded-xl backdrop-blur-md bg-white/5 border border-white/10">
+                {/* EMAIL */}
+                <div className="rounded-xl bg-white/5 border border-white/10">
                   <div className="flex items-center gap-2 p-3">
-                    <Mail className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+                    <Mail className="w-4 h-4 text-emerald-400" />
 
-                    <div className="flex-1">
-                      <label className="text-slate-300 text-xs font-medium tracking-wide">
+                    <div className="flex-1 min-w-0">
+                      <label className="text-slate-300 text-xs">
                         Email
                       </label>
 
                       <p className="text-white text-sm break-all">
-                        {profile.email || (
-                          <span className="text-slate-400">
-                            সেট করা হয়নি
-                          </span>
-                        )}
+                        {profile.email ||
+                          "সেট করা হয়নি"}
                       </p>
                     </div>
                   </div>
                 </div>
 
-                {/* Phone */}
-                <div className="group relative overflow-hidden rounded-xl backdrop-blur-md bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-300">
+                {/* PHONE */}
+                <div className="rounded-xl bg-white/5 border border-white/10">
                   <div className="flex items-center gap-2 p-3">
-                    <Phone className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+                    <Phone className="w-4 h-4 text-emerald-400" />
 
                     <div className="flex-1">
-                      <label className="text-slate-300 text-xs font-medium tracking-wide">
+                      <label className="text-slate-300 text-xs">
                         Phone Number
                       </label>
 
@@ -983,40 +1257,33 @@ export default function ProfilePage({
                         <input
                           type="tel"
                           value={profile.phone}
-                          onChange={(event) =>
-                            setProfile(
-                              (
-                                current
-                              ) => ({
-                                ...current,
-                                phone: event.target.value,
-                              })
-                            )
+                          onChange={(e) =>
+                            setProfile({
+                              ...profile,
+                              phone:
+                                e.target.value,
+                            })
                           }
-                          className="w-full bg-transparent text-white text-sm outline-none placeholder:text-slate-500"
-                          placeholder="আপনার নম্বর লিখুন"
+                          className="w-full bg-transparent text-white text-sm outline-none"
                         />
                       ) : (
                         <p className="text-white text-sm">
-                          {profile.phone || (
-                            <span className="text-slate-400">
-                              সেট করা হয়নি
-                            </span>
-                          )}
+                          {profile.phone ||
+                            "সেট করা হয়নি"}
                         </p>
                       )}
                     </div>
                   </div>
                 </div>
 
-                {/* Date of birth */}
+                {/* DOB */}
                 {isEditing && (
-                  <div className="group relative overflow-hidden rounded-xl backdrop-blur-md bg-white/5 border border-white/10">
+                  <div className="rounded-xl bg-white/5 border border-white/10">
                     <div className="flex items-center gap-2 p-3">
-                      <Calendar className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+                      <Calendar className="w-4 h-4 text-emerald-400" />
 
                       <div className="flex-1">
-                        <label className="text-slate-300 text-xs font-medium tracking-wide">
+                        <label className="text-slate-300 text-xs">
                           Date of Birth
                         </label>
 
@@ -1025,17 +1292,12 @@ export default function ProfilePage({
                           value={
                             profile.dateOfBirth
                           }
-                          onChange={(event) =>
-                            setProfile(
-                              (
-                                current
-                              ) => ({
-                                ...current,
-                                dateOfBirth:
-                                  event.target
-                                    .value,
-                              })
-                            )
+                          onChange={(e) =>
+                            setProfile({
+                              ...profile,
+                              dateOfBirth:
+                                e.target.value,
+                            })
                           }
                           className="w-full mt-1 bg-transparent text-white text-sm outline-none"
                         />
@@ -1044,30 +1306,25 @@ export default function ProfilePage({
                   </div>
                 )}
 
-                {/* Edit / Save */}
                 <button
                   type="button"
                   disabled={saving}
-                  onClick={() => {
-                    if (isEditing) {
-                      void handleSave()
-                    } else {
-                      setIsEditing(true)
-                    }
-                  }}
-                  className="relative w-full py-2.5 mt-4 rounded-xl font-bold text-white overflow-hidden group transition-all duration-300 transform active:scale-95 disabled:opacity-60"
+                  onClick={
+                    isEditing
+                      ? () =>
+                          void handleSave()
+                      : () =>
+                          setIsEditing(
+                            true
+                          )
+                  }
+                  className="w-full py-2.5 mt-4 rounded-xl font-bold text-white bg-gradient-to-r from-emerald-500 to-emerald-600 active:scale-[0.98] transition disabled:opacity-60"
                 >
-                  <div className="absolute inset-0 bg-gradient-to-r from-emerald-500 to-emerald-600 group-hover:from-emerald-600 group-hover:to-emerald-700 transition-all duration-300" />
-
-                  <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-
-                  <span className="relative text-sm tracking-wide">
-                    {saving
-                      ? "Saving..."
-                      : isEditing
-                        ? "Save Profile"
-                        : "Edit Profile"}
-                  </span>
+                  {saving
+                    ? "Saving..."
+                    : isEditing
+                      ? "Save Profile"
+                      : "Edit Profile"}
                 </button>
               </div>
             </div>
@@ -1075,11 +1332,12 @@ export default function ProfilePage({
 
           {/* ACCOUNT STATUS */}
           {user && (
-            <div className="relative overflow-hidden rounded-3xl backdrop-blur-xl bg-white/5 border border-white/10 shadow-2xl">
+            <div className="relative overflow-hidden rounded-3xl bg-white/5 border border-white/10 shadow-2xl">
               <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 via-transparent to-cyan-500/5" />
 
               <div className="relative p-5">
-                <div className="flex items-center justify-between gap-3 mb-4">
+
+                <div className="flex items-center justify-between mb-4">
                   <div>
                     <p className="text-white font-bold text-lg">
                       Account Status
@@ -1091,7 +1349,7 @@ export default function ProfilePage({
                   </div>
 
                   <div
-                    className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold ${
+                    className={`rounded-full px-3 py-1.5 text-xs font-bold ${
                       accessStatus ===
                       "premium"
                         ? "bg-emerald-500/15 text-emerald-300"
@@ -1101,10 +1359,10 @@ export default function ProfilePage({
                           : "bg-white/5 text-slate-400"
                     }`}
                   >
-                    <ShieldCheck className="w-3.5 h-3.5" />
+                    <ShieldCheck className="w-3.5 h-3.5 inline mr-1" />
 
                     {accessStatus ===
-                      "premium"
+                    "premium"
                       ? "ACTIVE"
                       : accessStatus ===
                           "trial"
@@ -1116,6 +1374,7 @@ export default function ProfilePage({
                 {accessStatus !==
                 "normal" ? (
                   <div className="rounded-2xl bg-black/20 border border-white/10 p-4">
+
                     <div className="flex items-center gap-3">
                       <div
                         className={`w-11 h-11 rounded-xl flex items-center justify-center ${
@@ -1133,7 +1392,7 @@ export default function ProfilePage({
                         )}
                       </div>
 
-                      <div className="flex-1 min-w-0">
+                      <div className="flex-1">
                         <p className="text-white font-semibold text-sm">
                           {accessStatus ===
                           "premium"
@@ -1151,25 +1410,23 @@ export default function ProfilePage({
                       </div>
                     </div>
 
-                    <div className="mt-4 pt-4 border-t border-white/10">
-                      <div className="flex items-center justify-between">
-                        <span className="text-slate-400 text-xs">
-                          Remaining
-                        </span>
+                    <div className="mt-4 pt-4 border-t border-white/10 flex items-center justify-between">
+                      <span className="text-slate-400 text-xs">
+                        Remaining
+                      </span>
 
-                        <span
-                          className={`font-bold text-sm ${
-                            remainingMilliseconds >
-                            0
-                              ? "text-emerald-300"
-                              : "text-red-400"
-                          }`}
-                        >
-                          {formatRemainingTime(
-                            remainingMilliseconds
-                          )}
-                        </span>
-                      </div>
+                      <span
+                        className={`font-bold text-sm ${
+                          remainingMilliseconds >
+                          0
+                            ? "text-emerald-300"
+                            : "text-red-400"
+                        }`}
+                      >
+                        {formatRemainingTime(
+                          remainingMilliseconds
+                        )}
+                      </span>
                     </div>
                   </div>
                 ) : (
@@ -1179,9 +1436,7 @@ export default function ProfilePage({
                     </p>
 
                     <p className="text-slate-400 text-xs mt-1">
-                      Choose a subscription or
-                      claim your available trial
-                      from the subscription page.
+                      Your account currently has no active subscription or trial.
                     </p>
                   </div>
                 )}
@@ -1189,22 +1444,13 @@ export default function ProfilePage({
             </div>
           )}
 
-          {/* ACCESS STATUS CARD */}
+          {/* MEMBERSHIP */}
           {user && (
-            <AccessStatusCard
-              entitlement={entitlement}
-              profile={firestoreProfile}
-            />
-          )}
-
-          {/* MVBD MEMBERSHIP */}
-          {user && (
-            <div className="relative overflow-hidden rounded-3xl backdrop-blur-xl bg-white/5 border border-white/10 shadow-2xl">
-              <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 via-transparent to-emerald-500/5" />
-
+            <div className="relative overflow-hidden rounded-3xl bg-white/5 border border-white/10 shadow-2xl">
               <div className="relative p-5">
+
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500/20 to-cyan-500/20 flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center">
                     <Gift className="w-5 h-5 text-emerald-400" />
                   </div>
 
@@ -1225,21 +1471,22 @@ export default function ProfilePage({
                     MVBD ID
                   </p>
 
-                  <p className="text-white font-bold text-lg mt-1 break-all">
-                    {firestoreProfile?.mvbdId ||
+                  <p className="text-white font-bold text-lg mt-1">
+                    {liveProfile?.mvbdId ||
                       "Generating..."}
                   </p>
                 </div>
 
-                {/* Referral */}
+                {/* REFERRAL */}
                 <div className="mt-3 rounded-2xl bg-black/20 border border-white/10 p-4">
                   <div className="flex items-center justify-between gap-3">
+
                     <div className="min-w-0">
                       <p className="text-slate-400 text-[11px] uppercase tracking-wider">
                         Referral Code
                       </p>
 
-                      <p className="text-white font-bold text-base mt-1 break-all">
+                      <p className="text-white font-bold text-base mt-1">
                         {referralCode ||
                           "Not available"}
                       </p>
@@ -1251,8 +1498,7 @@ export default function ProfilePage({
                         onClick={() =>
                           void handleCopyReferral()
                         }
-                        className="shrink-0 w-10 h-10 rounded-xl border border-white/10 bg-white/5 flex items-center justify-center text-slate-300 hover:bg-white/10 transition"
-                        aria-label="Copy referral code"
+                        className="w-10 h-10 shrink-0 rounded-xl border border-white/10 bg-white/5 flex items-center justify-center"
                       >
                         {copied ? (
                           <Check className="w-4 h-4 text-emerald-400" />
@@ -1264,7 +1510,7 @@ export default function ProfilePage({
                   </div>
                 </div>
 
-                {/* Referral count */}
+                {/* REFERRALS */}
                 <div className="mt-3 flex items-center justify-between rounded-2xl bg-black/20 border border-white/10 px-4 py-3">
                   <div>
                     <p className="text-white text-sm font-semibold">
@@ -1272,7 +1518,7 @@ export default function ProfilePage({
                     </p>
 
                     <p className="text-slate-400 text-xs mt-0.5">
-                      Updated from Firebase
+                      Firebase synced
                     </p>
                   </div>
 
@@ -1285,25 +1531,25 @@ export default function ProfilePage({
           )}
 
           {/* MENU */}
-          <div className="relative overflow-hidden rounded-3xl backdrop-blur-xl bg-white/5 border border-white/10 shadow-2xl transition-all duration-300 hover:shadow-cyan-500/5">
-            <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 via-transparent to-emerald-500/5" />
-
+          <div className="relative overflow-hidden rounded-3xl bg-white/5 border border-white/10 shadow-2xl">
             <div className="relative p-6">
-              <h3 className="text-white font-bold text-2xl mb-6 bg-gradient-to-r from-white to-white/80 bg-clip-text text-transparent">
+
+              <h3 className="text-white font-bold text-2xl mb-6">
                 Menu
               </h3>
 
               <div className="space-y-2.5">
 
-                {/* Contact */}
                 <button
                   type="button"
                   onClick={() =>
-                    onNavigate?.("contact")
+                    onNavigate?.(
+                      "contact"
+                    )
                   }
-                  className="group w-full flex items-center gap-3 rounded-xl backdrop-blur-md bg-white/5 border border-white/10 hover:bg-white/10 p-3 transition-all duration-300 active:scale-[0.98]"
+                  className="group w-full flex items-center gap-3 rounded-xl bg-white/5 border border-white/10 p-3 hover:bg-white/10 transition"
                 >
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center flex-shrink-0 shadow-lg group-hover:scale-105 transition-transform duration-300">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center">
                     <MessageCircle className="w-5 h-5 text-white" />
                   </div>
 
@@ -1317,20 +1563,50 @@ export default function ProfilePage({
                     </p>
                   </div>
 
-                  <span className="text-white/60 group-hover:text-white transition-colors">
+                  <span className="text-white/50">
                     →
                   </span>
                 </button>
 
-                {/* About */}
+                {/* SUPPORT CHAT */}
+                {user && (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setShowSupport(true)
+                    }
+                    className="group w-full flex items-center gap-3 rounded-xl bg-white/5 border border-white/10 p-3 hover:bg-white/10 transition"
+                  >
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-500 to-cyan-500 flex items-center justify-center">
+                      <MessageCircle className="w-5 h-5 text-white" />
+                    </div>
+
+                    <div className="text-left flex-1">
+                      <p className="text-white font-semibold text-sm">
+                        Live Support
+                      </p>
+
+                      <p className="text-slate-400 text-xs">
+                        Chat with MVBD support team
+                      </p>
+                    </div>
+
+                    <span className="text-emerald-400 text-xs font-bold">
+                      LIVE
+                    </span>
+                  </button>
+                )}
+
                 <button
                   type="button"
                   onClick={() =>
-                    onNavigate?.("about")
+                    onNavigate?.(
+                      "about"
+                    )
                   }
-                  className="group w-full flex items-center gap-3 rounded-xl backdrop-blur-md bg-white/5 border border-white/10 hover:bg-white/10 p-3 transition-all duration-300 active:scale-[0.98]"
+                  className="group w-full flex items-center gap-3 rounded-xl bg-white/5 border border-white/10 p-3 hover:bg-white/10 transition"
                 >
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-500 to-green-500 flex items-center justify-center flex-shrink-0 shadow-lg group-hover:scale-105 transition-transform duration-300">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-500 to-green-500 flex items-center justify-center">
                     <Info className="w-5 h-5 text-white" />
                   </div>
 
@@ -1344,20 +1620,21 @@ export default function ProfilePage({
                     </p>
                   </div>
 
-                  <span className="text-white/60 group-hover:text-white transition-colors">
+                  <span className="text-white/50">
                     →
                   </span>
                 </button>
 
-                {/* Settings */}
                 <button
                   type="button"
                   onClick={() =>
-                    onNavigate?.("settings")
+                    onNavigate?.(
+                      "settings"
+                    )
                   }
-                  className="group w-full flex items-center gap-3 rounded-xl backdrop-blur-md bg-white/5 border border-white/10 hover:bg-white/10 p-3 transition-all duration-300 active:scale-[0.98]"
+                  className="group w-full flex items-center gap-3 rounded-xl bg-white/5 border border-white/10 p-3 hover:bg-white/10 transition"
                 >
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-indigo-500 flex items-center justify-center flex-shrink-0 shadow-lg group-hover:scale-105 transition-transform duration-300">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-indigo-500 flex items-center justify-center">
                     <Settings className="w-5 h-5 text-white" />
                   </div>
 
@@ -1371,22 +1648,23 @@ export default function ProfilePage({
                     </p>
                   </div>
 
-                  <span className="text-white/60 group-hover:text-white transition-colors">
+                  <span className="text-white/50">
                     →
                   </span>
                 </button>
 
-                {/* Social links */}
+                {/* SOCIAL */}
                 <button
                   type="button"
                   onClick={() =>
                     setShowSocialLinks(
-                      (current) => !current
+                      (current) =>
+                        !current
                     )
                   }
-                  className="group w-full flex items-center gap-3 rounded-xl backdrop-blur-md bg-white/5 border border-white/10 hover:bg-white/10 p-3 transition-all duration-300 active:scale-[0.98]"
+                  className="group w-full flex items-center gap-3 rounded-xl bg-white/5 border border-white/10 p-3 hover:bg-white/10 transition"
                 >
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-sky-500 to-blue-600 flex items-center justify-center flex-shrink-0 shadow-lg group-hover:scale-105 transition-transform duration-300">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-sky-500 to-blue-600 flex items-center justify-center">
                     <Phone className="w-5 h-5 text-white" />
                   </div>
 
@@ -1410,43 +1688,48 @@ export default function ProfilePage({
                 {showSocialLinks && (
                   <div className="pt-1 space-y-2">
                     {socialLinks.map(
-                      (item) => {
-                        const Icon =
-                          item.icon
-
-                        return (
-                          <button
-                            type="button"
-                            key={item.id}
-                            onClick={() =>
-                              handleLinkClick(
-                                item.link
-                              )
-                            }
-                            className="w-full flex items-center gap-3 rounded-xl bg-black/20 border border-white/10 p-3 hover:bg-white/5 transition"
+                      (item) => (
+                        <button
+                          type="button"
+                          key={item.id}
+                          onClick={() =>
+                            handleLinkClick(
+                              item.link
+                            )
+                          }
+                          className="w-full flex items-center gap-3 rounded-xl bg-black/20 border border-white/10 p-3 hover:bg-white/5 transition"
+                        >
+                          <div
+                            className={`w-9 h-9 rounded-full bg-gradient-to-br ${item.iconBg} flex items-center justify-center`}
                           >
-                            <div
-                              className={`w-9 h-9 rounded-full bg-gradient-to-br ${item.iconBg} flex items-center justify-center`}
-                            >
-                              <Icon />
-                            </div>
+                            {item.icon ===
+                            Phone ? (
+                              <Phone className="w-5 h-5 text-white" />
+                            ) : item.icon ===
+                              "telegram" ? (
+                              <Send className="w-5 h-5 text-white" />
+                            ) : (
+                              <span className="text-white font-bold">
+                                f
+                              </span>
+                            )}
+                          </div>
 
-                            <div className="flex-1 text-left">
-                              <p className="text-white text-sm font-semibold">
-                                {item.title}
-                              </p>
+                          <div className="flex-1 text-left">
+                            <p className="text-white text-sm font-semibold">
+                              {item.title}
+                            </p>
 
-                              <p className="text-slate-400 text-xs">
-                                {item.subtitle}
-                              </p>
-                            </div>
+                            <p className="text-slate-400 text-xs">
+                              {item.subtitle}
+                            </p>
+                          </div>
 
-                            <span className="text-white/40">
-                              ↗
-                            </span>
-                          </button>
-                        )
-                      }
+                          <span className="text-white/40">
+                            ↗
+                          </span>
+                        </button>
+                      )
                     )}
                   </div>
                 )}
@@ -1454,23 +1737,25 @@ export default function ProfilePage({
             </div>
           </div>
 
-          {/* Footer */}
-          <div className="mt-8 pt-6 border-t border-white/10">
+          <div className="pt-6 border-t border-white/10">
             <p className="text-center text-slate-400 text-sm">
               © 2025 MoviesVerse.
-              সর্বাধিকার সংরক্ষিত. All rights
-              reserved.
+              সর্বাধিকার সংরক্ষিত. All rights reserved.
             </p>
           </div>
         </div>
       </div>
 
-      {/* NOTIFICATION MODAL */}
+      {/* =========================
+          NOTIFICATIONS
+      ========================== */}
       {showNotifications && (
         <div
-          className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-3 sm:p-5 bg-black/70 backdrop-blur-md"
+          className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-3 bg-black/70 backdrop-blur-md"
           onClick={() =>
-            setShowNotifications(false)
+            setShowNotifications(
+              false
+            )
           }
         >
           <div
@@ -1479,8 +1764,8 @@ export default function ProfilePage({
               event.stopPropagation()
             }
           >
-            {/* Header */}
             <div className="flex items-center gap-3 px-5 py-4 border-b border-white/10">
+
               <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center">
                 <Bell className="w-5 h-5 text-emerald-400" />
               </div>
@@ -1493,12 +1778,7 @@ export default function ProfilePage({
                 <p className="text-slate-400 text-xs">
                   {unreadNotificationCount >
                   0
-                    ? `${unreadNotificationCount} unread notification${
-                        unreadNotificationCount >
-                        1
-                          ? "s"
-                          : ""
-                      }`
+                    ? `${unreadNotificationCount} unread`
                     : "You're all caught up"}
                 </p>
               </div>
@@ -1510,7 +1790,7 @@ export default function ProfilePage({
                   onClick={() =>
                     void handleMarkAllRead()
                   }
-                  className="text-[11px] text-emerald-300 hover:text-emerald-200 mr-2"
+                  className="text-[11px] text-emerald-300 mr-2"
                 >
                   Mark all read
                 </button>
@@ -1519,74 +1799,63 @@ export default function ProfilePage({
               <button
                 type="button"
                 onClick={() =>
-                  setShowNotifications(false)
+                  setShowNotifications(
+                    false
+                  )
                 }
-                className="w-9 h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-slate-300 hover:bg-white/10"
-                aria-label="Close notifications"
+                className="w-9 h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center"
               >
-                <X className="w-4 h-4" />
+                <X className="w-4 h-4 text-slate-300" />
               </button>
             </div>
 
-            {/* Notification list */}
             <div className="overflow-y-auto max-h-[calc(85vh-82px)] p-3">
               {notifications.length ===
               0 ? (
                 <div className="py-14 text-center">
-                  <div className="w-14 h-14 mx-auto rounded-full bg-white/5 flex items-center justify-center">
-                    <Bell className="w-6 h-6 text-slate-500" />
-                  </div>
+                  <Bell className="w-7 h-7 text-slate-500 mx-auto" />
 
                   <p className="text-white font-semibold mt-4">
                     No notifications
                   </p>
 
                   <p className="text-slate-500 text-xs mt-1">
-                    New updates from MVBD will
-                    appear here.
+                    New MVBD updates will appear here.
                   </p>
                 </div>
               ) : (
                 <div className="space-y-2">
                   {notifications.map(
-                    (notification) => (
+                    (
+                      notification
+                    ) => (
                       <button
                         type="button"
-                        key={notification.id}
+                        key={
+                          notification.id
+                        }
                         onClick={() =>
                           void handleNotificationClick(
                             notification
                           )
                         }
-                        className={`w-full text-left rounded-2xl border p-4 transition ${
+                        className={`w-full text-left rounded-2xl border p-4 ${
                           notification.read
                             ? "bg-white/[0.025] border-white/5"
                             : "bg-emerald-500/[0.06] border-emerald-400/15"
                         }`}
                       >
                         <div className="flex gap-3">
-                          <div
-                            className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
-                              notification.type ===
-                              "subscription"
-                                ? "bg-emerald-500/10 text-emerald-400"
-                                : notification.type ===
-                                    "payment"
-                                  ? "bg-orange-500/10 text-orange-400"
-                                  : notification.type ===
-                                      "referral"
-                                    ? "bg-purple-500/10 text-purple-400"
-                                    : "bg-white/5 text-slate-300"
-                            }`}
-                          >
+
+                          <div className="w-9 h-9 rounded-xl bg-emerald-500/10 flex items-center justify-center shrink-0">
                             {notification.type ===
-                            "subscription" ? (
-                              <Crown className="w-4 h-4" />
+                            "referral" ? (
+                              <Gift className="w-4 h-4 text-purple-400" />
                             ) : notification.type ===
-                              "referral" ? (
-                              <Gift className="w-4 h-4" />
+                              "subscription" ? (
+                              <Crown className="w-4 h-4 text-emerald-400" />
                             ) : (
-                              <Bell className="w-4 h-4" />
+                              <Bell className="w-4 h-4 text-slate-300" />
                             )}
                           </div>
 
@@ -1626,47 +1895,312 @@ export default function ProfilePage({
         </div>
       )}
 
-      {/* AUTH MODAL */}
-      <AuthModal
-        open={showAuthModal}
-        onClose={() =>
-          setShowAuthModal(false)
-        }
-      />
+      {/* =========================
+          SUPPORT CHAT
+      ========================== */}
+      {showSupport &&
+        user && (
+          <div
+            className="fixed inset-0 z-[110] flex items-end sm:items-center justify-center p-3 bg-black/70 backdrop-blur-md"
+            onClick={() =>
+              setShowSupport(false)
+            }
+          >
+            <div
+              className="w-full max-w-lg h-[80vh] sm:h-[650px] rounded-3xl border border-white/10 bg-[#0b0c14]/95 shadow-2xl flex flex-col overflow-hidden"
+              onClick={(event) =>
+                event.stopPropagation()
+              }
+            >
 
-      {/* Global CSS */}
+              <div className="flex items-center gap-3 px-5 py-4 border-b border-white/10">
+
+                <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center">
+                  <MessageCircle className="w-5 h-5 text-emerald-400" />
+                </div>
+
+                <div className="flex-1">
+                  <h3 className="text-white font-bold">
+                    MVBD Support
+                  </h3>
+
+                  <p className="text-emerald-400 text-[11px]">
+                    ● Live support
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    setShowSupport(false)
+                  }
+                  className="w-9 h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center"
+                >
+                  <X className="w-4 h-4 text-slate-300" />
+                </button>
+              </div>
+
+              <div className="flex-1 overflow-y-auto p-4 space-y-3">
+
+                {supportMessages.length ===
+                0 ? (
+                  <div className="h-full flex flex-col items-center justify-center text-center">
+                    <MessageCircle className="w-10 h-10 text-slate-600" />
+
+                    <p className="text-white font-semibold mt-4">
+                      Start a conversation
+                    </p>
+
+                    <p className="text-slate-500 text-xs mt-1 max-w-xs">
+                      Send a message to MVBD support. Admin replies will appear here in realtime.
+                    </p>
+                  </div>
+                ) : (
+                  supportMessages.map(
+                    (message) => {
+                      const isAdmin =
+                        message.senderRole ===
+                        "admin"
+
+                      return (
+                        <div
+                          key={
+                            message.id
+                          }
+                          className={`flex ${
+                            isAdmin
+                              ? "justify-start"
+                              : "justify-end"
+                          }`}
+                        >
+                          <div
+                            className={`max-w-[82%] rounded-2xl px-4 py-3 ${
+                              isAdmin
+                                ? "bg-white/10 border border-white/10"
+                                : "bg-emerald-500/15 border border-emerald-400/20"
+                            }`}
+                          >
+                            {isAdmin && (
+                              <p className="text-emerald-400 text-[10px] font-bold mb-1">
+                                MVBD SUPPORT
+                              </p>
+                            )}
+
+                            <p className="text-white text-sm leading-5">
+                              {
+                                message.message
+                              }
+                            </p>
+
+                            <p className="text-slate-500 text-[9px] mt-2">
+                              {formatDate(
+                                message.createdAt
+                              )}
+                            </p>
+                          </div>
+                        </div>
+                      )
+                    }
+                  )
+                )}
+              </div>
+
+              <div className="p-3 border-t border-white/10">
+                <div className="flex items-end gap-2 rounded-2xl bg-white/5 border border-white/10 p-2">
+
+                  <textarea
+                    value={
+                      supportText
+                    }
+                    onChange={(e) =>
+                      setSupportText(
+                        e.target.value
+                      )
+                    }
+                    onKeyDown={(e) => {
+                      if (
+                        e.key ===
+                          "Enter" &&
+                        !e.shiftKey
+                      ) {
+                        e.preventDefault()
+
+                        void handleSendSupport()
+                      }
+                    }}
+                    placeholder="Write a message..."
+                    rows={1}
+                    className="flex-1 resize-none bg-transparent text-white text-sm outline-none px-2 py-2 placeholder:text-slate-500"
+                  />
+
+                  <button
+                    type="button"
+                    disabled={
+                      sendingSupport ||
+                      !supportText.trim()
+                    }
+                    onClick={() =>
+                      void handleSendSupport()
+                    }
+                    className="w-10 h-10 rounded-xl bg-emerald-500 flex items-center justify-center disabled:opacity-40"
+                  >
+                    {sendingSupport ? (
+                      <Loader2 className="w-4 h-4 text-white animate-spin" />
+                    ) : (
+                      <Send className="w-4 h-4 text-white" />
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+      {/* =========================
+          SIMPLE LOGIN MODAL
+      ========================== */}
+      {showLogin && (
+        <div
+          className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-black/75 backdrop-blur-md"
+          onClick={() =>
+            setShowLogin(false)
+          }
+        >
+          <div
+            className="w-full max-w-sm rounded-3xl border border-white/10 bg-[#0b0c14]/95 shadow-2xl p-5"
+            onClick={(event) =>
+              event.stopPropagation()
+            }
+          >
+
+            <div className="flex items-center justify-between mb-5">
+
+              <div>
+                <h3 className="text-white text-xl font-bold">
+                  Welcome Back
+                </h3>
+
+                <p className="text-slate-400 text-xs mt-1">
+                  Sign in to your MVBD account
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() =>
+                  setShowLogin(false)
+                }
+                className="w-9 h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center"
+              >
+                <X className="w-4 h-4 text-slate-300" />
+              </button>
+            </div>
+
+            {loginError && (
+              <div className="mb-3 rounded-xl border border-red-400/20 bg-red-500/10 px-3 py-2 text-xs text-red-300">
+                {loginError}
+              </div>
+            )}
+
+            <div className="space-y-3">
+
+              <input
+                type="email"
+                value={loginEmail}
+                onChange={(e) =>
+                  setLoginEmail(
+                    e.target.value
+                  )
+                }
+                placeholder="Email"
+                className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-3 text-white text-sm outline-none focus:border-emerald-400/40"
+              />
+
+              <input
+                type="password"
+                value={
+                  loginPassword
+                }
+                onChange={(e) =>
+                  setLoginPassword(
+                    e.target.value
+                  )
+                }
+                placeholder="Password"
+                className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-3 text-white text-sm outline-none focus:border-emerald-400/40"
+              />
+
+              <button
+                type="button"
+                disabled={
+                  loginLoading
+                }
+                onClick={() =>
+                  void handleLogin()
+                }
+                className="w-full rounded-xl bg-emerald-500 py-3 text-white font-bold text-sm disabled:opacity-50"
+              >
+                {loginLoading
+                  ? "Signing in..."
+                  : "Sign In"}
+              </button>
+
+              <div className="flex items-center gap-3">
+                <div className="h-px bg-white/10 flex-1" />
+                <span className="text-slate-500 text-xs">
+                  OR
+                </span>
+                <div className="h-px bg-white/10 flex-1" />
+              </div>
+
+              <button
+                type="button"
+                disabled={
+                  loginLoading
+                }
+                onClick={() =>
+                  void handleGoogleLogin()
+                }
+                className="w-full rounded-xl bg-white/5 border border-white/10 py-3 text-white font-semibold text-sm disabled:opacity-50"
+              >
+                Continue with Google
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <style jsx global>{`
         ::-webkit-scrollbar {
-          width: 8px;
+          width: 7px;
         }
 
         ::-webkit-scrollbar-track {
-          background: rgba(255, 255, 255, 0.05);
-          border-radius: 10px;
+          background: rgba(255, 255, 255, 0.03);
         }
 
         ::-webkit-scrollbar-thumb {
-          background: rgba(255, 255, 255, 0.2);
-          border-radius: 10px;
+          background: rgba(255, 255, 255, 0.18);
+          border-radius: 999px;
         }
 
         ::-webkit-scrollbar-thumb:hover {
-          background: rgba(255, 255, 255, 0.3);
+          background: rgba(255, 255, 255, 0.28);
         }
 
-        @keyframes mvbd-profile-pulse {
+        @keyframes mvbdProfilePulse {
           0%,
           100% {
-            opacity: 0.6;
+            opacity: 0.55;
           }
 
           50% {
-            opacity: 0.3;
+            opacity: 0.25;
           }
         }
 
         .animate-pulse {
-          animation: mvbd-profile-pulse
+          animation: mvbdProfilePulse
             3s cubic-bezier(0.4, 0, 0.6, 1)
             infinite;
         }

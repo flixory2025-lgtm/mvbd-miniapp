@@ -29,7 +29,7 @@ import {
   subscribeToMyNotifications,
   markNotificationRead,
   type NotificationItem,
-} from "@/lib/notifications";
+} from "@/lib/notifications"
 
 interface ProfileData {
   name: string
@@ -40,7 +40,9 @@ interface ProfileData {
 }
 
 interface ProfilePageProps {
-  onNavigate?: (page: "contact" | "about" | "settings") => void
+  onNavigate?: (
+    page: "contact" | "about" | "settings"
+  ) => void
 }
 
 const DEFAULT_PROFILE_IMAGE =
@@ -60,7 +62,11 @@ const socialLinks = [
     title: "Facebook Page 1",
     subtitle: "Visit our page",
     icon: () => (
-      <svg viewBox="0 0 24 24" className="w-6 h-6 fill-white">
+      <svg
+        viewBox="0 0 24 24"
+        className="w-6 h-6 fill-white"
+        aria-hidden="true"
+      >
         <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
       </svg>
     ),
@@ -72,7 +78,11 @@ const socialLinks = [
     title: "Facebook Page 2",
     subtitle: "Visit our page",
     icon: () => (
-      <svg viewBox="0 0 24 24" className="w-6 h-6 fill-white">
+      <svg
+        viewBox="0 0 24 24"
+        className="w-6 h-6 fill-white"
+        aria-hidden="true"
+      >
         <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
       </svg>
     ),
@@ -84,7 +94,11 @@ const socialLinks = [
     title: "Private Request Group",
     subtitle: "Join our private group",
     icon: () => (
-      <svg viewBox="0 0 24 24" className="w-6 h-6 fill-white">
+      <svg
+        viewBox="0 0 24 24"
+        className="w-6 h-6 fill-white"
+        aria-hidden="true"
+      >
         <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
       </svg>
     ),
@@ -96,7 +110,11 @@ const socialLinks = [
     title: "Public Request Group",
     subtitle: "Join our public group",
     icon: () => (
-      <svg viewBox="0 0 24 24" className="w-6 h-6 fill-white">
+      <svg
+        viewBox="0 0 24 24"
+        className="w-6 h-6 fill-white"
+        aria-hidden="true"
+      >
         <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
       </svg>
     ),
@@ -108,7 +126,11 @@ const socialLinks = [
     title: "Telegram Channels",
     subtitle: "Join all our channels",
     icon: () => (
-      <svg viewBox="0 0 24 24" className="w-6 h-6 fill-white">
+      <svg
+        viewBox="0 0 24 24"
+        className="w-6 h-6 fill-white"
+        aria-hidden="true"
+      >
         <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z" />
       </svg>
     ),
@@ -128,9 +150,14 @@ function getTimestampMillis(value: unknown): number {
     typeof value === "object" &&
     value !== null &&
     "toMillis" in value &&
-    typeof (value as { toMillis?: unknown }).toMillis === "function"
+    typeof (value as { toMillis?: unknown }).toMillis ===
+      "function"
   ) {
-    return (value as { toMillis: () => number }).toMillis()
+    return (
+      value as {
+        toMillis: () => number
+      }
+    ).toMillis()
   }
 
   if (
@@ -139,7 +166,11 @@ function getTimestampMillis(value: unknown): number {
     "seconds" in value
   ) {
     const seconds = Number(
-      (value as { seconds?: number }).seconds ?? 0
+      (
+        value as {
+          seconds?: number
+        }
+      ).seconds ?? 0
     )
 
     return seconds * 1000
@@ -147,7 +178,12 @@ function getTimestampMillis(value: unknown): number {
 
   if (typeof value === "string") {
     const parsed = new Date(value).getTime()
+
     return Number.isNaN(parsed) ? 0 : parsed
+  }
+
+  if (typeof value === "number") {
+    return value
   }
 
   return 0
@@ -164,10 +200,13 @@ function calculateAge(dateOfBirth: string): string {
 
   const today = new Date()
 
-  let age = today.getFullYear() - birthDate.getFullYear()
+  let age =
+    today.getFullYear() -
+    birthDate.getFullYear()
 
   const monthDifference =
-    today.getMonth() - birthDate.getMonth()
+    today.getMonth() -
+    birthDate.getMonth()
 
   if (
     monthDifference < 0 ||
@@ -180,20 +219,29 @@ function calculateAge(dateOfBirth: string): string {
   return age >= 0 ? String(age) : ""
 }
 
-function formatRemainingTime(milliseconds: number): string {
+function formatRemainingTime(
+  milliseconds: number
+): string {
   if (milliseconds <= 0) {
     return "Expired"
   }
 
-  const totalSeconds = Math.floor(milliseconds / 1000)
+  const totalSeconds = Math.floor(
+    milliseconds / 1000
+  )
 
-  const days = Math.floor(totalSeconds / 86400)
+  const days = Math.floor(
+    totalSeconds / 86400
+  )
+
   const hours = Math.floor(
     (totalSeconds % 86400) / 3600
   )
+
   const minutes = Math.floor(
     (totalSeconds % 3600) / 60
   )
+
   const seconds = totalSeconds % 60
 
   if (days > 0) {
@@ -212,7 +260,8 @@ function formatRemainingTime(milliseconds: number): string {
 }
 
 function formatDate(value: unknown): string {
-  const milliseconds = getTimestampMillis(value)
+  const milliseconds =
+    getTimestampMillis(value)
 
   if (!milliseconds) {
     return "—"
@@ -236,18 +285,23 @@ export default function ProfilePage({
     signOut,
   } = useAuth()
 
-  const [showAuthModal, setShowAuthModal] = useState(false)
+  const [showAuthModal, setShowAuthModal] =
+    useState(false)
 
-  const [profile, setProfile] = useState<ProfileData>({
-    name: "",
-    age: "",
-    email: "",
-    phone: "",
-    dateOfBirth: "",
-  })
+  const [profile, setProfile] =
+    useState<ProfileData>({
+      name: "",
+      age: "",
+      email: "",
+      phone: "",
+      dateOfBirth: "",
+    })
 
-  const [isEditing, setIsEditing] = useState(false)
-  const [saving, setSaving] = useState(false)
+  const [isEditing, setIsEditing] =
+    useState(false)
+
+  const [saving, setSaving] =
+    useState(false)
 
   const [profileImage, setProfileImage] =
     useState(DEFAULT_PROFILE_IMAGE)
@@ -255,36 +309,45 @@ export default function ProfilePage({
   const [showSocialLinks, setShowSocialLinks] =
     useState(false)
 
-  const [notifications, setNotifications] = useState<
-    NotificationItem[]
-  >([])
+  const [notifications, setNotifications] =
+    useState<NotificationItem[]>([])
 
   const [showNotifications, setShowNotifications] =
     useState(false)
 
-  const [copied, setCopied] = useState(false)
+  const [copied, setCopied] =
+    useState(false)
 
-  const [now, setNow] = useState(Date.now())
+  const [now, setNow] =
+    useState(() => Date.now())
 
   /*
    * Firebase profile → local profile state
    */
   useEffect(() => {
     if (firestoreProfile) {
-      const age = calculateAge(
-        firestoreProfile.dateOfBirth || ""
-      )
+      const dateOfBirth =
+        typeof firestoreProfile.dateOfBirth ===
+        "string"
+          ? firestoreProfile.dateOfBirth
+          : ""
+
+      const age =
+        calculateAge(dateOfBirth)
+
+      const firebasePhone =
+        (
+          firestoreProfile as unknown as {
+            phone?: string
+          }
+        ).phone || ""
 
       setProfile({
         name: firestoreProfile.name || "",
         age,
         email: firestoreProfile.email || "",
-        phone:
-          (firestoreProfile as unknown as {
-            phone?: string
-          }).phone || "",
-        dateOfBirth:
-          firestoreProfile.dateOfBirth || "",
+        phone: firebasePhone,
+        dateOfBirth,
       })
 
       setProfileImage(
@@ -297,18 +360,23 @@ export default function ProfilePage({
 
     if (!user) {
       const savedProfile =
-        localStorage.getItem("mvbd_profile")
+        localStorage.getItem(
+          "mvbd_profile"
+        )
 
       if (savedProfile) {
         try {
-          const saved = JSON.parse(savedProfile)
+          const saved =
+            JSON.parse(savedProfile)
 
           setProfile((current) => ({
             ...current,
             ...saved,
           }))
         } catch {
-          localStorage.removeItem("mvbd_profile")
+          localStorage.removeItem(
+            "mvbd_profile"
+          )
         }
       }
     }
@@ -318,12 +386,25 @@ export default function ProfilePage({
    * Keep age synced with DOB.
    */
   useEffect(() => {
-    if (!profile.dateOfBirth) return
+    if (!profile.dateOfBirth) {
+      return
+    }
 
-    setProfile((current) => ({
-      ...current,
-      age: calculateAge(current.dateOfBirth),
-    }))
+    const nextAge =
+      calculateAge(
+        profile.dateOfBirth
+      )
+
+    setProfile((current) => {
+      if (current.age === nextAge) {
+        return current
+      }
+
+      return {
+        ...current,
+        age: nextAge,
+      }
+    })
   }, [profile.dateOfBirth])
 
   /*
@@ -335,22 +416,39 @@ export default function ProfilePage({
       return
     }
 
-    const unsubscribe =
-      subscribeToMyNotifications(
-        user.uid,
-        (items) => {
-          setNotifications(items)
-        },
-        (error) => {
-          console.error(
-            "Notification realtime listener error:",
-            error
-          )
-        }
+    let unsubscribe:
+      | (() => void)
+      | undefined
+
+    try {
+      unsubscribe =
+        subscribeToMyNotifications(
+          user.uid,
+          (items) => {
+            setNotifications(
+              Array.isArray(items)
+                ? items
+                : []
+            )
+          },
+          (error) => {
+            console.error(
+              "Notification realtime listener error:",
+              error
+            )
+          }
+        )
+    } catch (error) {
+      console.error(
+        "Failed to subscribe to notifications:",
+        error
       )
+    }
 
     return () => {
-      unsubscribe()
+      if (unsubscribe) {
+        unsubscribe()
+      }
     }
   }, [user?.uid])
 
@@ -358,9 +456,10 @@ export default function ProfilePage({
    * Update countdown every second.
    */
   useEffect(() => {
-    const timer = window.setInterval(() => {
-      setNow(Date.now())
-    }, 1000)
+    const timer =
+      window.setInterval(() => {
+        setNow(Date.now())
+      }, 1000)
 
     return () => {
       window.clearInterval(timer)
@@ -368,33 +467,37 @@ export default function ProfilePage({
   }, [])
 
   /*
-   * Unread notifications.
+   * Unread notification count.
    */
-  const unreadNotificationCount = useMemo(() => {
-    return notifications.filter(
-      (notification) => !notification.read
-    ).length
-  }, [notifications])
+  const unreadNotificationCount =
+    useMemo(() => {
+      return notifications.filter(
+        (notification) =>
+          !notification.read
+      ).length
+    }, [notifications])
 
   /*
-   * Referral code.
-   *
-   * Supports referralCode if it already exists
-   * in the Firebase user profile.
+   * Referral information.
    */
+  const extendedProfile =
+    firestoreProfile as unknown as
+      | {
+          referralCode?: string
+          promoCode?: string
+          successfulReferrals?: number
+          referralCount?: number
+        }
+      | null
+
   const referralCode =
-    (firestoreProfile as unknown as {
-      referralCode?: string
-    } | null)?.referralCode || ""
+    extendedProfile?.referralCode ||
+    extendedProfile?.promoCode ||
+    ""
 
   const referralCount = Number(
-    (firestoreProfile as unknown as {
-      successfulReferrals?: number
-      referralCount?: number
-    } | null)?.successfulReferrals ??
-      (firestoreProfile as unknown as {
-        referralCount?: number
-      } | null)?.referralCount ??
+    extendedProfile?.successfulReferrals ??
+      extendedProfile?.referralCount ??
       0
   )
 
@@ -402,53 +505,78 @@ export default function ProfilePage({
    * Subscription information.
    */
   const subscriptionPlan =
-    firestoreProfile?.subscriptionPlan || ""
+    firestoreProfile?.subscriptionPlan ||
+    ""
 
   const subscriptionExpiresAt =
-    firestoreProfile?.subscriptionExpiresAt || null
+    firestoreProfile?.subscriptionExpiresAt ||
+    null
 
   const trialExpiresAt =
-    firestoreProfile?.trialExpiresAt || null
+    firestoreProfile?.trialExpiresAt ||
+    null
 
   const subscriptionExpiryMillis =
-    getTimestampMillis(subscriptionExpiresAt)
+    getTimestampMillis(
+      subscriptionExpiresAt
+    )
 
   const trialExpiryMillis =
-    getTimestampMillis(trialExpiresAt)
+    getTimestampMillis(
+      trialExpiresAt
+    )
 
+  /*
+   * Premium status.
+   */
   const hasActiveSubscription =
     Boolean(
-      entitlement?.hasPremiumAccess ||
+      entitlement?.hasPremiumAccess ===
+        true ||
         (
-          entitlement?.subscriptionStatus ===
+          entitlement
+            ?.subscriptionStatus ===
+            "active" &&
+          subscriptionExpiryMillis > now
+        ) ||
+        (
+          firestoreProfile
+            ?.subscriptionStatus ===
             "active" &&
           subscriptionExpiryMillis > now
         )
     )
 
+  /*
+   * Trial status.
+   */
   const hasActiveTrial =
     Boolean(
-      entitlement?.isTrialActive ||
+      entitlement?.isTrialActive ===
+        true ||
         (
-          firestoreProfile?.accessType === "trial" &&
+          firestoreProfile
+            ?.accessType === "trial" &&
           trialExpiryMillis > now
         )
     )
 
-  const accessExpiryMillis = hasActiveSubscription
-    ? subscriptionExpiryMillis
-    : hasActiveTrial
-      ? trialExpiryMillis
-      : 0
+  const accessExpiryMillis =
+    hasActiveSubscription
+      ? subscriptionExpiryMillis
+      : hasActiveTrial
+        ? trialExpiryMillis
+        : 0
 
   const remainingMilliseconds =
     accessExpiryMillis - now
 
-  const accessStatus = hasActiveSubscription
-    ? "premium"
-    : hasActiveTrial
-      ? "trial"
-      : "normal"
+  const accessStatus =
+    hasActiveSubscription
+      ? "premium"
+      : hasActiveTrial
+        ? "trial"
+        : "normal"
 
   const accessLabel =
     accessStatus === "premium"
@@ -461,7 +589,8 @@ export default function ProfilePage({
    * Save profile.
    */
   const handleSave = async () => {
-    const cleanName = profile.name.trim()
+    const cleanName =
+      profile.name.trim()
 
     if (!cleanName) {
       return
@@ -471,11 +600,18 @@ export default function ProfilePage({
 
     try {
       if (user) {
-        await updateUserProfile(user.uid, {
-          name: cleanName,
-          dateOfBirth:
-            profile.dateOfBirth.trim(),
-        })
+        /*
+         * Keep the known profile fields
+         * handled by the existing helper.
+         */
+        await updateUserProfile(
+          user.uid,
+          {
+            name: cleanName,
+            dateOfBirth:
+              profile.dateOfBirth.trim(),
+          }
+        )
 
         setProfile((current) => ({
           ...current,
@@ -488,6 +624,9 @@ export default function ProfilePage({
         const nextProfile = {
           ...profile,
           name: cleanName,
+          age: calculateAge(
+            profile.dateOfBirth
+          ),
         }
 
         localStorage.setItem(
@@ -510,9 +649,11 @@ export default function ProfilePage({
   }
 
   /*
-   * Open external/social link.
+   * Open social/external link.
    */
-  const handleLinkClick = (link: string) => {
+  const handleLinkClick = (
+    link: string
+  ) => {
     window.open(
       link,
       "_blank",
@@ -523,66 +664,81 @@ export default function ProfilePage({
   /*
    * Mark notification as read.
    */
-  const handleNotificationClick = async (
-    notification: NotificationItem
-  ) => {
-    if (notification.read) return
+  const handleNotificationClick =
+    async (
+      notification: NotificationItem
+    ) => {
+      if (notification.read) {
+        return
+      }
 
-    try {
-      await markNotificationRead(
-        notification.id
-      )
-    } catch (error) {
-      console.error(
-        "Failed to mark notification as read:",
-        error
-      )
-    }
-  }
-
-  /*
-   * Mark all visible notifications as read.
-   */
-  const handleMarkAllRead = async () => {
-    const unread = notifications.filter(
-      (notification) => !notification.read
-    )
-
-    if (!unread.length) return
-
-    await Promise.allSettled(
-      unread.map((notification) =>
-        markNotificationRead(
+      try {
+        await markNotificationRead(
           notification.id
         )
+      } catch (error) {
+        console.error(
+          "Failed to mark notification as read:",
+          error
+        )
+      }
+    }
+
+  /*
+   * Mark all notifications as read.
+   */
+  const handleMarkAllRead =
+    async () => {
+      const unread =
+        notifications.filter(
+          (notification) =>
+            !notification.read
+        )
+
+      if (!unread.length) {
+        return
+      }
+
+      await Promise.allSettled(
+        unread.map(
+          (notification) =>
+            markNotificationRead(
+              notification.id
+            )
+        )
       )
-    )
-  }
+    }
 
   /*
    * Copy referral code.
    */
-  const handleCopyReferral = async () => {
-    if (!referralCode) return
+  const handleCopyReferral =
+    async () => {
+      if (!referralCode) {
+        return
+      }
 
-    try {
-      await navigator.clipboard.writeText(
-        referralCode
-      )
+      try {
+        await navigator.clipboard.writeText(
+          referralCode
+        )
 
-      setCopied(true)
+        setCopied(true)
 
-      window.setTimeout(() => {
-        setCopied(false)
-      }, 1800)
-    } catch (error) {
-      console.error(
-        "Failed to copy referral code:",
-        error
-      )
+        window.setTimeout(() => {
+          setCopied(false)
+        }, 1800)
+      } catch (error) {
+        console.error(
+          "Failed to copy referral code:",
+          error
+        )
+      }
     }
-  }
 
+  /*
+   * Auth loading screen.
+   */
   if (authLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#0a0a12] via-[#050508] to-[#020206] flex items-center justify-center">
@@ -606,18 +762,14 @@ export default function ProfilePage({
       <div className="min-h-screen bg-gradient-to-br from-[#0a0a12] via-[#050508] to-[#020206]">
         <div className="px-4 py-6 max-w-2xl mx-auto space-y-6">
 
-          {/* =========================
-              PROFILE CARD
-          ========================== */}
+          {/* PROFILE CARD */}
           <div className="relative overflow-hidden rounded-3xl backdrop-blur-xl bg-white/5 border border-white/10 shadow-2xl transition-all duration-300 hover:shadow-emerald-500/5">
-
             <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 via-transparent to-cyan-500/5" />
 
             <div className="relative p-6">
 
               {/* Top actions */}
               <div className="mb-5 flex items-center justify-between gap-2">
-
                 {user ? (
                   <button
                     type="button"
@@ -632,7 +784,8 @@ export default function ProfilePage({
                       Notifications
                     </span>
 
-                    {unreadNotificationCount > 0 && (
+                    {unreadNotificationCount >
+                      0 && (
                       <span className="min-w-5 h-5 px-1.5 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center">
                         {unreadNotificationCount >
                         99
@@ -672,7 +825,6 @@ export default function ProfilePage({
 
               {/* Profile image */}
               <div className="flex flex-col items-center mb-6">
-
                 <div className="relative">
                   <div className="absolute inset-0 rounded-full bg-gradient-to-r from-emerald-400 to-cyan-500 blur-xl opacity-60 animate-pulse" />
 
@@ -684,7 +836,6 @@ export default function ProfilePage({
                     />
                   </div>
 
-                  {/* Status indicator */}
                   <div
                     className={`absolute bottom-0 right-1 w-6 h-6 rounded-full border-4 border-[#080810] flex items-center justify-center ${
                       accessStatus ===
@@ -708,7 +859,6 @@ export default function ProfilePage({
                     "আপনার নাম"}
                 </h2>
 
-                {/* Access badge */}
                 <div
                   className={`mt-2 inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-bold tracking-wide ${
                     accessStatus ===
@@ -751,11 +901,15 @@ export default function ProfilePage({
                         <input
                           type="text"
                           value={profile.name}
-                          onChange={(e) =>
-                            setProfile({
-                              ...profile,
-                              name: e.target.value,
-                            })
+                          onChange={(event) =>
+                            setProfile(
+                              (
+                                current
+                              ) => ({
+                                ...current,
+                                name: event.target.value,
+                              })
+                            )
                           }
                           className="w-full bg-transparent text-white text-sm outline-none placeholder:text-slate-500"
                           placeholder="আপনার নাম লিখুন"
@@ -829,11 +983,15 @@ export default function ProfilePage({
                         <input
                           type="tel"
                           value={profile.phone}
-                          onChange={(e) =>
-                            setProfile({
-                              ...profile,
-                              phone: e.target.value,
-                            })
+                          onChange={(event) =>
+                            setProfile(
+                              (
+                                current
+                              ) => ({
+                                ...current,
+                                phone: event.target.value,
+                              })
+                            )
                           }
                           className="w-full bg-transparent text-white text-sm outline-none placeholder:text-slate-500"
                           placeholder="আপনার নম্বর লিখুন"
@@ -867,12 +1025,17 @@ export default function ProfilePage({
                           value={
                             profile.dateOfBirth
                           }
-                          onChange={(e) =>
-                            setProfile({
-                              ...profile,
-                              dateOfBirth:
-                                e.target.value,
-                            })
+                          onChange={(event) =>
+                            setProfile(
+                              (
+                                current
+                              ) => ({
+                                ...current,
+                                dateOfBirth:
+                                  event.target
+                                    .value,
+                              })
+                            )
                           }
                           className="w-full mt-1 bg-transparent text-white text-sm outline-none"
                         />
@@ -885,12 +1048,13 @@ export default function ProfilePage({
                 <button
                   type="button"
                   disabled={saving}
-                  onClick={
-                    isEditing
-                      ? () => void handleSave()
-                      : () =>
-                          setIsEditing(true)
-                  }
+                  onClick={() => {
+                    if (isEditing) {
+                      void handleSave()
+                    } else {
+                      setIsEditing(true)
+                    }
+                  }}
                   className="relative w-full py-2.5 mt-4 rounded-xl font-bold text-white overflow-hidden group transition-all duration-300 transform active:scale-95 disabled:opacity-60"
                 >
                   <div className="absolute inset-0 bg-gradient-to-r from-emerald-500 to-emerald-600 group-hover:from-emerald-600 group-hover:to-emerald-700 transition-all duration-300" />
@@ -909,15 +1073,12 @@ export default function ProfilePage({
             </div>
           </div>
 
-          {/* =========================
-              ACCOUNT STATUS
-          ========================== */}
+          {/* ACCOUNT STATUS */}
           {user && (
             <div className="relative overflow-hidden rounded-3xl backdrop-blur-xl bg-white/5 border border-white/10 shadow-2xl">
               <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 via-transparent to-cyan-500/5" />
 
               <div className="relative p-5">
-
                 <div className="flex items-center justify-between gap-3 mb-4">
                   <div>
                     <p className="text-white font-bold text-lg">
@@ -955,7 +1116,6 @@ export default function ProfilePage({
                 {accessStatus !==
                 "normal" ? (
                   <div className="rounded-2xl bg-black/20 border border-white/10 p-4">
-
                     <div className="flex items-center gap-3">
                       <div
                         className={`w-11 h-11 rounded-xl flex items-center justify-center ${
@@ -1029,18 +1189,20 @@ export default function ProfilePage({
             </div>
           )}
 
-          {/* Existing access card */}
-          <AccessStatusCard />
+          {/* ACCESS STATUS CARD */}
+          {user && (
+            <AccessStatusCard
+              entitlement={entitlement}
+              profile={firestoreProfile}
+            />
+          )}
 
-          {/* =========================
-              MVBD ID + REFERRAL
-          ========================== */}
+          {/* MVBD MEMBERSHIP */}
           {user && (
             <div className="relative overflow-hidden rounded-3xl backdrop-blur-xl bg-white/5 border border-white/10 shadow-2xl">
               <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 via-transparent to-emerald-500/5" />
 
               <div className="relative p-5">
-
                 <div className="flex items-center gap-3 mb-4">
                   <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500/20 to-cyan-500/20 flex items-center justify-center">
                     <Gift className="w-5 h-5 text-emerald-400" />
@@ -1122,14 +1284,11 @@ export default function ProfilePage({
             </div>
           )}
 
-          {/* =========================
-              MENU
-          ========================== */}
+          {/* MENU */}
           <div className="relative overflow-hidden rounded-3xl backdrop-blur-xl bg-white/5 border border-white/10 shadow-2xl transition-all duration-300 hover:shadow-cyan-500/5">
             <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 via-transparent to-emerald-500/5" />
 
             <div className="relative p-6">
-
               <h3 className="text-white font-bold text-2xl mb-6 bg-gradient-to-r from-white to-white/80 bg-clip-text text-transparent">
                 Menu
               </h3>
@@ -1306,9 +1465,7 @@ export default function ProfilePage({
         </div>
       </div>
 
-      {/* =========================
-          NOTIFICATION MODAL
-      ========================== */}
+      {/* NOTIFICATION MODAL */}
       {showNotifications && (
         <div
           className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-3 sm:p-5 bg-black/70 backdrop-blur-md"
@@ -1322,7 +1479,6 @@ export default function ProfilePage({
               event.stopPropagation()
             }
           >
-
             {/* Header */}
             <div className="flex items-center gap-3 px-5 py-4 border-b border-white/10">
               <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center">
@@ -1335,7 +1491,8 @@ export default function ProfilePage({
                 </h3>
 
                 <p className="text-slate-400 text-xs">
-                  {unreadNotificationCount > 0
+                  {unreadNotificationCount >
+                  0
                     ? `${unreadNotificationCount} unread notification${
                         unreadNotificationCount >
                         1
@@ -1371,9 +1528,8 @@ export default function ProfilePage({
               </button>
             </div>
 
-            {/* Notifications */}
+            {/* Notification list */}
             <div className="overflow-y-auto max-h-[calc(85vh-82px)] p-3">
-
               {notifications.length ===
               0 ? (
                 <div className="py-14 text-center">
@@ -1409,7 +1565,6 @@ export default function ProfilePage({
                         }`}
                       >
                         <div className="flex gap-3">
-
                           <div
                             className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
                               notification.type ===
@@ -1471,10 +1626,12 @@ export default function ProfilePage({
         </div>
       )}
 
-      {/* Auth */}
+      {/* AUTH MODAL */}
       <AuthModal
         open={showAuthModal}
-        onOpenChange={setShowAuthModal}
+        onClose={() =>
+          setShowAuthModal(false)
+        }
       />
 
       {/* Global CSS */}
@@ -1497,7 +1654,7 @@ export default function ProfilePage({
           background: rgba(255, 255, 255, 0.3);
         }
 
-        @keyframes pulse {
+        @keyframes mvbd-profile-pulse {
           0%,
           100% {
             opacity: 0.6;
@@ -1509,7 +1666,8 @@ export default function ProfilePage({
         }
 
         .animate-pulse {
-          animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1)
+          animation: mvbd-profile-pulse
+            3s cubic-bezier(0.4, 0, 0.6, 1)
             infinite;
         }
       `}</style>

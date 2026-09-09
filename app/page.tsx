@@ -76,6 +76,17 @@ export default function Home() {
 
   const activeIndex = Math.max(0, tabs.indexOf(activeTab))
 
+  useEffect(() => {
+    const openSubscriptions = () => {
+      setSelectedMovie(null)
+      setShowDetailPage(false)
+      setActiveTab("exclusive")
+      setSwipePosition(tabs.indexOf("exclusive"))
+    }
+    window.addEventListener("mvbd:open-subscriptions", openSubscriptions)
+    return () => window.removeEventListener("mvbd:open-subscriptions", openSubscriptions)
+  }, [])
+
   /* =========================================================
      DOM REFS
   ========================================================= */
@@ -298,6 +309,18 @@ export default function Home() {
 
     return Boolean(
       target.closest("[data-no-page-swipe]")
+    )
+  }
+
+  const isInteractiveTarget = (target: EventTarget | null) => {
+    if (!(target instanceof Element)) {
+      return false
+    }
+
+    return Boolean(
+      target.closest(
+        "button, a, input, textarea, select, option, summary, [role=button], [role=link], [contenteditable=true], [data-no-page-swipe]"
+      )
     )
   }
 
@@ -680,6 +703,12 @@ export default function Home() {
 
     if (showDetailPage) return
 
+    // Let controls receive their native click/tap events. The page swipe
+    // gesture only starts from non-interactive content.
+    if (isInteractiveTarget(event.target)) {
+      return
+    }
+
     /*
       Do NOT steal the gesture from:
       Trending carousel / other protected components.
@@ -729,13 +758,6 @@ export default function Home() {
 
     setSwipePosition(activeIndex)
 
-    try {
-      swipeShellRef.current?.setPointerCapture(
-        event.pointerId
-      )
-    } catch {
-      // Ignore capture errors.
-    }
   }
 
   /* =========================================================
@@ -801,6 +823,12 @@ export default function Home() {
       }
 
       horizontalLockRef.current = true
+
+      try {
+        swipeShellRef.current?.setPointerCapture(event.pointerId)
+      } catch {
+        // Ignore capture errors.
+      }
 
       setIsSwiping(true)
     }
@@ -1141,7 +1169,7 @@ export default function Home() {
   )
 
   const renderAnimePage = () => (
-    <div className="min-h-[100svh] bg-black pb-[76px]">
+    <div className="min-h-[100svh] bg-black">
       <AnimePage />
     </div>
   )
@@ -1153,7 +1181,7 @@ export default function Home() {
   )
 
   const renderProfilePage = () => (
-    <div className="min-h-[100svh] bg-black pb-[76px]">
+    <div className="min-h-[100svh] bg-black">
       {profileSubPage === "main" && (
         <ProfilePage
           onNavigate={(page) =>

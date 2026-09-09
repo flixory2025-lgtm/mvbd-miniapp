@@ -1,77 +1,35 @@
-import { initializeApp, getApps, getApp } from "firebase/app"
-import {
-  getFirestore,
-  doc,
-  getDoc,
-  setDoc,
-  increment,
-} from "firebase/firestore"
-import {
-  getAuth,
-  GoogleAuthProvider,
-  setPersistence,
-  browserLocalPersistence,
-} from "firebase/auth"
+import { initializeApp } from "firebase/app"
+import { getAuth, GoogleAuthProvider } from "firebase/auth"
+import { getFirestore, doc, getDoc, setDoc, increment } from "firebase/firestore"
 
 const firebaseConfig = {
-  apiKey: "AIzaSyBtBaUSIlXwJDWytaiOfal3ha7OmZEwuYM",
-  authDomain: "mvbdminiapp.firebaseapp.com",
-  projectId: "mvbdminiapp",
-  storageBucket: "mvbdminiapp.firebasestorage.app",
-  messagingSenderId: "668051748254",
-  appId: "1:668051748254:web:d4804b68429d853a0c928f",
-  measurementId: "G-HQZ9SL4RX8",
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY || process.env.FIREBASE_API_KEY || "AIzaSyBtBaUSIlXwJDWytaiOfal3ha7OmZEwuYM",
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || process.env.FIREBASE_AUTH_DOMAIN || "mvbdminiapp.firebaseapp.com",
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || process.env.FIREBASE_PROJECT_ID || "mvbdminiapp",
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || process.env.FIREBASE_STORAGE_BUCKET || "mvbdminiapp.firebasestorage.app",
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || process.env.FIREBASE_MESSAGING_SENDER_ID || "668051748254",
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID || process.env.FIREBASE_APP_ID || "1:668051748254:web:d4804b68429d853a0c928f",
+  measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID || process.env.FIREBASE_MEASUREMENT_ID,
 }
 
-// Initialize Firebase only once
-const app = getApps().length ? getApp() : initializeApp(firebaseConfig)
-
-// Firestore
+// Initialize Firebase
+const app = initializeApp(firebaseConfig)
+export const auth = getAuth(app)
+export const googleProvider = new GoogleAuthProvider()
 export const db = getFirestore(app)
 
-// Firebase Authentication
-export const auth = getAuth(app)
-
-// Google Authentication Provider
-export const googleProvider = new GoogleAuthProvider()
-
-// Keep user logged in after refresh/browser restart
-export async function enableAuthPersistence() {
-  try {
-    await setPersistence(auth, browserLocalPersistence)
-  } catch (error) {
-    console.error("Firebase auth persistence error:", error)
-  }
-}
-
-// --------------------------------------------------
-// MOVIE VIEW SYSTEM
-// --------------------------------------------------
-
+// Function to increment view count for a movie
 export async function incrementMovieView(movieId: number): Promise<number> {
   try {
     const movieRef = doc(db, "movieViews", movieId.toString())
     const movieDoc = await getDoc(movieRef)
 
     if (movieDoc.exists()) {
-      await setDoc(
-        movieRef,
-        {
-          views: increment(1),
-        },
-        {
-          merge: true,
-        }
-      )
-
+      await setDoc(movieRef, { views: increment(1) }, { merge: true })
       const updatedDoc = await getDoc(movieRef)
-
       return updatedDoc.data()?.views || 0
     } else {
-      await setDoc(movieRef, {
-        views: 1,
-      })
-
+      await setDoc(movieRef, { views: 1 })
       return 1
     }
   } catch (error) {
@@ -80,10 +38,7 @@ export async function incrementMovieView(movieId: number): Promise<number> {
   }
 }
 
-// --------------------------------------------------
-// GET MOVIE VIEWS
-// --------------------------------------------------
-
+// Function to get view count for a movie
 export async function getMovieViews(movieId: number): Promise<number> {
   try {
     const movieRef = doc(db, "movieViews", movieId.toString())
@@ -92,7 +47,6 @@ export async function getMovieViews(movieId: number): Promise<number> {
     if (movieDoc.exists()) {
       return movieDoc.data()?.views || 0
     }
-
     return 0
   } catch (error) {
     console.error("Error getting views:", error)
@@ -100,20 +54,10 @@ export async function getMovieViews(movieId: number): Promise<number> {
   }
 }
 
-// --------------------------------------------------
-// MOVIE UPLOAD TIME
-// --------------------------------------------------
-
-export async function setMovieUploadTime(
-  movieId: number
-): Promise<void> {
+// Function to set movie upload time
+export async function setMovieUploadTime(movieId: number): Promise<void> {
   try {
-    const movieRef = doc(
-      db,
-      "movieUploads",
-      movieId.toString()
-    )
-
+    const movieRef = doc(db, "movieUploads", movieId.toString())
     const movieDoc = await getDoc(movieRef)
 
     if (!movieDoc.exists()) {
@@ -127,26 +71,15 @@ export async function setMovieUploadTime(
   }
 }
 
-// --------------------------------------------------
-// GET MOVIE UPLOAD TIME
-// --------------------------------------------------
-
-export async function getMovieUploadTime(
-  movieId: number
-): Promise<string | null> {
+// Function to get movie upload time
+export async function getMovieUploadTime(movieId: number): Promise<string | null> {
   try {
-    const movieRef = doc(
-      db,
-      "movieUploads",
-      movieId.toString()
-    )
-
+    const movieRef = doc(db, "movieUploads", movieId.toString())
     const movieDoc = await getDoc(movieRef)
 
     if (movieDoc.exists()) {
       return movieDoc.data()?.uploadedAt || null
     }
-
     return null
   } catch (error) {
     console.error("Error getting upload time:", error)
@@ -154,86 +87,30 @@ export async function getMovieUploadTime(
   }
 }
 
-// --------------------------------------------------
-// TIME AGO
-// --------------------------------------------------
-
-export function getTimeAgo(
-  uploadDate: string | Date
-): string {
+export function getTimeAgo(uploadDate: string | Date): string {
   const now = new Date()
+  const uploaded = typeof uploadDate === "string" ? new Date(uploadDate) : uploadDate
+  const diffMs = now.getTime() - uploaded.getTime()
 
-  const uploaded =
-    typeof uploadDate === "string"
-      ? new Date(uploadDate)
-      : uploadDate
+  const diffSeconds = Math.floor(diffMs / 1000)
+  const diffMinutes = Math.floor(diffMs / (1000 * 60))
+  const diffHours = Math.floor(diffMs / (1000 * 60 * 60))
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24))
+  const diffWeeks = Math.floor(diffDays / 7)
+  const diffMonths = Math.floor(diffDays / 30)
+  const diffYears = Math.floor(diffDays / 365)
 
-  const diffMs =
-    now.getTime() - uploaded.getTime()
-
-  const diffSeconds = Math.floor(
-    diffMs / 1000
-  )
-
-  const diffMinutes = Math.floor(
-    diffMs / (1000 * 60)
-  )
-
-  const diffHours = Math.floor(
-    diffMs / (1000 * 60 * 60)
-  )
-
-  const diffDays = Math.floor(
-    diffMs / (1000 * 60 * 60 * 24)
-  )
-
-  const diffWeeks = Math.floor(
-    diffDays / 7
-  )
-
-  const diffMonths = Math.floor(
-    diffDays / 30
-  )
-
-  const diffYears = Math.floor(
-    diffDays / 365
-  )
-
-  if (diffSeconds < 60)
-    return "Just now"
-
-  if (diffMinutes === 1)
-    return "1 minute ago"
-
-  if (diffMinutes < 60)
-    return `${diffMinutes} minutes ago`
-
-  if (diffHours === 1)
-    return "1 hour ago"
-
-  if (diffHours < 24)
-    return `${diffHours} hours ago`
-
-  if (diffDays === 1)
-    return "1 day ago"
-
-  if (diffDays < 7)
-    return `${diffDays} days ago`
-
-  if (diffWeeks === 1)
-    return "1 week ago"
-
-  if (diffWeeks < 4)
-    return `${diffWeeks} weeks ago`
-
-  if (diffMonths === 1)
-    return "1 month ago"
-
-  if (diffMonths < 12)
-    return `${diffMonths} months ago`
-
-  if (diffYears === 1)
-    return "1 year ago"
-
+  if (diffSeconds < 60) return "Just now"
+  if (diffMinutes === 1) return "1 minute ago"
+  if (diffMinutes < 60) return `${diffMinutes} minutes ago`
+  if (diffHours === 1) return "1 hour ago"
+  if (diffHours < 24) return `${diffHours} hours ago`
+  if (diffDays === 1) return "1 day ago"
+  if (diffDays < 7) return `${diffDays} days ago`
+  if (diffWeeks === 1) return "1 week ago"
+  if (diffWeeks < 4) return `${diffWeeks} weeks ago`
+  if (diffMonths === 1) return "1 month ago"
+  if (diffMonths < 12) return `${diffMonths} months ago`
+  if (diffYears === 1) return "1 year ago"
   return `${diffYears} years ago`
 }

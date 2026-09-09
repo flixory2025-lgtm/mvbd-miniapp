@@ -314,15 +314,20 @@ const handleClosePopup = () => {
   }
 
   const isInteractiveTarget = (target: EventTarget | null) => {
-    if (!(target instanceof Element)) {
-      return false
-    }
+  if (!(target instanceof Element)) {
+    return false
+  }
 
-    return Boolean(
-      target.closest(
-        "button, a, input, textarea, select, option, summary, [role=button], [role=link], [contenteditable=true], [data-no-page-swipe]"
-      )
+  // Bottom navigation should also allow page swipe.
+  if (target.closest("[data-page-swipe-nav]")) {
+    return false
+  }
+
+  return Boolean(
+    target.closest(
+      "button, a, input, textarea, select, option, summary, [role=button], [role=link], [contenteditable=true], [data-no-page-swipe]"
     )
+  )
   }
 
   /* =========================================================
@@ -1422,8 +1427,7 @@ const handleClosePopup = () => {
               visibility: "hidden",
               willChange: "transform",
               backfaceVisibility: "hidden",
-              WebkitBackfaceVisibility:
-                "hidden",
+              WebkitBackfaceVisibility: "hidden",
               pointerEvents: "none",
               zIndex: 1,
             }}
@@ -1431,30 +1435,22 @@ const handleClosePopup = () => {
             {renderPage(nextTab)}
           </div>
         )}
+
+        {/* BOTTOM NAVIGATION */}
+
+        <div
+          data-page-swipe-nav
+          className="relative z-[50]"
+          style={{
+            touchAction: "pan-y",
+          }}
+        >
+          <BottomNavigation
+            activeTab={activeTab}
+            onTabChange={handleTabChange}
+            swipePosition={swipePosition}
+            isSwiping={isSwiping}
+          />
+        </div>
+
       </div>
-
-      {/* =======================================================
-          BOTTOM NAVIGATION
-
-          swipePosition is fractional while dragging.
-          Example:
-          0 -> Home
-          0.5 -> halfway
-          1 -> Anime
-      ======================================================= */}
-
-      <BottomNavigation
-        activeTab={activeTab}
-        onTabChange={handleTabChange}
-        swipePosition={swipePosition}
-        isSwiping={isSwiping}
-      />
-
-      {showWelcomePopup && (
-        <WelcomePopup
-          onClose={handleClosePopup}
-        />
-      )}
-    </div>
-  )
-}

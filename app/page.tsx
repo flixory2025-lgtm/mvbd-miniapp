@@ -181,21 +181,22 @@ export default function Home() {
   }, [])
 
   /* =========================================================
-     WELCOME POPUP
-  ========================================================= */
+   WELCOME POPUP
+========================================================= */
 
-  useEffect(() => {
-    const hasVisited = localStorage.getItem("mvbd_visited")
+useEffect(() => {
+  const timer = window.setTimeout(() => {
+    setShowWelcomePopup(true)
+  }, 450)
 
-    if (!hasVisited) {
-      setShowWelcomePopup(true)
-    }
-  }, [])
-
-  const handleClosePopup = () => {
-    localStorage.setItem("mvbd_visited", "true")
-    setShowWelcomePopup(false)
+  return () => {
+    window.clearTimeout(timer)
   }
+}, [])
+
+const handleClosePopup = () => {
+  setShowWelcomePopup(false)
+}
 
   /* =========================================================
      FILTERED MOVIES

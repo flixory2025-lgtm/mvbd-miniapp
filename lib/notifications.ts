@@ -2,224 +2,159 @@ import {
   addDoc,
   collection,
   doc,
-  getDocs,
   limit,
   onSnapshot,
+  orderBy,
   query,
+  serverTimestamp,
   updateDoc,
   where,
-  type DocumentData,
-  type QuerySnapshot,
   type Timestamp,
+  type Unsubscribe,
 } from "firebase/firestore";
 
-import { db } from "./firebase";
+import { db } from "@/lib/firebase";
 
-export type NotificationType =
-  | "system"
-  | "subscription"
-  | "payment"
-  | "referral"
-  | "support"
-  | "success"
-  | "warning";
-
-export interface NotificationItem {
+export type NotificationItem = {
   id: string;
   uid: string;
-
   title: string;
   message: string;
-
-  type: NotificationType;
-
-  read: boolean;
-
-  createdAt: Timestamp | Date | null;
-}
-
-export interface CreateNotificationInput {
-  uid: string;
-
-  title: string;
-  message: string;
-
-  type?: NotificationType;
-
+  type?: string;
   read?: boolean;
-}
+  createdAt?: Timestamp | null;
+  createdAtMs: number;
+  [key: string]: unknown;
+};
 
-function normalizeNotification(
-  id: string,
-  data: DocumentData
-): NotificationItem {
-  return {
-    id,
-    uid: String(data.uid ?? ""),
+function timestampToMillis(value: unknown): number {
+  if (!value) return 0;
 
-    title: String(data.title ?? ""),
-    message: String(data.message ?? ""),
-
-    type: (data.type ?? "system") as NotificationType,
-
-    read: Boolean(data.read ?? false),
-
-    createdAt: data.createdAt ?? null,
-  };
-}
-
-/**
- * Get user's notifications once.
- */
-export async function getMyNotifications(
-  uid: string
-): Promise<NotificationItem[]> {
-  if (!uid) {
-    return [];
+  if (
+    typeof value === "object" &&
+    value !== null &&
+    "toMillis" in value &&
+    typeof (value as { toMillis?: unknown }).toMillis === "function"
+  ) {
+    return (value as Timestamp).toMillis();
   }
 
-  const notificationsRef = collection(db, "notifications");
+  if (value instanceof Date) {
+    return value.getTime();
+  }
 
-  const q = query(
-    notificationsRef,
-    where("uid", "==", uid),
-    limit(50)
-  );
+  if (typeof value === "number") {
+    return value;
+  }
 
-  const snapshot = await getDocs(q);
+  if (typeof value === "string") {
+    const parsed = Date.parse(value);
+    return Number.isNaN(parsed) ? 0 : parsed;
+  }
 
-  const notifications = snapshot.docs.map((item) =>
-    normalizeNotification(item.id, item.data())
-  );
-
-  notifications.sort((a, b) => {
-    const aTime =
-      a.createdAt instanceof Date
-        ? a.createdAt.getTime()
-        : a.createdAt?.toMillis?.() ?? 0;
-
-    const bTime =
-      b.createdAt instanceof Date
-        ? b.createdAt.getTime()
-        : b.createdAt?.toMillis?.() ?? 0;
-
-    return bTime - aTime;
-  });
-
-  return notifications;
+  return 0;
 }
 
 /**
- * Realtime notification listener.
- *
- * Whenever Admin Panel creates/updates a notification,
- * this callback receives the latest notification list.
+ * Subscribe to the current user's notifications in realtime.
  */
 export function subscribeToMyNotifications(
   uid: string,
   callback: (notifications: NotificationItem[]) => void,
-  onError?: (error: Error) => void
-) {
+  onError?: (error: Error) => void,
+): Unsubscribe {
   if (!uid) {
     callback([]);
     return () => {};
   }
 
-  const notificationsRef = collection(db, "notifications");
-
-  const q = query(
-    notificationsRef,
+  const notificationsQuery = query(
+    collection(db, "notifications"),
     where("uid", "==", uid),
-    limit(50)
+    orderBy("createdAt", "desc"),
+    limit(50),
   );
 
   return onSnapshot(
-    q,
-    (snapshot: QuerySnapshot<DocumentData>) => {
-      const notifications = snapshot.docs.map((item) =>
-        normalizeNotification(item.id, item.data())
-      );
+    notificationsQuery,
+    (snapshot) => {
+      const items: NotificationItem[] = snapshot.docs.map((notificationDoc) => {
+        const data = notificationDoc.data();
 
-      notifications.sort((a, b) => {
-        const aTime =
-          a.createdAt instanceof Date
-            ? a.createdAt.getTime()
-            : a.createdAt?.toMillis?.() ?? 0;
-
-        const bTime =
-          b.createdAt instanceof Date
-            ? b.createdAt.getTime()
-            : b.createdAt?.toMillis?.() ?? 0;
-
-        return bTime - aTime;
+        return {
+          id: notificationDoc.id,
+          uid: String(data.uid ?? uid),
+          title: String(data.title ?? "MVBD Notification"),
+          message: String(data.message ?? ""),
+          type: typeof data.type === "string" ? data.type : "general",
+          read: Boolean(data.read),
+          createdAt: (data.createdAt as Timestamp | null | undefined) ?? null,
+          createdAtMs: timestampToMillis(data.createdAt),
+        };
       });
 
-      callback(notifications);
+      items.sort((a, b) => b.createdAtMs - a.createdAtMs);
+
+      callback(items);
     },
     (error) => {
-      console.error("Notification listener error:", error);
+      console.error("Notification realtime listener error:", error);
 
-      onError?.(error);
-    }
+      if (onError) {
+        onError(error);
+      }
+    },
   );
 }
 
 /**
- * Mark notification as read.
+ * Mark a notification as read.
  */
 export async function markNotificationRead(
-  notificationId: string
+  notificationId: string,
 ): Promise<void> {
-  if (!notificationId) {
-    return;
-  }
+  if (!notificationId) return;
 
-  const notificationRef = doc(
-    db,
-    "notifications",
-    notificationId
-  );
-
-  await updateDoc(notificationRef, {
+  await updateDoc(doc(db, "notifications", notificationId), {
     read: true,
+    readAt: serverTimestamp(),
   });
 }
 
 /**
- * Create notification.
+ * Create a notification.
  *
- * Admin Panel can use the same Firebase collection.
+ * Admin panel can use this function when Firestore rules allow
+ * the admin client to write notifications.
  */
-export async function createNotification(
-  input: CreateNotificationInput
-): Promise<string> {
-  if (!input.uid) {
+export async function createNotification(params: {
+  uid: string;
+  title: string;
+  message: string;
+  type?: string;
+}): Promise<string> {
+  const { uid, title, message, type = "general" } = params;
+
+  if (!uid) {
     throw new Error("Notification UID is required.");
   }
 
-  if (!input.title.trim()) {
+  if (!title.trim()) {
     throw new Error("Notification title is required.");
   }
 
-  if (!input.message.trim()) {
+  if (!message.trim()) {
     throw new Error("Notification message is required.");
   }
 
-  const notificationsRef = collection(db, "notifications");
-
-  const notification = await addDoc(notificationsRef, {
-    uid: input.uid,
-
-    title: input.title.trim(),
-
-    message: input.message.trim(),
-
-    type: input.type ?? "system",
-
-    read: input.read ?? false,
-
-    createdAt: new Date(),
+  const notificationRef = await addDoc(collection(db, "notifications"), {
+    uid,
+    title: title.trim(),
+    message: message.trim(),
+    type,
+    read: false,
+    createdAt: serverTimestamp(),
   });
 
-  return notification.id;
+  return notificationRef.id;
 }

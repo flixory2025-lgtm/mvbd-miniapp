@@ -1,5 +1,17 @@
-import { initializeApp } from "firebase/app"
-import { getFirestore, doc, getDoc, setDoc, increment } from "firebase/firestore"
+import { initializeApp, getApps, getApp } from "firebase/app"
+import {
+  getFirestore,
+  doc,
+  getDoc,
+  setDoc,
+  increment,
+} from "firebase/firestore"
+import {
+  getAuth,
+  GoogleAuthProvider,
+  setPersistence,
+  browserLocalPersistence,
+} from "firebase/auth"
 
 const firebaseConfig = {
   apiKey: "AIzaSyBtBaUSIlXwJDWytaiOfal3ha7OmZEwuYM",
@@ -11,22 +23,55 @@ const firebaseConfig = {
   measurementId: "G-HQZ9SL4RX8",
 }
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig)
+// Initialize Firebase only once
+const app = getApps().length ? getApp() : initializeApp(firebaseConfig)
+
+// Firestore
 export const db = getFirestore(app)
 
-// Function to increment view count for a movie
+// Firebase Authentication
+export const auth = getAuth(app)
+
+// Google Authentication Provider
+export const googleProvider = new GoogleAuthProvider()
+
+// Keep user logged in after refresh/browser restart
+export async function enableAuthPersistence() {
+  try {
+    await setPersistence(auth, browserLocalPersistence)
+  } catch (error) {
+    console.error("Firebase auth persistence error:", error)
+  }
+}
+
+// --------------------------------------------------
+// MOVIE VIEW SYSTEM
+// --------------------------------------------------
+
 export async function incrementMovieView(movieId: number): Promise<number> {
   try {
     const movieRef = doc(db, "movieViews", movieId.toString())
     const movieDoc = await getDoc(movieRef)
 
     if (movieDoc.exists()) {
-      await setDoc(movieRef, { views: increment(1) }, { merge: true })
+      await setDoc(
+        movieRef,
+        {
+          views: increment(1),
+        },
+        {
+          merge: true,
+        }
+      )
+
       const updatedDoc = await getDoc(movieRef)
+
       return updatedDoc.data()?.views || 0
     } else {
-      await setDoc(movieRef, { views: 1 })
+      await setDoc(movieRef, {
+        views: 1,
+      })
+
       return 1
     }
   } catch (error) {
@@ -35,7 +80,10 @@ export async function incrementMovieView(movieId: number): Promise<number> {
   }
 }
 
-// Function to get view count for a movie
+// --------------------------------------------------
+// GET MOVIE VIEWS
+// --------------------------------------------------
+
 export async function getMovieViews(movieId: number): Promise<number> {
   try {
     const movieRef = doc(db, "movieViews", movieId.toString())
@@ -44,6 +92,7 @@ export async function getMovieViews(movieId: number): Promise<number> {
     if (movieDoc.exists()) {
       return movieDoc.data()?.views || 0
     }
+
     return 0
   } catch (error) {
     console.error("Error getting views:", error)
@@ -51,10 +100,20 @@ export async function getMovieViews(movieId: number): Promise<number> {
   }
 }
 
-// Function to set movie upload time
-export async function setMovieUploadTime(movieId: number): Promise<void> {
+// --------------------------------------------------
+// MOVIE UPLOAD TIME
+// --------------------------------------------------
+
+export async function setMovieUploadTime(
+  movieId: number
+): Promise<void> {
   try {
-    const movieRef = doc(db, "movieUploads", movieId.toString())
+    const movieRef = doc(
+      db,
+      "movieUploads",
+      movieId.toString()
+    )
+
     const movieDoc = await getDoc(movieRef)
 
     if (!movieDoc.exists()) {
@@ -68,15 +127,26 @@ export async function setMovieUploadTime(movieId: number): Promise<void> {
   }
 }
 
-// Function to get movie upload time
-export async function getMovieUploadTime(movieId: number): Promise<string | null> {
+// --------------------------------------------------
+// GET MOVIE UPLOAD TIME
+// --------------------------------------------------
+
+export async function getMovieUploadTime(
+  movieId: number
+): Promise<string | null> {
   try {
-    const movieRef = doc(db, "movieUploads", movieId.toString())
+    const movieRef = doc(
+      db,
+      "movieUploads",
+      movieId.toString()
+    )
+
     const movieDoc = await getDoc(movieRef)
 
     if (movieDoc.exists()) {
       return movieDoc.data()?.uploadedAt || null
     }
+
     return null
   } catch (error) {
     console.error("Error getting upload time:", error)
@@ -84,30 +154,86 @@ export async function getMovieUploadTime(movieId: number): Promise<string | null
   }
 }
 
-export function getTimeAgo(uploadDate: string | Date): string {
+// --------------------------------------------------
+// TIME AGO
+// --------------------------------------------------
+
+export function getTimeAgo(
+  uploadDate: string | Date
+): string {
   const now = new Date()
-  const uploaded = typeof uploadDate === "string" ? new Date(uploadDate) : uploadDate
-  const diffMs = now.getTime() - uploaded.getTime()
 
-  const diffSeconds = Math.floor(diffMs / 1000)
-  const diffMinutes = Math.floor(diffMs / (1000 * 60))
-  const diffHours = Math.floor(diffMs / (1000 * 60 * 60))
-  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24))
-  const diffWeeks = Math.floor(diffDays / 7)
-  const diffMonths = Math.floor(diffDays / 30)
-  const diffYears = Math.floor(diffDays / 365)
+  const uploaded =
+    typeof uploadDate === "string"
+      ? new Date(uploadDate)
+      : uploadDate
 
-  if (diffSeconds < 60) return "Just now"
-  if (diffMinutes === 1) return "1 minute ago"
-  if (diffMinutes < 60) return `${diffMinutes} minutes ago`
-  if (diffHours === 1) return "1 hour ago"
-  if (diffHours < 24) return `${diffHours} hours ago`
-  if (diffDays === 1) return "1 day ago"
-  if (diffDays < 7) return `${diffDays} days ago`
-  if (diffWeeks === 1) return "1 week ago"
-  if (diffWeeks < 4) return `${diffWeeks} weeks ago`
-  if (diffMonths === 1) return "1 month ago"
-  if (diffMonths < 12) return `${diffMonths} months ago`
-  if (diffYears === 1) return "1 year ago"
+  const diffMs =
+    now.getTime() - uploaded.getTime()
+
+  const diffSeconds = Math.floor(
+    diffMs / 1000
+  )
+
+  const diffMinutes = Math.floor(
+    diffMs / (1000 * 60)
+  )
+
+  const diffHours = Math.floor(
+    diffMs / (1000 * 60 * 60)
+  )
+
+  const diffDays = Math.floor(
+    diffMs / (1000 * 60 * 60 * 24)
+  )
+
+  const diffWeeks = Math.floor(
+    diffDays / 7
+  )
+
+  const diffMonths = Math.floor(
+    diffDays / 30
+  )
+
+  const diffYears = Math.floor(
+    diffDays / 365
+  )
+
+  if (diffSeconds < 60)
+    return "Just now"
+
+  if (diffMinutes === 1)
+    return "1 minute ago"
+
+  if (diffMinutes < 60)
+    return `${diffMinutes} minutes ago`
+
+  if (diffHours === 1)
+    return "1 hour ago"
+
+  if (diffHours < 24)
+    return `${diffHours} hours ago`
+
+  if (diffDays === 1)
+    return "1 day ago"
+
+  if (diffDays < 7)
+    return `${diffDays} days ago`
+
+  if (diffWeeks === 1)
+    return "1 week ago"
+
+  if (diffWeeks < 4)
+    return `${diffWeeks} weeks ago`
+
+  if (diffMonths === 1)
+    return "1 month ago"
+
+  if (diffMonths < 12)
+    return `${diffMonths} months ago`
+
+  if (diffYears === 1)
+    return "1 year ago"
+
   return `${diffYears} years ago`
 }

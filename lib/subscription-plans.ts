@@ -1,138 +1,97 @@
-export type SubscriptionPlanId =
-  | "monthly"
-  | "two_months"
-  | "three_months"
+export type SubscriptionPlanId = "trial" | "monthly" | "two_months" | "three_months"
 
 export interface SubscriptionPlan {
-  id: SubscriptionPlanId
+  planId: SubscriptionPlanId
   name: string
+  planName: string
   durationDays: number
-  price: number
-  currency: "BDT"
+  duration: string
+  amount: number
+  price: string
+  description: string
+  popular?: boolean
+  save?: string
 }
 
-/*
- * =========================================================
- * MVBD SUBSCRIPTION PLANS
- * =========================================================
- *
- * এই object-টাই পুরো project-এর central plan source.
- *
- * UI, payment request এবং admin approval—
- * সবাই একই plan information ব্যবহার করবে।
- */
-
-export const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
+export const SUBSCRIPTION_PLANS: readonly SubscriptionPlan[] = [
   {
-    id: "monthly",
-    name: "1 Month",
+    planId: "trial",
+    name: "TRIAL",
+    planName: "7 Day Trial",
+    durationDays: 7,
+    duration: "7 days",
+    amount: 0,
+    price: "Free",
+    description: "Explore the premium experience before choosing a paid plan.",
+  },
+  {
+    planId: "monthly",
+    name: "1 MONTH",
+    planName: "1 Month",
     durationDays: 30,
-    price: 20,
-    currency: "BDT",
+    duration: "30 days",
+    amount: 20,
+    price: "৳20",
+    description: "Perfect for trying the premium experience.",
   },
-
   {
-    id: "two_months",
-    name: "2 Months",
+    planId: "two_months",
+    name: "2 MONTHS",
+    planName: "2 Months",
     durationDays: 60,
-    price: 35,
-    currency: "BDT",
+    duration: "60 days",
+    amount: 35,
+    price: "৳35",
+    description: "A balanced plan for regular members.",
+    popular: true,
+    save: "Save ৳5",
   },
-
   {
-    id: "three_months",
-    name: "3 Months",
+    planId: "three_months",
+    name: "3 MONTHS",
+    planName: "3 Months",
     durationDays: 90,
-    price: 50,
-    currency: "BDT",
+    duration: "90 days",
+    amount: 50,
+    price: "৳50",
+    description: "Best value for long-term premium access.",
+    save: "Best value",
   },
 ]
 
-/*
- * =========================================================
- * PAYMENT NUMBER
- * =========================================================
- */
-
 export const PAYMENT_NUMBER = "01865522275"
-
-/*
- * =========================================================
- * FREE TRIAL
- * =========================================================
- */
-
 export const FREE_TRIAL_DAYS = 7
 
-/*
- * =========================================================
- * PAYMENT REQUEST STATUS
- * =========================================================
- */
+export type PaymentRequestStatus = "pending" | "approved" | "rejected"
 
-export type PaymentRequestStatus =
-  | "pending"
-  | "approved"
-  | "rejected"
-
-/*
- * =========================================================
- * GET PLAN
- * =========================================================
- */
-
-export function getSubscriptionPlan(
-  planId: string
-): SubscriptionPlan | null {
-  return (
-    SUBSCRIPTION_PLANS.find(
-      (plan) => plan.id === planId
-    ) || null
-  )
-}
-
-/*
- * =========================================================
- * CHECK VALID PLAN
- * =========================================================
- */
-
-export function isValidSubscriptionPlan(
-  planId: string
-): planId is SubscriptionPlanId {
-  return (
-    planId === "monthly" ||
-    planId === "two_months" ||
-    planId === "three_months"
-  )
-}
-
-/*
- * =========================================================
- * GET PLAN PRICE
- * =========================================================
- */
-
-export function getPlanPrice(
+export interface PaymentRequest {
+  requestId: string
+  uid: string
+  mvbdId: string
+  userName: string
   planId: SubscriptionPlanId
-): number {
-  const plan =
-    getSubscriptionPlan(planId)
-
-  return plan?.price || 0
+  planName: string
+  amount: number
+  transactionId: string
+  status: PaymentRequestStatus
+  createdAt: unknown
+  reviewedAt: unknown
+  reviewedBy: string | null
+  adminNote: string | null
 }
 
-/*
- * =========================================================
- * GET PLAN DURATION
- * =========================================================
- */
+export function getSubscriptionPlan(planId: string): SubscriptionPlan | null {
+  return SUBSCRIPTION_PLANS.find((plan) => plan.planId === planId) || null
+}
 
-export function getPlanDurationDays(
-  planId: SubscriptionPlanId
-): number {
-  const plan =
-    getSubscriptionPlan(planId)
+export function isValidSubscriptionPlan(planId: string): planId is SubscriptionPlanId {
+  return planId === "monthly" || planId === "two_months" || planId === "three_months"
+}
 
-  return plan?.durationDays || 0
+export function getPlanPrice(planId: SubscriptionPlanId): number {
+  return getSubscriptionPlan(planId)?.amount || 0
+}
+
+export function getPlanDurationDays(planId: SubscriptionPlanId): number {
+  return getSubscriptionPlan(planId)?.durationDays || 0
 }

@@ -10,6 +10,27 @@ import type { User } from "firebase/auth"
 import { db } from "@/lib/firebase"
 
 export const SINGLE_SESSION_REPLACED = "single-session-replaced"
+const SESSION_STORAGE_PREFIX = "mvbd-active-session:"
+
+function getStoredSessionId(uid: string) {
+  if (typeof window === "undefined") return null
+
+  try {
+    return window.sessionStorage.getItem(`${SESSION_STORAGE_PREFIX}${uid}`)
+  } catch {
+    return null
+  }
+}
+
+function storeSessionId(uid: string, sessionId: string) {
+  if (typeof window === "undefined") return
+
+  try {
+    window.sessionStorage.setItem(`${SESSION_STORAGE_PREFIX}${uid}`, sessionId)
+  } catch {
+    // Session storage can be unavailable in privacy-restricted browsers.
+  }
+}
 
 export class SingleSessionError extends Error {
   code = SINGLE_SESSION_REPLACED
@@ -45,18 +66,36 @@ function getDeviceLabel() {
 }
 
 export async function claimSingleSession(user: User) {
-  const sessionId = createSessionId()
+  const storedSessionId = getStoredSessionId(user.uid)
+  const sessionId = storedSessionId ?? createSessionId()
   const sessionRef = doc(db, "activeSessions", user.uid)
 
   await runTransaction(db, async (transaction) => {
-    transaction.set(sessionRef, {
-      uid: user.uid,
-      sessionId,
-      device: getDeviceLabel(),
-      updatedAt: serverTimestamp(),
-    })
+    const snapshot = await transaction.get(sessionRef)
+    const activeSessionId = snapshot.exists()
+      ? snapshot.data().sessionId
+      : null
+
+    if (
+      typeof activeSessionId === "string" &&
+      activeSessionId !== sessionId
+    ) {
+      throw new SingleSessionError()
+    }
+
+    transaction.set(
+      sessionRef,
+      {
+        uid: user.uid,
+        sessionId,
+        device: getDeviceLabel(),
+        updatedAt: serverTimestamp(),
+      },
+      { merge: true },
+    )
   })
 
+  storeSessionId(user.uid, sessionId)
   return sessionId
 }
 

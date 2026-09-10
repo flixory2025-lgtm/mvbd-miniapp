@@ -16,6 +16,7 @@ export const TRIAL_DURATION_MS = 7 * 24 * 60 * 60 * 1000
 
 export type AccessType = "trial" | "subscription" | null
 export type SubscriptionStatus = "inactive" | "active" | "expired" | "pending" | null
+export type AccountStatus = "active" | "suspended" | "banned"
 
 export type UserProfile = {
   uid: string
@@ -33,7 +34,9 @@ export type UserProfile = {
   trialStartedAt: Timestamp
   trialExpiresAt: Timestamp
   referralCode: string
+  referredBy: string | null
   successfulReferrals: number
+  accountStatus: AccountStatus
 }
 
 function generateMvbdId() {
@@ -66,8 +69,10 @@ function normalizeProfile(data: DocumentData): UserProfile {
     subscriptionExpiresAt: asTimestamp(data.subscriptionExpiresAt),
     trialStartedAt: asTimestamp(data.trialStartedAt) ?? Timestamp.now(),
     trialExpiresAt: asTimestamp(data.trialExpiresAt) ?? Timestamp.now(),
-    referralCode: typeof data.referralCode === "string" ? data.referralCode : String(data.mvbdId || "MVBD-PENDING"),
+    referralCode: typeof data.referralCode === "string" ? data.referralCode.trim().toUpperCase() : String(data.mvbdId || "MVBD-PENDING"),
+    referredBy: typeof data.referredBy === "string" ? data.referredBy.trim().toUpperCase() : null,
     successfulReferrals: typeof data.successfulReferrals === "number" ? data.successfulReferrals : 0,
+    accountStatus: data.accountStatus === "banned" || data.accountStatus === "suspended" ? data.accountStatus : "active",
   }
 }
 
@@ -77,21 +82,17 @@ export async function ensureUserProfile(user: User, legacyProfile?: Partial<Pick
   return runTransaction(db, async (transaction) => {
     const existing = await transaction.get(profileRef)
     if (existing.exists()) {
-      const currentProfile = normalizeProfile(existing.data())
-      const updates: Partial<Pick<UserProfile, "name" | "email" | "photoURL" | "dateOfBirth" | "referralCode">> = {}
-
-      if (!currentProfile.name && legacyProfile?.name) updates.name = legacyProfile.name
-      if (!currentProfile.email && legacyProfile?.email) updates.email = legacyProfile.email
-      if (!currentProfile.photoURL && legacyProfile?.photoURL) updates.photoURL = legacyProfile.photoURL
-      if (!currentProfile.dateOfBirth && legacyProfile?.dateOfBirth) updates.dateOfBirth = legacyProfile.dateOfBirth
-      if (!currentProfile.referralCode && legacyProfile?.referralCode) updates.referralCode = legacyProfile.referralCode
-
+      const current = normalizeProfile(existing.data())
+      const updates: Partial<Pick<UserProfile, "name" | "dateOfBirth" | "email" | "photoURL">> = {}
+      if (!current.name && legacyProfile?.name) updates.name = legacyProfile.name
+      if (!current.dateOfBirth && legacyProfile?.dateOfBirth) updates.dateOfBirth = legacyProfile.dateOfBirth
+      if (!current.email && (user.email || legacyProfile?.email)) updates.email = user.email || legacyProfile?.email || ""
+      if (!current.photoURL && (user.photoURL || legacyProfile?.photoURL)) updates.photoURL = user.photoURL || legacyProfile?.photoURL || null
       if (Object.keys(updates).length > 0) {
         transaction.update(profileRef, updates)
-        return { ...currentProfile, ...updates }
+        return { ...current, ...updates }
       }
-
-      return currentProfile
+      return current
     }
 
     const trialStartedAt = Timestamp.now()
@@ -110,11 +111,14 @@ export async function ensureUserProfile(user: User, legacyProfile?: Partial<Pick
       subscriptionExpiresAt: null,
       trialStartedAt,
       trialExpiresAt: Timestamp.fromMillis(trialStartedAt.toMillis() + TRIAL_DURATION_MS),
-      referralCode: legacyProfile?.referralCode || `MVBD-${generateMvbdId().slice(-6)}`,
+      referralCode: `MVBD-${generateMvbdId().slice(-6)}`,
+      referredBy: legacyProfile?.referralCode?.trim().toUpperCase() || null,
       successfulReferrals: 0,
+      accountStatus: "active",
     }
 
     transaction.set(profileRef, profile)
+
     return profile
   })
 }
@@ -181,6 +185,7 @@ export function getLegacyProfile() {
       email: typeof parsed.email === "string" ? parsed.email : "",
       photoURL: typeof parsed.photoURL === "string" ? parsed.photoURL : "",
       dateOfBirth: typeof parsed.dateOfBirth === "string" ? parsed.dateOfBirth : "",
+      referralCode: typeof parsed.referralCode === "string" ? parsed.referralCode : "",
     }
   } catch {
     return undefined

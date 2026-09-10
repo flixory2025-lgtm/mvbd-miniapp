@@ -7,41 +7,17 @@ import {
 } from "react"
 import { createPortal } from "react-dom"
 
-type Plan = {
-  name: string
-  duration: string
-  price: string
-  description: string
-  popular?: boolean
-  save?: string
-}
+import { useAuth } from "@/components/auth-provider"
+import { createPendingPaymentRequest } from "@/lib/payment-requests"
+import {
+  PAYMENT_NUMBER,
+  SUBSCRIPTION_PLANS,
+  type SubscriptionPlan,
+} from "@/lib/subscription-plans"
 
-const plans: Plan[] = [
-  {
-    name: "1 MONTH",
-    duration: "30 days",
-    price: "৳20",
-    description:
-      "Perfect for trying the premium experience.",
-  },
-  {
-    name: "2 MONTHS",
-    duration: "60 days",
-    price: "৳35",
-    description:
-      "A balanced plan for regular members.",
-    popular: true,
-    save: "Save ৳5",
-  },
-  {
-    name: "3 MONTHS",
-    duration: "90 days",
-    price: "৳50",
-    description:
-      "Best value for long-term premium access.",
-    save: "Best value",
-  },
-]
+type Plan = SubscriptionPlan
+
+const plans = SUBSCRIPTION_PLANS
 
 /* =========================================================
    VIEWPORT MODAL
@@ -104,6 +80,7 @@ function ViewportModal({
 ========================================================= */
 
 export default function SeriesSection() {
+  const { user, profile } = useAuth()
   const [selectedPlan, setSelectedPlan] =
     useState<Plan | null>(null)
 
@@ -155,9 +132,7 @@ export default function SeriesSection() {
 
   const copyNumber = async () => {
     try {
-      await navigator.clipboard.writeText(
-        "01865522275"
-      )
+      await navigator.clipboard.writeText(PAYMENT_NUMBER)
 
       setCopied(true)
 
@@ -173,19 +148,38 @@ export default function SeriesSection() {
      SUBMIT PAYMENT
   ======================================================= */
 
-  const submitPayment = () => {
+  const submitPayment = async () => {
     const trx = transactionId.trim()
 
-    if (!trx) {
-      setError(
-        "Please enter your transaction ID."
-      )
+    if (!user || !profile) {
+      setError("Please sign in before submitting a payment request.")
       return
     }
 
-    if (!selectedPlan) return
+    if (!trx || trx.length < 3) {
+      setError("Please enter a valid transaction ID.")
+      return
+    }
+
+    if (!selectedPlan) {
+      setError("Please select a subscription plan.")
+      return
+    }
 
     setError("")
+
+    try {
+      await createPendingPaymentRequest({
+        user,
+        profile,
+        planId: selectedPlan.planId,
+        transactionId: trx,
+      })
+    } catch (requestError) {
+      setError(requestError instanceof Error ? requestError.message : "Unable to submit your payment request.")
+      return
+    }
+
     setShowPayment(false)
     setShowProcessing(true)
     setProgress(0)

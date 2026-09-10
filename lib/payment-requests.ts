@@ -3,6 +3,7 @@ import {
   collection,
   getDocs,
   limit,
+  onSnapshot,
   query,
   serverTimestamp,
   where,
@@ -11,31 +12,83 @@ import {
 import type { User } from "firebase/auth"
 
 import { db } from "@/lib/firebase"
+
 import {
   getSubscriptionPlan,
   type PaymentRequest,
   type SubscriptionPlanId,
 } from "@/lib/subscription-plans"
+
 import type { UserProfile } from "@/lib/user-profile"
 
-function normalizeRequest(data: DocumentData, requestId: string): PaymentRequest {
+
+function normalizeRequest(
+  data: DocumentData,
+  requestId: string,
+): PaymentRequest {
   return {
     requestId,
-    uid: String(data.uid),
-    mvbdId: String(data.mvbdId),
-    userName: typeof data.userName === "string" ? data.userName : "",
-    planId: data.planId,
-    planName: typeof data.planName === "string" ? data.planName : "",
-    amount: typeof data.amount === "number" ? data.amount : 0,
-    transactionId: typeof data.transactionId === "string" ? data.transactionId : "",
-    status: data.status,
-    createdAt: data.createdAt ?? null,
-    reviewedAt: data.reviewedAt ?? null,
-    reviewedBy: typeof data.reviewedBy === "string" ? data.reviewedBy : null,
-    adminNote: typeof data.adminNote === "string" ? data.adminNote : null,
+
+    uid:
+      typeof data.uid === "string"
+        ? data.uid
+        : String(data.uid || ""),
+
+    mvbdId:
+      typeof data.mvbdId === "string"
+        ? data.mvbdId
+        : String(data.mvbdId || ""),
+
+    userName:
+      typeof data.userName === "string"
+        ? data.userName
+        : "",
+
+    planId:
+      data.planId,
+
+    planName:
+      typeof data.planName === "string"
+        ? data.planName
+        : "",
+
+    amount:
+      typeof data.amount === "number"
+        ? data.amount
+        : 0,
+
+    transactionId:
+      typeof data.transactionId === "string"
+        ? data.transactionId
+        : "",
+
+    status:
+      data.status,
+
+    createdAt:
+      data.createdAt ?? null,
+
+    reviewedAt:
+      data.reviewedAt ?? null,
+
+    reviewedBy:
+      typeof data.reviewedBy === "string"
+        ? data.reviewedBy
+        : null,
+
+    adminNote:
+      typeof data.adminNote === "string"
+        ? data.adminNote
+        : null,
   }
 }
 
+
+/*
+ * =========================================
+ * CREATE PENDING PAYMENT REQUEST
+ * =========================================
+ */
 export async function createPendingPaymentRequest({
   user,
   profile,
@@ -47,66 +100,259 @@ export async function createPendingPaymentRequest({
   planId: SubscriptionPlanId
   transactionId: string
 }) {
-  const plan = getSubscriptionPlan(planId)
-  const normalizedTransactionId = transactionId.trim()
+  /*
+   * Selected plan Firebase-এর central
+   * subscription plan list থেকে নেওয়া হচ্ছে।
+   */
+  const plan =
+    getSubscriptionPlan(planId)
 
-  if (!plan || plan.planId === "trial") throw new Error("Please select a paid subscription plan.")
-  if (normalizedTransactionId.length < 3) {
-    throw new Error("Please enter a valid transaction ID.")
+  /*
+   * Transaction ID clean করা হচ্ছে।
+   */
+  const normalizedTransactionId =
+    transactionId.trim()
+
+  /*
+   * Paid plan ছাড়া request allow করা হবে না।
+   */
+  if (
+    !plan ||
+    plan.planId === "trial"
+  ) {
+    throw new Error(
+      "Please select a paid subscription plan.",
+    )
   }
 
-  const duplicateQuery = query(
-    collection(db, "paymentRequests"),
-    where("uid", "==", user.uid),
-    where("planId", "==", plan.planId),
-    where("transactionId", "==", normalizedTransactionId),
-    where("status", "==", "pending"),
-    limit(1),
-  )
-  const duplicateSnapshot = await getDocs(duplicateQuery)
-  if (!duplicateSnapshot.empty) {
-    throw new Error("This payment request is already pending review.")
+  /*
+   * Minimum validation।
+   */
+  if (
+    normalizedTransactionId.length < 3
+  ) {
+    throw new Error(
+      "Please enter a valid transaction ID.",
+    )
   }
 
-  const request = {
-    uid: user.uid,
-    mvbdId: profile.mvbdId,
-    userName: profile.name || user.displayName || "MVBD user",
-    planId: plan.planId,
-    planName: plan.planName,
-    amount: plan.amount,
-    transactionId: normalizedTransactionId,
-    status: "pending" as const,
-    createdAt: serverTimestamp(),
-    reviewedAt: null,
-    reviewedBy: null,
-    adminNote: null,
-  }
-
-  const created = await addDoc(collection(db, "paymentRequests"), request)
-  return { ...request, requestId: created.id }
-}
-
-export async function getMyPaymentRequests(uid: string) {
-  const snapshot = await getDocs(
+  /*
+   * =========================================
+   * DUPLICATE PAYMENT CHECK
+   * =========================================
+   *
+   * আগের code-এ একসাথে:
+   *
+   * uid
+   * planId
+   * transactionId
+   * status
+   *
+   * দিয়ে compound query ছিল।
+   *
+   * এতে Firestore composite index error
+   * আসতে পারে।
+   *
+   * এখন শুধু current user's requests query
+   * করে client-side-এ duplicate check করছি।
+   */
+  const existingQuery =
     query(
-      collection(db, "paymentRequests"),
-      where("uid", "==", uid),
-      limit(25),
-    ),
-  )
+      collection(
+        db,
+        "paymentRequests",
+      ),
+      where(
+        "uid",
+        "==",
+        user.uid,
+      ),
+      limit(100),
+    )
 
-  return snapshot.docs.map((item) => normalizeRequest(item.data(), item.id))
+  const existingSnapshot =
+    await getDocs(
+      existingQuery,
+    )
+
+  const duplicate =
+    existingSnapshot.docs.some(
+      (paymentDoc) => {
+        const data =
+          paymentDoc.data()
+
+        const existingTransactionId =
+          typeof data.transactionId ===
+          "string"
+            ? data.transactionId.trim()
+            : ""
+
+        return (
+          data.status ===
+            "pending" &&
+          existingTransactionId ===
+            normalizedTransactionId
+        )
+      },
+    )
+
+  if (duplicate) {
+    throw new Error(
+      "This payment request is already pending review.",
+    )
+  }
+
+  /*
+   * =========================================
+   * FIRESTORE REQUEST
+   * =========================================
+   */
+  const request = {
+    uid:
+      user.uid,
+
+    mvbdId:
+      profile.mvbdId,
+
+    userName:
+      profile.name ||
+      user.displayName ||
+      "MVBD user",
+
+    planId:
+      plan.planId,
+
+    planName:
+      plan.planName,
+
+    amount:
+      plan.amount,
+
+    transactionId:
+      normalizedTransactionId,
+
+    status:
+      "pending" as const,
+
+    createdAt:
+      serverTimestamp(),
+
+    reviewedAt:
+      null,
+
+    reviewedBy:
+      null,
+
+    adminNote:
+      null,
+  }
+
+  /*
+   * paymentRequests collection-এ
+   * নতুন pending request তৈরি হবে।
+   */
+  const created =
+    await addDoc(
+      collection(
+        db,
+        "paymentRequests",
+      ),
+      request,
+    )
+
+  /*
+   * Admin Panel request ID-সহ
+   * created request পাওয়া যাবে।
+   */
+  return {
+    ...request,
+    requestId:
+      created.id,
+  }
 }
 
+
+/*
+ * =========================================
+ * GET MY PAYMENT REQUESTS
+ * =========================================
+ */
+export async function getMyPaymentRequests(
+  uid: string,
+) {
+  const snapshot =
+    await getDocs(
+      query(
+        collection(
+          db,
+          "paymentRequests",
+        ),
+        where(
+          "uid",
+          "==",
+          uid,
+        ),
+        limit(25),
+      ),
+    )
+
+  return snapshot.docs.map(
+    (item) =>
+      normalizeRequest(
+        item.data(),
+        item.id,
+      ),
+  )
+}
+
+
+/*
+ * =========================================
+ * REALTIME PAYMENT REQUESTS
+ * =========================================
+ *
+ * User-এর নিজের payment request Firebase
+ * থেকে realtime sync হবে।
+ */
 export function subscribeToMyPaymentRequests(
   uid: string,
-  onChange: (requests: PaymentRequest[]) => void,
-  onError?: (error: Error) => void,
+  onChange: (
+    requests: PaymentRequest[],
+  ) => void,
+  onError?: (
+    error: Error,
+  ) => void,
 ) {
+  const requestsQuery =
+    query(
+      collection(
+        db,
+        "paymentRequests",
+      ),
+      where(
+        "uid",
+        "==",
+        uid,
+      ),
+      limit(25),
+    )
+
   return onSnapshot(
-    query(collection(db, "paymentRequests"), where("uid", "==", uid), limit(25)),
-    (snapshot) => onChange(snapshot.docs.map((item) => normalizeRequest(item.data(), item.id))),
-    (error) => onError?.(error),
+    requestsQuery,
+    (snapshot) => {
+      const requests =
+        snapshot.docs.map(
+          (item) =>
+            normalizeRequest(
+              item.data(),
+              item.id,
+            ),
+        )
+
+      onChange(requests)
+    },
+    (error) => {
+      onError?.(error)
+    },
   )
 }

@@ -33,6 +33,7 @@ export type UserProfile = {
   subscriptionExpiresAt: Timestamp | null
   trialStartedAt: Timestamp
   trialExpiresAt: Timestamp
+  trialUsedAt: Timestamp | null
   referralCode: string
   referredBy: string | null
   successfulReferrals: number
@@ -69,6 +70,7 @@ function normalizeProfile(data: DocumentData): UserProfile {
     subscriptionExpiresAt: asTimestamp(data.subscriptionExpiresAt),
     trialStartedAt: asTimestamp(data.trialStartedAt) ?? Timestamp.now(),
     trialExpiresAt: asTimestamp(data.trialExpiresAt) ?? Timestamp.now(),
+    trialUsedAt: asTimestamp(data.trialUsedAt),
     referralCode: typeof data.referralCode === "string" ? data.referralCode.trim().toUpperCase() : String(data.mvbdId || "MVBD-PENDING"),
     referredBy: typeof data.referredBy === "string" ? data.referredBy.trim().toUpperCase() : null,
     successfulReferrals: typeof data.successfulReferrals === "number" ? data.successfulReferrals : 0,
@@ -111,7 +113,8 @@ export async function ensureUserProfile(user: User, legacyProfile?: Partial<Pick
       subscriptionExpiresAt: null,
       trialStartedAt,
       trialExpiresAt: Timestamp.fromMillis(trialStartedAt.toMillis() + TRIAL_DURATION_MS),
-      referralCode: `MVBD-${generateMvbdId().slice(-6)}`,
+      trialUsedAt: null,
+      referralCode: legacyProfile?.referralCode || `MVBD-${generateMvbdId().slice(-6)}`,
       referredBy: legacyProfile?.referralCode?.trim().toUpperCase() || null,
       successfulReferrals: 0,
       accountStatus: "active",
@@ -141,23 +144,45 @@ export function subscribeToUserProfile(
 }
 
 export async function activateTrial(uid: string) {
-  const profileRef: DocumentReference<UserProfile> = doc(db, "users", uid) as DocumentReference<UserProfile>
+  const profileRef: DocumentReference<UserProfile> = doc(
+    db,
+    "users",
+    uid,
+  ) as DocumentReference<UserProfile>
   return runTransaction(db, async (transaction) => {
     const existing = await transaction.get(profileRef)
-    if (!existing.exists()) throw new Error("Your profile is not available yet.")
+    if (!existing.exists()) {
+      throw new Error("Your profile is not available yet.")
+    }
     const profile = normalizeProfile(existing.data())
-    if (profile.accessType === "trial" && profile.trialExpiresAt.toMillis() > Date.now()) return profile
-    if (profile.accessType === "subscription" && profile.subscriptionStatus === "active") {
+    if (profile.trialUsedAt !== null) {
+      throw new Error("Your 7-day trial has already been used.")
+    }
+    if (
+      profile.accessType === "subscription" &&
+      profile.subscriptionStatus === "active"
+    ) {
       throw new Error("Your paid membership is already active.")
     }
     const trialStartedAt = Timestamp.now()
+    const trialExpiresAt = Timestamp.fromMillis(
+      trialStartedAt.toMillis() + TRIAL_DURATION_MS,
+    )
     transaction.update(profileRef, {
       accessType: "trial",
       subscriptionStatus: "inactive",
       trialStartedAt,
-      trialExpiresAt: Timestamp.fromMillis(trialStartedAt.toMillis() + TRIAL_DURATION_MS),
+      trialExpiresAt,
+      trialUsedAt: trialStartedAt,
     })
-    return { ...profile, accessType: "trial" as const, subscriptionStatus: "inactive" as const, trialStartedAt, trialExpiresAt: Timestamp.fromMillis(trialStartedAt.toMillis() + TRIAL_DURATION_MS) }
+    return {
+      ...profile,
+      accessType: "trial" as const,
+      subscriptionStatus: "inactive" as const,
+      trialStartedAt,
+      trialExpiresAt,
+      trialUsedAt: trialStartedAt,
+    }
   })
 }
 

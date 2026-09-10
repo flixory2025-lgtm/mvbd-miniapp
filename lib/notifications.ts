@@ -14,10 +14,23 @@ export function subscribeToMyNotifications(
   onError?: (error: Error) => void,
 ): Unsubscribe {
   return onSnapshot(
-    query(collection(db, "notifications"), where("uid", "==", uid), orderBy("createdAt", "desc"), limit(50)),
-    (snapshot) => onChange(snapshot.docs.map((item) => ({ notificationId: item.id, ...item.data() })) as Notification[]),
+    query(collection(db, "notifications"), where("uid", "==", uid), limit(50)),
+    (snapshot) => {
+      const notifications = snapshot.docs
+        .map((item) => ({ notificationId: item.id, ...item.data() }) as Notification)
+        .sort((a, b) => notificationTime(b.createdAt) - notificationTime(a.createdAt))
+      onChange(notifications)
+    },
     (error) => onError?.(error),
   )
+}
+
+function notificationTime(value: unknown) {
+  if (value && typeof value === "object" && "toMillis" in value && typeof value.toMillis === "function") return value.toMillis()
+  if (value instanceof Date) return value.getTime()
+  if (typeof value === "number") return value
+  if (typeof value === "string") return new Date(value).getTime()
+  return 0
 }
 
 export async function markNotificationRead(uid: string, notificationId: string) {

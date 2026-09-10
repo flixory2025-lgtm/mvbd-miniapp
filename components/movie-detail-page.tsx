@@ -4,6 +4,9 @@ import { useState, useEffect } from "react"
 import { Play, Eye, ArrowLeft } from "lucide-react"
 import { movies } from "@/lib/movie-data"
 import TelegramJoinPopup from "./telegram-join-popup"
+import AuthModal from "./auth-modal"
+import SubscriptionPanel from "./subscription-panel"
+import { useAuth } from "./auth-provider"
 
 interface MovieDetailPageProps {
   movie: {
@@ -28,6 +31,9 @@ export default function MovieDetailPage({ movie, onBack, onMovieClick, showAdult
   const [viewCount, setViewCount] = useState(Math.floor(Math.random() * 1000) + 1)
   const [isAddedToWatchLater, setIsAddedToWatchLater] = useState(false)
   const [showTelegramPopup, setShowTelegramPopup] = useState(false)
+  const [showSubscriptions, setShowSubscriptions] = useState(false)
+  const [showAuthModal, setShowAuthModal] = useState(false)
+  const { user, entitlement } = useAuth()
 
   useEffect(() => {
     window.scrollTo(0, 0)
@@ -43,6 +49,14 @@ export default function MovieDetailPage({ movie, onBack, onMovieClick, showAdult
   }
 
   const handleWatchNow = () => {
+    if (!user) {
+      setShowAuthModal(true)
+      return
+    }
+    if (!entitlement.hasWatchAccess) {
+      setShowSubscriptions(true)
+      return
+    }
     setShowTelegramPopup(true)
   }
 
@@ -297,7 +311,7 @@ export default function MovieDetailPage({ movie, onBack, onMovieClick, showAdult
       )}
 
       {/* Footer */}
-      <div className="relative z-10 bg-black/70 backdrop-blur-xl border-t border-white/10 mt-12">
+      <div className="relative z-10 bg-black/70 backdrop-blur-xl border-t border-white/10 mt-4">
         <div className="px-4 py-8 max-w-6xl mx-auto">
           <div className="flex justify-center items-center gap-4">
             <p className="text-slate-500 text-xs text-center">© 2025 MoviesVerse. সর্বাধিকার সংরক্ষিত। All rights reserved.</p>
@@ -328,8 +342,11 @@ export default function MovieDetailPage({ movie, onBack, onMovieClick, showAdult
         </div>
       )}
 
+      {showAuthModal && <AuthModal open={showAuthModal} onOpenChange={setShowAuthModal} />}
+
       {/* Telegram Popup */}
-      {showTelegramPopup && <TelegramJoinPopup onClose={() => setShowTelegramPopup(false)} movieTitle={movie.title} telegramLink={movie.telegramLink} moviePoster={movie.poster} />}
+      {showTelegramPopup && entitlement.hasWatchAccess && <TelegramJoinPopup hasPremiumAccess movieTitle={movie.title} onClose={() => setShowTelegramPopup(false)} telegramLink={movie.telegramLink} moviePoster={movie.poster} />}
+      <SubscriptionPanel open={showSubscriptions} onOpenChange={setShowSubscriptions} />
     </div>
   )
 }

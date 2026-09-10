@@ -17,10 +17,12 @@ import {
 
 type Plan = SubscriptionPlan
 
+const plans = SUBSCRIPTION_PLANS
+
 /* =========================================================
    VIEWPORT MODAL
-   Always rendered directly inside document.body.
-   Keeps the modal independent from page containers.
+   The modal is rendered directly inside document.body.
+   This prevents parent containers from affecting position.
 ========================================================= */
 
 function ViewportModal({
@@ -35,40 +37,30 @@ function ViewportModal({
   useEffect(() => {
     setMounted(true)
 
-    return () => {
-      setMounted(false)
-    }
-  }, [])
-
-  useEffect(() => {
-    if (!mounted) return
-
     const previousOverflow =
       document.body.style.overflow
 
-    const previousOverscroll =
-      document.body.style.overscrollBehavior
+    const previousTouchAction =
+      document.body.style.touchAction
 
     document.body.style.overflow = "hidden"
-    document.body.style.overscrollBehavior = "none"
+    document.body.style.touchAction = "none"
 
     return () => {
       document.body.style.overflow =
         previousOverflow
 
-      document.body.style.overscrollBehavior =
-        previousOverscroll
+      document.body.style.touchAction =
+        previousTouchAction
     }
-  }, [mounted])
+  }, [])
 
   if (!mounted) return null
 
   return createPortal(
     <div
-      className="mvbd-subscription-modal"
-      role="dialog"
-      aria-modal="true"
-      onMouseDown={(event) => {
+      className="mvbd-viewport-modal"
+      onClick={(event) => {
         if (
           event.target === event.currentTarget &&
           onBackdropClick
@@ -79,17 +71,16 @@ function ViewportModal({
     >
       {children}
     </div>,
-    document.body,
+    document.body
   )
 }
 
 /* =========================================================
-   MAIN SUBSCRIPTION PAGE
+   MAIN COMPONENT
 ========================================================= */
 
 export default function SeriesSection() {
   const { user, profile } = useAuth()
-
   const [selectedPlan, setSelectedPlan] =
     useState<Plan | null>(null)
 
@@ -114,26 +105,11 @@ export default function SeriesSection() {
   const [error, setError] =
     useState("")
 
-  const [submitting, setSubmitting] =
-    useState(false)
-
-  /* =======================================================
-     ONLY PAID PLANS
-  ======================================================= */
-
-  const paidPlans = SUBSCRIPTION_PLANS.filter(
-    (plan) => plan.planId !== "trial",
-  )
-
   /* =======================================================
      OPEN PLAN
   ======================================================= */
 
   const openPlan = (plan: Plan) => {
-    if (plan.planId === "trial") {
-      return
-    }
-
     setSelectedPlan(plan)
     setTransactionId("")
     setError("")
@@ -146,12 +122,8 @@ export default function SeriesSection() {
   ======================================================= */
 
   const closePayment = () => {
-    if (submitting) return
-
     setShowPayment(false)
     setError("")
-    setTransactionId("")
-    setCopied(false)
   }
 
   /* =======================================================
@@ -160,13 +132,11 @@ export default function SeriesSection() {
 
   const copyNumber = async () => {
     try {
-      await navigator.clipboard.writeText(
-        PAYMENT_NUMBER,
-      )
+      await navigator.clipboard.writeText(PAYMENT_NUMBER)
 
       setCopied(true)
 
-      window.setTimeout(() => {
+      setTimeout(() => {
         setCopied(false)
       }, 1800)
     } catch {
@@ -179,41 +149,24 @@ export default function SeriesSection() {
   ======================================================= */
 
   const submitPayment = async () => {
-    const trx =
-      transactionId.trim()
-
-    if (submitting) return
+    const trx = transactionId.trim()
 
     if (!user || !profile) {
-      setError(
-        "Please sign in before submitting a payment request.",
-      )
-      return
-    }
-
-    if (!selectedPlan) {
-      setError(
-        "Please select a subscription plan.",
-      )
-      return
-    }
-
-    if (selectedPlan.planId === "trial") {
-      setError(
-        "Trial cannot be submitted as a payment.",
-      )
+      setError("Please sign in before submitting a payment request.")
       return
     }
 
     if (!trx || trx.length < 3) {
-      setError(
-        "Please enter a valid transaction ID.",
-      )
+      setError("Please enter a valid transaction ID.")
+      return
+    }
+
+    if (!selectedPlan) {
+      setError("Please select a subscription plan.")
       return
     }
 
     setError("")
-    setSubmitting(true)
 
     try {
       await createPendingPaymentRequest({
@@ -223,17 +176,9 @@ export default function SeriesSection() {
         transactionId: trx,
       })
     } catch (requestError) {
-      setError(
-        requestError instanceof Error
-          ? requestError.message
-          : "Unable to submit your payment request.",
-      )
-
-      setSubmitting(false)
+      setError(requestError instanceof Error ? requestError.message : "Unable to submit your payment request.")
       return
     }
-
-    setSubmitting(false)
 
     setShowPayment(false)
     setShowProcessing(true)
@@ -242,32 +187,28 @@ export default function SeriesSection() {
     const startTime = Date.now()
     const processingDuration = 9000
 
-    const timer =
-      window.setInterval(() => {
-        const elapsed =
-          Date.now() - startTime
+    const timer = window.setInterval(() => {
+      const elapsed =
+        Date.now() - startTime
 
-        const percentage =
-          Math.min(
-            100,
-            Math.round(
-              (elapsed /
-                processingDuration) *
-                100,
-            ),
-          )
+      const percentage = Math.min(
+        100,
+        Math.round(
+          (elapsed / processingDuration) * 100
+        )
+      )
 
-        setProgress(percentage)
+      setProgress(percentage)
 
-        if (percentage >= 100) {
-          window.clearInterval(timer)
+      if (percentage >= 100) {
+        window.clearInterval(timer)
 
-          window.setTimeout(() => {
-            setShowProcessing(false)
-            setShowSuccess(true)
-          }, 650)
-        }
-      }, 100)
+        setTimeout(() => {
+          setShowProcessing(false)
+          setShowSuccess(true)
+        }, 650)
+      }
+    }, 100)
   }
 
   /* =======================================================
@@ -280,69 +221,65 @@ export default function SeriesSection() {
     setTransactionId("")
     setProgress(0)
     setError("")
-    setCopied(false)
   }
 
   return (
     <>
       <main className="mvbd-premium-page">
+
         <style jsx global>{`
+
           /* =================================================
-             PAGE RESET
+             RESET FOR THIS PAGE
           ================================================= */
 
           .mvbd-premium-page,
           .mvbd-premium-page *,
-          .mvbd-subscription-modal,
-          .mvbd-subscription-modal * {
+          .mvbd-viewport-modal,
+          .mvbd-viewport-modal * {
             box-sizing: border-box;
           }
 
           /* =================================================
-             MAIN PAGE
-             IMPORTANT:
-             No forced viewport height.
-             No overflow:hidden.
-             Outer app shell can control bottom spacing.
+             MAIN PREMIUM PAGE
           ================================================= */
 
           .mvbd-premium-page {
             position: relative;
 
-            width: 100%;
+            min-height: 100vh;
+            min-height: 100dvh;
 
-            min-height: auto;
+            overflow: hidden;
 
-            overflow: visible;
+            padding:
+              18px 16px 70px;
 
             isolation: isolate;
 
-            color: #ffffff;
-
-            padding:
-              18px 16px 0;
+            color: white;
 
             background:
               radial-gradient(
                 circle at 50% -10%,
-                rgba(32, 255, 138, 0.105),
+                rgba(82, 57, 135, 0.16),
                 transparent 32%
               ),
               radial-gradient(
-                circle at 8% 42%,
-                rgba(0, 194, 120, 0.075),
-                transparent 30%
-              ),
-              radial-gradient(
-                circle at 94% 58%,
-                rgba(62, 255, 169, 0.055),
+                circle at 10% 45%,
+                rgba(43, 59, 105, 0.09),
                 transparent 28%
               ),
-              #020504;
+              radial-gradient(
+                circle at 90% 60%,
+                rgba(115, 57, 47, 0.07),
+                transparent 30%
+              ),
+              #020204;
           }
 
           /* =================================================
-             LIQUID GREEN AURORA
+             LIQUID AURORA
           ================================================= */
 
           .mvbd-premium-page::before {
@@ -358,59 +295,47 @@ export default function SeriesSection() {
 
             background:
               radial-gradient(
-                circle at 28% 28%,
-                rgba(0, 255, 132, 0.105),
+                circle at 30% 30%,
+                rgba(95, 65, 160, 0.13),
                 transparent 25%
               ),
               radial-gradient(
-                circle at 72% 34%,
-                rgba(34, 214, 130, 0.075),
-                transparent 26%
+                circle at 70% 35%,
+                rgba(40, 91, 145, 0.09),
+                transparent 25%
               ),
               radial-gradient(
-                circle at 52% 78%,
-                rgba(0, 143, 89, 0.075),
-                transparent 25%
+                circle at 50% 75%,
+                rgba(151, 77, 55, 0.07),
+                transparent 23%
               );
 
-            filter: blur(80px);
+            filter: blur(75px);
 
             animation:
-              mvbdGreenAurora
+              mvbdAurora
               18s
               ease-in-out
               infinite
               alternate;
           }
 
-          @keyframes mvbdGreenAurora {
+          @keyframes mvbdAurora {
             0% {
               transform:
-                translate3d(
-                  -2%,
-                  -1%,
-                  0
-                )
+                translate3d(-2%, -1%, 0)
                 scale(1);
             }
 
             50% {
               transform:
-                translate3d(
-                  3%,
-                  2%,
-                  0
-                )
+                translate3d(3%, 2%, 0)
                 scale(1.08);
             }
 
             100% {
               transform:
-                translate3d(
-                  -1%,
-                  4%,
-                  0
-                )
+                translate3d(-1%, 4%, 0)
                 scale(1.03);
             }
           }
@@ -445,35 +370,20 @@ export default function SeriesSection() {
             background-image:
               radial-gradient(
                 circle,
-                rgba(
-                  126,
-                  255,
-                  190,
-                  0.62
-                )
-                0 1px,
+                rgba(166, 139, 255, 0.65)
+                  0 1px,
                 transparent 1.8px
               ),
               radial-gradient(
                 circle,
-                rgba(
-                  83,
-                  215,
-                  151,
-                  0.5
-                )
-                0 1px,
+                rgba(116, 153, 255, 0.5)
+                  0 1px,
                 transparent 1.8px
               ),
               radial-gradient(
                 circle,
-                rgba(
-                  255,
-                  255,
-                  255,
-                  0.38
-                )
-                0 1px,
+                rgba(255, 255, 255, 0.4)
+                  0 1px,
                 transparent 1.7px
               );
 
@@ -487,7 +397,7 @@ export default function SeriesSection() {
               37px 29px,
               79px 43px;
 
-            opacity: 0.26;
+            opacity: 0.32;
 
             animation:
               mvbdStarsDrift
@@ -498,13 +408,11 @@ export default function SeriesSection() {
 
           @keyframes mvbdStarsDrift {
             from {
-              transform:
-                translateY(0);
+              transform: translateY(0);
             }
 
             to {
-              transform:
-                translateY(100px);
+              transform: translateY(100px);
             }
           }
 
@@ -516,26 +424,13 @@ export default function SeriesSection() {
 
             border-radius: 50%;
 
-            background:
-              #a8ffd1;
+            background: #c7bbff;
 
             box-shadow:
-              0 0 8px
-                rgba(
-                  82,
-                  255,
-                  164,
-                  0.65
-                ),
-              0 0 18px
-                rgba(
-                  82,
-                  255,
-                  164,
-                  0.24
-                );
+              0 0 8px rgba(139, 119, 255, 0.75),
+              0 0 18px rgba(139, 119, 255, 0.3);
 
-            opacity: 0.48;
+            opacity: 0.5;
 
             animation:
               mvbdStarLiquid
@@ -551,31 +446,24 @@ export default function SeriesSection() {
 
           @keyframes mvbdStarLiquid {
             0% {
-              transform:
-                scale(0.25);
-
-              opacity: 0.1;
+              transform: scale(0.25);
+              opacity: 0.12;
             }
 
             50% {
-              transform:
-                scale(1);
-
-              opacity: 0.52;
+              transform: scale(1);
+              opacity: 0.55;
             }
 
             100% {
-              transform:
-                scale(1.6);
-
-              opacity: 0.82;
+              transform: scale(1.6);
+              opacity: 0.85;
             }
           }
 
           @keyframes mvbdStarFloat {
             50% {
-              translate:
-                0 -5px;
+              translate: 0 -5px;
             }
           }
 
@@ -588,14 +476,12 @@ export default function SeriesSection() {
 
             z-index: 2;
 
-            width:
-              min(
-                1120px,
-                100%
-              );
+            width: min(
+              1120px,
+              100%
+            );
 
-            margin:
-              0 auto;
+            margin: 0 auto;
           }
 
           /* =================================================
@@ -606,68 +492,36 @@ export default function SeriesSection() {
             display: flex;
 
             align-items: center;
+            justify-content: space-between;
 
-            justify-content:
-              space-between;
-
-            gap: 12px;
-
-            padding:
-              11px 13px;
+            padding: 11px 13px;
 
             border:
               1px solid
-              rgba(
-                150,
-                255,
-                199,
-                0.115
-              );
+              rgba(255, 255, 255, 0.105);
 
-            border-radius:
-              28px;
+            border-radius: 28px;
 
             background:
               linear-gradient(
                 135deg,
-                rgba(
-                  255,
-                  255,
-                  255,
-                  0.065
-                ),
-                rgba(
-                  51,
-                  255,
-                  151,
-                  0.018
-                ),
-                rgba(
-                  255,
-                  255,
-                  255,
-                  0.025
-                )
+                rgba(255, 255, 255, 0.075),
+                rgba(255, 255, 255, 0.025)
               );
 
             backdrop-filter:
               blur(35px)
-              saturate(155%);
+              saturate(150%);
 
             -webkit-backdrop-filter:
               blur(35px)
-              saturate(155%);
+              saturate(150%);
 
             box-shadow:
               0 20px 70px
                 rgba(0, 0, 0, 0.55),
               inset 0 1px
-                rgba(
-                  255,
-                  255,
-                  255,
-                  0.1
-                );
+                rgba(255, 255, 255, 0.11);
           }
 
           .mvbd-brand {
@@ -676,8 +530,6 @@ export default function SeriesSection() {
             align-items: center;
 
             gap: 10px;
-
-            min-width: 0;
 
             font-size: 14px;
 
@@ -688,94 +540,40 @@ export default function SeriesSection() {
             width: 39px;
             height: 39px;
 
-            flex-shrink: 0;
-
             display: grid;
 
             place-items: center;
 
-            border-radius:
-              14px;
-
-            color:
-              #d8ffe9;
+            border-radius: 14px;
 
             background:
               linear-gradient(
                 145deg,
-                rgba(
-                  72,
-                  255,
-                  163,
-                  0.34
-                ),
-                rgba(
-                  0,
-                  161,
-                  94,
-                  0.16
-                )
-              );
-
-            border:
-              1px solid
-              rgba(
-                133,
-                255,
-                193,
-                0.18
+                rgba(255, 196, 158, 0.9),
+                rgba(169, 103, 255, 0.82)
               );
 
             box-shadow:
               0 9px 35px
-                rgba(
-                  0,
-                  255,
-                  137,
-                  0.1
-                ),
+                rgba(152, 91, 255, 0.18),
               inset 0 1px
-                rgba(
-                  255,
-                  255,
-                  255,
-                  0.24
-                );
+                rgba(255, 255, 255, 0.35);
           }
 
           .mvbd-nav-badge {
-            flex-shrink: 0;
+            padding: 8px 12px;
 
-            padding:
-              8px 12px;
-
-            border-radius:
-              999px;
+            border-radius: 999px;
 
             border:
               1px solid
-              rgba(
-                140,
-                255,
-                195,
-                0.09
-              );
+              rgba(255, 255, 255, 0.09);
 
             background:
-              rgba(
-                71,
-                255,
-                159,
-                0.035
-              );
+              rgba(255, 255, 255, 0.045);
 
             color:
-              rgba(
-                201,
-                255,
-                222,
-                0.55
-              );
+              rgba(255, 255, 255, 0.5);
 
             font-size: 10px;
 
@@ -812,18 +610,9 @@ export default function SeriesSection() {
             background:
               radial-gradient(
                 circle,
-                rgba(
-                  48,
-                  255,
-                  155,
-                  0.11
-                ),
-                rgba(
-                  28,
-                  170,
-                  103,
-                  0.035
-                ) 45%,
+                rgba(147, 103, 255, 0.13),
+                rgba(255, 139, 103, 0.035)
+                  45%,
                 transparent 70%
               );
 
@@ -860,39 +649,22 @@ export default function SeriesSection() {
 
             gap: 7px;
 
-            padding:
-              8px 13px;
+            padding: 8px 13px;
 
-            border-radius:
-              999px;
+            border-radius: 999px;
 
             border:
               1px solid
-              rgba(
-                135,
-                255,
-                191,
-                0.1
-              );
+              rgba(255, 255, 255, 0.11);
 
             background:
-              rgba(
-                90,
-                255,
-                166,
-                0.035
-              );
+              rgba(255, 255, 255, 0.045);
 
             backdrop-filter:
               blur(22px);
 
             color:
-              rgba(
-                198,
-                255,
-                220,
-                0.72
-              );
+              rgba(255, 218, 198, 0.82);
 
             font-size: 11px;
 
@@ -900,19 +672,9 @@ export default function SeriesSection() {
 
             box-shadow:
               inset 0 1px
-                rgba(
-                  255,
-                  255,
-                  255,
-                  0.07
-                ),
+                rgba(255, 255, 255, 0.08),
               0 8px 35px
-                rgba(
-                  0,
-                  0,
-                  0,
-                  0.25
-                );
+                rgba(0, 0, 0, 0.25);
           }
 
           .mvbd-live-dot {
@@ -921,19 +683,12 @@ export default function SeriesSection() {
 
             border-radius: 50%;
 
-            background:
-              #63ffa7;
+            background: #d5b0ff;
 
             box-shadow:
-              0 0 9px
-                #42ff98,
+              0 0 9px #a77aff,
               0 0 20px
-                rgba(
-                  66,
-                  255,
-                  152,
-                  0.42
-                );
+                rgba(167, 122, 255, 0.45);
 
             animation:
               mvbdLivePulse
@@ -944,9 +699,7 @@ export default function SeriesSection() {
 
           @keyframes mvbdLivePulse {
             50% {
-              transform:
-                scale(1.6);
-
+              transform: scale(1.6);
               opacity: 0.45;
             }
           }
@@ -958,35 +711,27 @@ export default function SeriesSection() {
               22px 0 15px;
 
             font-size:
-              clamp(
-                43px,
-                8vw,
-                76px
-              );
+              clamp(43px, 8vw, 76px);
 
             line-height: 0.94;
 
-            letter-spacing:
-              -4px;
+            letter-spacing: -4px;
 
             font-weight: 900;
 
             background:
               linear-gradient(
                 100deg,
-                #ffffff 4%,
-                #d9ffe9 45%,
-                #74ffad 92%
+                #ffffff 5%,
+                #ded5ff 43%,
+                #ffb99e 90%
               );
 
-            -webkit-background-clip:
-              text;
+            -webkit-background-clip: text;
 
-            background-clip:
-              text;
+            background-clip: text;
 
-            color:
-              transparent;
+            color: transparent;
           }
 
           .mvbd-premium-title {
@@ -995,24 +740,14 @@ export default function SeriesSection() {
             margin-bottom: 17px;
 
             color:
-              rgba(
-                192,
-                255,
-                215,
-                0.67
-              );
+              rgba(255, 255, 255, 0.74);
 
             font-size:
-              clamp(
-                13px,
-                2vw,
-                18px
-              );
+              clamp(13px, 2vw, 18px);
 
             font-weight: 850;
 
-            letter-spacing:
-              7px;
+            letter-spacing: 7px;
           }
 
           .mvbd-subtitle {
@@ -1021,12 +756,7 @@ export default function SeriesSection() {
             margin: auto;
 
             color:
-              rgba(
-                255,
-                255,
-                255,
-                0.41
-              );
+              rgba(255, 255, 255, 0.43);
 
             font-size: 14px;
 
@@ -1038,49 +768,23 @@ export default function SeriesSection() {
 
             margin-top: 20px;
 
-            padding:
-              9px 14px;
+            padding: 9px 14px;
 
-            border-radius:
-              999px;
+            border-radius: 999px;
 
             border:
               1px solid
-              rgba(
-                105,
-                255,
-                167,
-                0.12
-              );
+              rgba(191, 255, 214, 0.13);
 
             background:
-              rgba(
-                89,
-                255,
-                157,
-                0.035
-              );
+              rgba(191, 255, 214, 0.035);
 
             color:
-              rgba(
-                190,
-                255,
-                213,
-                0.7
-              );
+              rgba(204, 255, 220, 0.74);
 
             font-size: 11px;
 
             font-weight: 750;
-
-            box-shadow:
-              inset 0 1px
-                rgba(
-                  255,
-                  255,
-                  255,
-                  0.055
-                );
           }
 
           /* =================================================
@@ -1103,78 +807,38 @@ export default function SeriesSection() {
 
             padding: 24px;
 
-            border-radius:
-              31px;
+            border-radius: 31px;
 
             border:
               1px solid
-              rgba(
-                126,
-                255,
-                183,
-                0.105
-              );
+              rgba(255, 255, 255, 0.105);
 
             background:
               linear-gradient(
                 145deg,
-                rgba(
-                  255,
-                  255,
-                  255,
-                  0.06
-                ),
-                rgba(
-                  62,
-                  255,
-                  158,
-                  0.018
-                ),
-                rgba(
-                  255,
-                  255,
-                  255,
-                  0.022
-                )
+                rgba(255, 255, 255, 0.075),
+                rgba(255, 255, 255, 0.025)
               );
 
             backdrop-filter:
               blur(34px)
-              saturate(155%);
+              saturate(150%);
 
             -webkit-backdrop-filter:
               blur(34px)
-              saturate(155%);
+              saturate(150%);
 
             box-shadow:
               0 28px 90px
-                rgba(
-                  0,
-                  0,
-                  0,
-                  0.5
-                ),
+                rgba(0, 0, 0, 0.5),
               inset 0 1px
-                rgba(
-                  255,
-                  255,
-                  255,
-                  0.075
-                );
+                rgba(255, 255, 255, 0.08);
 
             transition:
-              transform
-                0.55s
-                cubic-bezier(
-                  0.2,
-                  0.8,
-                  0.2,
-                  1
-                ),
-              border-color
-                0.4s,
-              box-shadow
-                0.5s;
+              transform 0.55s
+                cubic-bezier(0.2, 0.8, 0.2, 1),
+              border-color 0.4s,
+              box-shadow 0.5s;
           }
 
           .mvbd-card::before {
@@ -1182,11 +846,11 @@ export default function SeriesSection() {
 
             position: absolute;
 
-            width: 190px;
-            height: 190px;
+            width: 180px;
+            height: 180px;
 
-            right: -105px;
-            top: -105px;
+            right: -100px;
+            top: -100px;
 
             border-radius:
               46% 54% 62% 38% /
@@ -1195,12 +859,7 @@ export default function SeriesSection() {
             background:
               radial-gradient(
                 circle,
-                rgba(
-                  70,
-                  255,
-                  161,
-                  0.11
-                ),
+                rgba(174, 129, 255, 0.13),
                 transparent 70%
               );
 
@@ -1217,10 +876,7 @@ export default function SeriesSection() {
           @keyframes mvbdCardBlob {
             to {
               transform:
-                translate(
-                  -45px,
-                  50px
-                )
+                translate(-45px, 50px)
                 scale(1.3);
             }
           }
@@ -1230,61 +886,26 @@ export default function SeriesSection() {
               translateY(-7px);
 
             border-color:
-              rgba(
-                101,
-                255,
-                167,
-                0.25
-              );
+              rgba(207, 183, 255, 0.24);
 
             box-shadow:
               0 38px 110px
-                rgba(
-                  0,
-                  0,
-                  0,
-                  0.62
-                ),
+                rgba(0, 0, 0, 0.62),
               0 0 45px
-                rgba(
-                  0,
-                  255,
-                  137,
-                  0.055
-                ),
+                rgba(129, 91, 255, 0.06),
               inset 0 1px
-                rgba(
-                  255,
-                  255,
-                  255,
-                  0.11
-                );
+                rgba(255, 255, 255, 0.12);
           }
 
           .mvbd-card-popular {
             border-color:
-              rgba(
-                79,
-                255,
-                161,
-                0.23
-              );
+              rgba(255, 174, 140, 0.28);
 
             background:
               linear-gradient(
                 145deg,
-                rgba(
-                  54,
-                  255,
-                  150,
-                  0.075
-                ),
-                rgba(
-                  255,
-                  255,
-                  255,
-                  0.025
-                )
+                rgba(255, 156, 120, 0.085),
+                rgba(143, 102, 255, 0.035)
               );
           }
 
@@ -1294,21 +915,18 @@ export default function SeriesSection() {
             right: 17px;
             top: 17px;
 
-            padding:
-              7px 10px;
+            padding: 7px 10px;
 
-            border-radius:
-              999px;
+            border-radius: 999px;
 
             background:
               linear-gradient(
                 135deg,
-                #caffdf,
-                #5aff9c
+                rgba(255, 215, 173, 0.95),
+                rgba(255, 139, 112, 0.9)
               );
 
-            color:
-              #042512;
+            color: #2c120c;
 
             font-size: 9px;
 
@@ -1316,51 +934,33 @@ export default function SeriesSection() {
 
             box-shadow:
               0 8px 30px
-                rgba(
-                  60,
-                  255,
-                  145,
-                  0.13
-                );
+                rgba(255, 125, 91, 0.13);
           }
 
           .mvbd-plan-name {
             color:
-              rgba(
-                185,
-                255,
-                211,
-                0.7
-              );
+              rgba(255, 210, 190, 0.72);
 
             font-size: 11px;
 
             font-weight: 850;
 
-            letter-spacing:
-              0.8px;
+            letter-spacing: 0.8px;
           }
 
           .mvbd-price {
-            margin:
-              14px 0 2px;
+            margin: 14px 0 2px;
 
             font-size: 46px;
 
             font-weight: 900;
 
-            letter-spacing:
-              -2px;
+            letter-spacing: -2px;
           }
 
           .mvbd-price small {
             color:
-              rgba(
-                255,
-                255,
-                255,
-                0.38
-              );
+              rgba(255, 255, 255, 0.4);
 
             font-size: 12px;
 
@@ -1373,12 +973,7 @@ export default function SeriesSection() {
             min-height: 17px;
 
             color:
-              rgba(
-                180,
-                255,
-                207,
-                0.68
-              );
+              rgba(200, 255, 217, 0.72);
 
             font-size: 10px;
           }
@@ -1389,12 +984,7 @@ export default function SeriesSection() {
             min-height: 39px;
 
             color:
-              rgba(
-                255,
-                255,
-                255,
-                0.38
-              );
+              rgba(255, 255, 255, 0.39);
 
             font-size: 12px;
 
@@ -1404,18 +994,12 @@ export default function SeriesSection() {
           .mvbd-features {
             list-style: none;
 
-            margin:
-              12px 0 16px;
+            margin: 12px 0 16px;
 
             padding: 0;
 
             color:
-              rgba(
-                255,
-                255,
-                255,
-                0.47
-              );
+              rgba(255, 255, 255, 0.48);
 
             font-size: 12px;
 
@@ -1428,18 +1012,13 @@ export default function SeriesSection() {
             margin-right: 8px;
 
             color:
-              rgba(
-                118,
-                255,
-                172,
-                0.85
-              );
+              rgba(201, 255, 218, 0.8);
 
             font-weight: 900;
           }
 
           /* =================================================
-             CHOOSE BUTTON
+             LIQUID BUTTON
           ================================================= */
 
           .mvbd-choose {
@@ -1451,40 +1030,27 @@ export default function SeriesSection() {
 
             border: 0;
 
-            border-radius:
-              17px;
+            border-radius: 17px;
 
-            padding:
-              14px;
+            padding: 14px;
 
             cursor: pointer;
 
-            color:
-              #03150b;
+            color: #21100b;
 
             background:
               linear-gradient(
                 135deg,
-                #d8ffe8,
-                #69ffa7 48%,
-                #b6ffd3
+                #ffe0c0,
+                #ff9c7c 48%,
+                #d6b5ff
               );
 
             box-shadow:
               0 13px 35px
-                rgba(
-                  0,
-                  255,
-                  137,
-                  0.1
-                ),
+                rgba(255, 126, 92, 0.12),
               inset 0 1px
-                rgba(
-                  255,
-                  255,
-                  255,
-                  0.68
-                );
+                rgba(255, 255, 255, 0.65);
 
             font-size: 13px;
 
@@ -1506,16 +1072,10 @@ export default function SeriesSection() {
             width: 35%;
             height: 260%;
 
-            transform:
-              rotate(25deg);
+            transform: rotate(25deg);
 
             background:
-              rgba(
-                255,
-                255,
-                255,
-                0.4
-              );
+              rgba(255, 255, 255, 0.38);
 
             filter: blur(10px);
 
@@ -1538,16 +1098,13 @@ export default function SeriesSection() {
           }
 
           .mvbd-choose:hover {
-            filter:
-              brightness(1.07);
+            filter: brightness(1.07);
 
-            transform:
-              scale(1.015);
+            transform: scale(1.015);
           }
 
           .mvbd-choose:active {
-            transform:
-              scale(0.97);
+            transform: scale(0.97);
           }
 
           /* =================================================
@@ -1561,23 +1118,12 @@ export default function SeriesSection() {
 
             border:
               1px solid
-              rgba(
-                120,
-                255,
-                178,
-                0.075
-              );
+              rgba(255, 255, 255, 0.075);
 
-            border-radius:
-              25px;
+            border-radius: 25px;
 
             background:
-              rgba(
-                87,
-                255,
-                158,
-                0.025
-              );
+              rgba(255, 255, 255, 0.028);
 
             backdrop-filter:
               blur(25px);
@@ -1585,35 +1131,16 @@ export default function SeriesSection() {
             text-align: center;
 
             color:
-              rgba(
-                255,
-                255,
-                255,
-                0.36
-              );
+              rgba(255, 255, 255, 0.38);
 
             font-size: 11px;
 
             line-height: 1.7;
-
-            box-shadow:
-              inset 0 1px
-                rgba(
-                  255,
-                  255,
-                  255,
-                  0.05
-                );
           }
 
           .mvbd-info strong {
             color:
-              rgba(
-                183,
-                255,
-                210,
-                0.82
-              );
+              rgba(255, 237, 224, 0.8);
           }
 
           .mvbd-footer {
@@ -1623,21 +1150,18 @@ export default function SeriesSection() {
             text-align: center;
 
             color:
-              rgba(
-                255,
-                255,
-                255,
-                0.18
-              );
+              rgba(255, 255, 255, 0.2);
 
             font-size: 10px;
           }
 
           /* =================================================
-             VIEWPORT MODAL
+             =================================================
+             CRITICAL VIEWPORT MODAL
+             =================================================
           ================================================= */
 
-          .mvbd-subscription-modal {
+          .mvbd-viewport-modal {
             position: fixed !important;
 
             inset: 0 !important;
@@ -1645,6 +1169,9 @@ export default function SeriesSection() {
             width: 100vw !important;
             height: 100vh !important;
             height: 100dvh !important;
+
+            min-width: 100vw !important;
+            min-height: 100dvh !important;
 
             margin: 0 !important;
 
@@ -1674,36 +1201,25 @@ export default function SeriesSection() {
 
             overflow: hidden !important;
 
-            z-index:
-              2147483647 !important;
+            z-index: 2147483647 !important;
 
             isolation: isolate;
 
             background:
               radial-gradient(
                 circle at 50% 45%,
-                rgba(
-                  0,
-                  255,
-                  145,
-                  0.07
-                ),
+                rgba(96, 65, 150, 0.08),
                 transparent 34%
               ),
-              rgba(
-                0,
-                8,
-                5,
-                0.84
-              );
+              rgba(0, 0, 0, 0.84);
 
             backdrop-filter:
               blur(28px)
-              saturate(125%);
+              saturate(120%);
 
             -webkit-backdrop-filter:
               blur(28px)
-              saturate(125%);
+              saturate(120%);
 
             animation:
               mvbdOverlayIn
@@ -1730,11 +1246,11 @@ export default function SeriesSection() {
 
               backdrop-filter:
                 blur(28px)
-                saturate(125%);
+                saturate(120%);
 
               -webkit-backdrop-filter:
                 blur(28px)
-                saturate(125%);
+                saturate(120%);
             }
           }
 
@@ -1754,8 +1270,7 @@ export default function SeriesSection() {
 
             float: none !important;
 
-            flex:
-              0 0 auto !important;
+            flex: 0 0 auto !important;
 
             width:
               min(
@@ -1784,63 +1299,32 @@ export default function SeriesSection() {
 
             border:
               1px solid
-              rgba(
-                120,
-                255,
-                179,
-                0.13
-              );
+              rgba(255, 255, 255, 0.14);
 
-            border-radius:
-              34px;
+            border-radius: 34px;
 
             background:
               linear-gradient(
                 145deg,
-                rgba(
-                  18,
-                  34,
-                  26,
-                  0.94
-                ),
-                rgba(
-                  5,
-                  12,
-                  9,
-                  0.97
-                )
+                rgba(28, 26, 35, 0.92),
+                rgba(7, 7, 11, 0.96)
               );
 
             backdrop-filter:
               blur(45px)
-              saturate(150%);
+              saturate(145%);
 
             -webkit-backdrop-filter:
               blur(45px)
-              saturate(150%);
+              saturate(145%);
 
             box-shadow:
               0 45px 150px
-                rgba(
-                  0,
-                  0,
-                  0,
-                  0.78
-                ),
+                rgba(0, 0, 0, 0.78),
               0 0 80px
-                rgba(
-                  0,
-                  255,
-                  137,
-                  0.055
-                ),
+                rgba(111, 79, 180, 0.08),
               inset 0 1px
-                rgba(
-                  255,
-                  255,
-                  255,
-                  0.1
-                );
+                rgba(255, 255, 255, 0.13);
 
             transform-origin:
               center center;
@@ -1864,50 +1348,35 @@ export default function SeriesSection() {
               opacity: 0;
 
               transform:
-                translate3d(
-                  0,
-                  25px,
-                  0
-                )
+                translate3d(0, 25px, 0)
                 scale(0.91);
 
-              filter:
-                blur(14px);
+              filter: blur(14px);
             }
 
             55% {
               opacity: 1;
 
               transform:
-                translate3d(
-                  0,
-                  -4px,
-                  0
-                )
+                translate3d(0, -4px, 0)
                 scale(1.015);
 
-              filter:
-                blur(0);
+              filter: blur(0);
             }
 
             100% {
               opacity: 1;
 
               transform:
-                translate3d(
-                  0,
-                  0,
-                  0
-                )
+                translate3d(0, 0, 0)
                 scale(1);
 
-              filter:
-                blur(0);
+              filter: blur(0);
             }
           }
 
           /* =================================================
-             MODAL LIQUID BLOBS
+             LIQUID BLOBS INSIDE POPUP
           ================================================= */
 
           .mvbd-sheet::before {
@@ -1930,18 +1399,9 @@ export default function SeriesSection() {
             background:
               radial-gradient(
                 circle at 30% 30%,
-                rgba(
-                  78,
-                  255,
-                  165,
-                  0.16
-                ),
-                rgba(
-                  0,
-                  151,
-                  86,
-                  0.045
-                ) 50%,
+                rgba(174, 130, 255, 0.18),
+                rgba(112, 78, 190, 0.055)
+                  50%,
                 transparent 70%
               );
 
@@ -1975,12 +1435,7 @@ export default function SeriesSection() {
             background:
               radial-gradient(
                 circle,
-                rgba(
-                  64,
-                  255,
-                  153,
-                  0.085
-                ),
+                rgba(255, 142, 108, 0.09),
                 transparent 68%
               );
 
@@ -2004,10 +1459,7 @@ export default function SeriesSection() {
 
             100% {
               transform:
-                translate(
-                  -45px,
-                  55px
-                )
+                translate(-45px, 55px)
                 rotate(25deg)
                 scale(1.22);
             }
@@ -2022,17 +1474,14 @@ export default function SeriesSection() {
 
             100% {
               transform:
-                translate(
-                  50px,
-                  -30px
-                )
+                translate(50px, -30px)
                 rotate(-20deg)
                 scale(1.25);
             }
           }
 
           /* =================================================
-             CLOSE
+             CLOSE BUTTON
           ================================================= */
 
           .mvbd-close {
@@ -2043,30 +1492,15 @@ export default function SeriesSection() {
 
             border:
               1px solid
-              rgba(
-                143,
-                255,
-                194,
-                0.08
-              );
+              rgba(255, 255, 255, 0.08);
 
             border-radius: 50%;
 
             background:
-              rgba(
-                87,
-                255,
-                160,
-                0.045
-              );
+              rgba(255, 255, 255, 0.055);
 
             color:
-              rgba(
-                230,
-                255,
-                240,
-                0.82
-              );
+              rgba(255, 255, 255, 0.8);
 
             font-size: 20px;
 
@@ -2083,12 +1517,7 @@ export default function SeriesSection() {
               scale(1.05);
 
             background:
-              rgba(
-                94,
-                255,
-                164,
-                0.09
-              );
+              rgba(255, 255, 255, 0.1);
           }
 
           .mvbd-sheet h2 {
@@ -2097,18 +1526,12 @@ export default function SeriesSection() {
 
             font-size: 24px;
 
-            letter-spacing:
-              -1px;
+            letter-spacing: -1px;
           }
 
           .mvbd-muted {
             color:
-              rgba(
-                255,
-                255,
-                255,
-                0.45
-              );
+              rgba(255, 255, 255, 0.46);
 
             font-size: 12px;
 
@@ -2124,49 +1547,30 @@ export default function SeriesSection() {
 
             align-items: center;
 
-            justify-content:
-              space-between;
+            justify-content: space-between;
 
             gap: 15px;
 
-            margin:
-              17px 0;
+            margin: 17px 0;
 
             padding: 15px;
 
             border:
               1px solid
-              rgba(
-                115,
-                255,
-                174,
-                0.085
-              );
+              rgba(255, 255, 255, 0.08);
 
-            border-radius:
-              20px;
+            border-radius: 20px;
 
             background:
-              rgba(
-                88,
-                255,
-                159,
-                0.035
-              );
+              rgba(255, 255, 255, 0.045);
 
             box-shadow:
               inset 0 1px
-                rgba(
-                  255,
-                  255,
-                  255,
-                  0.05
-                );
+                rgba(255, 255, 255, 0.06);
           }
 
           .mvbd-selected-price {
-            color:
-              #9dffc1;
+            color: #ffd0b9;
 
             font-weight: 900;
           }
@@ -2182,52 +1586,29 @@ export default function SeriesSection() {
 
             border:
               1px solid
-              rgba(
-                112,
-                255,
-                173,
-                0.08
-              );
+              rgba(255, 255, 255, 0.08);
 
-            border-radius:
-              21px;
+            border-radius: 21px;
 
             background:
-              rgba(
-                85,
-                255,
-                156,
-                0.032
-              );
+              rgba(255, 255, 255, 0.04);
 
             box-shadow:
               inset 0 1px
-                rgba(
-                  255,
-                  255,
-                  255,
-                  0.045
-                );
+                rgba(255, 255, 255, 0.05);
           }
 
           .mvbd-label {
             color:
-              rgba(
-                193,
-                255,
-                216,
-                0.42
-              );
+              rgba(255, 255, 255, 0.4);
 
             font-size: 9px;
 
             font-weight: 800;
 
-            letter-spacing:
-              0.8px;
+            letter-spacing: 0.8px;
 
-            text-transform:
-              uppercase;
+            text-transform: uppercase;
           }
 
           .mvbd-number-row {
@@ -2235,8 +1616,7 @@ export default function SeriesSection() {
 
             align-items: center;
 
-            justify-content:
-              space-between;
+            justify-content: space-between;
 
             gap: 8px;
 
@@ -2248,8 +1628,7 @@ export default function SeriesSection() {
 
             font-weight: 900;
 
-            letter-spacing:
-              0.2px;
+            letter-spacing: 0.2px;
           }
 
           .mvbd-copy {
@@ -2257,34 +1636,17 @@ export default function SeriesSection() {
 
             border:
               1px solid
-              rgba(
-                121,
-                255,
-                177,
-                0.09
-              );
+              rgba(255, 255, 255, 0.08);
 
-            border-radius:
-              12px;
+            border-radius: 12px;
 
-            padding:
-              9px 11px;
+            padding: 9px 11px;
 
             background:
-              rgba(
-                92,
-                255,
-                159,
-                0.045
-              );
+              rgba(255, 255, 255, 0.06);
 
             color:
-              rgba(
-                222,
-                255,
-                235,
-                0.8
-              );
+              rgba(255, 255, 255, 0.82);
 
             font-size: 10px;
 
@@ -2296,16 +1658,10 @@ export default function SeriesSection() {
           }
 
           .mvbd-copy:hover {
-            transform:
-              scale(1.04);
+            transform: scale(1.04);
 
             background:
-              rgba(
-                92,
-                255,
-                159,
-                0.09
-              );
+              rgba(255, 255, 255, 0.1);
           }
 
           /* =================================================
@@ -2317,32 +1673,22 @@ export default function SeriesSection() {
 
             width: 100%;
 
+            box-sizing: border-box;
+
             margin-top: 12px;
 
-            padding:
-              14px 15px;
+            padding: 14px 15px;
 
             border:
               1px solid
-              rgba(
-                255,
-                255,
-                255,
-                0.09
-              );
+              rgba(255, 255, 255, 0.09);
 
-            border-radius:
-              17px;
+            border-radius: 17px;
 
             outline: none;
 
             background:
-              rgba(
-                0,
-                0,
-                0,
-                0.28
-              );
+              rgba(0, 0, 0, 0.27);
 
             color: white;
 
@@ -2355,45 +1701,24 @@ export default function SeriesSection() {
 
           .mvbd-input::placeholder {
             color:
-              rgba(
-                255,
-                255,
-                255,
-                0.25
-              );
+              rgba(255, 255, 255, 0.27);
           }
 
           .mvbd-input:focus {
             border-color:
-              rgba(
-                87,
-                255,
-                161,
-                0.34
-              );
+              rgba(191, 157, 255, 0.38);
 
             box-shadow:
               0 0 0 4px
-                rgba(
-                  52,
-                  255,
-                  148,
-                  0.045
-                ),
+                rgba(141, 104, 255, 0.055),
               inset 0 1px
-                rgba(
-                  255,
-                  255,
-                  255,
-                  0.05
-                );
+                rgba(255, 255, 255, 0.06);
           }
 
           .mvbd-error {
             margin-top: 8px;
 
-            color:
-              #ffaaa1;
+            color: #ffaaa1;
 
             font-size: 10px;
           }
@@ -2415,19 +1740,17 @@ export default function SeriesSection() {
 
             border: 0;
 
-            border-radius:
-              17px;
+            border-radius: 17px;
 
             background:
               linear-gradient(
                 135deg,
-                #d8ffe7,
-                #62ffa2,
-                #b6ffd3
+                #ffe0bd,
+                #ff9877,
+                #c4a6ff
               );
 
-            color:
-              #03150b;
+            color: #25110b;
 
             font-weight: 900;
 
@@ -2435,48 +1758,23 @@ export default function SeriesSection() {
 
             box-shadow:
               0 15px 38px
-                rgba(
-                  0,
-                  255,
-                  137,
-                  0.1
-                ),
+                rgba(255, 124, 93, 0.11),
               inset 0 1px
-                rgba(
-                  255,
-                  255,
-                  255,
-                  0.65
-                );
+                rgba(255, 255, 255, 0.6);
 
             transition:
               transform 0.25s,
-              filter 0.25s,
-              opacity 0.25s;
+              filter 0.25s;
           }
 
           .mvbd-send:hover {
-            filter:
-              brightness(1.06);
+            filter: brightness(1.06);
 
-            transform:
-              scale(1.012);
+            transform: scale(1.012);
           }
 
           .mvbd-send:active {
-            transform:
-              scale(0.975);
-          }
-
-          .mvbd-send:disabled {
-            cursor:
-              not-allowed;
-
-            opacity:
-              0.55;
-
-            transform:
-              none;
+            transform: scale(0.975);
           }
 
           .mvbd-send::after {
@@ -2490,16 +1788,10 @@ export default function SeriesSection() {
             top: -60%;
             left: -40%;
 
-            transform:
-              rotate(25deg);
+            transform: rotate(25deg);
 
             background:
-              rgba(
-                255,
-                255,
-                255,
-                0.35
-              );
+              rgba(255, 255, 255, 0.35);
 
             filter: blur(8px);
 
@@ -2525,12 +1817,7 @@ export default function SeriesSection() {
             margin-top: 10px;
 
             color:
-              rgba(
-                255,
-                255,
-                255,
-                0.23
-              );
+              rgba(255, 255, 255, 0.24);
 
             font-size: 9px;
 
@@ -2566,10 +1853,10 @@ export default function SeriesSection() {
             background:
               conic-gradient(
                 from 0deg,
-                #49ff9b,
-                #0ca96a,
-                #8affc2,
-                #49ff9b
+                #ff9b79,
+                #b07cff,
+                #6eaaff,
+                #ff9b79
               );
 
             animation:
@@ -2585,12 +1872,7 @@ export default function SeriesSection() {
 
             box-shadow:
               0 0 55px
-                rgba(
-                  50,
-                  255,
-                  148,
-                  0.16
-                );
+                rgba(141, 101, 255, 0.19);
           }
 
           .mvbd-orb::after {
@@ -2600,29 +1882,18 @@ export default function SeriesSection() {
 
             inset: 8px;
 
-            border-radius:
-              inherit;
+            border-radius: inherit;
 
             background:
               radial-gradient(
                 circle at 35% 25%,
-                rgba(
-                  255,
-                  255,
-                  255,
-                  0.065
-                ),
-                #06100b 62%
+                rgba(255, 255, 255, 0.07),
+                #08080c 62%
               );
 
             box-shadow:
               inset 0 0 25px
-                rgba(
-                  255,
-                  255,
-                  255,
-                  0.055
-                );
+                rgba(255, 255, 255, 0.06);
           }
 
           .mvbd-orb::before {
@@ -2634,12 +1905,7 @@ export default function SeriesSection() {
 
             border:
               1px solid
-              rgba(
-                119,
-                255,
-                181,
-                0.12
-              );
+              rgba(255, 255, 255, 0.09);
 
             border-radius:
               48% 52% 40% 60% /
@@ -2696,40 +1962,28 @@ export default function SeriesSection() {
 
             overflow: hidden;
 
-            border-radius:
-              999px;
+            border-radius: 999px;
 
             background:
-              rgba(
-                255,
-                255,
-                255,
-                0.065
-              );
+              rgba(255, 255, 255, 0.07);
           }
 
           .mvbd-progress-bar {
             height: 100%;
 
-            border-radius:
-              inherit;
+            border-radius: inherit;
 
             background:
               linear-gradient(
                 90deg,
-                #42ff98,
-                #9dffc2,
-                #35d984
+                #ff9d79,
+                #a77cff,
+                #69b5ff
               );
 
             box-shadow:
               0 0 14px
-                rgba(
-                  74,
-                  255,
-                  158,
-                  0.36
-                );
+                rgba(167, 124, 255, 0.4);
 
             transition:
               width 0.12s linear;
@@ -2737,12 +1991,7 @@ export default function SeriesSection() {
 
           .mvbd-percent {
             color:
-              rgba(
-                201,
-                255,
-                219,
-                0.32
-              );
+              rgba(255, 255, 255, 0.28);
 
             font-size: 10px;
           }
@@ -2764,52 +2013,26 @@ export default function SeriesSection() {
 
             border:
               1px solid
-              rgba(
-                110,
-                255,
-                167,
-                0.18
-              );
+              rgba(180, 255, 208, 0.18);
 
             border-radius: 50%;
 
             background:
               radial-gradient(
                 circle,
-                rgba(
-                  100,
-                  255,
-                  165,
-                  0.09
-                ),
-                rgba(
-                  100,
-                  255,
-                  165,
-                  0.018
-                )
+                rgba(180, 255, 208, 0.09),
+                rgba(180, 255, 208, 0.025)
               );
 
-            color:
-              #aaffc8;
+            color: #bfffd3;
 
             font-size: 34px;
 
             box-shadow:
               0 0 50px
-                rgba(
-                  74,
-                  255,
-                  155,
-                  0.075
-                ),
+                rgba(105, 255, 160, 0.08),
               inset 0 1px
-                rgba(
-                  255,
-                  255,
-                  255,
-                  0.07
-                );
+                rgba(255, 255, 255, 0.08);
 
             animation:
               mvbdSuccess
@@ -2846,10 +2069,6 @@ export default function SeriesSection() {
             }
           }
 
-          /* =================================================
-             DONE
-          ================================================= */
-
           .mvbd-done {
             width: 100%;
 
@@ -2859,26 +2078,14 @@ export default function SeriesSection() {
 
             border:
               1px solid
-              rgba(
-                114,
-                255,
-                174,
-                0.09
-              );
+              rgba(255, 255, 255, 0.08);
 
-            border-radius:
-              16px;
+            border-radius: 16px;
 
             background:
-              rgba(
-                87,
-                255,
-                158,
-                0.045
-              );
+              rgba(255, 255, 255, 0.055);
 
-            color:
-              white;
+            color: white;
 
             font-weight: 800;
 
@@ -2891,15 +2098,9 @@ export default function SeriesSection() {
 
           .mvbd-done:hover {
             background:
-              rgba(
-                87,
-                255,
-                158,
-                0.085
-              );
+              rgba(255, 255, 255, 0.09);
 
-            transform:
-              scale(1.01);
+            transform: scale(1.01);
           }
 
           /* =================================================
@@ -2909,19 +2110,12 @@ export default function SeriesSection() {
           @media (max-width: 760px) {
 
             .mvbd-premium-page {
-              padding-left:
-                12px;
-
-              padding-right:
-                12px;
-
-              padding-bottom:
-                0;
+              padding-left: 12px;
+              padding-right: 12px;
             }
 
             .mvbd-plans {
-              grid-template-columns:
-                1fr;
+              grid-template-columns: 1fr;
             }
 
             .mvbd-card-popular {
@@ -2929,22 +2123,28 @@ export default function SeriesSection() {
             }
 
             .mvbd-hero {
-              padding-top:
-                58px;
+              padding-top: 58px;
             }
 
             .mvbd-hero h1 {
-              letter-spacing:
-                -2.7px;
+              letter-spacing: -2.7px;
             }
 
             .mvbd-stars {
               height: 570px;
             }
 
-            .mvbd-subscription-modal {
+            /*
+              MOBILE MODAL:
+              Always centered inside viewport.
+            */
+
+            .mvbd-viewport-modal {
               width: 100vw !important;
               height: 100dvh !important;
+
+              min-width: 100vw !important;
+              min-height: 100dvh !important;
 
               padding:
                 max(
@@ -2975,16 +2175,13 @@ export default function SeriesSection() {
               max-height:
                 86dvh !important;
 
-              padding:
-                21px;
+              padding: 21px;
 
-              border-radius:
-                30px;
+              border-radius: 30px;
             }
 
             .mvbd-number {
-              font-size:
-                17px;
+              font-size: 17px;
             }
           }
 
@@ -3001,21 +2198,17 @@ export default function SeriesSection() {
               max-width:
                 calc(100vw - 18px) !important;
 
-              padding:
-                18px;
+              padding: 18px;
 
-              border-radius:
-                27px;
+              border-radius: 27px;
             }
 
             .mvbd-sheet h2 {
-              font-size:
-                21px;
+              font-size: 21px;
             }
 
             .mvbd-number {
-              font-size:
-                15px;
+              font-size: 15px;
             }
           }
 
@@ -3028,17 +2221,16 @@ export default function SeriesSection() {
             .mvbd-premium-page *,
             .mvbd-premium-page *::before,
             .mvbd-premium-page *::after,
-            .mvbd-subscription-modal *,
-            .mvbd-subscription-modal *::before,
-            .mvbd-subscription-modal *::after {
+            .mvbd-viewport-modal *,
+            .mvbd-viewport-modal *::before,
+            .mvbd-viewport-modal *::after {
               animation-duration:
                 0.01ms !important;
 
               animation-iteration-count:
                 1 !important;
 
-              transition:
-                none !important;
+              transition: none !important;
             }
           }
 
@@ -3142,14 +2334,14 @@ export default function SeriesSection() {
           </section>
 
           {/* =================================================
-              PAID PLANS
+              PLANS
           ================================================= */}
 
           <section className="mvbd-plans">
 
-            {paidPlans.map((plan) => (
+            {plans.map((plan) => (
               <article
-                key={plan.planId}
+                key={plan.name}
                 className={
                   `mvbd-card ${
                     plan.popular
@@ -3249,10 +2441,13 @@ export default function SeriesSection() {
           </div>
 
         </div>
+
       </main>
 
       {/* =====================================================
           PAYMENT MODAL
+          IMPORTANT:
+          Rendered directly to document.body
       ===================================================== */}
 
       {showPayment &&
@@ -3265,7 +2460,7 @@ export default function SeriesSection() {
 
             <div
               className="mvbd-sheet"
-              onMouseDown={(event) =>
+              onClick={(event) =>
                 event.stopPropagation()
               }
             >
@@ -3275,7 +2470,6 @@ export default function SeriesSection() {
                 className="mvbd-close"
                 onClick={closePayment}
                 aria-label="Close"
-                disabled={submitting}
               >
                 ×
               </button>
@@ -3311,7 +2505,7 @@ export default function SeriesSection() {
                 <div className="mvbd-number-row">
 
                   <span className="mvbd-number">
-                    {PAYMENT_NUMBER}
+                    01865522275
                   </span>
 
                   <button
@@ -3335,10 +2529,9 @@ export default function SeriesSection() {
                 autoComplete="off"
                 placeholder="Paste transaction ID here"
                 value={transactionId}
-                disabled={submitting}
                 onChange={(event) => {
                   setTransactionId(
-                    event.target.value,
+                    event.target.value
                   )
 
                   setError("")
@@ -3355,11 +2548,8 @@ export default function SeriesSection() {
                 type="button"
                 className="mvbd-send"
                 onClick={submitPayment}
-                disabled={submitting}
               >
-                {submitting
-                  ? "Sending request..."
-                  : "Send for Review →"}
+                Send for Review →
               </button>
 
               <div className="mvbd-note">
@@ -3388,9 +2578,9 @@ export default function SeriesSection() {
             </h2>
 
             <p className="mvbd-muted">
-              Your payment request has been received.
-              Please wait while it is being prepared
-              for admin review.
+              Please wait while your payment
+              submission is being prepared for
+              admin review.
             </p>
 
             <div className="mvbd-progress">
@@ -3427,7 +2617,7 @@ export default function SeriesSection() {
 
           <div
             className="mvbd-sheet mvbd-processing"
-            onMouseDown={(event) =>
+            onClick={(event) =>
               event.stopPropagation()
             }
           >
@@ -3443,17 +2633,17 @@ export default function SeriesSection() {
             <p className="mvbd-muted">
 
               Your payment details have been
-              successfully sent to the admin team.
+              sent to the admin team.
 
               <br />
               <br />
 
-              Your request is currently{" "}
+              They are currently{" "}
               <strong>
                 under review
               </strong>{" "}
-              and will be approved if the payment
-              information is correct.
+              and will be approved as soon as
+              possible if everything is correct.
 
               <br />
               <br />

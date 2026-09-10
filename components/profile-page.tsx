@@ -30,7 +30,10 @@ import {
   subscribeToMyNotifications,
   type Notification,
 } from "@/lib/notifications"
-import { updateUserProfile } from "@/lib/user-profile"
+import {
+  subscribeToReferralCount,
+  updateUserProfile,
+} from "@/lib/user-profile"
 import SubscriptionPanel from "@/components/subscription-panel"
 import {
   getSupportMessages,
@@ -168,6 +171,12 @@ export default function ProfilePage(
     useState(false)
 
   /*
+   * Referral count realtime state
+   */
+  const [referralCount, setReferralCount] =
+    useState(0)
+
+  /*
    * Countdown-এর জন্য প্রতি 1 second-এ update হবে।
    */
   const [now, setNow] =
@@ -202,6 +211,32 @@ export default function ProfilePage(
         "",
     )
   }, [profile, user])
+
+  /*
+   * Referral count realtime listener
+   */
+  useEffect(() => {
+    if (!user?.uid) {
+      setReferralCount(0)
+      return
+    }
+
+    const unsubscribe =
+      subscribeToReferralCount(
+        user.uid,
+        (count) => {
+          setReferralCount(count)
+        },
+        (error) => {
+          console.error(
+            "Unable to load referral count",
+            error,
+          )
+        },
+      )
+
+    return () => unsubscribe()
+  }, [user?.uid])
 
   /*
    * Notifications realtime listener
@@ -417,8 +452,6 @@ export default function ProfilePage(
             referralCode?: string
             promoCode?: string
             refCode?: string
-            successfulReferrals?: number
-            referralCount?: number
           }
         )
       | null
@@ -429,21 +462,6 @@ export default function ProfilePage(
     profileData?.refCode ||
     profile?.mvbdId ||
     "MVBD-PENDING"
-
-  /*
-   * Admin Panel-এ যদি successfulReferrals থাকে
-   * সেটাই primary count।
-   *
-   * পুরোনো schema-তে referralCount থাকলে fallback।
-   */
-  const successfulReferrals =
-    typeof profileData?.successfulReferrals ===
-      "number"
-      ? profileData.successfulReferrals
-      : typeof profileData?.referralCount ===
-          "number"
-        ? profileData.referralCount
-        : 0
 
   const saveProfile =
     async () => {
@@ -956,7 +974,7 @@ export default function ProfilePage(
 
             <p className="mt-5 text-sm text-zinc-300">
               <strong className="text-2xl text-white">
-                {successfulReferrals}
+                {referralCount}
               </strong>{" "}
               successful referrals
             </p>

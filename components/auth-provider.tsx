@@ -20,6 +20,11 @@ import {
 import { getEntitlement, type Entitlement } from "@/lib/entitlements"
 import { auth, googleProvider } from "@/lib/firebase"
 import {
+  claimSingleSession,
+  getSessionReplacementMessage,
+  subscribeToSingleSession,
+} from "@/lib/single-session"
+import {
   clearLegacyProfile,
   ensureUserProfile,
   getLegacyProfile,
@@ -59,10 +64,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     let unsubscribeProfile: (() => void) | undefined
+    let unsubscribeSession: (() => void) | undefined
 
     const unsubscribeAuth = onAuthStateChanged(auth, (nextUser) => {
       unsubscribeProfile?.()
+      unsubscribeSession?.()
       unsubscribeProfile = undefined
+      unsubscribeSession = undefined
       setUser(nextUser)
       setLoading(Boolean(nextUser))
 
@@ -72,13 +80,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return
       }
 
-      void ensureUserProfile(nextUser, getLegacyProfile())
-        .then(async (nextProfile) => {
+      void claimSingleSession(nextUser)
+        .then((sessionId) => {
+          unsubscribeSession = subscribeToSingleSession(nextUser.uid, sessionId, () => {
+            if (typeof window !== "undefined") {
+              window.alert(getSessionReplacementMessage())
+            }
+            void firebaseSignOut(auth)
+          })
+          return ensureUserProfile(nextUser, getLegacyProfile())
+        })
+        .then((nextProfile) => {
           setProfile(nextProfile)
-          if (nextProfile.accountStatus === "banned" || nextProfile.accountStatus === "suspended") {
-            await firebaseSignOut(auth)
-            return
-          }
           unsubscribeProfile = subscribeToUserProfile(
             nextUser.uid,
             (liveProfile) => setProfile(liveProfile),
@@ -86,9 +99,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           )
         })
         .catch((error) => {
-          console.error("Unable to load user profile", error)
+          console.error("Unable to initialize authenticated session", error)
           setProfile(null)
-          setLoading(false)
+          void firebaseSignOut(auth)
         })
         .finally(() => {
           setLoading(false)
@@ -98,6 +111,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     return () => {
       unsubscribeProfile?.()
+      unsubscribeSession?.()
       unsubscribeAuth()
     }
   }, [])
@@ -111,6 +125,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       refreshProfile,
       async signUp(email, password, profile) {
         const credential = await createUserWithEmailAndPassword(auth, email, password)
+        await claimSingleSession(credential.user)
         await ensureUserProfile(credential.user, {
           name: profile?.name,
           dateOfBirth: profile?.dateOfBirth,
@@ -122,10 +137,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       },
       async signIn(email, password) {
         const credential = await signInWithEmailAndPassword(auth, email, password)
+        await claimSingleSession(credential.user)
         return credential.user
       },
       async signInWithGoogle() {
         const credential = await signInWithPopup(auth, googleProvider)
+        await claimSingleSession(credential.user)
         return credential.user
       },
       async signOut() {

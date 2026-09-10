@@ -25,16 +25,26 @@ import {
 
 import AuthModal from "@/components/auth-modal"
 import { useAuth } from "@/components/auth-provider"
+
+import {
+  collection,
+  onSnapshot,
+  query,
+  where,
+} from "firebase/firestore"
+
+import { db } from "@/lib/firebase"
+
 import {
   markNotificationRead,
   subscribeToMyNotifications,
   type Notification,
 } from "@/lib/notifications"
-import {
-  subscribeToReferralCount,
-  updateUserProfile,
-} from "@/lib/user-profile"
+
+import { updateUserProfile } from "@/lib/user-profile"
+
 import SubscriptionPanel from "@/components/subscription-panel"
+
 import {
   getSupportMessages,
   sendSupportMessage,
@@ -171,12 +181,6 @@ export default function ProfilePage(
     useState(false)
 
   /*
-   * Referral count realtime state
-   */
-  const [referralCount, setReferralCount] =
-    useState(0)
-
-  /*
    * Countdown-এর জন্য প্রতি 1 second-এ update হবে।
    */
   const [now, setNow] =
@@ -187,6 +191,28 @@ export default function ProfilePage(
    */
   const [mounted, setMounted] =
     useState(false)
+
+  /*
+   * =========================================
+   * REFERRAL COUNT
+   * =========================================
+   *
+   * Firebase থেকে realtime হিসাব হবে।
+   *
+   * Successful referral বলতে এখানে বোঝানো হচ্ছে:
+   *
+   * 1. referredBy === current user's UID
+   * 2. accessType === "subscription"
+   * 3. subscriptionStatus === "active"
+   *
+   * অর্থাৎ শুধু signup করলেই successful referral
+   * হিসেবে count হবে না।
+   *
+   * Referred user-এর paid subscription active
+   * হলেই count হবে।
+   */
+  const [successfulReferrals, setSuccessfulReferrals] =
+    useState(0)
 
   useEffect(() => {
     setMounted(true)
@@ -213,29 +239,66 @@ export default function ProfilePage(
   }, [profile, user])
 
   /*
-   * Referral count realtime listener
+   * =========================================
+   * REALTIME REFERRAL SYSTEM
+   * =========================================
+   *
+   * Current user's UID দিয়ে users collection
+   * থেকে referred users খোঁজা হচ্ছে।
+   *
+   * তারপর শুধুমাত্র যাদের paid subscription
+   * বর্তমানে active, তাদের count করা হচ্ছে।
    */
   useEffect(() => {
     if (!user?.uid) {
-      setReferralCount(0)
+      setSuccessfulReferrals(0)
       return
     }
 
-    const unsubscribe =
-      subscribeToReferralCount(
-        user.uid,
-        (count) => {
-          setReferralCount(count)
+    const referralsQuery = query(
+      collection(db, "users"),
+      where("referredBy", "==", user.uid),
+    )
+
+    const unsubscribeReferrals =
+      onSnapshot(
+        referralsQuery,
+        (snapshot) => {
+          let activePaidReferrals = 0
+
+          snapshot.forEach((referralDoc) => {
+            const data = referralDoc.data()
+
+            const isPaidSubscription =
+              data.accessType ===
+                "subscription" &&
+              data.subscriptionStatus ===
+                "active"
+
+            if (
+              isPaidSubscription
+            ) {
+              activePaidReferrals += 1
+            }
+          })
+
+          setSuccessfulReferrals(
+            activePaidReferrals,
+          )
         },
         (error) => {
           console.error(
-            "Unable to load referral count",
+            "Unable to subscribe to referral count",
             error,
           )
+
+          setSuccessfulReferrals(0)
         },
       )
 
-    return () => unsubscribe()
+    return () => {
+      unsubscribeReferrals()
+    }
   }, [user?.uid])
 
   /*
@@ -323,8 +386,7 @@ export default function ProfilePage(
 
   /*
    * IMPORTANT:
-   * আগে 60 seconds interval ছিল।
-   * এখন প্রতি 1 second-এ countdown update হবে।
+   * প্রতি 1 second-এ countdown update হবে।
    */
   useEffect(() => {
     const timer =
@@ -434,16 +496,17 @@ export default function ProfilePage(
     .toUpperCase()
 
   /*
-   * Referral system
+   * =========================================
+   * REFERRAL CODE
+   * =========================================
    *
-   * Admin Panel-এর সাথে compatible field:
+   * নিজের referralCode-ই primary source।
    *
-   * referralCode
-   * promoCode
-   * refCode
+   * পুরোনো database থাকলে promoCode/refCode
+   * fallback হিসেবে থাকবে।
    *
-   * Profile-এর primary referral code হবে referralCode।
-   * পুরোনো data থাকলে promoCode/refCode fallback হিসেবে নেওয়া হবে।
+   * successfulReferrals এখানে Firebase realtime
+   * listener থেকে আসছে।
    */
   const profileData =
     profile as
@@ -452,6 +515,8 @@ export default function ProfilePage(
             referralCode?: string
             promoCode?: string
             refCode?: string
+            successfulReferrals?: number
+            referralCount?: number
           }
         )
       | null
@@ -731,7 +796,6 @@ export default function ProfilePage(
                 </>
               ) : (
                 <>
-                  {/* বড় Days */}
                   <p
                     className={`mt-1 text-3xl font-semibold ${daysTone}`}
                   >
@@ -741,7 +805,6 @@ export default function ProfilePage(
                     </span>
                   </p>
 
-                  {/* ছোট Hours / Minutes / Seconds */}
                   <div
                     className={`mt-1 text-[11px] font-medium tracking-[.08em] ${daysTone} opacity-80`}
                   >
@@ -974,7 +1037,7 @@ export default function ProfilePage(
 
             <p className="mt-5 text-sm text-zinc-300">
               <strong className="text-2xl text-white">
-                {referralCount}
+                {successfulReferrals}
               </strong>{" "}
               successful referrals
             </p>

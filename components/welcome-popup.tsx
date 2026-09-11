@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { X } from "lucide-react"
+import { X, Send, Gift } from "lucide-react"
 
 interface WelcomePopupProps {
   onClose: () => void
@@ -14,6 +14,10 @@ export default function WelcomePopup({ onClose }: WelcomePopupProps) {
     const timer = setTimeout(() => setVisible(true), 80)
     return () => clearTimeout(timer)
   }, [])
+
+  const openRequestGroup = () => {
+    window.open("https://t.me/mvbdreq", "_blank", "noopener,noreferrer")
+  }
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center px-4 bg-black/65 backdrop-blur-xl">
@@ -92,6 +96,15 @@ export default function WelcomePopup({ onClose }: WelcomePopupProps) {
           }
         }
 
+        @keyframes mvbdGift {
+          0%, 100% {
+            transform: translateY(0) rotate(0deg);
+          }
+          50% {
+            transform: translateY(-3px) rotate(-4deg);
+          }
+        }
+
         .mvbd-popup {
           animation: mvbdPopupIn .42s cubic-bezier(.22,1,.36,1);
           background:
@@ -131,6 +144,10 @@ export default function WelcomePopup({ onClose }: WelcomePopupProps) {
           animation: mvbdPulse 1.4s ease-in-out infinite;
         }
 
+        .mvbd-gift {
+          animation: mvbdGift 2s ease-in-out infinite;
+        }
+
         .mvbd-button {
           position: relative;
           overflow: hidden;
@@ -163,6 +180,23 @@ export default function WelcomePopup({ onClose }: WelcomePopupProps) {
         .mvbd-button:active {
           transform: scale(.97);
         }
+
+        .mvbd-offer {
+          background:
+            linear-gradient(
+              135deg,
+              rgba(34,197,94,.10),
+              rgba(16,185,129,.045)
+            );
+          border: 1px solid rgba(134,239,172,.14);
+        }
+
+        .mvbd-code {
+          background: rgba(0,0,0,.22);
+          border: 1px solid rgba(134,239,172,.18);
+          box-shadow:
+            inset 0 1px 0 rgba(255,255,255,.05);
+        }
       `}</style>
 
       {/* Compact Popup */}
@@ -172,7 +206,7 @@ export default function WelcomePopup({ onClose }: WelcomePopupProps) {
         }`}
       >
 
-        {/* subtle ambient glow */}
+        {/* Ambient Glow */}
         <div className="absolute -top-20 -right-20 w-40 h-40 rounded-full bg-green-400/10 blur-3xl pointer-events-none" />
         <div className="absolute -bottom-20 -left-20 w-40 h-40 rounded-full bg-cyan-400/10 blur-3xl pointer-events-none" />
 
@@ -209,186 +243,31 @@ export default function WelcomePopup({ onClose }: WelcomePopupProps) {
 
         </div>
 
-        {/* Working Animation */}
-        <div className="relative mx-4 rounded-2xl bg-white/[0.045] border border-white/[0.08] overflow-hidden">
+        {/* Premium Offer Banner */}
+        <div className="relative mx-4 rounded-2xl mvbd-offer overflow-hidden">
 
-          <div className="flex items-center px-3.5 py-3">
+          <div className="flex items-center gap-3 px-3.5 py-3">
 
-            {/* Animated people */}
-            <div className="relative w-[82px] h-[62px] flex-shrink-0">
-
-              <svg
-                viewBox="0 0 100 70"
-                className="w-full h-full"
-                aria-hidden="true"
-              >
-
-                {/* Ground */}
-                <path
-                  d="M8 61 H92"
-                  stroke="rgba(255,255,255,.12)"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                />
-
-                {/* Person 1 */}
-                <g className="mvbd-person-1">
-
-                  {/* head */}
-                  <circle
-                    cx="32"
-                    cy="22"
-                    r="6"
-                    fill="rgba(255,255,255,.82)"
-                  />
-
-                  {/* body */}
-                  <path
-                    d="M32 29 L29 45"
-                    stroke="rgba(255,255,255,.78)"
-                    strokeWidth="4"
-                    strokeLinecap="round"
-                  />
-
-                  {/* arm */}
-                  <path
-                    d="M30 33 L18 42 L13 38"
-                    stroke="rgba(255,255,255,.78)"
-                    strokeWidth="3.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-
-                  {/* leg */}
-                  <path
-                    d="M29 45 L20 59"
-                    stroke="rgba(255,255,255,.78)"
-                    strokeWidth="3.5"
-                    strokeLinecap="round"
-                  />
-
-                  <path
-                    d="M30 45 L39 58"
-                    stroke="rgba(255,255,255,.78)"
-                    strokeWidth="3.5"
-                    strokeLinecap="round"
-                  />
-
-                  {/* tool */}
-                  <g className="mvbd-tool">
-                    <path
-                      d="M12 38 L7 32"
-                      stroke="#86efac"
-                      strokeWidth="3"
-                      strokeLinecap="round"
-                    />
-                  </g>
-
-                </g>
-
-                {/* Person 2 */}
-                <g className="mvbd-person-2">
-
-                  {/* head */}
-                  <circle
-                    cx="67"
-                    cy="20"
-                    r="6"
-                    fill="rgba(255,255,255,.82)"
-                  />
-
-                  {/* body */}
-                  <path
-                    d="M67 27 L69 44"
-                    stroke="rgba(255,255,255,.78)"
-                    strokeWidth="4"
-                    strokeLinecap="round"
-                  />
-
-                  {/* arm reaching */}
-                  <path
-                    d="M68 31 L80 39 L88 35"
-                    stroke="rgba(255,255,255,.78)"
-                    strokeWidth="3.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-
-                  {/* other arm */}
-                  <path
-                    d="M68 31 L58 38"
-                    stroke="rgba(255,255,255,.78)"
-                    strokeWidth="3.5"
-                    strokeLinecap="round"
-                  />
-
-                  {/* legs */}
-                  <path
-                    d="M69 44 L61 59"
-                    stroke="rgba(255,255,255,.78)"
-                    strokeWidth="3.5"
-                    strokeLinecap="round"
-                  />
-
-                  <path
-                    d="M69 44 L78 58"
-                    stroke="rgba(255,255,255,.78)"
-                    strokeWidth="3.5"
-                    strokeLinecap="round"
-                  />
-
-                </g>
-
-                {/* Small work box */}
-                <rect
-                  x="43"
-                  y="48"
-                  width="14"
-                  height="10"
-                  rx="2"
-                  fill="rgba(34,197,94,.22)"
-                  stroke="rgba(134,239,172,.45)"
-                  strokeWidth="1"
-                />
-
-                {/* tiny spark */}
-                <circle
-                  className="mvbd-pulse"
-                  cx="54"
-                  cy="39"
-                  r="2"
-                  fill="#86efac"
-                />
-
-              </svg>
-
+            <div className="mvbd-gift flex-shrink-0 flex items-center justify-center w-10 h-10 rounded-xl bg-green-400/10 border border-green-300/10">
+              <Gift className="w-5 h-5 text-green-400" />
             </div>
 
-            {/* Status */}
-            <div className="ml-2">
+            <div className="min-w-0">
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5">
 
-                <span className="text-green-400 text-[14px] font-semibold">
-                  কাজ চলছে
+                <span className="text-green-400 text-[14px] font-bold">
+                  MVBD Premium
                 </span>
 
-                <span className="flex gap-1">
-                  <i className="w-1 h-1 rounded-full bg-green-400 animate-pulse" />
-                  <i
-                    className="w-1 h-1 rounded-full bg-green-400 animate-pulse"
-                    style={{ animationDelay: "200ms" }}
-                  />
-                  <i
-                    className="w-1 h-1 rounded-full bg-green-400 animate-pulse"
-                    style={{ animationDelay: "400ms" }}
-                  />
+                <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-green-400/10 text-green-300 border border-green-300/10">
+                  OFFER
                 </span>
 
               </div>
 
-              <p className="text-white/40 text-[10px] mt-1">
-                Mini App উন্নয়নের কাজ চলছে
+              <p className="text-white/45 text-[10px] mt-0.5">
+                পুরোনো Members-দের জন্য বিশেষ সুবিধা 🎁
               </p>
 
             </div>
@@ -397,68 +276,97 @@ export default function WelcomePopup({ onClose }: WelcomePopupProps) {
 
         </div>
 
-        {/* Short Message */}
+        {/* Message */}
         <div className="relative px-4 pt-3.5 pb-4">
 
-          <div className="px-2">
+          <div className="px-1">
 
-            <p className="text-white/80 text-[13px] leading-6 text-center">
+            <p className="text-white/80 text-[12.5px] leading-6 text-center">
 
-              <span className="text-white font-semibold">
-                mvbd mini app
+              আমাদের{" "}
+              <span className="text-green-400 font-semibold">
+                MVBD Premium
               </span>{" "}
-              এর কাজ বর্তমানে চলমান রয়েছে।
-              Mini App-এ থাকা কিছু{" "}
-
-              <span className="text-amber-300">
-                Bug ও Technical Issue
+              সিস্টেম চালু করা হয়েছে শুধুমাত্র সামান্য
+              <span className="text-white font-medium">
+                {" "}Server খরচ
               </span>{" "}
+              চালানোর জন্য। তাই বিষয়টি কেউ কঠিনভাবে নেবেন না। ❤️
 
-              ঠিক করার পাশাপাশি{" "}
+            </p>
 
+            <p className="text-white/55 text-[11px] leading-5 text-center mt-2">
+
+              তবে আমাদের পুরোনো Members-দের জন্য থাকছে
+              <span className="text-amber-300 font-semibold">
+                {" "}বিশেষ ১ মাসের FREE Offer!
+              </span>
+
+            </p>
+
+            {/* Offer Instruction */}
+            <div className="mt-3 rounded-xl mvbd-code px-3 py-2.5">
+
+              <p className="text-white/65 text-[10.5px] text-center leading-5">
+
+                Subscription Plan থেকে{" "}
+                <span className="text-cyan-300 font-semibold">
+                  1 Month
+                </span>{" "}
+                সিলেক্ট করে নিচের Code-টি লিখে Admin-কে পাঠান
+
+              </p>
+
+              <div className="flex justify-center mt-1.5">
+
+                <span className="text-green-300 text-[13px] font-bold tracking-[2px]">
+                  MVBDPRO
+                </span>
+
+              </div>
+
+            </div>
+
+            <p className="text-white/45 text-[10.5px] leading-5 text-center mt-2">
+
+              Admin দ্রুত আপনার Account-এ
               <span className="text-green-400">
-                Profile Section
+                {" "}১ মাসের Free Subscription
               </span>{" "}
-              এবং{" "}
-
-              <span className="text-cyan-300">
-                Subscriptions System
-              </span>{" "}
-
-              খুব শীঘ্রই চালু করে দেওয়া হবে।
+              চালু করে দেবে।
 
             </p>
 
-            <p className="text-white/45 text-[11px] leading-5 text-center mt-2">
-
-              অনুগ্রহ করে আমাদের সাথেই থাকুন।
-              কোনো সমস্যা হলে আমাদের{" "}
-
-              <span className="text-cyan-300">
-                Telegram Movie Request Group
-              </span>{" "}
-
-              এ জানিয়ে দিন।
-
-            </p>
-
-            <p className="text-green-400/90 text-[11px] text-center font-medium mt-2">
-              আপনাদের সহযোগিতার জন্য আন্তরিক ধন্যবাদ ❤️
+            <p className="text-amber-300/90 text-[10.5px] text-center font-medium mt-2">
+              ⏳ অফারটি সীমিত — তাই দেরি করবেন না!
             </p>
 
           </div>
 
-          {/* Single Button */}
+          {/* Request Group Button */}
+          <button
+            onClick={openRequestGroup}
+            className="mvbd-button mt-3 w-full rounded-xl py-2.5 text-[12px] font-semibold text-white flex items-center justify-center gap-2"
+          >
+            <Send className="w-3.5 h-3.5 text-cyan-300" />
+            Request Group
+          </button>
+
+          <p className="text-white/35 text-[9.5px] text-center mt-1.5">
+            কিছু বুঝতে সমস্যা হলে Request Group-এ জানালেই Admin বুঝিয়ে দেবে।
+          </p>
+
+          {/* Close Button */}
           <button
             onClick={onClose}
-            className="mvbd-button mt-4 w-full rounded-xl py-2.5 text-[13px] font-semibold text-white"
+            className="mvbd-button mt-2 w-full rounded-xl py-2.5 text-[12px] font-semibold text-white"
           >
             বুঝেছি
           </button>
 
         </div>
 
-        {/* Bottom glass highlight */}
+        {/* Bottom Highlight */}
         <div className="h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
 
       </div>

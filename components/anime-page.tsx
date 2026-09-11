@@ -79,7 +79,7 @@ export default function AnimePage() {
   }
 
   return (
-    <div className="min-h-screen bg-black pb-20">
+  <div className="bg-black">
       <Header onSearch={handleSearch} pageType="anime" searchData={animes} />
 
       {!isSearching && <AnimeTrendingCarousel onAnimeClick={handleAnimeClick} />}

@@ -45,7 +45,7 @@ export default function AnimePage({ onAnimeClick }: AnimePageProps) {
     return filtered
   }, [searchQuery, selectedGenre])
 
-  const itemsPerPage = 12
+  const itemsPerPage = 30
   const totalPages = Math.ceil(filteredAnimes.length / itemsPerPage)
   const paginatedAnimes = filteredAnimes.slice(
     (currentPage - 1) * itemsPerPage,

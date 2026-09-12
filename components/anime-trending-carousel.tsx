@@ -1,9 +1,10 @@
 "use client"
 
+import { useEffect, useRef } from "react"
 import { animes } from "@/lib/anime-data"
 import type { Anime } from "@/lib/anime-data"
 
-const trendingIds = [203, 204, 205, 206, 189, 190, 191, 192, 193, 194, 195, 196, 197, 198, 199, 200,]
+const trendingIds = [203, 204, 205, 206, 189, 190, 191, 192, 193, 194, 195, 196, 197, 198, 199, 200, 169, 170, 171, 172, 173, 174, 175, 176, 177, 178, 179,]
 
 interface AnimeTrendingCarouselProps {
   onAnimeClick: (anime: Anime) => void
@@ -12,6 +13,25 @@ interface AnimeTrendingCarouselProps {
 export default function AnimeTrendingCarousel({ onAnimeClick }: AnimeTrendingCarouselProps) {
   const trendingAnimes = animes.filter((a) => trendingIds.includes(a.id))
   const totalAnimeCount = animes.length
+  const carouselRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const carousel = carouselRef.current
+    if (!carousel || trendingAnimes.length < 2) return
+
+    const autoplay = window.setInterval(() => {
+      const firstCard = carousel.querySelector<HTMLElement>("button")
+      const step = (firstCard?.offsetWidth ?? carousel.clientWidth * 0.8) + 16
+      const atEnd = carousel.scrollLeft + carousel.clientWidth >= carousel.scrollWidth - 8
+      carousel.scrollTo({ left: atEnd ? 0 : carousel.scrollLeft + step, behavior: "smooth" })
+    }, 4000)
+
+    return () => window.clearInterval(autoplay)
+  }, [trendingAnimes.length])
+
+  const stopPageSwipe = (event: React.PointerEvent<HTMLDivElement>) => {
+    event.stopPropagation()
+  }
 
   return (
     <section className="px-4 py-2">
@@ -70,7 +90,14 @@ export default function AnimeTrendingCarousel({ onAnimeClick }: AnimeTrendingCar
       </div>
 
       <div
+        ref={carouselRef}
+        data-no-page-swipe
         className="carousel-container relative z-10 flex gap-4 overflow-x-auto overscroll-x-contain touch-pan-x pb-2 snap-x snap-mandatory [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        style={{ touchAction: "pan-x", WebkitOverflowScrolling: "touch" }}
+        onPointerDown={stopPageSwipe}
+        onPointerMove={stopPageSwipe}
+        onPointerUp={stopPageSwipe}
+        onPointerCancel={stopPageSwipe}
         aria-label="Trending anime"
       >
         {trendingAnimes.map((anime) => (

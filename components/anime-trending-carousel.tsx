@@ -1,6 +1,5 @@
 "use client"
 
-import { useState, useEffect } from "react"
 import { animes } from "@/lib/anime-data"
 import type { Anime } from "@/lib/anime-data"
 
@@ -11,20 +10,8 @@ interface AnimeTrendingCarouselProps {
 }
 
 export default function AnimeTrendingCarousel({ onAnimeClick }: AnimeTrendingCarouselProps) {
-  const [currentIndex, setCurrentIndex] = useState(0)
   const trendingAnimes = animes.filter((a) => trendingIds.includes(a.id))
-
   const totalAnimeCount = animes.length
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % trendingAnimes.length)
-    }, 3000)
-    return () => clearInterval(interval)
-  }, [trendingAnimes.length])
-
-  const extendedAnimes = [...trendingAnimes, ...trendingAnimes, ...trendingAnimes]
-  const offset = -currentIndex * (100 / 3)
 
   return (
     <section className="px-4 py-2">
@@ -82,38 +69,24 @@ export default function AnimeTrendingCarousel({ onAnimeClick }: AnimeTrendingCar
         `}</style>
       </div>
 
-      <div className="carousel-container relative z-10 overflow-hidden">
-        <div
-          className="flex gap-4 transition-transform duration-1000 ease-in-out"
-          style={{
-            transform: `translateX(${offset}%)`,
-          }}
-        >
-          {extendedAnimes.map((anime, index) => (
-            <div
-              key={`${anime.id}-${index}`}
-              className="flex-shrink-0 w-1/3 aspect-[2/3] rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-all duration-500 transform hover:scale-105 cursor-pointer relative"
-              onClick={() => onAnimeClick(anime)}
-            >
-              <img
-                src={anime.poster || "/placeholder.svg"}
-                alt={anime.title}
-                className="w-full h-full object-cover"
-              />
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Indicator Dots */}
-      <div className="flex justify-center gap-2 mt-4 mb-4">
-        {trendingAnimes.map((_, index) => (
-          <div
-            key={index}
-            className={`w-2 h-2 rounded-full transition-all ${
-              index === currentIndex ? "bg-green-500 w-6" : "bg-slate-600"
-            }`}
-          />
+      <div
+        className="carousel-container relative z-10 flex gap-4 overflow-x-auto overscroll-x-contain touch-pan-x pb-2 snap-x snap-mandatory [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        aria-label="Trending anime"
+      >
+        {trendingAnimes.map((anime) => (
+          <button
+            type="button"
+            key={anime.id}
+            className="flex-shrink-0 w-[31%] sm:w-[22%] md:w-[16%] aspect-[2/3] snap-start rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-transform duration-300 hover:scale-105 cursor-pointer relative"
+            onClick={() => onAnimeClick(anime)}
+            aria-label={`View details for ${anime.title}`}
+          >
+            <img
+              src={anime.poster || "/placeholder.svg"}
+              alt={anime.title}
+              className="w-full h-full object-cover"
+            />
+          </button>
         ))}
       </div>
     </section>

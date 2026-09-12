@@ -33,6 +33,7 @@ export type UserProfile = {
   subscriptionExpiresAt: Timestamp | null
   trialStartedAt: Timestamp
   trialExpiresAt: Timestamp
+  trialUsedAt: Timestamp | null
   referralCode: string
   referredBy: string | null
   successfulReferrals: number
@@ -69,6 +70,7 @@ function normalizeProfile(data: DocumentData): UserProfile {
     subscriptionExpiresAt: asTimestamp(data.subscriptionExpiresAt),
     trialStartedAt: asTimestamp(data.trialStartedAt) ?? Timestamp.now(),
     trialExpiresAt: asTimestamp(data.trialExpiresAt) ?? Timestamp.now(),
+    trialUsedAt: asTimestamp(data.trialUsedAt),
     referralCode: typeof data.referralCode === "string" ? data.referralCode.trim().toUpperCase() : String(data.mvbdId || "MVBD-PENDING"),
     referredBy: typeof data.referredBy === "string" ? data.referredBy.trim().toUpperCase() : null,
     successfulReferrals: typeof data.successfulReferrals === "number" ? data.successfulReferrals : 0,
@@ -111,6 +113,7 @@ export async function ensureUserProfile(user: User, legacyProfile?: Partial<Pick
       subscriptionExpiresAt: null,
       trialStartedAt,
       trialExpiresAt: Timestamp.fromMillis(trialStartedAt.toMillis() + TRIAL_DURATION_MS),
+      trialUsedAt: null,
       referralCode: `MVBD-${generateMvbdId().slice(-6)}`,
       referredBy: legacyProfile?.referralCode?.trim().toUpperCase() || null,
       successfulReferrals: 0,
@@ -150,14 +153,38 @@ export async function activateTrial(uid: string) {
     if (profile.accessType === "subscription" && profile.subscriptionStatus === "active") {
       throw new Error("Your paid membership is already active.")
     }
+    if (profile.trialUsedAt) {
+      throw new Error("Your 7-day trial has already been used. Please subscribe to continue watching.")
+    }
     const trialStartedAt = Timestamp.now()
     transaction.update(profileRef, {
       accessType: "trial",
       subscriptionStatus: "inactive",
       trialStartedAt,
       trialExpiresAt: Timestamp.fromMillis(trialStartedAt.toMillis() + TRIAL_DURATION_MS),
+      trialUsedAt: trialStartedAt,
     })
-    return { ...profile, accessType: "trial" as const, subscriptionStatus: "inactive" as const, trialStartedAt, trialExpiresAt: Timestamp.fromMillis(trialStartedAt.toMillis() + TRIAL_DURATION_MS) }
+    return { ...profile, accessType: "trial" as const, subscriptionStatus: "inactive" as const, trialStartedAt, trialExpiresAt: Timestamp.fromMillis(trialStartedAt.toMillis() + TRIAL_DURATION_MS), trialUsedAt: trialStartedAt }
+  })
+}
+
+export async function handleExpiredSubscription(uid: string) {
+  const profileRef: DocumentReference<UserProfile> = doc(db, "users", uid) as DocumentReference<UserProfile>
+  return runTransaction(db, async (transaction) => {
+    const existing = await transaction.get(profileRef)
+    if (!existing.exists()) return null
+    const profile = normalizeProfile(existing.data())
+    const expired = profile.subscriptionStatus === "active" && Boolean(
+      profile.subscriptionExpiresAt && profile.subscriptionExpiresAt.toMillis() <= Date.now(),
+    )
+    if (!expired) return profile
+
+    transaction.update(profileRef, {
+      subscriptionStatus: "expired",
+      accessType: null,
+      subscriptionExpiresAt: null,
+    })
+    return { ...profile, subscriptionStatus: "expired" as const, accessType: null, subscriptionExpiresAt: null }
   })
 }
 

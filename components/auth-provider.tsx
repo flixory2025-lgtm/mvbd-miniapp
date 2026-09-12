@@ -23,6 +23,7 @@ import {
   clearLegacyProfile,
   ensureUserProfile,
   getLegacyProfile,
+  handleExpiredSubscription,
   subscribeToUserProfile,
   type UserProfile,
 } from "@/lib/user-profile"
@@ -53,7 +54,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     const nextProfile = await ensureUserProfile(auth.currentUser, getLegacyProfile())
-    setProfile(nextProfile)
+    const currentProfile = await handleExpiredSubscription(auth.currentUser.uid)
+    setProfile(currentProfile ?? nextProfile)
     clearLegacyProfile()
   }
 
@@ -74,14 +76,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       void ensureUserProfile(nextUser, getLegacyProfile())
         .then(async (nextProfile) => {
-          setProfile(nextProfile)
-          if (nextProfile.accountStatus === "banned" || nextProfile.accountStatus === "suspended") {
+          const currentProfile = await handleExpiredSubscription(nextUser.uid)
+          const resolvedProfile = currentProfile ?? nextProfile
+          setProfile(resolvedProfile)
+          if (resolvedProfile.accountStatus === "banned" || nextProfile.accountStatus === "suspended") {
             await firebaseSignOut(auth)
             return
           }
           unsubscribeProfile = subscribeToUserProfile(
             nextUser.uid,
-            (liveProfile) => setProfile(liveProfile),
+            (liveProfile) => {
+              if (!liveProfile) {
+                setProfile(null)
+                return
+              }
+              void handleExpiredSubscription(nextUser.uid).then((resolvedProfile) => {
+                setProfile(resolvedProfile ?? liveProfile)
+              })
+            },
             (error) => console.error("Unable to subscribe to user profile", error),
           )
         })

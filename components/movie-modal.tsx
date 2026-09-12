@@ -296,6 +296,7 @@ export default function MovieModal({ movie, onClose, onMovieClick, showAdultCont
         <TelegramJoinPopup
           movieTitle={movie.title}
           telegramLink={movie.telegramLink}
+          moviePoster={movie.poster}
           onClose={() => setShowJoinPopup(false)}
         />
       )}

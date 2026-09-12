@@ -1528,7 +1528,7 @@ export default function Home() {
         />
       )}
 
-      <Footer />
+      {profileSubPage !== "settings" && <Footer />}
     </div>
   )
 

@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react"
 import { Bell, Volume2, Wifi, Moon, Lock, Database, Smartphone, ArrowLeft } from "lucide-react"
-import UniversalFooter from "./universal-footer"
 
 interface SettingsPageProps {
   onBack?: () => void
@@ -361,7 +360,6 @@ export default function SettingsPage({ onBack }: SettingsPageProps = {}) {
           background: rgba(255, 255, 255, 0.3);
         }
       `}</style>
-      <UniversalFooter />
     </div>
   )
 }

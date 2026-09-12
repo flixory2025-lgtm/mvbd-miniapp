@@ -24,6 +24,8 @@ import AboutUsPage from "@/components/about-us-page"
 import SettingsPage from "@/components/settings-page"
 
 import { movies, genres } from "@/lib/movie-data"
+import { animes } from "@/lib/anime-data"
+import type { Anime } from "@/lib/anime-data"
 
 const tabs = [
   "home",
@@ -72,6 +74,12 @@ export default function Home() {
     useState<TabId[]>(["home"])
 
   const [showDetailPage, setShowDetailPage] =
+    useState(false)
+
+  const [selectedAnime, setSelectedAnime] =
+    useState<Anime | null>(null)
+
+  const [showAnimeDetailPage, setShowAnimeDetailPage] =
     useState(false)
 
   const [profileSubPage, setProfileSubPage] =
@@ -1321,7 +1329,7 @@ export default function Home() {
   ========================================================= */
 
   const renderHomePage = () => (
-    <div className="bg-black pb-[76px]">
+    <div className="bg-black">
       <Header
         onSearch={handleSearch}
         pageType="home"
@@ -1457,8 +1465,13 @@ export default function Home() {
   ========================================================= */
 
   const renderAnimePage = () => (
-    <div className="bg-black pb-[76px]">
-      <AnimePage />
+    <div className="bg-black">
+      <AnimePage
+        onAnimeClick={(anime) => {
+          setSelectedAnime(anime)
+          setShowAnimeDetailPage(true)
+        }}
+      />
     </div>
   )
 
@@ -1470,7 +1483,7 @@ export default function Home() {
   ========================================================= */
 
   const renderSeriesPage = () => (
-    <div className="bg-black pb-[76px]">
+    <div className="bg-black">
       <SeriesSection />
     </div>
   )
@@ -1483,7 +1496,7 @@ export default function Home() {
   ========================================================= */
 
   const renderProfilePage = () => (
-    <div className="bg-black pb-[76px]">
+    <div className="bg-black">
       {profileSubPage ===
         "main" && (
         <ProfilePage
@@ -1622,6 +1635,23 @@ export default function Home() {
   /* =========================================================
      DETAIL PAGE
   ========================================================= */
+
+  if (showAnimeDetailPage && selectedAnime) {
+    return (
+      <MovieDetailPage
+        movie={selectedAnime as any}
+        onBack={() => {
+          setShowAnimeDetailPage(false)
+          setSelectedAnime(null)
+        }}
+        onMovieClick={(anime) => {
+          setSelectedAnime(anime as Anime)
+        }}
+        relatedItems={animes as any}
+        mediaType="anime"
+      />
+    )
+  }
 
   if (
     showDetailPage &&

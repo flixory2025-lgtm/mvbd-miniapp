@@ -4,17 +4,18 @@ import { useState, useMemo, useEffect } from "react"
 import Header from "./header"
 import GenreCategories from "./genre-categories"
 import MovieGrid from "./movie-grid"
-import MovieModal from "./movie-modal"
 import Footer from "./footer"
 import AnimeTrendingCarousel from "./anime-trending-carousel"
 import { animes, animeGenres } from "@/lib/anime-data"
 import type { Anime } from "@/lib/anime-data"
 
-export default function AnimePage() {
+interface AnimePageProps {
+  onAnimeClick?: (anime: Anime) => void
+}
+
+export default function AnimePage({ onAnimeClick }: AnimePageProps) {
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedGenre, setSelectedGenre] = useState<string | null>(null)
-  const [selectedAnime, setSelectedAnime] = useState<Anime | null>(null)
-  const [isModalOpen, setIsModalOpen] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
   const [isSearching, setIsSearching] = useState(false)
   const trendingAnimes = animes.slice(0, 5); // Declare trendingAnimes variable
@@ -64,13 +65,7 @@ export default function AnimePage() {
   }
 
   const handleAnimeClick = (anime: Anime) => {
-    setSelectedAnime(anime)
-    setIsModalOpen(true)
-  }
-
-  const handleCloseModal = () => {
-    setIsModalOpen(false)
-    setSelectedAnime(null)
+    onAnimeClick?.(anime)
   }
 
   const handlePageChange = (page: number) => {
@@ -102,14 +97,6 @@ export default function AnimePage() {
         showAdultContent={false}
         isSearching={isSearching}
       />
-
-      {selectedAnime && (
-        <MovieModal
-          movie={selectedAnime as any}
-          isOpen={isModalOpen}
-          onClose={handleCloseModal}
-        />
-      )}
 
       <Footer />
     </div>

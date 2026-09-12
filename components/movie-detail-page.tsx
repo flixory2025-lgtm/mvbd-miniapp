@@ -8,25 +8,30 @@ import AuthModal from "./auth-modal"
 import SubscriptionPanel from "./subscription-panel"
 import { useAuth } from "./auth-provider"
 
-interface MovieDetailPageProps {
-  movie: {
-    id: number
-    title: string
-    poster: string
-    year: number | string
-    rating: number | string
-    description: string
-    genre: string
-    trailer?: string
-    telegramLink?: string
-    language?: string
-  }
-  onBack: () => void
-  onMovieClick?: (movie: (typeof movies)[0]) => void
-  showAdultContent?: boolean
+type DetailItem = {
+  id: number
+  title: string
+  poster: string
+  year: number | string
+  rating: number | string
+  description: string
+  genre: string
+  trailer?: string
+  telegramLink?: string
+  language?: string
 }
 
-export default function MovieDetailPage({ movie, onBack, onMovieClick, showAdultContent = false }: MovieDetailPageProps) {
+interface MovieDetailPageProps {
+  movie: DetailItem
+  onBack: () => void
+  onMovieClick?: (movie: DetailItem) => void
+  showAdultContent?: boolean
+  relatedItems?: DetailItem[]
+  mediaType?: "movie" | "anime"
+}
+
+export default function MovieDetailPage({ movie, onBack, onMovieClick, showAdultContent = false, relatedItems = movies, mediaType = "movie" }: MovieDetailPageProps) {
+  const mediaLabel = mediaType === "anime" ? "anime" : "movie"
   const [showTrailer, setShowTrailer] = useState(false)
   const [viewCount, setViewCount] = useState(Math.floor(Math.random() * 1000) + 1)
   const [isAddedToWatchLater, setIsAddedToWatchLater] = useState(false)
@@ -67,7 +72,7 @@ export default function MovieDetailPage({ movie, onBack, onMovieClick, showAdult
   const isAdult = isAdultMovie(movie.genre)
   const movieGenres = movie.genre.split(" | ").map((g) => g.trim().toLowerCase())
 
-  const relatedMovies = movies
+  const relatedMovies = relatedItems
     .filter((m) => {
       if (m.id === movie.id) return false
       const mGenres = m.genre.split(" | ").map((g) => g.trim().toLowerCase())
@@ -255,7 +260,7 @@ export default function MovieDetailPage({ movie, onBack, onMovieClick, showAdult
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
           
           <div className="relative z-10 max-w-6xl mx-auto px-4 py-12 border-t border-white/20">
-            <h3 className="text-3xl font-bold text-white mb-8">সম্পর্কিত মুভি</h3>
+            <h3 className="text-3xl font-bold text-white mb-8">সম্পর্কিত {mediaType === "anime" ? "অ্যানিমে" : "মুভি"}</h3>
             <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-4">
               {relatedMovies.map((relatedMovie) => {
                 const isRelatedAdult = isAdultMovie(relatedMovie.genre)
@@ -345,7 +350,7 @@ export default function MovieDetailPage({ movie, onBack, onMovieClick, showAdult
       {showAuthModal && <AuthModal open={showAuthModal} onOpenChange={setShowAuthModal} />}
 
       {/* Telegram Popup */}
-      {showTelegramPopup && entitlement.hasWatchAccess && <TelegramJoinPopup hasPremiumAccess movieTitle={movie.title} onClose={() => setShowTelegramPopup(false)} telegramLink={movie.telegramLink} moviePoster={movie.poster} />}
+      {showTelegramPopup && entitlement.hasWatchAccess && <TelegramJoinPopup hasPremiumAccess movieTitle={movie.title} mediaType={mediaType} onClose={() => setShowTelegramPopup(false)} telegramLink={movie.telegramLink} moviePoster={movie.poster} />}
       <SubscriptionPanel open={showSubscriptions} onOpenChange={setShowSubscriptions} />
     </div>
   )

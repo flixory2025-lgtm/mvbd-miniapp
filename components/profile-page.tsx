@@ -967,6 +967,12 @@ export default function ProfilePage(
                 </span>
               </div>
 
+              {profile?.subscriptionStatus === "expired" && (
+                <p className="rounded-2xl border border-amber-300/20 bg-amber-300/[.08] p-3 text-sm leading-6 text-amber-100">
+                  Your membership has expired. Subscribe again to continue watching premium movies.
+                </p>
+              )}
+
               <div className="flex items-center justify-between">
                 <span className="text-zinc-400">
                   Type

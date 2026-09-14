@@ -83,7 +83,7 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
           <div className="w-full h-96 bg-gradient-to-b from-black/50 via-black/80 to-black rounded-b-3xl" />
         </div>
         <img
-          src="https://i.postimg.cc/pTLX3hP7/16641-removebg-preview.png"
+          src="https://i.postimg.cc/gJ5JbzS7/file-000000004e4082109e2412f9f340d990.png"
           alt="MoviesVerseBD Logo"
           className="relative z-20 w-72 h-72 object-contain"
         />

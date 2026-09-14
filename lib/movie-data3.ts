@@ -10157,7 +10157,7 @@ export const movies3 = [
     title: "Evil Dead Burn (2026)",
     poster: "/2783id.jpg",
     trailer: "https://www.youtube.com/embed/TnHby2cxJzs?si",
-    telegramLink: "https://t.me/mvbdstore_bot?start=f_MTMyNDUsMTMyNDY",
+    telegramLink: "https://t.me/mvbdstore_bot?start=f_MTUyMTgsMTUyMTk",
     genre: "Horror | Supernatural | Thriller",
     year: "2026",
     rating: "7.7",

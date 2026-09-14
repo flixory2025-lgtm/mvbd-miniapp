@@ -10154,7 +10154,7 @@ export const movies3 = [
   },
   {
     id: 2783,
-    title: "Evil Dead Burn (2026)",
+    title: "Evil Dead Burn (2026) Full HD☑️",
     poster: "/2783id.jpg",
     trailer: "https://www.youtube.com/embed/TnHby2cxJzs?si",
     telegramLink: "https://t.me/mvbdstore_bot?start=f_MTUyMTgsMTUyMTk",

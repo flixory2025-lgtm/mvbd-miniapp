@@ -22,6 +22,7 @@ import ProfilePage from "@/components/profile-page"
 import ContactUsPage from "@/components/contact-us-page"
 import AboutUsPage from "@/components/about-us-page"
 import SettingsPage from "@/components/settings-page"
+import { MvbdAiAssistant } from "@/components/mvbd-ai/mvbd-ai-assistant"
 
 import { movies, genres } from "@/lib/movie-data"
 import { animes } from "@/lib/anime-data"
@@ -1916,6 +1917,8 @@ export default function Home() {
           }
         />
       )}
+
+      <MvbdAiAssistant />
     </div>
   )
 }

@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { X, Send, Gift } from "lucide-react"
+import { X, Send, PartyPopper } from "lucide-react"
 
 interface WelcomePopupProps {
   onClose: () => void
@@ -20,7 +20,7 @@ export default function WelcomePopup({ onClose }: WelcomePopupProps) {
   }
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center px-4 bg-black/65 backdrop-blur-xl">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center px-4 bg-black/70 backdrop-blur-xl">
 
       <style>{`
         @keyframes mvbdPopupIn {
@@ -43,47 +43,40 @@ export default function WelcomePopup({ onClose }: WelcomePopupProps) {
           }
         }
 
-        @keyframes mvbdWork1 {
+        @keyframes mvbdCake {
           0%, 100% {
             transform: translateY(0) rotate(0deg);
           }
           45% {
-            transform: translateY(-4px) rotate(-5deg);
+            transform: translateY(-3px) rotate(-4deg);
           }
           70% {
-            transform: translateY(0) rotate(3deg);
+            transform: translateY(0) rotate(2deg);
           }
         }
 
-        @keyframes mvbdWork2 {
+        @keyframes mvbdCandle {
           0%, 100% {
-            transform: translateY(0) rotate(0deg);
-          }
-          40% {
-            transform: translateY(-3px) rotate(5deg);
-          }
-          70% {
-            transform: translateY(0) rotate(-3deg);
-          }
-        }
-
-        @keyframes mvbdTool {
-          0%, 100% {
-            transform: rotate(-12deg);
+            transform: scaleY(1) translateY(0);
+            opacity: .9;
           }
           50% {
-            transform: rotate(18deg);
-          }
-        }
-
-        @keyframes mvbdPulse {
-          0%, 100% {
-            opacity: .35;
-            transform: scale(.8);
-          }
-          50% {
+            transform: scaleY(1.15) translateY(-1px);
             opacity: 1;
-            transform: scale(1);
+          }
+        }
+
+        @keyframes mvbdConfetti {
+          0% {
+            transform: translateY(-10px) rotate(0deg);
+            opacity: 0;
+          }
+          15% {
+            opacity: 1;
+          }
+          100% {
+            transform: translateY(120px) rotate(320deg);
+            opacity: 0;
           }
         }
 
@@ -96,12 +89,23 @@ export default function WelcomePopup({ onClose }: WelcomePopupProps) {
           }
         }
 
-        @keyframes mvbdGift {
+        @keyframes mvbdGlow {
           0%, 100% {
-            transform: translateY(0) rotate(0deg);
+            opacity: .35;
+            transform: scale(.85);
           }
           50% {
-            transform: translateY(-3px) rotate(-4deg);
+            opacity: .9;
+            transform: scale(1.05);
+          }
+        }
+
+        @keyframes mvbdRibbon {
+          0%, 100% {
+            transform: rotate(-6deg);
+          }
+          50% {
+            transform: rotate(6deg);
           }
         }
 
@@ -110,14 +114,15 @@ export default function WelcomePopup({ onClose }: WelcomePopupProps) {
           background:
             linear-gradient(
               145deg,
-              rgba(40,40,48,.78),
-              rgba(18,18,24,.76)
+              rgba(48,34,58,.82),
+              rgba(20,16,28,.80)
             );
           backdrop-filter: blur(30px) saturate(170%);
           -webkit-backdrop-filter: blur(30px) saturate(170%);
-          border: 1px solid rgba(255,255,255,.13);
+          border: 1px solid rgba(255,215,140,.16);
           box-shadow:
-            0 24px 70px rgba(0,0,0,.55),
+            0 24px 70px rgba(0,0,0,.60),
+            0 0 45px rgba(255,180,80,.10),
             inset 0 1px 0 rgba(255,255,255,.10);
         }
 
@@ -125,27 +130,27 @@ export default function WelcomePopup({ onClose }: WelcomePopupProps) {
           animation: mvbdFloat 2.8s ease-in-out infinite;
         }
 
-        .mvbd-person-1 {
+        .mvbd-cake {
           transform-origin: bottom center;
-          animation: mvbdWork1 1.8s ease-in-out infinite;
+          animation: mvbdCake 2s ease-in-out infinite;
         }
 
-        .mvbd-person-2 {
+        .mvbd-candle {
           transform-origin: bottom center;
-          animation: mvbdWork2 1.8s ease-in-out infinite .35s;
+          animation: mvbdCandle 1s ease-in-out infinite;
         }
 
-        .mvbd-tool {
+        .mvbd-confetti {
+          animation: mvbdConfetti 2.6s linear infinite;
+        }
+
+        .mvbd-glow {
+          animation: mvbdGlow 2.6s ease-in-out infinite;
+        }
+
+        .mvbd-ribbon {
           transform-origin: center;
-          animation: mvbdTool 1.2s ease-in-out infinite;
-        }
-
-        .mvbd-pulse {
-          animation: mvbdPulse 1.4s ease-in-out infinite;
-        }
-
-        .mvbd-gift {
-          animation: mvbdGift 2s ease-in-out infinite;
+          animation: mvbdRibbon 2.2s ease-in-out infinite;
         }
 
         .mvbd-button {
@@ -168,7 +173,7 @@ export default function WelcomePopup({ onClose }: WelcomePopupProps) {
           background: linear-gradient(
             90deg,
             transparent,
-            rgba(255,255,255,.13),
+            rgba(255,255,255,.16),
             transparent
           );
         }
@@ -185,15 +190,15 @@ export default function WelcomePopup({ onClose }: WelcomePopupProps) {
           background:
             linear-gradient(
               135deg,
-              rgba(34,197,94,.10),
-              rgba(16,185,129,.045)
+              rgba(251,191,36,.14),
+              rgba(244,114,182,.06)
             );
-          border: 1px solid rgba(134,239,172,.14);
+          border: 1px solid rgba(253,224,71,.20);
         }
 
         .mvbd-code {
-          background: rgba(0,0,0,.22);
-          border: 1px solid rgba(134,239,172,.18);
+          background: rgba(0,0,0,.25);
+          border: 1px solid rgba(253,224,71,.22);
           box-shadow:
             inset 0 1px 0 rgba(255,255,255,.05);
         }
@@ -207,16 +212,25 @@ export default function WelcomePopup({ onClose }: WelcomePopupProps) {
       >
 
         {/* Ambient Glow */}
-        <div className="absolute -top-20 -right-20 w-40 h-40 rounded-full bg-green-400/10 blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-20 -left-20 w-40 h-40 rounded-full bg-cyan-400/10 blur-3xl pointer-events-none" />
+        <div className="absolute -top-20 -right-20 w-40 h-40 rounded-full bg-amber-400/15 blur-3xl pointer-events-none mvbd-glow" />
+        <div className="absolute -bottom-20 -left-20 w-40 h-40 rounded-full bg-pink-400/15 blur-3xl pointer-events-none mvbd-glow" />
+
+        {/* Confetti Dots */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          <span className="mvbd-confetti absolute left-[12%] top-0 w-1.5 h-1.5 rounded-full bg-amber-300/80" style={{ animationDelay: "0s" }} />
+          <span className="mvbd-confetti absolute left-[28%] top-0 w-1 h-1 rounded-full bg-pink-300/80" style={{ animationDelay: ".6s" }} />
+          <span className="mvbd-confetti absolute left-[46%] top-0 w-1.5 h-1.5 rounded-full bg-cyan-300/80" style={{ animationDelay: "1.1s" }} />
+          <span className="mvbd-confetti absolute left-[64%] top-0 w-1 h-1 rounded-full bg-amber-200/80" style={{ animationDelay: ".3s" }} />
+          <span className="mvbd-confetti absolute left-[82%] top-0 w-1.5 h-1.5 rounded-full bg-fuchsia-300/80" style={{ animationDelay: "1.5s" }} />
+        </div>
 
         {/* Header */}
         <div className="relative flex items-center justify-between px-4 py-3.5">
 
           <div className="flex items-center gap-2.5">
 
-            <div className="mvbd-float flex items-center justify-center w-9 h-9 rounded-xl bg-white/[0.07] border border-white/[0.10]">
-              <span className="text-green-400 text-lg font-bold">
+            <div className="mvbd-float flex items-center justify-center w-9 h-9 rounded-xl bg-gradient-to-br from-amber-400/20 to-pink-500/20 border border-amber-300/25">
+              <span className="text-amber-300 text-lg font-bold">
                 M
               </span>
             </div>
@@ -226,8 +240,8 @@ export default function WelcomePopup({ onClose }: WelcomePopupProps) {
                 MoviesVerseBD
               </h2>
 
-              <p className="text-white/40 text-[10px]">
-                mvbd mini app
+              <p className="text-amber-200/60 text-[10px]">
+                2nd Anniversary 🎉
               </p>
             </div>
 
@@ -243,31 +257,31 @@ export default function WelcomePopup({ onClose }: WelcomePopupProps) {
 
         </div>
 
-        {/* Premium Offer Banner */}
+        {/* Anniversary Banner */}
         <div className="relative mx-4 rounded-2xl mvbd-offer overflow-hidden">
 
           <div className="flex items-center gap-3 px-3.5 py-3">
 
-            <div className="mvbd-gift flex-shrink-0 flex items-center justify-center w-10 h-10 rounded-xl bg-green-400/10 border border-green-300/10">
-              <Gift className="w-5 h-5 text-green-400" />
+            <div className="mvbd-cake flex-shrink-0 flex items-center justify-center w-10 h-10 rounded-xl bg-amber-400/10 border border-amber-300/15">
+              <PartyPopper className="w-5 h-5 text-amber-300" />
             </div>
 
             <div className="min-w-0">
 
               <div className="flex items-center gap-1.5">
 
-                <span className="text-green-400 text-[14px] font-bold">
-                  MVBD Premium
+                <span className="text-amber-300 text-[14px] font-bold">
+                  2 Years of MVBD
                 </span>
 
-                <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-green-400/10 text-green-300 border border-green-300/10">
-                  OFFER
+                <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-amber-400/10 text-amber-200 border border-amber-300/20">
+                  15 SEPT
                 </span>
 
               </div>
 
               <p className="text-white/45 text-[10px] mt-0.5">
-                পুরোনো Members-দের জন্য বিশেষ সুবিধা 🎁
+                আমাদের পথচলার ২ বছর পূর্তি 🎂
               </p>
 
             </div>
@@ -283,23 +297,23 @@ export default function WelcomePopup({ onClose }: WelcomePopupProps) {
 
             <p className="text-white/80 text-[12.5px] leading-6 text-center">
 
-              আমাদের{" "}
-              <span className="text-green-400 font-semibold">
-                MVBD Premium
+              <span className="text-amber-300 font-semibold">
+                MoviesVerseBD
               </span>{" "}
-              সিস্টেম চালু করা হয়েছে শুধুমাত্র সামান্য
+              এর সাথে থাকার জন্য আপনাকে অসংখ্য ধন্যবাদ। ❤️
+              আজ আমাদের{" "}
               <span className="text-white font-medium">
-                {" "}Server খরচ
+                ২য় Anniversary
               </span>{" "}
-              চালানোর জন্য। তাই বিষয়টি কেউ কঠিনভাবে নেবেন না। ❤️
+              — এই পথচলা সহজ করেনি, কিন্তু আপনার ভালোবাসায় আমরা আজ এখানে।
 
             </p>
 
             <p className="text-white/55 text-[11px] leading-5 text-center mt-2">
 
-              তবে আমাদের পুরোনো Members-দের জন্য থাকছে
+              এই বিশেষ দিনে আমাদের পুরোনো Members-দের জন্য থাকছে
               <span className="text-amber-300 font-semibold">
-                {" "}বিশেষ ১ মাসের FREE Offer!
+                {" "}বিশেষ ১ মাসের FREE Subscription!
               </span>
 
             </p>
@@ -319,8 +333,8 @@ export default function WelcomePopup({ onClose }: WelcomePopupProps) {
 
               <div className="flex justify-center mt-1.5">
 
-                <span className="text-green-300 text-[13px] font-bold tracking-[2px]">
-                  MVBDPRO
+                <span className="text-amber-300 text-[13px] font-bold tracking-[2px]">
+                  MVBD2YEAR
                 </span>
 
               </div>
@@ -330,7 +344,7 @@ export default function WelcomePopup({ onClose }: WelcomePopupProps) {
             <p className="text-white/45 text-[10.5px] leading-5 text-center mt-2">
 
               Admin দ্রুত আপনার Account-এ
-              <span className="text-green-400">
+              <span className="text-amber-300">
                 {" "}১ মাসের Free Subscription
               </span>{" "}
               চালু করে দেবে।
@@ -338,7 +352,7 @@ export default function WelcomePopup({ onClose }: WelcomePopupProps) {
             </p>
 
             <p className="text-amber-300/90 text-[10.5px] text-center font-medium mt-2">
-              ⏳ অফারটি সীমিত — তাই দেরি করবেন না!
+              ⏳ অফারটি শুধুমাত্র ১৫ সেপ্টেম্বর পর্যন্ত — দেরি করবেন না!
             </p>
 
           </div>
@@ -353,7 +367,7 @@ export default function WelcomePopup({ onClose }: WelcomePopupProps) {
           </button>
 
           <p className="text-white/35 text-[9.5px] text-center mt-1.5">
-            কিছু বুঝতে সমস্যা হলে Request Group-এ জানালেই Admin বুঝিয়ে দেবে।
+            কিছু বুঝতে সমস্যা হলে Request Group-এ জানালেই Admin বুঝিয়ে দেবে।
           </p>
 
           {/* Close Button */}
@@ -367,7 +381,7 @@ export default function WelcomePopup({ onClose }: WelcomePopupProps) {
         </div>
 
         {/* Bottom Highlight */}
-        <div className="h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+        <div className="h-px bg-gradient-to-r from-transparent via-amber-200/20 to-transparent" />
 
       </div>
     </div>

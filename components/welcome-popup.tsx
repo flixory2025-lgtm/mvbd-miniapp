@@ -44,10 +44,6 @@ export default function WelcomePopup({ onClose }: WelcomePopupProps) {
           0%, 100% { opacity: .35; transform: scale(.85); }
           50%      { opacity: .9;  transform: scale(1.05); }
         }
-        @keyframes mvbdBgPan {
-          0%, 100% { transform: scale(1.08) translate(0, 0); }
-          50%      { transform: scale(1.13) translate(-1%, -1%); }
-        }
 
         .mvbd-popup {
           animation: mvbdPopupIn .42s cubic-bezier(.22,1,.36,1);
@@ -66,21 +62,19 @@ export default function WelcomePopup({ onClose }: WelcomePopupProps) {
             inset 0 1px 0 rgba(255,255,255,.10);
         }
 
-        /* Background image layer */
+        /* Background image layer — STILL, 60% visible */
         .mvbd-bg-image {
           position: absolute;
-          inset: -10px;
+          inset: 0;
           background-image: url('https://i.postimg.cc/6Qt242z6/file-00000000f048821196ac168bdfceaa5a.png');
           background-size: cover;
           background-position: center;
-          opacity: .22;
-          filter: blur(1px) saturate(125%);
-          transform: scale(1.08);
+          background-repeat: no-repeat;
+          opacity: .60;
           pointer-events: none;
-          animation: mvbdBgPan 18s ease-in-out infinite;
         }
 
-        /* Dark gradient overlay above image */
+        /* Soft dark gradient so text remains readable on top */
         .mvbd-bg-overlay {
           position: absolute;
           inset: 0;
@@ -92,9 +86,9 @@ export default function WelcomePopup({ onClose }: WelcomePopupProps) {
             ),
             linear-gradient(
               180deg,
-              rgba(0,0,0,.55) 0%,
-              rgba(0,0,0,.72) 45%,
-              rgba(0,0,0,.88) 100%
+              rgba(0,0,0,.35) 0%,
+              rgba(0,0,0,.55) 45%,
+              rgba(0,0,0,.75) 100%
             );
           pointer-events: none;
         }
@@ -153,7 +147,7 @@ export default function WelcomePopup({ onClose }: WelcomePopupProps) {
         }`}
       >
 
-        {/* === Background Poster Image (subtle) === */}
+        {/* === Background Poster Image (still, 60% visible) === */}
         <div className="mvbd-bg-image" />
         <div className="mvbd-bg-overlay" />
 
@@ -165,9 +159,16 @@ export default function WelcomePopup({ onClose }: WelcomePopupProps) {
         <div className="relative flex items-center justify-between px-4 py-3.5">
 
           <div className="flex items-center gap-2.5">
-            <div className="mvbd-float flex items-center justify-center w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-400/25 to-amber-400/15 border border-emerald-300/30">
-              <span className="text-emerald-300 text-lg font-bold">M</span>
+
+            {/* Logo image (replaces M letter) */}
+            <div className="mvbd-float flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-400/25 to-amber-400/15 border border-emerald-300/30 overflow-hidden">
+              <img
+                src="https://i.postimg.cc/2SfxkxqH/16769-removebg-preview.png"
+                alt="MoviesVerseBD Logo"
+                className="w-7 h-7 object-contain drop-shadow-[0_0_6px_rgba(52,211,153,.45)]"
+              />
             </div>
+
             <div>
               <h2 className="text-white text-[15px] font-bold">MoviesVerseBD</h2>
               <p className="text-emerald-200/60 text-[10px]">2nd Anniversary 🎉</p>
@@ -196,7 +197,7 @@ export default function WelcomePopup({ onClose }: WelcomePopupProps) {
                   15 SEPT
                 </span>
               </div>
-              <p className="text-white/50 text-[10px] mt-0.5">
+              <p className="text-white/60 text-[10px] mt-0.5">
                 আমাদের পথচলার ২ বছর পূর্তি 🎂
               </p>
             </div>
@@ -207,14 +208,14 @@ export default function WelcomePopup({ onClose }: WelcomePopupProps) {
         <div className="relative px-4 pt-3.5 pb-4">
           <div className="px-1">
 
-            <p className="text-white/85 text-[12.5px] leading-6 text-center">
+            <p className="text-white/90 text-[12.5px] leading-6 text-center drop-shadow-[0_1px_2px_rgba(0,0,0,.6)]">
               <span className="text-emerald-300 font-semibold">MoviesVerseBD</span>{" "}
               এর সাথে থাকার জন্য আপনাকে অসংখ্য ধন্যবাদ। ❤️ আজ আমাদের{" "}
               <span className="text-white font-medium">২য় Anniversary</span> —
               এই পথচলা সহজ করেনি, কিন্তু আপনার ভালোবাসায় আমরা আজ এখানে।
             </p>
 
-            <p className="text-white/55 text-[11px] leading-5 text-center mt-2">
+            <p className="text-white/65 text-[11px] leading-5 text-center mt-2 drop-shadow-[0_1px_2px_rgba(0,0,0,.5)]">
               এই বিশেষ দিনে আমাদের পুরোনো Members-দের জন্য থাকছে
               <span className="text-amber-300 font-semibold">
                 {" "}বিশেষ ১ মাসের FREE Subscription!
@@ -223,7 +224,7 @@ export default function WelcomePopup({ onClose }: WelcomePopupProps) {
 
             {/* Offer Instruction */}
             <div className="mt-3 rounded-xl mvbd-code px-3 py-2.5">
-              <p className="text-white/65 text-[10.5px] text-center leading-5">
+              <p className="text-white/70 text-[10.5px] text-center leading-5">
                 Subscription Plan থেকে{" "}
                 <span className="text-cyan-300 font-semibold">1 Month</span>{" "}
                 সিলেক্ট করে নিচের Code-টি লিখে Admin-কে পাঠান
@@ -235,7 +236,7 @@ export default function WelcomePopup({ onClose }: WelcomePopupProps) {
               </div>
             </div>
 
-            <p className="text-white/45 text-[10.5px] leading-5 text-center mt-2">
+            <p className="text-white/55 text-[10.5px] leading-5 text-center mt-2 drop-shadow-[0_1px_2px_rgba(0,0,0,.5)]">
               Admin দ্রুত আপনার Account-এ
               <span className="text-emerald-300">
                 {" "}১ মাসের Free Subscription
@@ -257,7 +258,7 @@ export default function WelcomePopup({ onClose }: WelcomePopupProps) {
             Request Group
           </button>
 
-          <p className="text-white/35 text-[9.5px] text-center mt-1.5">
+          <p className="text-white/45 text-[9.5px] text-center mt-1.5">
             কিছু বুঝতে সমস্যা হলে Request Group-এ জানালেই Admin বুঝিয়ে দেবে।
           </p>
 

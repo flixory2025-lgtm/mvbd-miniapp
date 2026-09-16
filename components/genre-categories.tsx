@@ -13,7 +13,7 @@ interface GenreCategoriesProps {
 type AppModal = "tutorial" | "download" | null
 
 const tutorialVideoId = "fs9yrwNbvZs"
-const apkDownloadUrl = "https://github.com/flixory2025-lgtm/mvbd-miniapp/releases/download/1%2C5v/MVBD.1.apk"
+const apkDownloadUrl = "https://github.com/flixory2025-lgtm/mvbd-miniapp/releases/download/2.0.5v/MVBD.MINI.APP.apk"
 
 export default function GenreCategories({
   genres,

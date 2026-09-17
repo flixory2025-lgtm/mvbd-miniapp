@@ -84,7 +84,7 @@ export default function WelcomePopup({ onClose }: WelcomePopupProps) {
         .mvbd-bg-image {
           position: absolute;
           inset: 0;
-          background-image: url('https://i.postimg.cc/6Qt242z6/file-00000000f048821196ac168bdfceaa5a.png');
+          background-image: url('https://i.postimg.cc/MKR8ytf1/file-0000000079a48211af89ed713cf918ca.png');
           background-size: cover;
           background-position: center;
           background-repeat: no-repeat;
@@ -229,7 +229,7 @@ export default function WelcomePopup({ onClose }: WelcomePopupProps) {
 
             <div>
               <h2 className="text-white text-[15px] font-bold">MoviesVerseBD</h2>
-              <p className="text-emerald-200/60 text-[10px]">2nd Anniversary 🎉</p>
+              <p className="text-emerald-200/60 text-[10px]">MVBD OFFICIAL</p>
             </div>
           </div>
 
@@ -256,7 +256,7 @@ export default function WelcomePopup({ onClose }: WelcomePopupProps) {
                 </span>
               </div>
               <p className="text-white/60 text-[10px] mt-0.5">
-                আমাদের পথচলার ২ বছর পূর্তি 🎂
+                MVBD OFFICIAL 🎂
               </p>
             </div>
           </div>

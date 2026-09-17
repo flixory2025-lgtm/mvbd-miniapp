@@ -1625,4 +1625,17 @@ export const movies4 = [
     description: "দিল্লি ও মুম্বাইয়ের দুই ভিন্ন জগতের মানুষের মধ্যে হঠাৎ তৈরি হওয়া সম্পর্ককে ঘিরে গল্প। শহরের সংস্কৃতি, ভুল বোঝাবুঝি ও নানা পরিস্থিতির মধ্য দিয়ে তাদের সম্পর্ক এগিয়ে যায়। ❤️🏙️",
     views: 23847,
   },
+    {
+    id: 3230,
+    title: "Outer Banks – Season 5 (2026)",
+    poster: "/3230id.jpg",
+    trailer: "https://www.youtube.com/embed/0k0S5G-oq6w?si",
+    telegramLink: "http://t.me/mvbdstore_bot?start=f_MTUyNjEsMTUyODI",
+    genre: "Crime | Drama | Mystery | Thriller",
+    year: "2026",
+    rating: "8.0",
+    language: "Hindi",
+    description: "Pogues-রা JJ-কে হারানোর পর আবার নিজেদের শহরে ফিরে আসে। অর্থ, ঘরবাড়ি ও Blue Crown হারানোর পাশাপাশি Groff ও নতুন শত্রুদের মোকাবিলা করে তারা বন্ধুর প্রতিশোধ এবং নিজেদের ভবিষ্যৎ ফিরে পাওয়ার জন্য শেষবারের মতো এক বিপজ্জনক অভিযানে নামে। 🌊🏴‍☠️🔍",
+    views: 23847,
+  },
   ]

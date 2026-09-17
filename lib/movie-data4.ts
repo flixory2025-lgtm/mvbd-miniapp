@@ -1638,4 +1638,17 @@ export const movies4 = [
     description: "Pogues-রা JJ-কে হারানোর পর আবার নিজেদের শহরে ফিরে আসে। অর্থ, ঘরবাড়ি ও Blue Crown হারানোর পাশাপাশি Groff ও নতুন শত্রুদের মোকাবিলা করে তারা বন্ধুর প্রতিশোধ এবং নিজেদের ভবিষ্যৎ ফিরে পাওয়ার জন্য শেষবারের মতো এক বিপজ্জনক অভিযানে নামে। 🌊🏴‍☠️🔍",
     views: 23847,
   },
+  {
+    id: 3231,
+    title: "Ghare and Baire (2018)",
+    poster: "/3231id.jpg",
+    trailer: "https://www.youtube.com/embed/0k0S5G-oq6w?si",
+    telegramLink: "http://t.me/mvbdstore_bot?start=f_MTUyODMsMTUyODQ",
+    genre: "Drama | Romance | bangla",
+    year: "2018",
+    rating: "6.7",
+    language: "Bangla",
+    description: "কলকাতার প্রেক্ষাপটে আবর্তিত এই গল্পে একজন নারী ও দুই পুরুষের জটিল সম্পর্কের মধ্য দিয়ে প্রেম, বন্ধুত্ব, মতাদর্শ ও ব্যক্তিগত স্বাধীনতার নানা দিক উঠে আসে। ❤️🏠🌆",
+    views: 23847,
+  },
   ]

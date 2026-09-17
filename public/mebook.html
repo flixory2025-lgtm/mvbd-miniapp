@@ -1,0 +1,2399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MeBook - Movie Review Social Platform</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --green:#16a34a;
+    --green-dark:#15803d;
+    --green-light:#22c55e;
+    --bg:#f0f2f5;
+    --card:#ffffff;
+    --text:#1c1e21;
+    --text-muted:#65676b;
+    --border:#dddfe2;
+    --hover:#f2f2f2;
+    --shadow:0 1px 2px rgba(0,0,0,.1), 0 2px 8px rgba(0,0,0,.06);
+    --shadow-lg:0 12px 32px rgba(0,0,0,.15);
+    --input-bg:#f0f2f5;
+    --header-bg:linear-gradient(135deg,#0f172a 0%,#1e293b 100%);
+    --drawer-bg:rgba(255,255,255,.62);
+    --nav-item-bg:rgba(255,255,255,.35);
+    --nav-item-hover:rgba(255,255,255,.75);
+    --modal-bg:#ffffff;
+    --chat-body-bg:#f7f8fa;
+    --bubble-them-bg:#ffffff;
+  }
+
+  body.dark-mode {
+    --green:#22c55e;
+    --green-dark:#4ade80;
+    --green-light:#86efac;
+    --bg:#0a0f1a;
+    --card:#111827;
+    --text:#f3f4f6;
+    --text-muted:#9ca3af;
+    --border:#2d3748;
+    --hover:#1f2937;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 2px 8px rgba(0,0,0,.3);
+    --shadow-lg:0 12px 32px rgba(0,0,0,.5);
+    --input-bg:#1f2937;
+    --header-bg:linear-gradient(135deg,#020617 0%,#0f172a 100%);
+    --drawer-bg:rgba(17,24,39,.7);
+    --nav-item-bg:rgba(255,255,255,.08);
+    --nav-item-hover:rgba(255,255,255,.15);
+    --modal-bg:#111827;
+    --chat-body-bg:#0f172a;
+    --bubble-them-bg:#1f2937;
+  }
+
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+    background:var(--bg);color:var(--text);
+    overflow-x:hidden;-webkit-font-smoothing:antialiased;
+    transition: background .3s ease, color .3s ease;
+  }
+  button{font-family:inherit;cursor:pointer;border:none;background:none;}
+  input,textarea{font-family:inherit;color:var(--text);}
+  img{display:block;}
+  a{text-decoration:none;color:inherit;}
+
+  /* =============== AUTH SCREEN =============== */
+  .auth-wrap{
+    position:fixed;inset:0;z-index:5000;
+    background:linear-gradient(135deg,#0f172a 0%,#1e293b 60%,#16a34a 140%);
+    display:flex;align-items:center;justify-content:center;padding:20px;
+    overflow:hidden;
+  }
+  .auth-wrap::before {
+    content:'';
+    position:absolute;
+    width:200%;
+    height:200%;
+    top:-50%;
+    left:-50%;
+    background: radial-gradient(circle at 20% 30%, rgba(22,163,74,.25) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(59,130,246,.2) 0%, transparent 50%),
+                radial-gradient(circle at 50% 50%, rgba(168,85,247,.15) 0%, transparent 50%);
+    animation: authGlow 12s ease-in-out infinite;
+    z-index:0;
+  }
+  @keyframes authGlow {
+    0%,100% { transform: translate(0,0) scale(1); }
+    33% { transform: translate(-5%,5%) scale(1.1); }
+    66% { transform: translate(5%,-5%) scale(.95); }
+  }
+  .auth-wrap::after {
+    content:'';
+    position:absolute;
+    inset:0;
+    background-image: 
+      radial-gradient(2px 2px at 20% 30%, rgba(255,255,255,.3), transparent),
+      radial-gradient(2px 2px at 40% 70%, rgba(255,255,255,.2), transparent),
+      radial-gradient(2px 2px at 60% 20%, rgba(255,255,255,.3), transparent),
+      radial-gradient(2px 2px at 80% 80%, rgba(255,255,255,.2), transparent),
+      radial-gradient(2px 2px at 10% 90%, rgba(255,255,255,.25), transparent),
+      radial-gradient(2px 2px at 90% 10%, rgba(255,255,255,.3), transparent);
+    background-size: 200% 200%;
+    animation: starDrift 20s linear infinite;
+    z-index:0;
+    pointer-events:none;
+  }
+  @keyframes starDrift {
+    0% { background-position: 0% 0%; }
+    100% { background-position: 100% 100%; }
+  }
+  .auth-card{
+    background:#fff;border-radius:16px;box-shadow:var(--shadow-lg);
+    width:100%;max-width:420px;padding:32px 28px;
+    position:relative;z-index:1;
+    animation: cardFloat .8s ease-out;
+    background: rgba(255,255,255,.98);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255,255,255,.3);
+  }
+  @keyframes cardFloat {
+    from { opacity:0; transform: translateY(30px) scale(.96); }
+    to { opacity:1; transform: translateY(0) scale(1); }
+  }
+  .auth-logo{display:flex;align-items:center;gap:10px;justify-content:center;margin-bottom:6px;}
+  .auth-logo img{width:44px;height:44px;object-fit:contain;}
+  .auth-logo .mb-logo-text{font-size:26px;}
+  .auth-logo .me{color:var(--green);}
+  .auth-logo .book{color:#0f172a;}
+  .auth-sub{text-align:center;color:var(--text-muted);font-size:13.5px;margin-bottom:22px;}
+  .auth-tabs{display:flex;background:#f0f2f5;border-radius:10px;padding:4px;margin-bottom:18px;}
+  .auth-tab{
+    flex:1;padding:9px;border-radius:8px;font-size:14.5px;font-weight:600;
+    color:var(--text-muted);transition:all .2s ease;
+  }
+  .auth-tab.active{background:#fff;color:var(--green-dark);box-shadow:0 1px 3px rgba(0,0,0,.08);}
+  .auth-field{margin-bottom:12px;}
+  .auth-field label{display:block;font-size:13px;font-weight:600;margin-bottom:5px;color:#374151;}
+  .auth-field input{
+    width:100%;padding:11px 14px;border:1.5px solid var(--border);
+    border-radius:10px;font-size:14.5px;outline:none;
+    transition:border-color .2s ease, box-shadow .2s ease;
+    background:var(--input-bg);color:var(--text);
+  }
+  .auth-field input:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(22,163,74,.12);}
+  .auth-btn{
+    width:100%;padding:12px;border-radius:10px;font-size:15px;font-weight:700;
+    background:var(--green);color:#fff;margin-top:6px;transition:filter .2s ease;
+  }
+  .auth-btn:hover{filter:brightness(1.08);}
+  .auth-btn:disabled{opacity:.65;cursor:not-allowed;}
+  .auth-divider{display:flex;align-items:center;gap:10px;margin:18px 0;color:#9ca3af;font-size:12.5px;}
+  .auth-divider::before,.auth-divider::after{content:"";flex:1;height:1px;background:var(--border);}
+  .auth-google{
+    width:100%;padding:11px;border-radius:10px;font-size:14.5px;font-weight:600;
+    background:#fff;color:#374151;border:1.5px solid var(--border);
+    display:flex;align-items:center;justify-content:center;gap:10px;
+    transition:background .18s ease;
+  }
+  .auth-google:hover{background:#f9fafb;}
+  .auth-google svg{width:19px;height:19px;}
+  .auth-err{
+    background:#fef2f2;color:#dc2626;font-size:13px;padding:9px 12px;
+    border-radius:8px;margin-top:10px;display:none;
+  }
+  .auth-err.show{display:block;}
+
+  /* =============== HEADER =============== */
+  .mb-header{
+    position:fixed;top:0;left:0;right:0;height:60px;z-index:1000;
+    background:var(--header-bg);
+    display:flex;align-items:center;justify-content:space-between;
+    padding:0 16px;box-shadow:0 2px 12px rgba(0,0,0,.18);
+    transition: background .3s ease;
+  }
+  .mb-header-left{display:flex;align-items:center;gap:10px;}
+  .mb-logo-img{width:38px;height:38px;object-fit:contain;border-radius:9px;background:rgba(255,255,255,.08);padding:4px;}
+  .mb-logo-text{font-size:22px;font-weight:800;letter-spacing:-.5px;user-select:none;}
+  .mb-logo-text .me{color:var(--green-light);}
+  .mb-logo-text .book{color:#ffffff;}
+
+  .mb-header-right{display:flex;align-items:center;gap:8px;}
+  .mb-icon-btn{
+    width:40px;height:40px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    background:rgba(255,255,255,.1);
+    transition:background .2s ease, transform .15s ease;
+    color:#e4e6eb;position:relative;
+  }
+  .mb-icon-btn:hover{background:rgba(255,255,255,.2);}
+  .mb-icon-btn:active{transform:scale(.93);}
+  .mb-icon-btn svg{width:20px;height:20px;fill:currentColor;}
+  .mb-badge-dot{
+    position:absolute;top:6px;right:6px;min-width:16px;height:16px;
+    background:#ef4444;color:#fff;font-size:10px;font-weight:700;
+    border-radius:8px;display:flex;align-items:center;justify-content:center;
+    padding:0 4px;border:2px solid #1e293b;
+  }
+  .mb-avatar-btn{
+    width:40px;height:40px;border-radius:50%;overflow:hidden;
+    border:2px solid rgba(255,255,255,.3);
+    transition:border-color .2s ease, transform .15s ease;
+    padding:0;background:#334155;
+  }
+  .mb-avatar-btn:hover{border-color:var(--green-light);}
+  .mb-avatar-btn:active{transform:scale(.93);}
+  .mb-avatar-btn img{width:100%;height:100%;object-fit:cover;}
+
+  /* =============== LAYOUT =============== */
+  .mb-layout{
+    display:grid;grid-template-columns:280px minmax(0,1fr) 300px;gap:20px;
+    max-width:1400px;margin:0 auto;padding:80px 16px 40px;align-items:start;
+  }
+  .mb-layout.full{grid-template-columns:280px minmax(0,1fr);}
+
+  .mb-sidebar{position:sticky;top:80px;}
+  .mb-side-item{
+    display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:10px;
+    font-size:15px;font-weight:600;color:var(--text);
+    transition:background .18s ease;width:100%;text-align:left;
+  }
+  .mb-side-item:hover{background:var(--hover);}
+  .mb-side-item.active{background:var(--green);color:#fff;}
+  .mb-side-ico{
+    width:36px;height:36px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    background:var(--border);flex-shrink:0;
+  }
+  .mb-side-item.active .mb-side-ico{background:rgba(255,255,255,.2);}
+  .mb-side-ico svg{width:20px;height:20px;fill:var(--text);}
+  .mb-side-item.active .mb-side-ico svg{fill:#fff;}
+  .mb-side-divider{height:1px;background:var(--border);margin:8px 4px;}
+
+  .mb-main{min-width:0;}
+
+  /* Composer */
+  .mb-composer{
+    background:var(--card);border-radius:12px;box-shadow:var(--shadow);
+    padding:12px 16px 10px;margin-bottom:16px;
+    transition: background .3s ease;
+  }
+  .mb-composer-top{display:flex;gap:10px;align-items:center;}
+  .mb-composer-avatar{width:40px;height:40px;border-radius:50%;object-fit:cover;background:#cbd5e1;flex-shrink:0;}
+  .mb-composer-input{
+    flex:1;background:var(--input-bg);border:none;border-radius:24px;
+    padding:11px 16px;font-size:15px;color:var(--text);
+    outline:none;cursor:pointer;transition:background .2s ease;text-align:left;
+  }
+  .mb-composer-input:hover{background:var(--border);}
+  .mb-composer-input::placeholder{color:var(--text-muted);}
+  .mb-composer-actions{display:flex;gap:6px;margin-top:10px;padding-top:10px;border-top:1px solid var(--border);}
+  .mb-comp-action{
+    flex:1;display:flex;align-items:center;justify-content:center;gap:8px;
+    padding:8px;border-radius:8px;font-size:14px;font-weight:600;color:var(--text-muted);
+    transition:background .18s ease;
+  }
+  .mb-comp-action:hover{background:var(--hover);}
+  .mb-comp-action svg{width:20px;height:20px;}
+
+  /* Post card */
+  .mb-post{
+    background:var(--card);border-radius:12px;box-shadow:var(--shadow);
+    margin-bottom:16px;overflow:hidden;animation:postIn .35s cubic-bezier(.2,.8,.3,1);
+    transition: background .3s ease;
+  }
+  @keyframes postIn{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:none;}}
+  .mb-post-head{display:flex;align-items:center;gap:10px;padding:12px 16px 8px;}
+  .mb-post-head-avatar{width:42px;height:42px;border-radius:50%;object-fit:cover;background:#cbd5e1;cursor:pointer;transition:transform .15s ease;}
+  .mb-post-head-avatar:hover{transform:scale(1.05);}
+  .mb-post-head-info{flex:1;min-width:0;}
+  .mb-post-author{font-size:15px;font-weight:700;cursor:pointer;line-height:1.3;display:flex;align-items:center;gap:5px;}
+  .mb-post-author:hover{text-decoration:underline;}
+  .mb-post-meta{font-size:12.5px;color:var(--text-muted);display:flex;align-items:center;gap:5px;margin-top:1px;}
+  .mb-post-meta .globe{width:12px;height:12px;fill:currentColor;}
+  .mb-post-more{
+    width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+    color:var(--text-muted);transition:background .18s ease;
+  }
+  .mb-post-more:hover{background:var(--hover);}
+  .mb-post-more svg{width:20px;height:20px;fill:currentColor;}
+  .mb-post-caption{padding:2px 16px 10px;font-size:15px;line-height:1.45;color:var(--text);}
+  .mb-post-media{background:#000;position:relative;max-height:560px;overflow:hidden;}
+  .mb-post-media img{width:100%;max-height:560px;object-fit:contain;margin:0 auto;}
+  .mb-movie-badge{
+    position:absolute;top:12px;left:12px;display:flex;align-items:center;gap:6px;
+    background:rgba(0,0,0,.68);backdrop-filter:blur(6px);color:#fff;font-size:12px;font-weight:600;
+    padding:5px 10px;border-radius:20px;letter-spacing:.2px;
+  }
+  .mb-movie-badge svg{width:14px;height:14px;fill:#fbbf24;}
+  .mb-post-stats{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:10px 16px;font-size:13.5px;color:var(--text-muted);
+  }
+  .mb-reacts{display:flex;align-items:center;gap:6px;}
+  .mb-react-pill{
+    display:flex;align-items:center;gap:4px;
+    background:linear-gradient(135deg,#ef4444,#f97316);
+    color:#fff;font-size:11px;font-weight:700;
+    padding:2px 8px 2px 4px;border-radius:12px;
+  }
+  .mb-react-pill svg{width:13px;height:13px;fill:#fff;}
+  .mb-post-actions{display:flex;border-top:1px solid var(--border);margin:0 4px;padding:4px 0;}
+  .mb-action{
+    flex:1;display:flex;align-items:center;justify-content:center;gap:8px;
+    padding:9px;border-radius:8px;font-size:14.5px;font-weight:600;color:var(--text-muted);
+    transition:background .18s ease,color .18s ease;
+  }
+  .mb-action:hover{background:var(--hover);}
+  .mb-action.liked{color:#ef4444;}
+  .mb-action svg{width:19px;height:19px;fill:currentColor;}
+
+  /* Comments */
+  .mb-comments{padding:0 16px 12px;border-top:1px solid var(--border);margin-top:4px;display:none;}
+  .mb-comments.open{display:block;}
+  .mb-comment{display:flex;gap:8px;margin-top:10px;}
+  .mb-comment img{width:32px;height:32px;border-radius:50%;object-fit:cover;background:#cbd5e1;flex-shrink:0;}
+  .mb-comment-body{background:var(--input-bg);border-radius:14px;padding:8px 12px;font-size:14px;line-height:1.4;color:var(--text);}
+  .mb-comment-body b{font-weight:700;display:block;font-size:13.5px;margin-bottom:2px;}
+  .mb-comment-input{display:flex;gap:8px;margin-top:12px;align-items:center;}
+  .mb-comment-input img{width:32px;height:32px;border-radius:50%;object-fit:cover;background:#cbd5e1;}
+  .mb-comment-input input{
+    flex:1;background:var(--input-bg);border:none;border-radius:20px;
+    padding:9px 14px;font-size:14px;outline:none;color:var(--text);
+  }
+
+  /* Right sidebar */
+  .mb-right{position:sticky;top:80px;display:flex;flex-direction:column;gap:16px;}
+  .mb-card{background:var(--card);border-radius:12px;box-shadow:var(--shadow);padding:14px 16px;transition: background .3s ease;}
+  .mb-card-title{font-size:16px;font-weight:700;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;}
+  .mb-card-title button{font-size:13px;color:var(--green-dark);font-weight:600;}
+  .mb-card-title button:hover{text-decoration:underline;}
+  .mb-contact{display:flex;align-items:center;gap:10px;padding:8px;border-radius:8px;transition:background .18s ease;cursor:pointer;position:relative;}
+  .mb-contact:hover{background:var(--hover);}
+  .mb-contact img{width:36px;height:36px;border-radius:50%;object-fit:cover;background:#cbd5e1;}
+  .mb-contact-name{font-size:14.5px;font-weight:600;}
+  .mb-online{position:absolute;bottom:7px;left:34px;width:11px;height:11px;border-radius:50%;background:var(--green-light);border:2px solid var(--card);}
+
+  /* Overlay / Drawer */
+  .mb-overlay{
+    position:fixed;inset:0;background:rgba(15,23,42,.35);
+    backdrop-filter:blur(2px);z-index:1100;
+    opacity:0;visibility:hidden;transition:opacity .3s ease,visibility .3s ease;
+  }
+  .mb-overlay.open{opacity:1;visibility:visible;}
+  .mb-drawer{
+    position:fixed;top:0;right:0;height:100%;width:330px;max-width:88vw;z-index:1200;
+    transform:translateX(105%);transition:transform .42s cubic-bezier(.16,1,.3,1);
+    background:var(--drawer-bg);backdrop-filter:blur(26px) saturate(180%);
+    -webkit-backdrop-filter:blur(26px) saturate(180%);
+    border-left:1px solid var(--border);
+    box-shadow:-16px 0 44px rgba(0,0,0,.22);
+    display:flex;flex-direction:column;border-radius:24px 0 0 24px;
+  }
+  .mb-drawer.open{transform:translateX(0);}
+  .mb-drawer-head{display:flex;align-items:center;gap:10px;padding:18px 18px 14px;}
+  .mb-drawer-head img{width:34px;height:34px;object-fit:contain;border-radius:8px;}
+  .mb-drawer-head .mb-logo-text{font-size:19px;}
+  .mb-drawer-head .me{color:var(--green-dark);}
+  .mb-drawer-head .book{color:var(--text);}
+  .mb-drawer-close{
+    margin-left:auto;width:34px;height:34px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    background:rgba(0,0,0,.06);transition:background .2s ease,transform .2s ease;
+  }
+  .mb-drawer-close:hover{background:rgba(0,0,0,.12);transform:rotate(90deg);}
+  .mb-drawer-close svg{width:16px;height:16px;fill:var(--text);}
+  .mb-drawer-divider{height:1px;background:var(--border);margin:0 18px;}
+  .mb-drawer-nav{padding:12px;overflow-y:auto;flex:1;}
+  .mb-drawer-nav::-webkit-scrollbar{width:6px;}
+  .mb-drawer-nav::-webkit-scrollbar-thumb{background:var(--border);border-radius:10px;}
+  .mb-nav-item{
+    display:flex;align-items:center;gap:14px;width:100%;
+    padding:12px 14px;border-radius:14px;font-size:15.5px;font-weight:600;color:var(--text);
+    transition:background .22s ease,transform .18s ease;text-align:left;position:relative;
+    background:var(--nav-item-bg);border:1px solid var(--border);
+    margin-bottom:8px;
+  }
+  .mb-nav-item:hover{background:var(--nav-item-hover);transform:translateX(-3px);}
+  .mb-nav-item.active{
+    background:linear-gradient(135deg,rgba(22,163,74,.95),rgba(34,197,94,.95));
+    color:#fff;border-color:transparent;box-shadow:0 6px 18px rgba(22,163,74,.35);
+  }
+  .mb-nav-item.active .mb-nav-ico svg{fill:#fff;}
+  .mb-nav-ico{
+    width:38px;height:38px;border-radius:12px;flex-shrink:0;
+    display:flex;align-items:center;justify-content:center;
+    background:var(--input-bg);border:1px solid var(--border);
+  }
+  .mb-nav-item.active .mb-nav-ico{background:rgba(255,255,255,.22);border-color:rgba(255,255,255,.3);}
+  .mb-nav-ico svg{width:20px;height:20px;fill:var(--text);}
+  .mb-nav-badge{
+    margin-left:auto;background:#ef4444;color:#fff;font-size:11px;font-weight:700;
+    min-width:20px;height:20px;border-radius:10px;
+    display:flex;align-items:center;justify-content:center;padding:0 6px;
+  }
+  .mb-nav-item.active .mb-nav-badge{background:rgba(255,255,255,.3);}
+  .mb-drawer-foot{padding:12px 18px 18px;font-size:12px;color:var(--text-muted);display:flex;align-items:center;gap:6px;}
+  .mb-drawer-foot .dot{width:4px;height:4px;border-radius:50%;background:var(--text-muted);}
+
+  /* Views */
+  .mb-view{display:none;animation:viewIn .3s ease;}
+  .mb-view.active{display:block;}
+  @keyframes viewIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
+  .mb-page-title{font-size:24px;font-weight:800;margin-bottom:16px;display:flex;align-items:center;gap:10px;color:var(--text);}
+  .mb-page-title svg{width:26px;height:26px;fill:var(--green);}
+
+  /* Friends */
+  .mb-friends-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  .mb-friend-card{
+    background:var(--card);border-radius:12px;box-shadow:var(--shadow);
+    overflow:hidden;transition:transform .2s ease,box-shadow .2s ease;
+  }
+  .mb-friend-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-lg);}
+  .mb-friend-cover{height:100px;background:linear-gradient(135deg,#16a34a,#0f172a);}
+  .mb-friend-body{padding:0 14px 14px;text-align:center;margin-top:-38px;}
+  .mb-friend-body img{
+    width:76px;height:76px;border-radius:50%;object-fit:cover;
+    border:4px solid var(--card);margin:0 auto 8px;background:#cbd5e1;
+  }
+  .mb-friend-name{font-size:16px;font-weight:700;color:var(--text);}
+  .mb-friend-mutual{font-size:12.5px;color:var(--text-muted);margin-top:2px;}
+  .mb-friend-btns{display:flex;flex-direction:column;gap:8px;margin-top:12px;}
+  .mb-btn{
+    width:100%;padding:9px;border-radius:9px;font-size:14.5px;font-weight:600;
+    transition:filter .18s ease, transform .12s ease;
+  }
+  .mb-btn:active{transform:scale(.98);}
+  .mb-btn-primary{background:var(--green);color:#fff;}
+  .mb-btn-primary:hover{filter:brightness(1.08);}
+  .mb-btn-secondary{background:var(--input-bg);color:var(--text);}
+  .mb-btn-secondary:hover{background:var(--border);}
+  .mb-btn-outline{background:transparent;color:var(--text);border:1px solid var(--border);}
+  .mb-btn-outline:hover{background:var(--hover);}
+  .mb-btn-danger{background:#dc2626;color:#fff;}
+  .mb-btn-danger:hover{filter:brightness(1.1);}
+
+  .mb-search-box{
+    display:flex;align-items:center;gap:10px;background:var(--card);
+    border-radius:24px;padding:10px 16px;box-shadow:var(--shadow);margin-bottom:18px;
+  }
+  .mb-search-box svg{width:20px;height:20px;fill:var(--text-muted);flex-shrink:0;}
+  .mb-search-box input{border:none;outline:none;flex:1;font-size:15px;background:transparent;color:var(--text);}
+
+  /* Profile */
+  .mb-profile-head{background:var(--card);border-radius:12px;box-shadow:var(--shadow);overflow:hidden;margin-bottom:16px;}
+  .mb-profile-cover{
+    height:220px;background:linear-gradient(135deg,#0f172a,#16a34a);
+    position:relative;cursor:pointer;overflow:hidden;
+  }
+  .mb-profile-cover img{width:100%;height:100%;object-fit:cover;}
+  .mb-profile-cover-add{
+    position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+    background:rgba(0,0,0,.35);color:#fff;font-weight:600;gap:8px;
+    opacity:0;transition:opacity .25s ease;
+  }
+  .mb-profile-cover:hover .mb-profile-cover-add{opacity:1;}
+  .mb-profile-cover-add svg{width:22px;height:22px;fill:#fff;}
+  .mb-profile-info{padding:0 20px 16px;display:flex;align-items:flex-end;gap:18px;margin-top:-58px;position:relative;flex-wrap:wrap;}
+  .mb-profile-avatar-wrap{position:relative;cursor:pointer;}
+  .mb-profile-avatar-wrap img{width:130px;height:130px;border-radius:50%;object-fit:cover;border:4px solid var(--card);background:#cbd5e1;}
+  .mb-profile-avatar-add{
+    position:absolute;inset:0;border-radius:50%;display:flex;align-items:center;justify-content:center;
+    background:rgba(0,0,0,.4);opacity:0;transition:opacity .25s ease;
+  }
+  .mb-profile-avatar-wrap:hover .mb-profile-avatar-add{opacity:1;}
+  .mb-profile-avatar-add svg{width:26px;height:26px;fill:#fff;}
+  .mb-profile-text{flex:1;min-width:200px;padding-bottom:8px;}
+  .mb-profile-name{font-size:26px;font-weight:800;line-height:1.2;color:var(--text);}
+  .mb-profile-bio{font-size:14.5px;color:var(--text-muted);margin-top:4px;}
+  .mb-profile-actions{display:flex;gap:8px;padding:0 20px 18px;flex-wrap:wrap;}
+  .mb-profile-actions .mb-btn{width:auto;padding:9px 18px;}
+
+  .mb-info-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .mb-info-row{display:flex;align-items:center;gap:10px;font-size:14.5px;padding:6px 0;color:var(--text);}
+  .mb-info-row svg{width:18px;height:18px;fill:var(--green);flex-shrink:0;}
+  .mb-info-row b{font-weight:600;}
+
+  .mb-privacy-toggle{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:10px 0;font-size:14.5px;border-bottom:1px solid var(--border);color:var(--text);
+  }
+  .mb-privacy-toggle:last-child{border-bottom:none;}
+  .mb-switch{position:relative;width:44px;height:24px;flex-shrink:0;}
+  .mb-switch input{opacity:0;width:0;height:0;}
+  .mb-slider{position:absolute;inset:0;background:var(--border);border-radius:24px;transition:.25s;}
+  .mb-slider::before{
+    content:"";position:absolute;width:18px;height:18px;left:3px;top:3px;
+    background:#fff;border-radius:50%;transition:.25s;box-shadow:0 1px 3px rgba(0,0,0,.3);
+  }
+  .mb-switch input:checked + .mb-slider{background:var(--green);}
+  .mb-switch input:checked + .mb-slider::before{transform:translateX(20px);}
+
+  /* Settings */
+  .mb-settings-group{margin-bottom:16px;}
+  .mb-setting-row{
+    display:flex;align-items:center;gap:14px;padding:14px 4px;
+    border-bottom:1px solid var(--border);cursor:pointer;transition:background .18s ease;border-radius:8px;
+    color:var(--text);
+  }
+  .mb-setting-row:hover{background:var(--hover);}
+  .mb-setting-row:last-child{border-bottom:none;}
+  .mb-setting-ico{
+    width:40px;height:40px;border-radius:50%;background:var(--input-bg);flex-shrink:0;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .mb-setting-ico svg{width:20px;height:20px;fill:var(--text);}
+  .mb-setting-txt{flex:1;}
+  .mb-setting-txt h4{font-size:15px;font-weight:600;color:var(--text);}
+  .mb-setting-txt p{font-size:12.5px;color:var(--text-muted);margin-top:1px;}
+  .mb-setting-row .chev{width:18px;height:18px;fill:var(--text-muted);flex-shrink:0;}
+
+  /* Community */
+  .mb-community-hero{
+    background:linear-gradient(135deg,#0f172a 0%,#16a34a 100%);
+    border-radius:12px;padding:26px 22px;color:#fff;margin-bottom:18px;box-shadow:var(--shadow);
+  }
+  .mb-community-hero h2{font-size:23px;font-weight:800;}
+  .mb-community-hero p{font-size:14px;opacity:.85;margin-top:5px;}
+
+  /* MeBook NEW PAGE */
+  .mb-mebook-hero{
+    background:linear-gradient(135deg,#16a34a 0%,#0f172a 100%);
+    border-radius:12px;padding:28px 22px;color:#fff;margin-bottom:18px;box-shadow:var(--shadow);
+    position:relative;overflow:hidden;
+  }
+  .mb-mebook-hero::before{
+    content:'';position:absolute;top:-50%;right:-20%;
+    width:300px;height:300px;border-radius:50%;
+    background:radial-gradient(circle,rgba(255,255,255,.15) 0%,transparent 70%);
+    animation: floatBubble 8s ease-in-out infinite;
+  }
+  @keyframes floatBubble{
+    0%,100%{transform:translate(0,0) scale(1);}
+    50%{transform:translate(-20px,20px) scale(1.15);}
+  }
+  .mb-mebook-hero h2{font-size:24px;font-weight:800;position:relative;z-index:1;}
+  .mb-mebook-hero p{font-size:14px;opacity:.9;margin-top:6px;position:relative;z-index:1;}
+  .mb-mebook-badge{
+    display:inline-block;background:rgba(255,255,255,.2);color:#fff;
+    padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;
+    margin-top:12px;position:relative;z-index:1;backdrop-filter:blur(6px);
+  }
+
+  .mb-mebook-grid{
+    display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px;
+  }
+  .mb-mebook-stat{
+    background:var(--card);border-radius:12px;box-shadow:var(--shadow);
+    padding:16px;text-align:center;transition:transform .2s ease;
+  }
+  .mb-mebook-stat:hover{transform:translateY(-3px);}
+  .mb-mebook-stat .num{font-size:26px;font-weight:800;color:var(--green);}
+  .mb-mebook-stat .lbl{font-size:12.5px;color:var(--text-muted);margin-top:2px;}
+
+  .mb-mebook-list{
+    display:flex;flex-direction:column;gap:10px;
+  }
+  .mb-mebook-item{
+    display:flex;gap:12px;padding:12px;background:var(--card);
+    border-radius:12px;box-shadow:var(--shadow);align-items:center;
+    transition:transform .18s ease,box-shadow .18s ease;
+    cursor:pointer;
+  }
+  .mb-mebook-item:hover{transform:translateX(4px);box-shadow:var(--shadow-lg);}
+  .mb-mebook-item img{
+    width:64px;height:84px;object-fit:cover;border-radius:8px;flex-shrink:0;
+    background:#cbd5e1;
+  }
+  .mb-mebook-item-body{flex:1;min-width:0;}
+  .mb-mebook-item-title{font-size:15px;font-weight:700;color:var(--text);}
+  .mb-mebook-item-desc{font-size:12.5px;color:var(--text-muted);margin-top:3px;line-height:1.4;}
+  .mb-mebook-item-meta{font-size:11.5px;color:var(--green);font-weight:600;margin-top:5px;}
+
+  .mb-mebook-tabs{
+    display:flex;gap:6px;margin-bottom:14px;overflow-x:auto;
+    padding-bottom:4px;
+  }
+  .mb-mebook-tabs::-webkit-scrollbar{height:0;}
+  .mb-mebook-tab{
+    padding:7px 14px;border-radius:20px;font-size:13.5px;font-weight:600;
+    background:var(--card);color:var(--text-muted);white-space:nowrap;
+    border:1px solid var(--border);transition:all .2s ease;
+  }
+  .mb-mebook-tab.active{background:var(--green);color:#fff;border-color:var(--green);}
+  .mb-mebook-tab:hover:not(.active){background:var(--hover);}
+
+  /* Modal */
+  .mb-modal-overlay{
+    position:fixed;inset:0;background:rgba(15,23,42,.5);backdrop-filter:blur(3px);
+    z-index:1300;display:flex;align-items:center;justify-content:center;padding:16px;
+    opacity:0;visibility:hidden;transition:opacity .28s ease,visibility .28s ease;
+  }
+  .mb-modal-overlay.open{opacity:1;visibility:visible;}
+  .mb-modal{
+    background:var(--modal-bg);border-radius:14px;width:100%;max-width:520px;
+    box-shadow:var(--shadow-lg);transform:scale(.94);transition:transform .28s cubic-bezier(.2,.8,.3,1);
+    max-height:90vh;overflow-y:auto;
+  }
+  .mb-modal-overlay.open .mb-modal{transform:scale(1);}
+  .mb-modal-head{
+    display:flex;align-items:center;justify-content:center;position:relative;
+    padding:14px;border-bottom:1px solid var(--border);font-size:18px;font-weight:700;color:var(--text);
+  }
+  .mb-modal-close{
+    position:absolute;right:12px;top:50%;transform:translateY(-50%);
+    width:34px;height:34px;border-radius:50%;background:var(--input-bg);
+    display:flex;align-items:center;justify-content:center;
+  }
+  .mb-modal-close:hover{background:var(--border);}
+  .mb-modal-close svg{width:15px;height:15px;fill:var(--text);}
+  .mb-modal-body{padding:16px;}
+  .mb-modal-user{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+  .mb-modal-user img{width:42px;height:42px;border-radius:50%;object-fit:cover;background:#cbd5e1;}
+  .mb-modal-user b{font-size:15px;color:var(--text);}
+  .mb-modal-textarea{
+    width:100%;min-height:110px;border:none;outline:none;resize:none;
+    font-size:17px;line-height:1.4;padding:6px 0;background:transparent;color:var(--text);
+  }
+  .mb-modal-textarea::placeholder{color:#9ca3af;}
+  .mb-movie-tag{
+    display:flex;align-items:center;gap:8px;background:rgba(22,163,74,.1);
+    border:1px solid rgba(22,163,74,.3);border-radius:9px;padding:9px 12px;margin-bottom:10px;
+  }
+  .mb-movie-tag svg{width:18px;height:18px;fill:var(--green);flex-shrink:0;}
+  .mb-movie-tag input{border:none;outline:none;background:transparent;flex:1;font-size:14px;font-weight:500;color:var(--text);}
+  .mb-upload-box{
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;
+    border:2px dashed var(--border);border-radius:12px;padding:26px;color:var(--text-muted);
+    cursor:pointer;transition:border-color .2s ease,background .2s ease;text-align:center;
+  }
+  .mb-upload-box:hover{border-color:var(--green);background:rgba(22,163,74,.05);}
+  .mb-upload-box svg{width:36px;height:36px;fill:var(--green);}
+  .mb-upload-box b{font-size:14.5px;color:var(--text);}
+  .mb-upload-box small{font-size:12.5px;}
+  .mb-modal-foot{padding:12px 16px 16px;display:flex;gap:10px;}
+  .mb-modal-foot .mb-btn{flex:1;padding:11px;}
+  .mb-preview{position:relative;border-radius:12px;overflow:hidden;margin-top:10px;background:#000;}
+  .mb-preview img{width:100%;max-height:280px;object-fit:contain;}
+  .mb-preview-remove{
+    position:absolute;top:8px;right:8px;width:30px;height:30px;border-radius:50%;
+    background:rgba(0,0,0,.65);display:flex;align-items:center;justify-content:center;
+  }
+  .mb-preview-remove svg{width:14px;height:14px;fill:#fff;}
+
+  /* Chat */
+  .mb-chat-wrap{background:var(--card);border-radius:12px;box-shadow:var(--shadow);height:calc(100vh - 160px);display:flex;overflow:hidden;}
+  .mb-chat-list{
+    width:300px;border-right:1px solid var(--border);overflow-y:auto;flex-shrink:0;
+  }
+  .mb-chat-item{
+    display:flex;gap:10px;padding:12px 14px;cursor:pointer;transition:background .18s ease;
+    border-bottom:1px solid var(--border);position:relative;
+  }
+  .mb-chat-item:hover{background:var(--hover);}
+  .mb-chat-item.active{background:rgba(22,163,74,.12);}
+  .mb-chat-item img{width:44px;height:44px;border-radius:50%;object-fit:cover;background:#cbd5e1;flex-shrink:0;}
+  .mb-chat-item-body{flex:1;min-width:0;}
+  .mb-chat-item-name{font-size:14.5px;font-weight:600;margin-bottom:2px;color:var(--text);}
+  .mb-chat-item-last{font-size:13px;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .mb-chat-item-time{font-size:11px;color:var(--text-muted);flex-shrink:0;}
+  .mb-chat-window{flex:1;display:flex;flex-direction:column;min-width:0;}
+  .mb-chat-head{
+    display:flex;align-items:center;gap:10px;padding:12px 16px;
+    border-bottom:1px solid var(--border);flex-shrink:0;
+  }
+  .mb-chat-head img{width:40px;height:40px;border-radius:50%;object-fit:cover;background:#cbd5e1;}
+  .mb-chat-head-info{flex:1;}
+  .mb-chat-head-name{font-size:15px;font-weight:700;color:var(--text);}
+  .mb-chat-head-status{font-size:12.5px;color:var(--green);}
+  .mb-chat-body{
+    flex:1;overflow-y:auto;padding:16px;background:var(--chat-body-bg);
+    display:flex;flex-direction:column;gap:8px;
+  }
+  .mb-chat-body::-webkit-scrollbar{width:6px;}
+  .mb-chat-body::-webkit-scrollbar-thumb{background:var(--border);border-radius:10px;}
+  .mb-bubble{
+    max-width:65%;padding:9px 14px;border-radius:18px;font-size:14.5px;line-height:1.4;
+    word-wrap:break-word;animation:bubbleIn .22s ease;
+  }
+  @keyframes bubbleIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
+  .mb-bubble.me{align-self:flex-end;background:var(--green);color:#fff;border-bottom-right-radius:5px;}
+  .mb-bubble.them{align-self:flex-start;background:var(--bubble-them-bg);color:var(--text);border-bottom-left-radius:5px;box-shadow:0 1px 2px rgba(0,0,0,.08);}
+  .mb-bubble-time{font-size:10.5px;opacity:.7;margin-top:3px;display:block;text-align:right;}
+  .mb-chat-input{
+    display:flex;gap:10px;padding:12px 16px;border-top:1px solid var(--border);
+    background:var(--card);flex-shrink:0;
+  }
+  .mb-chat-input input{
+    flex:1;background:var(--input-bg);border:none;border-radius:22px;
+    padding:11px 16px;font-size:14.5px;outline:none;color:var(--text);
+  }
+  .mb-chat-input button{
+    width:44px;height:44px;border-radius:50%;background:var(--green);color:#fff;
+    display:flex;align-items:center;justify-content:center;transition:filter .18s ease;
+  }
+  .mb-chat-input button:hover{filter:brightness(1.1);}
+  .mb-chat-input button svg{width:20px;height:20px;fill:#fff;}
+  .mb-chat-empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--text-muted);gap:10px;}
+  .mb-chat-empty svg{width:60px;height:60px;fill:var(--border);}
+
+  /* Toast */
+  .mb-toast{
+    position:fixed;bottom:24px;left:50%;transform:translate(-50%,80px);
+    background:#0f172a;color:#fff;padding:12px 22px;border-radius:10px;
+    font-size:14px;font-weight:500;z-index:6000;opacity:0;
+    transition:transform .35s cubic-bezier(.2,.8,.3,1),opacity .35s ease;
+    box-shadow:var(--shadow-lg);display:flex;align-items:center;gap:8px;
+    max-width:90vw;
+  }
+  .mb-toast.show{transform:translate(-50%,0);opacity:1;}
+  .mb-toast svg{width:17px;height:17px;fill:#22c55e;flex-shrink:0;}
+
+  .mb-empty{
+    text-align:center;padding:50px 20px;color:var(--text-muted);
+    background:var(--card);border-radius:12px;box-shadow:var(--shadow);
+  }
+  .mb-empty svg{width:52px;height:52px;fill:var(--border);margin:0 auto 12px;}
+  .mb-loading{text-align:center;padding:40px;color:var(--text-muted);}
+
+  /* Theme toggle in settings */
+  .mb-theme-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 4px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+  }
+  .mb-theme-row:last-child { border-bottom: none; }
+  .mb-theme-row .mb-setting-txt h4 { margin-bottom: 2px; }
+
+  /* Responsive */
+  @media(max-width:1100px){
+    .mb-layout{grid-template-columns:240px minmax(0,1fr);}
+    .mb-right{display:none;}
+  }
+  @media(max-width:820px){
+    .mb-layout{grid-template-columns:minmax(0,1fr);padding:74px 10px 30px;}
+    .mb-sidebar{display:none;}
+    .mb-chat-list{width:100%;}
+    .mb-chat-list.hide-mobile{display:none;}
+    .mb-chat-window.hide-mobile{display:none;}
+  }
+  @media(max-width:600px){
+    .mb-logo-text{font-size:19px;}
+    .mb-profile-avatar-wrap img{width:100px;height:100px;}
+    .mb-profile-name{font-size:21px;}
+    .mb-profile-info{margin-top:-44px;}
+    .mb-friends-grid{grid-template-columns:1fr;}
+    .mb-mebook-grid{grid-template-columns:1fr 1fr;}
+  }
+</style>
+</head>
+<body>
+
+<!-- ================= AUTH SCREEN ================= -->
+<div class="auth-wrap" id="authScreen">
+  <div class="auth-card" id="authCard">
+    <div class="auth-logo">
+      <img src="https://i.postimg.cc/1XQQ8qRK/file-00000000b2708211900200b56e0579e1.png" alt="MeBook">
+      <div class="mb-logo-text"><span class="me">Me</span><span class="book">Book</span></div>
+    </div>
+    <p class="auth-sub">Movie lovers' social network 🎬</p>
+
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tabSignin" onclick="mbSwitchAuth('signin')">Sign In</button>
+      <button class="auth-tab" id="tabSignup" onclick="mbSwitchAuth('signup')">Sign Up</button>
+    </div>
+
+    <!-- Sign In -->
+    <form id="formSignin" onsubmit="mbSignIn(event)">
+      <div class="auth-field">
+        <label>Email</label>
+        <input type="email" id="siEmail" required placeholder="you@example.com">
+      </div>
+      <div class="auth-field">
+        <label>Password</label>
+        <input type="password" id="siPass" required placeholder="••••••••" minlength="6">
+      </div>
+      <button type="submit" class="auth-btn" id="siBtn">Sign In</button>
+      <div class="auth-err" id="siErr"></div>
+    </form>
+
+    <!-- Sign Up -->
+    <form id="formSignup" style="display:none" onsubmit="mbSignUp(event)">
+      <div class="auth-field">
+        <label>Full Name</label>
+        <input type="text" id="suName" required placeholder="Your name" minlength="2">
+      </div>
+      <div class="auth-field">
+        <label>Email</label>
+        <input type="email" id="suEmail" required placeholder="you@example.com">
+      </div>
+      <div class="auth-field">
+        <label>Password (min 6 chars)</label>
+        <input type="password" id="suPass" required placeholder="••••••••" minlength="6">
+      </div>
+      <button type="submit" class="auth-btn" id="suBtn">Create Account</button>
+      <div class="auth-err" id="suErr"></div>
+    </form>
+
+    <div class="auth-divider">OR</div>
+
+    <button class="auth-google" onclick="mbGoogleSignIn()">
+      <svg viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3c-1.6 4.6-6 8-11.3 8-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.1 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.2-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.1 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2c-2 1.5-4.5 2.4-7.2 2.4-5.2 0-9.6-3.3-11.3-7.9l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.1-4.1 5.5l6.2 5.2C41 35.4 44 30.1 44 24c0-1.2-.1-2.4-.4-3.5z"/></svg>
+      Continue with Google
+    </button>
+  </div>
+</div>
+
+<!-- ================= HEADER ================= -->
+<header class="mb-header" id="mbHeader" style="display:none">
+  <div class="mb-header-left">
+    <img class="mb-logo-img" src="https://i.postimg.cc/1XQQ8qRK/file-00000000b2708211900200b56e0579e1.png" alt="MeBook Logo">
+    <div class="mb-logo-text"><span class="me">Me</span><span class="book">Book</span></div>
+  </div>
+
+  <div class="mb-header-right">
+    <button class="mb-icon-btn" title="Messages" onclick="mbGo('messages')">
+      <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/></svg>
+      <span class="mb-badge-dot" id="msgBadge" style="display:none">0</span>
+    </button>
+    <button class="mb-icon-btn" title="Settings" onclick="mbGo('settings')">
+      <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.49.49 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.48.48 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+    </button>
+    <button class="mb-avatar-btn" title="Profile" onclick="mbGo('profile')">
+      <img id="hdrAvatar" src="https://i.pravatar.cc/80?img=12" alt="Profile">
+    </button>
+    <button class="mb-icon-btn" title="Menu" onclick="mbToggleDrawer()">
+      <svg viewBox="0 0 24 24"><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>
+    </button>
+  </div>
+</header>
+
+<!-- DRAWER -->
+<div class="mb-overlay" id="mbOverlay" onclick="mbToggleDrawer()"></div>
+<aside class="mb-drawer" id="mbDrawer">
+  <div class="mb-drawer-head">
+    <img src="https://i.postimg.cc/1XQQ8qRK/file-00000000b2708211900200b56e0579e1.png" alt="MeBook">
+    <div class="mb-logo-text"><span class="me">Me</span><span class="book">Book</span></div>
+    <button class="mb-drawer-close" onclick="mbToggleDrawer()">
+      <svg viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+    </button>
+  </div>
+  <div class="mb-drawer-divider"></div>
+  <nav class="mb-drawer-nav">
+    <button class="mb-nav-item active" data-view="home" onclick="mbGo('home')">
+      <span class="mb-nav-ico"><svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg></span>
+      Home
+    </button>
+    <button class="mb-nav-item" data-view="friends" onclick="mbGo('friends')">
+      <span class="mb-nav-ico"><svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg></span>
+      Friends
+      <span class="mb-nav-badge" id="reqBadge" style="display:none">0</span>
+    </button>
+    <button class="mb-nav-item" data-view="messages" onclick="mbGo('messages')">
+      <span class="mb-nav-ico"><svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/></svg></span>
+      Messages
+      <span class="mb-nav-badge" id="msgBadge2" style="display:none">0</span>
+    </button>
+
+    <!-- ★★★ NEW: MeBook Drawer Item ★★★ -->
+    <button class="mb-nav-item" data-view="mebook" onclick="mbGo('mebook')">
+      <span class="mb-nav-ico">
+        <svg viewBox="0 0 24 24">
+          <path d="M21 5c-1.11-.35-2.33-.5-3.5-.5-1.95 0-4.05.4-5.5 1.5-1.45-1.1-3.55-1.5-5.5-1.5S2.45 4.9 1 6v14.65c0 .25.25.5.5.5.1 0 .15-.05.25-.05C3.1 20.45 5.05 20 6.5 20c1.95 0 4.05.4 5.5 1.5 1.35-.85 3.8-1.5 5.5-1.5 1.65 0 3.35.3 4.75 1.05.1.05.15.05.25.05.25 0 .5-.25.5-.5V6c-.6-.45-1.25-.75-2-1zm0 13.5c-1.1-.35-2.3-.5-3.5-.5-1.7 0-4.15.65-5.5 1.5V8c1.35-.85 3.8-1.5 5.5-1.5 1.2 0 2.4.15 3.5.5v11.5z"/>
+        </svg>
+      </span>
+      MeBook
+    </button>
+
+    <button class="mb-nav-item" data-view="settings" onclick="mbGo('settings')">
+      <span class="mb-nav-ico"><svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.49.49 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.48.48 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg></span>
+      Settings
+    </button>
+    <button class="mb-nav-item" data-view="community" onclick="mbGo('community')">
+      <span class="mb-nav-ico"><svg viewBox="0 0 24 24"><path d="M21 6h-2v9H6v2c0 .55.45 1 1 1h11l4 4V7c0-.55-.45-1-1-1zm-4 6V3c0-.55-.45-1-1-1H3c-.55 0-1 .45-1 1v14l4-4h10c.55 0 1-.45 1-1z"/></svg></span>
+      MeBook Community
+    </button>
+    <button class="mb-nav-item" data-view="profile" onclick="mbGo('profile')">
+      <span class="mb-nav-ico"><svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></span>
+      Profile
+    </button>
+  </nav>
+  <div class="mb-drawer-divider"></div>
+  <div class="mb-drawer-foot">
+    <span>MeBook</span><span class="dot"></span><span>Real-time</span><span class="dot"></span><span>v2.0</span>
+  </div>
+</aside>
+
+<!-- ================= MAIN LAYOUT ================= -->
+<div class="mb-layout" id="mbLayout" style="display:none">
+  <aside class="mb-sidebar">
+    <button class="mb-side-item active" data-view="home" onclick="mbGo('home')">
+      <span class="mb-side-ico"><svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg></span> Home
+    </button>
+    <button class="mb-side-item" data-view="friends" onclick="mbGo('friends')">
+      <span class="mb-side-ico"><svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg></span> Friends
+    </button>
+    <button class="mb-side-item" data-view="messages" onclick="mbGo('messages')">
+      <span class="mb-side-ico"><svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg></span> Messages
+    </button>
+    <div class="mb-side-divider"></div>
+
+    <!-- ★★★ NEW: MeBook Sidebar Item ★★★ -->
+    <button class="mb-side-item" data-view="mebook" onclick="mbGo('mebook')">
+      <span class="mb-side-ico">
+        <svg viewBox="0 0 24 24">
+          <path d="M21 5c-1.11-.35-2.33-.5-3.5-.5-1.95 0-4.05.4-5.5 1.5-1.45-1.1-3.55-1.5-5.5-1.5S2.45 4.9 1 6v14.65c0 .25.25.5.5.5.1 0 .15-.05.25-.05C3.1 20.45 5.05 20 6.5 20c1.95 0 4.05.4 5.5 1.5 1.35-.85 3.8-1.5 5.5-1.5 1.65 0 3.35.3 4.75 1.05.1.05.15.05.25.05.25 0 .5-.25.5-.5V6c-.6-.45-1.25-.75-2-1zm0 13.5c-1.1-.35-2.3-.5-3.5-.5-1.7 0-4.15.65-5.5 1.5V8c1.35-.85 3.8-1.5 5.5-1.5 1.2 0 2.4.15 3.5.5v11.5z"/>
+        </svg>
+      </span> MeBook
+    </button>
+
+    <button class="mb-side-item" data-view="community" onclick="mbGo('community')">
+      <span class="mb-side-ico"><svg viewBox="0 0 24 24"><path d="M21 6h-2v9H6v2c0 .55.45 1 1 1h11l4 4V7c0-.55-.45-1-1-1z"/></svg></span> Community
+    </button>
+    <button class="mb-side-item" data-view="profile" onclick="mbGo('profile')">
+      <span class="mb-side-ico"><svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></span> Profile
+    </button>
+    <button class="mb-side-item" data-view="settings" onclick="mbGo('settings')">
+      <span class="mb-side-ico"><svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.49.49 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.48.48 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg></span> Settings
+    </button>
+  </aside>
+
+  <main class="mb-main">
+    <!-- HOME -->
+    <section class="mb-view active" id="view-home">
+      <div class="mb-composer">
+        <div class="mb-composer-top">
+          <img class="mb-composer-avatar" id="composerAvatar" src="https://i.pravatar.cc/80?img=12" alt="You">
+          <button class="mb-composer-input" onclick="mbOpenComposer()">Share a movie screenshot or review...</button>
+        </div>
+        <div class="mb-composer-actions">
+          <button class="mb-comp-action" onclick="mbOpenComposer()">
+            <svg viewBox="0 0 24 24" fill="#16a34a"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
+            Photo
+          </button>
+          <button class="mb-comp-action" onclick="mbOpenComposer()">
+            <svg viewBox="0 0 24 24" fill="#f59e0b"><path d="M18 4l2 4h-3l-2-4h-2l2 4h-3l-2-4H8l2 4H7L5 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4h-4z"/></svg>
+            Movie Tag
+          </button>
+          <button class="mb-comp-action" onclick="mbOpenComposer()">
+            <svg viewBox="0 0 24 24" fill="#8b5cf6"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg>
+            Review
+          </button>
+        </div>
+      </div>
+      <div id="mbFeed"><div class="mb-loading">Loading feed...</div></div>
+    </section>
+
+    <!-- FRIENDS -->
+    <section class="mb-view" id="view-friends">
+      <h1 class="mb-page-title">
+        <svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+        Friends
+      </h1>
+
+      <div class="mb-search-box">
+        <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+        <input type="text" placeholder="Search all MeBook users..." oninput="mbFilterFriends(this.value)">
+      </div>
+
+      <div class="mb-card" style="margin-bottom:16px;" id="requestsCard">
+        <div class="mb-card-title">Friend Requests</div>
+        <div id="mbRequests"><div class="mb-loading" style="padding:10px;">Loading...</div></div>
+      </div>
+
+      <div class="mb-card" style="margin-bottom:16px;" id="myFriendsCard" style="display:none;">
+        <div class="mb-card-title">My Friends</div>
+        <div id="mbMyFriends"></div>
+      </div>
+
+      <div class="mb-card-title" style="font-size:18px;margin-bottom:10px;">All MeBook Users</div>
+      <div class="mb-friends-grid" id="mbFriendGrid"><div class="mb-loading">Loading users...</div></div>
+    </section>
+
+    <!-- MESSAGES -->
+    <section class="mb-view" id="view-messages">
+      <h1 class="mb-page-title">
+        <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
+        Messages
+      </h1>
+      <div class="mb-chat-wrap">
+        <div class="mb-chat-list" id="chatList"><div class="mb-loading" style="padding:20px;">Loading...</div></div>
+        <div class="mb-chat-window" id="chatWindow">
+          <div class="mb-chat-empty">
+            <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
+            <b>Select a conversation</b>
+            <p style="font-size:13px;">Choose someone to start chatting</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★ -->
+    <!-- ★★★  MeBook NEW PAGE  ★★★ -->
+    <!-- ★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★ -->
+    <section class="mb-view" id="view-mebook">
+      <div class="mb-mebook-hero">
+        <h2>📖 Welcome to MeBook</h2>
+        <p>Your personal movie library, watchlist, and review hub — all in one place.</p>
+        <span class="mb-mebook-badge">🎬 Powered by MeBook Community</span>
+      </div>
+
+      <div class="mb-mebook-grid">
+        <div class="mb-mebook-stat">
+          <div class="num">128</div>
+          <div class="lbl">Movies Reviewed</div>
+        </div>
+        <div class="mb-mebook-stat">
+          <div class="num">42</div>
+          <div class="lbl">In Watchlist</div>
+        </div>
+        <div class="mb-mebook-stat">
+          <div class="num">17</div>
+          <div class="lbl">Reviews Written</div>
+        </div>
+        <div class="mb-mebook-stat">
+          <div class="num">9</div>
+          <div class="lbl">Favorites</div>
+        </div>
+      </div>
+
+      <div class="mb-mebook-tabs">
+        <button class="mb-mebook-tab active" onclick="mbMebookTab(this, 'featured')">⭐ Featured</button>
+        <button class="mb-mebook-tab" onclick="mbMebookTab(this, 'watchlist')">📌 Watchlist</button>
+        <button class="mb-mebook-tab" onclick="mbMebookTab(this, 'favorites')">❤️ Favorites</button>
+        <button class="mb-mebook-tab" onclick="mbMebookTab(this, 'notes')">📝 My Notes</button>
+      </div>
+
+      <div id="mbMebookContent">
+        <div class="mb-card" style="margin-bottom:16px;">
+          <div class="mb-card-title">🎬 Editor's Picks This Week</div>
+          <div class="mb-mebook-list">
+            <div class="mb-mebook-item">
+              <img src="https://image.tmdb.org/t/p/w200/8cdWjvZQUExUUTzyp4t6EDMubfO.jpg" onerror="this.src='https://picsum.photos/seed/dune/200/260'">
+              <div class="mb-mebook-item-body">
+                <div class="mb-mebook-item-title">Dune: Part Two</div>
+                <div class="mb-mebook-item-desc">Paul Atreides unites with Chani and the Fremen while seeking revenge against the conspirators who destroyed his family.</div>
+                <div class="mb-mebook-item-meta">⭐ 8.7 • Sci-Fi • 2024</div>
+              </div>
+            </div>
+            <div class="mb-mebook-item">
+              <img src="https://image.tmdb.org/t/p/w200/iuFNMS8U5cb6xfzi51Dbkovj7vM.jpg" onerror="this.src='https://picsum.photos/seed/oppen/200/260'">
+              <div class="mb-mebook-item-body">
+                <div class="mb-mebook-item-title">Oppenheimer</div>
+                <div class="mb-mebook-item-desc">The story of American scientist J. Robert Oppenheimer and his role in the development of the atomic bomb.</div>
+                <div class="mb-mebook-item-meta">⭐ 8.5 • Biography • 2023</div>
+              </div>
+            </div>
+            <div class="mb-mebook-item">
+              <img src="https://image.tmdb.org/t/p/w200/1E5baAaEse26fej7uHcjOgEE2t2.jpg" onerror="this.src='https://picsum.photos/seed/inter/200/260'">
+              <div class="mb-mebook-item-body">
+                <div class="mb-mebook-item-title">Interstellar</div>
+                <div class="mb-mebook-item-desc">When Earth becomes uninhabitable, a team of explorers travels through a wormhole in search of a new home.</div>
+                <div class="mb-mebook-item-meta">⭐ 8.7 • Adventure • 2014</div>
+              </div>
+            </div>
+            <div class="mb-mebook-item">
+              <img src="https://image.tmdb.org/t/p/w200/gEU2QniE6E77NI6lCU6MxlNBvIx.jpg" onerror="this.src='https://picsum.photos/seed/incept/200/260'">
+              <div class="mb-mebook-item-body">
+                <div class="mb-mebook-item-title">Inception</div>
+                <div class="mb-mebook-item-desc">A thief who steals corporate secrets through dream-sharing technology is given the inverse task of planting an idea.</div>
+                <div class="mb-mebook-item-meta">⭐ 8.8 • Sci-Fi • 2010</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mb-card">
+          <div class="mb-card-title">💡 Quick Actions</div>
+          <div class="mb-mebook-list">
+            <div class="mb-mebook-item" onclick="mbOpenComposer()">
+              <div style="width:64px;height:84px;background:linear-gradient(135deg,#16a34a,#0f172a);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="#fff"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+              </div>
+              <div class="mb-mebook-item-body">
+                <div class="mb-mebook-item-title">Add New Review</div>
+                <div class="mb-mebook-item-desc">Share your thoughts on a movie you just watched.</div>
+                <div class="mb-mebook-item-meta">Tap to create →</div>
+              </div>
+            </div>
+            <div class="mb-mebook-item" onclick="mbGo('community')">
+              <div style="width:64px;height:84px;background:linear-gradient(135deg,#8b5cf6,#0f172a);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="#fff"><path d="M21 6h-2v9H6v2c0 .55.45 1 1 1h11l4 4V7c0-.55-.45-1-1-1zm-4 6V3c0-.55-.45-1-1-1H3c-.55 0-1 .45-1 1v14l4-4h10c.55 0 1-.45 1-1z"/></svg>
+              </div>
+              <div class="mb-mebook-item-body">
+                <div class="mb-mebook-item-title">Visit Community</div>
+                <div class="mb-mebook-item-desc">See what other movie lovers are talking about.</div>
+                <div class="mb-mebook-item-meta">Explore →</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <!-- ★★★ END MeBook NEW PAGE ★★★ -->
+
+    <!-- PROFILE -->
+    <section class="mb-view" id="view-profile">
+      <div class="mb-profile-head">
+        <div class="mb-profile-cover" onclick="mbChangeCover()">
+          <img id="mbCoverImg" src="https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=1200&q=80" alt="Cover">
+          <div class="mb-profile-cover-add">
+            <svg viewBox="0 0 24 24"><path d="M9 2L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-3.17L15 2H9zm3 15c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"/></svg>
+            Change Cover
+          </div>
+        </div>
+        <div class="mb-profile-info">
+          <div class="mb-profile-avatar-wrap" onclick="mbChangeProfilePhoto()">
+            <img id="mbProfileImg" src="https://i.pravatar.cc/160?img=12" alt="Profile">
+            <div class="mb-profile-avatar-add">
+              <svg viewBox="0 0 24 24"><path d="M9 2L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-3.17L15 2H9zm3 15c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"/></svg>
+            </div>
+          </div>
+          <div class="mb-profile-text">
+            <div class="mb-profile-name" id="profName">Loading...</div>
+            <div class="mb-profile-bio" id="profBio">Movie lover</div>
+          </div>
+        </div>
+        <div class="mb-profile-actions" id="profActions">
+          <button class="mb-btn mb-btn-primary" onclick="mbOpenComposer()">＋ Create Post</button>
+          <button class="mb-btn mb-btn-secondary" onclick="mbEditProfile()">Edit Profile</button>
+        </div>
+      </div>
+
+      <div class="mb-card" style="margin-bottom:16px;">
+        <div class="mb-card-title">Personal Information</div>
+        <div class="mb-info-grid" id="profInfo"></div>
+      </div>
+
+      <div class="mb-card" style="margin-bottom:16px;">
+        <div class="mb-card-title">Privacy</div>
+        <div class="mb-privacy-toggle">
+          <span>Personal information visible to others</span>
+          <label class="mb-switch"><input type="checkbox" id="pv1" checked onchange="mbSavePrivacy()"><span class="mb-slider"></span></label>
+        </div>
+        <div class="mb-privacy-toggle">
+          <span>Show my posts on my profile</span>
+          <label class="mb-switch"><input type="checkbox" id="pv2" checked onchange="mbSavePrivacy()"><span class="mb-slider"></span></label>
+        </div>
+        <div class="mb-privacy-toggle">
+          <span>Allow friend requests from anyone</span>
+          <label class="mb-switch"><input type="checkbox" id="pv3" checked onchange="mbSavePrivacy()"><span class="mb-slider"></span></label>
+        </div>
+      </div>
+
+      <div class="mb-card-title" style="font-size:18px;margin-bottom:10px;">My Posts</div>
+      <div id="mbMyPosts"></div>
+    </section>
+
+    <!-- SETTINGS -->
+    <section class="mb-view" id="view-settings">
+      <h1 class="mb-page-title">
+        <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.49.49 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.48.48 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+        Settings
+      </h1>
+
+      <div class="mb-card mb-settings-group">
+        <div class="mb-card-title">Account</div>
+        <div class="mb-setting-row" onclick="mbEditProfile()">
+          <span class="mb-setting-ico"><svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></span>
+          <div class="mb-setting-txt"><h4>Edit Profile</h4><p>Name, bio, profile & cover photo</p></div>
+          <svg class="chev" viewBox="0 0 24 24"><path d="M8.59 16.59 13.17 12 8.59 7.41 10 6l6 6-6 6z"/></svg>
+        </div>
+        <div class="mb-setting-row" onclick="mbResetPassword()">
+          <span class="mb-setting-ico"><svg viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zM9 8V6c0-1.66 1.34-3 3-3s3 1.34 3 3v2H9z"/></svg></span>
+          <div class="mb-setting-txt"><h4>Password & Security</h4><p>Reset password via email</p></div>
+          <svg class="chev" viewBox="0 0 24 24"><path d="M8.59 16.59 13.17 12 8.59 7.41 10 6l6 6-6 6z"/></svg>
+        </div>
+        <div class="mb-setting-row" onclick="mbToast('Privacy settings synced')">
+          <span class="mb-setting-ico"><svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg></span>
+          <div class="mb-setting-txt"><h4>Privacy</h4><p>Control who sees your posts & info</p></div>
+          <svg class="chev" viewBox="0 0 24 24"><path d="M8.59 16.59 13.17 12 8.59 7.41 10 6l6 6-6 6z"/></svg>
+        </div>
+      </div>
+
+      <div class="mb-card mb-settings-group">
+        <div class="mb-card-title">Preferences</div>
+        <div class="mb-theme-row">
+          <div class="mb-setting-txt">
+            <h4>Dark Mode</h4>
+            <p>Switch between light and dark theme</p>
+          </div>
+          <label class="mb-switch">
+            <input type="checkbox" id="themeToggle" onchange="mbToggleTheme(this.checked)">
+            <span class="mb-slider"></span>
+          </label>
+        </div>
+        <div class="mb-setting-row" onclick="mbToast('Language: English')">
+          <span class="mb-setting-ico"><svg viewBox="0 0 24 24"><path d="M12.87 15.07l-2.54-2.51.03-.03A17.52 17.52 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11.76-2.04zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2l-4.5-12z"/></svg></span>
+          <div class="mb-setting-txt"><h4>Language</h4><p>English (US)</p></div>
+          <svg class="chev" viewBox="0 0 24 24"><path d="M8.59 16.59 13.17 12 8.59 7.41 10 6l6 6-6 6z"/></svg>
+        </div>
+      </div>
+
+      <div class="mb-card mb-settings-group">
+        <div class="mb-card-title">Support</div>
+        <div class="mb-setting-row" onclick="mbToast('Help center — coming soon')">
+          <span class="mb-setting-ico"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26A1.99 1.99 0 0 0 12 7a2 2 0 0 0-2 2H8a4 4 0 0 1 8 0c0 .88-.36 1.68-.93 2.25z"/></svg></span>
+          <div class="mb-setting-txt"><h4>Help Center</h4><p>FAQs and support</p></div>
+          <svg class="chev" viewBox="0 0 24 24"><path d="M8.59 16.59 13.17 12 8.59 7.41 10 6l6 6-6 6z"/></svg>
+        </div>
+        <div class="mb-setting-row" onclick="mbSignOut()">
+          <span class="mb-setting-ico" style="background:#fee2e2;"><svg viewBox="0 0 24 24" fill="#dc2626"><path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/></svg></span>
+          <div class="mb-setting-txt"><h4 style="color:#dc2626;">Log Out</h4><p>Sign out of your MeBook account</p></div>
+          <svg class="chev" viewBox="0 0 24 24"><path d="M8.59 16.59 13.17 12 8.59 7.41 10 6l6 6-6 6z"/></svg>
+        </div>
+      </div>
+    </section>
+
+    <!-- COMMUNITY -->
+    <section class="mb-view" id="view-community">
+      <div class="mb-community-hero">
+        <h2>🎬 MeBook Community</h2>
+        <p>Official posts, announcements and featured reviews from the MeBook team.</p>
+      </div>
+      <div id="mbCommunityFeed"><div class="mb-loading">Loading community posts...</div></div>
+    </section>
+
+  </main>
+
+  <aside class="mb-right" id="mbRightSide">
+    <div class="mb-card">
+      <div class="mb-card-title">🔥 Trending Now</div>
+      <div class="mb-contact"><img src="https://image.tmdb.org/t/p/w92/8cdWjvZQUExUUTzyp4t6EDMubfO.jpg" onerror="this.src='https://picsum.photos/seed/m1/80'"><div><div class="mb-contact-name">Dune: Part Two</div><div style="font-size:12px;color:var(--text-muted);">⭐ 8.7 • Sci-Fi</div></div></div>
+      <div class="mb-contact"><img src="https://image.tmdb.org/t/p/w92/iuFNMS8U5cb6xfzi51Dbkovj7vM.jpg" onerror="this.src='https://picsum.photos/seed/m2/80'"><div><div class="mb-contact-name">Oppenheimer</div><div style="font-size:12px;color:var(--text-muted);">⭐ 8.5 • Biography</div></div></div>
+      <div class="mb-contact"><img src="https://image.tmdb.org/t/p/w92/1E5baAaEse26fej7uHcjOgEE2t2.jpg" onerror="this.src='https://picsum.photos/seed/m3/80'"><div><div class="mb-contact-name">Interstellar</div><div style="font-size:12px;color:var(--text-muted);">⭐ 8.7 • Adventure</div></div></div>
+    </div>
+    <div class="mb-card">
+      <div class="mb-card-title">👥 Online Friends</div>
+      <div id="mbOnlineList"><div class="mb-loading" style="padding:10px;font-size:13px;">Loading...</div></div>
+    </div>
+  </aside>
+</div>
+
+<!-- COMPOSER MODAL -->
+<div class="mb-modal-overlay" id="mbComposerOverlay">
+  <div class="mb-modal">
+    <div class="mb-modal-head">
+      Create Post
+      <button class="mb-modal-close" onclick="mbCloseComposer()">
+        <svg viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+      </button>
+    </div>
+    <div class="mb-modal-body">
+      <div class="mb-modal-user">
+        <img id="composerAvatar2" src="https://i.pravatar.cc/80?img=12" alt="You">
+        <div>
+          <b id="composerName">You</b>
+          <div style="font-size:12px;color:var(--text-muted);">Public</div>
+        </div>
+      </div>
+      <textarea class="mb-modal-textarea" id="mbPostText" placeholder="What's your take on this movie? Share your review..."></textarea>
+      <div class="mb-movie-tag">
+        <svg viewBox="0 0 24 24"><path d="M18 4l2 4h-3l-2-4h-2l2 4h-3l-2-4H8l2 4H7L5 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4h-4z"/></svg>
+        <input type="text" id="mbMovieName" placeholder="Movie name (e.g. Interstellar)">
+      </div>
+      <div id="mbUploadArea">
+        <div class="mb-upload-box" onclick="document.getElementById('mbFileInput').click()">
+          <svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
+          <b>Add movie screenshot / photo</b>
+          <small>PNG, JPG up to 10MB</small>
+        </div>
+        <input type="file" id="mbFileInput" accept="image/*" style="display:none" onchange="mbPreviewFile(event)">
+      </div>
+      <div id="mbPreviewWrap"></div>
+      <div id="mbUploadProgress" style="display:none;margin-top:10px;">
+        <div style="height:6px;background:var(--border);border-radius:3px;overflow:hidden;">
+          <div id="mbUploadBar" style="height:100%;width:0%;background:var(--green);transition:width .3s ease;"></div>
+        </div>
+        <div style="font-size:12px;color:var(--text-muted);margin-top:4px;" id="mbUploadLabel">Uploading...</div>
+      </div>
+    </div>
+    <div class="mb-modal-foot">
+      <button class="mb-btn mb-btn-secondary" onclick="mbCloseComposer()">Cancel</button>
+      <button class="mb-btn mb-btn-primary" id="mbPostBtn" onclick="mbSubmitPost()">Post</button>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT PROFILE MODAL -->
+<div class="mb-modal-overlay" id="mbEditModal">
+  <div class="mb-modal">
+    <div class="mb-modal-head">
+      Edit Profile
+      <button class="mb-modal-close" onclick="document.getElementById('mbEditModal').classList.remove('open')">
+        <svg viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+      </button>
+    </div>
+    <div class="mb-modal-body">
+      <div class="auth-field"><label>Full Name</label><input type="text" id="editName"></div>
+      <div class="auth-field"><label>Bio</label><input type="text" id="editBio" placeholder="Movie lover..."></div>
+      <div class="auth-field"><label>Location</label><input type="text" id="editLoc" placeholder="Dhaka, Bangladesh"></div>
+      <div class="auth-field"><label>Phone</label><input type="text" id="editPhone" placeholder="+880 ..."></div>
+    </div>
+    <div class="mb-modal-foot">
+      <button class="mb-btn mb-btn-secondary" onclick="document.getElementById('mbEditModal').classList.remove('open')">Cancel</button>
+      <button class="mb-btn mb-btn-primary" onclick="mbSaveProfile()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- USER PROFILE MODAL -->
+<div class="mb-modal-overlay" id="mbUserModal">
+  <div class="mb-modal" style="max-width:440px;">
+    <div class="mb-modal-head">
+      Profile
+      <button class="mb-modal-close" onclick="document.getElementById('mbUserModal').classList.remove('open')">
+        <svg viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+      </button>
+    </div>
+    <div class="mb-modal-body" id="mbUserModalBody"></div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="mb-toast" id="mbToast"><svg viewBox="0 0 24 24"><path d="M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg><span id="mbToastMsg">Done</span></div>
+
+<!-- ================= FIREBASE SDK ================= -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-analytics.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged, sendPasswordResetEmail, updateProfile } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, collection, doc, setDoc, getDoc, getDocs, addDoc, updateDoc, deleteDoc, onSnapshot, query, where, orderBy, serverTimestamp, arrayUnion, arrayRemove, increment } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBtBaUSIlXwJDWytaiOfal3ha7OmZEwuYM",
+  authDomain: "mvbdminiapp.firebaseapp.com",
+  projectId: "mvbdminiapp",
+  storageBucket: "mvbdminiapp.firebasestorage.app",
+  messagingSenderId: "668051748254",
+  appId: "1:668051748254:web:d4804b68429d853a0c928f",
+  measurementId: "G-HQZ9SL4RX8"
+};
+
+const app = initializeApp(firebaseConfig);
+try { getAnalytics(app); } catch(e){}
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+// Cloudinary
+const CLOUD_NAME = "xtbkyhrl";
+const UPLOAD_PRESET = "MeBook";
+
+// Global state
+let currentUser = null;
+let currentProfile = null;
+let unsubscribers = [];
+let activeChat = null;
+let chatUnsub = null;
+let replyToPost = null;
+
+// Expose to window for inline handlers
+window.auth = auth;
+window.db = db;
+
+/* ============= HELPERS ============= */
+const $ = id => document.getElementById(id);
+
+window.mbToast = function(msg){
+  const t = $('mbToast');
+  $('mbToastMsg').textContent = msg;
+  t.classList.add('show');
+  clearTimeout(window._toastT);
+  window._toastT = setTimeout(()=>t.classList.remove('show'), 2400);
+};
+
+function timeAgo(ts){
+  if(!ts) return 'just now';
+  const d = ts.toDate ? ts.toDate() : new Date(ts);
+  const s = Math.floor((Date.now() - d.getTime())/1000);
+  if(s < 60) return 'just now';
+  if(s < 3600) return Math.floor(s/60)+'m ago';
+  if(s < 86400) return Math.floor(s/3600)+'h ago';
+  if(s < 604800) return Math.floor(s/86400)+'d ago';
+  return d.toLocaleDateString();
+}
+function esc(s){
+  return String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+/* ============= CLOUDINARY UPLOAD ============= */
+async function cloudinaryUpload(file, onProgress){
+  const url = `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`;
+  const fd = new FormData();
+  fd.append('file', file);
+  fd.append('upload_preset', UPLOAD_PRESET);
+
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', url);
+    xhr.upload.onprogress = e => {
+      if(e.lengthComputable && onProgress) onProgress(Math.round(e.loaded/e.total*100));
+    };
+    xhr.onload = () => {
+      try{
+        const res = JSON.parse(xhr.responseText);
+        if(res.secure_url) resolve(res.secure_url);
+        else reject(new Error(res.error?.message || 'Upload failed'));
+      }catch(err){ reject(err); }
+    };
+    xhr.onerror = () => reject(new Error('Network error'));
+    xhr.send(fd);
+  });
+}
+
+/* ============= THEME ============= */
+window.mbToggleTheme = function(isDark){
+  if(isDark){
+    document.body.classList.add('dark-mode');
+    localStorage.setItem('mebook-theme','dark');
+  } else {
+    document.body.classList.remove('dark-mode');
+    localStorage.setItem('mebook-theme','light');
+  }
+};
+
+// Init theme from localStorage
+(function initTheme(){
+  const saved = localStorage.getItem('mebook-theme');
+  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const isDark = saved ? saved === 'dark' : prefersDark;
+  if(isDark){
+    document.body.classList.add('dark-mode');
+    const t = $('themeToggle');
+    if(t) t.checked = true;
+  }
+})();
+
+/* ============= Mebook Tab switcher ============= */
+window.mbMebookTab = function(btn, tab){
+  document.querySelectorAll('.mb-mebook-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  // Just a demo — different tab content can be rendered here later
+  const wrap = $('mbMebookContent');
+  if(tab === 'watchlist'){
+    mbToast('Watchlist coming soon');
+  } else if(tab === 'favorites'){
+    mbToast('Favorites coming soon');
+  } else if(tab === 'notes'){
+    mbToast('Notes coming soon');
+  }
+};
+
+/* ============= AUTH UI ============= */
+window.mbSwitchAuth = function(which){
+  $('tabSignin').classList.toggle('active', which === 'signin');
+  $('tabSignup').classList.toggle('active', which === 'signup');
+  $('formSignin').style.display = which === 'signin' ? '' : 'none';
+  $('formSignup').style.display = which === 'signup' ? '' : 'none';
+};
+
+function showAuthError(id, msg){
+  const el = $(id);
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'), 5000);
+}
+
+window.mbSignIn = async function(e){
+  e.preventDefault();
+  const btn = $('siBtn');
+  btn.disabled = true; btn.textContent = 'Signing in...';
+  try{
+    await signInWithEmailAndPassword(auth, $('siEmail').value.trim(), $('siPass').value);
+  }catch(err){
+    showAuthError('siErr', friendlyErr(err));
+    btn.disabled = false; btn.textContent = 'Sign In';
+  }
+};
+
+window.mbSignUp = async function(e){
+  e.preventDefault();
+  const btn = $('suBtn');
+  btn.disabled = true; btn.textContent = 'Creating...';
+  const name = $('suName').value.trim();
+  try{
+    const cred = await createUserWithEmailAndPassword(auth, $('suEmail').value.trim(), $('suPass').value);
+    await updateProfile(cred.user, { displayName: name });
+    await setDoc(doc(db, 'users', cred.user.uid), {
+      uid: cred.user.uid,
+      name: name,
+      email: cred.user.email,
+      photoURL: '',
+      coverURL: '',
+      bio: 'Movie lover 🎬',
+      location: '',
+      phone: '',
+      createdAt: serverTimestamp(),
+      privacy: { info:true, posts:true, requests:true }
+    });
+  }catch(err){
+    showAuthError('suErr', friendlyErr(err));
+    btn.disabled = false; btn.textContent = 'Create Account';
+  }
+};
+
+window.mbGoogleSignIn = async function(){
+  const provider = new GoogleAuthProvider();
+  try{
+    const cred = await signInWithPopup(auth, provider);
+    const ref = doc(db, 'users', cred.user.uid);
+    const snap = await getDoc(ref);
+    if(!snap.exists()){
+      await setDoc(ref, {
+        uid: cred.user.uid,
+        name: cred.user.displayName || 'User',
+        email: cred.user.email,
+        photoURL: cred.user.photoURL || '',
+        coverURL: '',
+        bio: 'Movie lover 🎬',
+        location: '',
+        phone: '',
+        createdAt: serverTimestamp(),
+        privacy: { info:true, posts:true, requests:true }
+      });
+    }
+  }catch(err){
+    mbToast(friendlyErr(err));
+  }
+};
+
+window.mbSignOut = async function(){
+  if(!confirm('Log out of MeBook?')) return;
+  try{
+    cleanupListeners();
+    await signOut(auth);
+  }catch(e){ mbToast(e.message); }
+};
+
+window.mbResetPassword = async function(){
+  if(!currentUser?.email) return;
+  try{
+    await sendPasswordResetEmail(auth, currentUser.email);
+    mbToast('Password reset email sent ✅');
+  }catch(e){ mbToast(e.message); }
+};
+
+function friendlyErr(err){
+  const m = err?.code || '';
+  if(m.includes('invalid-credential') || m.includes('wrong-password')) return 'Wrong email or password';
+  if(m.includes('user-not-found')) return 'No account found with this email';
+  if(m.includes('email-already-in-use')) return 'This email is already registered';
+  if(m.includes('weak-password')) return 'Password too weak (min 6 chars)';
+  if(m.includes('invalid-email')) return 'Invalid email address';
+  if(m.includes('popup-closed')) return 'Popup closed';
+  if(m.includes('network')) return 'Network error';
+  return err?.message || 'Something went wrong';
+}
+
+/* ============= AUTH STATE ============= */
+onAuthStateChanged(auth, async user => {
+  cleanupListeners();
+  if(user){
+    currentUser = user;
+    const ref = doc(db, 'users', user.uid);
+    let snap = await getDoc(ref);
+    if(!snap.exists()){
+      await setDoc(ref, {
+        uid: user.uid,
+        name: user.displayName || 'User',
+        email: user.email,
+        photoURL: user.photoURL || '',
+        coverURL: '',
+        bio: 'Movie lover 🎬',
+        location: '',
+        phone: '',
+        createdAt: serverTimestamp(),
+        privacy: { info:true, posts:true, requests:true }
+      });
+      snap = await getDoc(ref);
+    }
+    currentProfile = snap.data();
+    await startApp();
+  } else {
+    currentUser = null; currentProfile = null;
+    $('authScreen').style.display = 'flex';
+    $('mbHeader').style.display = 'none';
+    $('mbLayout').style.display = 'none';
+  }
+});
+
+/* ============= APP BOOT ============= */
+async function startApp(){
+  $('authScreen').style.display = 'none';
+  $('mbHeader').style.display = 'flex';
+  $('mbLayout').style.display = 'grid';
+
+  const av = currentProfile.photoURL || `https://ui-avatars.com/api/?background=16a34a&color=fff&name=${encodeURIComponent(currentProfile.name)}`;
+  $('hdrAvatar').src = av;
+  $('composerAvatar').src = av;
+  $('composerAvatar2').src = av;
+  $('composerName').textContent = currentProfile.name;
+  $('profName').textContent = currentProfile.name;
+  $('profBio').textContent = currentProfile.bio || 'Movie lover 🎬';
+
+  const t = $('themeToggle');
+  if(t) t.checked = document.body.classList.contains('dark-mode');
+
+  listenFeed();
+  listenFriends();
+  listenRequests();
+  listenMyFriends();
+  listenChats();
+  listenCommunity();
+  listenMyPosts();
+  renderProfileInfo();
+  loadPrivacy();
+}
+
+function cleanupListeners(){
+  unsubscribers.forEach(u => { try{ u(); }catch(e){} });
+  unsubscribers = [];
+  if(chatUnsub){ try{chatUnsub();}catch(e){} chatUnsub = null; }
+  activeChat = null;
+}
+
+/* ============= NAV ============= */
+window.mbGo = function(view){
+  document.querySelectorAll('.mb-view').forEach(v=>v.classList.remove('active'));
+  const t = $('view-'+view);
+  if(t) t.classList.add('active');
+  document.querySelectorAll('.mb-side-item').forEach(b=>{
+    b.classList.toggle('active', b.dataset.view === view);
+  });
+  document.querySelectorAll('.mb-nav-item').forEach(b=>{
+    b.classList.toggle('active', b.dataset.view === view);
+  });
+  $('mbDrawer').classList.remove('open');
+  $('mbOverlay').classList.remove('open');
+  window.scrollTo({top:0, behavior:'smooth'});
+};
+
+window.mbToggleDrawer = function(){
+  $('mbDrawer').classList.toggle('open');
+  $('mbOverlay').classList.toggle('open');
+};
+
+document.addEventListener('keydown', e => {
+  if(e.key === 'Escape'){
+    $('mbDrawer').classList.remove('open');
+    $('mbOverlay').classList.remove('open');
+    $('mbComposerOverlay').classList.remove('open');
+    $('mbEditModal').classList.remove('open');
+    $('mbUserModal').classList.remove('open');
+  }
+});
+
+/* ============= FEED ============= */
+function listenFeed(){
+  const q = query(collection(db, 'posts'), orderBy('createdAt', 'desc'));
+  const unsub = onSnapshot(q, snap => {
+    const feed = $('mbFeed');
+    feed.innerHTML = '';
+    if(snap.empty){
+      feed.innerHTML = `<div class="mb-empty">
+        <svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
+        <b>No posts yet</b>
+        <p style="font-size:14px;margin-top:4px;">Be the first to share a movie review!</p>
+      </div>`;
+      return;
+    }
+    snap.forEach(docSnap => renderPost({id:docSnap.id, ...docSnap.data()}, feed));
+  }, err => {
+    console.error(err);
+    $('mbFeed').innerHTML = `<div class="mb-empty">Error loading feed: ${esc(err.message)}</div>`;
+  });
+  unsubscribers.push(unsub);
+}
+
+function listenMyPosts(){
+  const q = query(collection(db, 'posts'), where('authorId', '==', currentUser.uid));
+  const unsub = onSnapshot(q, snap => {
+    const wrap = $('mbMyPosts');
+    wrap.innerHTML = '';
+    const arr = [];
+    snap.forEach(d => arr.push({id:d.id, ...d.data()}));
+    arr.sort((a,b) => (b.createdAt?.seconds||0) - (a.createdAt?.seconds||0));
+    if(!arr.length){
+      wrap.innerHTML = `<div class="mb-empty">
+        <svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
+        <b>No posts yet</b><p style="font-size:14px;margin-top:4px;">Create your first movie review!</p>
+      </div>`;
+      return;
+    }
+    arr.forEach(p => renderPost(p, wrap, true));
+  });
+  unsubscribers.push(unsub);
+}
+
+function listenCommunity(){
+  const q = query(collection(db, 'communityPosts'), orderBy('createdAt', 'desc'));
+  const unsub = onSnapshot(q, snap => {
+    const wrap = $('mbCommunityFeed');
+    wrap.innerHTML = '';
+    if(snap.empty){
+      const defaults = [
+        { authorId:'admin', authorName:'MeBook Official', authorAvatar:'https://i.postimg.cc/1XQQ8qRK/file-00000000b2708211900200b56e0579e1.png', verified:true, caption:'🎉 Welcome to the MeBook Community! Share your favourite movie screenshots & reviews. Use #MeBookReview to get featured!', movie:'Community Announcement', image:'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=900&q=80', likes:[], comments:[], shares:0, createdAt:null, timeText:'just now' },
+        { authorId:'admin', authorName:'MeBook Official', authorAvatar:'https://i.postimg.cc/1XQQ8qRK/file-00000000b2708211900200b56e0579e1.png', verified:true, caption:'🎬 This week\'s featured reviews are coming! Keep posting your best reviews.', movie:'Weekly Spotlight', image:'https://images.unsplash.com/photo-1478720568477-152d9b164e26?w=900&q=80', likes:[], comments:[], shares:0, createdAt:null, timeText:'just now' }
+      ];
+      defaults.forEach(p => renderPost({id:'comm-'+Math.random(), ...p}, wrap));
+      return;
+    }
+    snap.forEach(d => renderPost({id:d.id, ...d.data()}, wrap));
+  });
+  unsubscribers.push(unsub);
+}
+
+/* ============= POST RENDER ============= */
+function renderPost(post, container, isMine){
+  const el = document.createElement('article');
+  el.className = 'mb-post';
+  el.dataset.id = post.id;
+
+  const liked = Array.isArray(post.likes) && post.likes.includes(currentUser.uid);
+  const likesCount = Array.isArray(post.likes) ? post.likes.length : 0;
+  const commentsCount = Array.isArray(post.comments) ? post.comments.length : 0;
+  const shares = post.shares || 0;
+  const authorAvatar = post.authorAvatar || `https://ui-avatars.com/api/?background=16a34a&color=fff&name=${encodeURIComponent(post.authorName||'User')}`;
+  const timeText = post.timeText || timeAgo(post.createdAt);
+
+  el.innerHTML = `
+    <div class="mb-post-head">
+      <img class="mb-post-head-avatar" src="${authorAvatar}" alt="${esc(post.authorName)}" onclick="mbOpenUser('${post.authorId}')">
+      <div class="mb-post-head-info">
+        <div class="mb-post-author" onclick="mbOpenUser('${post.authorId}')">
+          ${esc(post.authorName||'User')}
+          ${post.verified ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="#16a34a"><path d="M23 12l-2.44-2.79.34-3.69-3.61-.82-1.89-3.2L12 2.96 8.6 1.5 6.71 4.69l-3.61.82.34 3.69L1 12l2.44 2.79-.34 3.7 3.61.82L8.6 22.5l3.4-1.47 3.4 1.46 1.89-3.19 3.61-.82-.34-3.69L23 12zm-12.91 4.72l-3.8-3.81 1.48-1.48 2.32 2.33 5.85-5.87 1.48 1.48-7.33 7.35z"/></svg>' : ''}
+        </div>
+        <div class="mb-post-meta">${timeText} • <svg class="globe" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/></svg></div>
+      </div>
+      ${isMine ? `<button class="mb-post-more" onclick="mbDeletePost('${post.id}')" title="Delete">
+        <svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+      </button>` : ''}
+    </div>
+    ${post.caption ? `<div class="mb-post-caption">${esc(post.caption)}</div>` : ''}
+    ${post.image ? `<div class="mb-post-media">
+      <span class="mb-movie-badge"><svg viewBox="0 0 24 24"><path d="M18 4l2 4h-3l-2-4h-2l2 4h-3l-2-4H8l2 4H7L5 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4h-4z"/></svg>${esc(post.movie||'Movie')}</span>
+      <img src="${post.image}" alt="post" loading="lazy">
+    </div>` : (post.movie ? `<div style="padding:0 16px 8px;"><span class="mb-movie-badge" style="position:static;"><svg viewBox="0 0 24 24"><path d="M18 4l2 4h-3l-2-4h-2l2 4h-3l-2-4H8l2 4H7L5 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4h-4z"/></svg>${esc(post.movie)}</span></div>` : '')}
+    <div class="mb-post-stats">
+      <div class="mb-reacts">
+        ${likesCount ? `<span class="mb-react-pill"><svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg><span class="like-count">${likesCount}</span></span>` : `<span class="like-count" style="font-size:13px;">0 likes</span>`}
+      </div>
+      <div><span class="cmt-count">${commentsCount}</span> comments • <span class="shr-count">${shares}</span> shares</div>
+    </div>
+    <div class="mb-post-actions">
+      <button class="mb-action like-btn ${liked?'liked':''}" onclick="mbLikePost('${post.id}', this)">
+        <svg viewBox="0 0 24 24"><path d="M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-1.91z"/></svg>
+        Like
+      </button>
+      <button class="mb-action" onclick="mbToggleComments('${post.id}')">
+        <svg viewBox="0 0 24 24"><path d="M21.99 4c0-1.1-.89-2-1.99-2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14l4 4-.01-18z"/></svg>
+        Comment
+      </button>
+      <button class="mb-action" onclick="mbSharePost('${post.id}')">
+        <svg viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z"/></svg>
+        Share
+      </button>
+    </div>
+    <div class="mb-comments" id="comments-${post.id}">
+      <div class="comment-list"></div>
+      <div class="mb-comment-input">
+        <img src="${currentProfile.photoURL || `https://ui-avatars.com/api/?background=16a34a&color=fff&name=${encodeURIComponent(currentProfile.name)}`}" alt="">
+        <input type="text" placeholder="Write a comment..." onkeydown="if(event.key==='Enter'){mbAddComment('${post.id}', this.value); this.value='';}">
+      </div>
+    </div>
+  `;
+  container.appendChild(el);
+
+  if(Array.isArray(post.comments) && post.comments.length){
+    renderComments(post.id, post.comments);
+  }
+}
+
+function renderComments(postId, comments){
+  const list = document.querySelector(`#comments-${postId} .comment-list`);
+  if(!list) return;
+  list.innerHTML = '';
+  comments.forEach(c => {
+    const div = document.createElement('div');
+    div.className = 'mb-comment';
+    div.innerHTML = `
+      <img src="${c.avatar || `https://ui-avatars.com/api/?background=16a34a&color=fff&name=${encodeURIComponent(c.name||'U')}`}" alt="">
+      <div class="mb-comment-body">
+        <b>${esc(c.name||'User')}</b>
+        ${esc(c.text||'')}
+        <div style="font-size:11px;color:var(--text-muted);margin-top:3px;">${timeAgo(c.at)}</div>
+      </div>
+    `;
+    list.appendChild(div);
+  });
+}
+
+window.mbToggleComments = function(postId){
+  const el = $(`comments-${postId}`);
+  if(el) el.classList.toggle('open');
+};
+
+/* ============= POST ACTIONS ============= */
+window.mbLikePost = async function(postId, btn){
+  try{
+    const ref = doc(db, 'posts', postId);
+    const snap = await getDoc(ref);
+    if(!snap.exists()) return;
+    const likes = snap.data().likes || [];
+    const has = likes.includes(currentUser.uid);
+    await updateDoc(ref, {
+      likes: has ? arrayRemove(currentUser.uid) : arrayUnion(currentUser.uid)
+    });
+  }catch(e){ mbToast(e.message); }
+};
+
+window.mbAddComment = async function(postId, text){
+  text = (text||'').trim();
+  if(!text) return;
+  try{
+    const ref = doc(db, 'posts', postId);
+    await updateDoc(ref, {
+      comments: arrayUnion({
+        uid: currentUser.uid,
+        name: currentProfile.name,
+        avatar: currentProfile.photoURL || '',
+        text: text,
+        at: Date.now()
+      })
+    });
+    mbToast('Comment added');
+  }catch(e){ mbToast(e.message); }
+};
+
+/* ============= SHARE (NATIVE SOCIAL SHARE) ============= */
+window.mbSharePost = async function(postId){
+  try{
+    const snap = await getDoc(doc(db, 'posts', postId));
+    if(!snap.exists()){
+      mbToast('Post not found');
+      return;
+    }
+    const post = snap.data();
+    const postUrl = location.origin + location.pathname + '#post-' + postId;
+    const shareText = `Check out this movie review on MeBook: "${post.caption || 'Movie review'}" — ${post.movie || ''}`;
+
+    if (navigator.share) {
+      await navigator.share({
+        title: 'MeBook Movie Review',
+        text: shareText,
+        url: postUrl
+      });
+      await updateDoc(doc(db, 'posts', postId), { shares: increment(1) });
+      mbToast('Shared ✅');
+    } else {
+      await navigator.clipboard.writeText(postUrl).catch(()=>{});
+      window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(postUrl)}`, '_blank', 'width=640,height=480');
+      await updateDoc(doc(db, 'posts', postId), { shares: increment(1) });
+      mbToast('Sharing to Facebook...');
+    }
+  }catch(e){
+    if (e.name !== 'AbortError') {
+      mbToast('Share cancelled or failed');
+    }
+  }
+};
+
+window.mbDeletePost = async function(postId){
+  if(!confirm('Delete this post?')) return;
+  try{
+    await deleteDoc(doc(db, 'posts', postId));
+    mbToast('Post deleted');
+  }catch(e){ mbToast(e.message); }
+};
+
+/* ============= COMPOSER ============= */
+let selectedFile = null;
+
+window.mbOpenComposer = function(){
+  $('mbComposerOverlay').classList.add('open');
+  setTimeout(()=>$('mbPostText').focus(), 100);
+};
+window.mbCloseComposer = function(){
+  $('mbComposerOverlay').classList.remove('open');
+};
+
+window.mbPreviewFile = function(e){
+  const file = e.target.files[0];
+  if(!file) return;
+  selectedFile = file;
+  const url = URL.createObjectURL(file);
+  $('mbPreviewWrap').innerHTML = `
+    <div class="mb-preview">
+      <img src="${url}" alt="preview">
+      <button class="mb-preview-remove" onclick="mbRemovePreview()">
+        <svg viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+      </button>
+    </div>
+  `;
+  $('mbUploadArea').style.display = 'none';
+};
+
+window.mbRemovePreview = function(){
+  selectedFile = null;
+  $('mbPreviewWrap').innerHTML = '';
+  $('mbUploadArea').style.display = '';
+  $('mbFileInput').value = '';
+};
+
+window.mbSubmitPost = async function(){
+  const btn = $('mbPostBtn');
+  const text = $('mbPostText').value.trim();
+  const movie = $('mbMovieName').value.trim() || 'Movie';
+
+  if(!text && !selectedFile){ mbToast('Write something or add a photo'); return; }
+
+  btn.disabled = true; btn.textContent = 'Posting...';
+  try{
+    let imageUrl = '';
+    if(selectedFile){
+      $('mbUploadProgress').style.display = 'block';
+      $('mbUploadBar').style.width = '0%';
+      $('mbUploadLabel').textContent = 'Uploading to Cloudinary...';
+      imageUrl = await cloudinaryUpload(selectedFile, pct => {
+        $('mbUploadBar').style.width = pct + '%';
+        $('mbUploadLabel').textContent = `Uploading... ${pct}%`;
+      });
+      $('mbUploadBar').style.width = '100%';
+      $('mbUploadLabel').textContent = 'Saving post...';
+    }
+
+    await addDoc(collection(db, 'posts'), {
+      authorId: currentUser.uid,
+      authorName: currentProfile.name,
+      authorAvatar: currentProfile.photoURL || '',
+      caption: text,
+      movie: movie,
+      image: imageUrl,
+      likes: [],
+      comments: [],
+      shares: 0,
+      createdAt: serverTimestamp()
+    });
+
+    $('mbPostText').value = '';
+    $('mbMovieName').value = '';
+    mbRemovePreview();
+    $('mbUploadProgress').style.display = 'none';
+    mbCloseComposer();
+    mbToast('Post published ✅');
+    mbGo('home');
+  }catch(err){
+    console.error(err);
+    mbToast('Failed: ' + (err.message || 'try again'));
+  } finally {
+    btn.disabled = false; btn.textContent = 'Post';
+  }
+};
+
+/* ============= FRIENDS ============= */
+function listenFriends(){
+  const q = query(collection(db, 'users'));
+  const unsub = onSnapshot(q, snap => {
+    const users = [];
+    snap.forEach(d => { if(d.id !== currentUser.uid) users.push({uid:d.id, ...d.data()}); });
+    renderFriendGrid(users);
+    renderOnlineList(users);
+  });
+  unsubscribers.push(unsub);
+}
+
+function renderFriendGrid(users){
+  const grid = $('mbFriendGrid');
+  if(!grid) return;
+  grid.innerHTML = '';
+  if(!users.length){
+    grid.innerHTML = `<div class="mb-empty" style="grid-column:1/-1;">No other users yet. Invite your friends to join MeBook!</div>`;
+    return;
+  }
+  users.forEach(u => {
+    const photo = u.photoURL || `https://ui-avatars.com/api/?background=16a34a&color=fff&name=${encodeURIComponent(u.name||'User')}`;
+    const card = document.createElement('div');
+    card.className = 'mb-friend-card';
+    card.dataset.name = (u.name||'').toLowerCase() + ' ' + (u.email||'').toLowerCase();
+    card.innerHTML = `
+      <div class="mb-friend-cover" style="${u.coverURL ? `background:url('${u.coverURL}') center/cover;` : ''}"></div>
+      <div class="mb-friend-body">
+        <img src="${photo}" alt="${esc(u.name)}" onclick="mbOpenUser('${u.uid}')">
+        <div class="mb-friend-name">${esc(u.name||'User')}</div>
+        <div class="mb-friend-mutual">MeBook Member</div>
+        <div class="mb-friend-btns">
+          <button class="mb-btn mb-btn-primary" onclick="mbSendRequest('${u.uid}', this)">Add Friend</button>
+          <button class="mb-btn mb-btn-secondary" onclick="mbOpenUser('${u.uid}')">View Profile</button>
+          <button class="mb-btn mb-btn-outline" onclick="mbStartChat('${u.uid}','${esc(u.name)}','${photo}')">Message</button>
+        </div>
+      </div>
+    `;
+    grid.appendChild(card);
+  });
+}
+
+function renderOnlineList(users){
+  const wrap = $('mbOnlineList');
+  if(!wrap) return;
+  wrap.innerHTML = '';
+  if(!users.length){
+    wrap.innerHTML = `<div style="font-size:13px;color:var(--text-muted);padding:6px;">No other users yet</div>`;
+    return;
+  }
+  users.slice(0, 5).forEach(u => {
+    const photo = u.photoURL || `https://ui-avatars.com/api/?background=16a34a&color=fff&name=${encodeURIComponent(u.name||'User')}`;
+    const div = document.createElement('div');
+    div.className = 'mb-contact';
+    div.innerHTML = `
+      <img src="${photo}" alt=""><span class="mb-online"></span>
+      <div class="mb-contact-name">${esc(u.name)}</div>
+    `;
+    div.onclick = () => mbStartChat(u.uid, u.name, photo);
+    wrap.appendChild(div);
+  });
+}
+
+window.mbFilterFriends = function(q){
+  q = q.trim().toLowerCase();
+  document.querySelectorAll('#mbFriendGrid .mb-friend-card').forEach(c => {
+    c.style.display = c.dataset.name.includes(q) ? '' : 'none';
+  });
+};
+
+/* ============= FRIEND REQUESTS ============= */
+function listenRequests(){
+  const q = query(collection(db, 'friendRequests'), where('to', '==', currentUser.uid), where('status', '==', 'pending'));
+  const unsub = onSnapshot(q, async snap => {
+    const wrap = $('mbRequests');
+    wrap.innerHTML = '';
+    if(snap.empty){
+      wrap.innerHTML = `<div style="color:var(--text-muted);font-size:14px;padding:4px;">No pending friend requests.</div>`;
+      setBadge('reqBadge', 0);
+      return;
+    }
+    setBadge('reqBadge', snap.size);
+    for(const d of snap.docs){
+      const data = d.data();
+      const fromSnap = await getDoc(doc(db, 'users', data.from));
+      const fromUser = fromSnap.exists() ? fromSnap.data() : { name:'User', photoURL:'' };
+      const photo = fromUser.photoURL || `https://ui-avatars.com/api/?background=16a34a&color=fff&name=${encodeURIComponent(fromUser.name||'U')}`;
+      const row = document.createElement('div');
+      row.className = 'mb-contact';
+      row.style.padding = '10px 6px';
+      row.innerHTML = `
+        <img src="${photo}" alt="">
+        <div style="flex:1;min-width:0;">
+          <div class="mb-contact-name">${esc(fromUser.name)}</div>
+          <div style="font-size:12.5px;color:var(--text-muted);">Wants to be friends</div>
+        </div>
+        <button class="mb-btn mb-btn-primary" style="width:auto;padding:7px 14px;font-size:13px;" onclick="mbAcceptRequest('${d.id}','${data.from}')">Accept</button>
+        <button class="mb-btn mb-btn-secondary" style="width:auto;padding:7px 14px;font-size:13px;" onclick="mbDeclineRequest('${d.id}')">Decline</button>
+      `;
+      wrap.appendChild(row);
+    }
+  });
+  unsubscribers.push(unsub);
+}
+
+function setBadge(id, n){
+  const el = $(id);
+  if(!el) return;
+  el.textContent = n;
+  el.style.display = n > 0 ? 'flex' : 'none';
+}
+
+window.mbSendRequest = async function(toUid, btn){
+  if(toUid === currentUser.uid) return;
+  btn.disabled = true; btn.textContent = 'Sending...';
+  try{
+    const q1 = query(collection(db,'friendRequests'), where('from','==',currentUser.uid), where('to','==',toUid));
+    const s1 = await getDocs(q1);
+    const q2 = query(collection(db,'friendRequests'), where('from','==',toUid), where('to','==',currentUser.uid));
+    const s2 = await getDocs(q2);
+    if(!s1.empty || !s2.empty){
+      btn.textContent = 'Request Sent'; mbToast('Request already exists'); return;
+    }
+    await addDoc(collection(db, 'friendRequests'), {
+      from: currentUser.uid,
+      to: toUid,
+      status: 'pending',
+      createdAt: serverTimestamp()
+    });
+    btn.textContent = 'Request Sent';
+    mbToast('Friend request sent ✅');
+  }catch(e){
+    btn.disabled = false; btn.textContent = 'Add Friend';
+    mbToast(e.message);
+  }
+};
+
+window.mbAcceptRequest = async function(reqId, fromUid){
+  try{
+    await updateDoc(doc(db, 'friendRequests', reqId), { status: 'accepted' });
+    await setDoc(doc(db, 'friends', currentUser.uid + '_' + fromUid), {
+      a: currentUser.uid, b: fromUid, createdAt: serverTimestamp()
+    });
+    mbToast('You are now friends 🎉');
+  }catch(e){ mbToast(e.message); }
+};
+
+window.mbDeclineRequest = async function(reqId){
+  try{
+    await updateDoc(doc(db, 'friendRequests', reqId), { status: 'declined' });
+    mbToast('Request declined');
+  }catch(e){ mbToast(e.message); }
+};
+
+function listenMyFriends(){
+  const q = query(collection(db, 'friends'), where('a','==',currentUser.uid));
+  const unsub = onSnapshot(q, async snap => {
+    const wrap = $('mbMyFriends');
+    if(!wrap) return;
+    wrap.innerHTML = '';
+    if(snap.empty){
+      wrap.innerHTML = `<div style="color:var(--text-muted);font-size:14px;padding:4px;">No friends yet.</div>`;
+      return;
+    }
+    for(const d of snap.docs){
+      const s = await getDoc(doc(db, 'users', d.data().b));
+      if(!s.exists()) continue;
+      const u = s.data();
+      const photo = u.photoURL || `https://ui-avatars.com/api/?background=16a34a&color=fff&name=${encodeURIComponent(u.name||'U')}`;
+      const row = document.createElement('div');
+      row.className = 'mb-contact';
+      row.innerHTML = `
+        <img src="${photo}" alt="">
+        <div class="mb-contact-name">${esc(u.name)}</div>
+        <button class="mb-btn mb-btn-secondary" style="width:auto;padding:6px 12px;font-size:12.5px;" onclick="mbStartChat('${u.uid}','${esc(u.name)}','${photo}')">Message</button>
+      `;
+      wrap.appendChild(row);
+    }
+  });
+  unsubscribers.push(unsub);
+}
+
+/* ============= USER PROFILE MODAL ============= */
+window.mbOpenUser = async function(uid){
+  if(uid === currentUser.uid){ mbGo('profile'); return; }
+  try{
+    const snap = await getDoc(doc(db, 'users', uid));
+    if(!snap.exists()){ mbToast('User not found'); return; }
+    const u = snap.data();
+    const photo = u.photoURL || `https://ui-avatars.com/api/?background=16a34a&color=fff&name=${encodeURIComponent(u.name||'U')}`;
+    const cover = u.coverURL || 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=1200&q=80';
+
+    $('mbUserModalBody').innerHTML = `
+      <div style="text-align:center;">
+        <div style="height:120px;background:url('${cover}') center/cover;border-radius:12px;margin-bottom:-40px;"></div>
+        <img src="${photo}" style="width:100px;height:100px;border-radius:50%;object-fit:cover;border:4px solid var(--card);margin:0 auto;position:relative;">
+        <div style="font-size:20px;font-weight:800;margin-top:8px;color:var(--text);">${esc(u.name)}</div>
+        <div style="color:var(--text-muted);font-size:13.5px;margin-top:3px;">${esc(u.bio||'Movie lover 🎬')}</div>
+        ${u.location ? `<div style="color:var(--text-muted);font-size:13px;margin-top:3px;">📍 ${esc(u.location)}</div>` : ''}
+        <div style="display:flex;flex-direction:column;gap:8px;margin-top:16px;">
+          <button class="mb-btn mb-btn-primary" onclick="mbSendRequest('${u.uid}', this)">＋ Add Friend</button>
+          <button class="mb-btn mb-btn-secondary" onclick="mbStartChat('${u.uid}','${esc(u.name).replace(/'/g,"\\'")}','${photo}'); document.getElementById('mbUserModal').classList.remove('open');">💬 Message</button>
+        </div>
+      </div>
+    `;
+    $('mbUserModal').classList.add('open');
+  }catch(e){ mbToast(e.message); }
+};
+
+/* ============= CHAT / MESSAGES ============= */
+function chatIdFor(uid1, uid2){
+  return [uid1, uid2].sort().join('_');
+}
+
+function listenChats(){
+  const q = query(collection(db, 'chats'), where('members', 'array-contains', currentUser.uid));
+  const unsub = onSnapshot(q, async snap => {
+    const list = $('chatList');
+    list.innerHTML = '';
+    const chats = [];
+    for(const d of snap.docs){
+      const data = d.data();
+      const otherId = data.members.find(m => m !== currentUser.uid);
+      if(!otherId) continue;
+      const s = await getDoc(doc(db, 'users', otherId));
+      if(!s.exists()) continue;
+      chats.push({ id:d.id, otherId, other:s.data(), last:data.lastMessage||'', lastAt:data.lastAt });
+    }
+    chats.sort((a,b) => (b.lastAt?.seconds||0) - (a.lastAt?.seconds||0));
+
+    let unread = 0;
+    chats.forEach(c => { if(c.last && c.last.read === false && c.last.from !== currentUser.uid) unread++; });
+
+    if(!chats.length){
+      list.innerHTML = `<div style="padding:20px;color:var(--text-muted);font-size:14px;text-align:center;">No conversations yet. Start one from Friends page!</div>`;
+    } else {
+      chats.forEach(c => {
+        const photo = c.other.photoURL || `https://ui-avatars.com/api/?background=16a34a&color=fff&name=${encodeURIComponent(c.other.name||'U')}`;
+        const div = document.createElement('div');
+        div.className = 'mb-chat-item' + (activeChat === c.id ? ' active' : '');
+        div.innerHTML = `
+          <img src="${photo}" alt="">
+          <div class="mb-chat-item-body">
+            <div class="mb-chat-item-name">${esc(c.other.name)}</div>
+            <div class="mb-chat-item-last">${esc(c.last?.text || 'Say hi 👋')}</div>
+          </div>
+          <div class="mb-chat-item-time">${c.lastAt ? timeAgo(c.lastAt) : ''}</div>
+        `;
+        div.onclick = () => mbOpenChat(c.id, c.otherId, c.other);
+        list.appendChild(div);
+      });
+    }
+    setBadge('msgBadge', unread);
+    setBadge('msgBadge2', unread);
+  });
+  unsubscribers.push(unsub);
+}
+
+window.mbStartChat = async function(otherId, otherName, otherPhoto){
+  if(otherId === currentUser.uid){ mbToast("You can't chat with yourself"); return; }
+  const cid = chatIdFor(currentUser.uid, otherId);
+  try{
+    const ref = doc(db, 'chats', cid);
+    const snap = await getDoc(ref);
+    if(!snap.exists()){
+      await setDoc(ref, {
+        members: [currentUser.uid, otherId],
+        createdAt: serverTimestamp(),
+        lastMessage: null,
+        lastAt: serverTimestamp()
+      });
+    }
+    mbGo('messages');
+    mbOpenChat(cid, otherId, { uid:otherId, name:otherName, photoURL:otherPhoto });
+  }catch(e){ mbToast(e.message); }
+};
+
+window.mbOpenChat = function(chatId, otherId, other){
+  activeChat = chatId;
+  document.querySelectorAll('.mb-chat-item').forEach(i => i.classList.remove('active'));
+  const photo = other.photoURL || `https://ui-avatars.com/api/?background=16a34a&color=fff&name=${encodeURIComponent(other.name||'U')}`;
+
+  $('chatWindow').innerHTML = `
+    <div class="mb-chat-head">
+      <img src="${photo}" alt="">
+      <div class="mb-chat-head-info">
+        <div class="mb-chat-head-name">${esc(other.name)}</div>
+        <div class="mb-chat-head-status">● Active on MeBook</div>
+      </div>
+      <button class="mb-icon-btn" style="background:var(--input-bg);" onclick="mbOpenUser('${otherId}')">
+        <svg viewBox="0 0 24 24" style="fill:var(--text);"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+      </button>
+    </div>
+    <div class="mb-chat-body" id="chatBody"></div>
+    <div class="mb-chat-input">
+      <input type="text" id="chatInput" placeholder="Type a message..." onkeydown="if(event.key==='Enter'){mbSendMessage('${chatId}');}">
+      <button onclick="mbSendMessage('${chatId}')">
+        <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+      </button>
+    </div>
+  `;
+
+  if(chatUnsub){ try{chatUnsub();}catch(e){} }
+  const q = query(collection(db, 'chats', chatId, 'messages'), orderBy('at', 'asc'));
+  chatUnsub = onSnapshot(q, snap => {
+    const body = $('chatBody');
+    if(!body) return;
+    body.innerHTML = '';
+    snap.forEach(d => {
+      const m = d.data();
+      const bubble = document.createElement('div');
+      const mine = m.from === currentUser.uid;
+      bubble.className = 'mb-bubble ' + (mine ? 'me' : 'them');
+      const time = m.at ? new Date(m.at.seconds*1000).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : '';
+      bubble.innerHTML = `${esc(m.text)}<span class="mb-bubble-time">${time}</span>`;
+      body.appendChild(bubble);
+    });
+    body.scrollTop = body.scrollHeight;
+  });
+  $('chatInput')?.focus();
+};
+
+window.mbSendMessage = async function(chatId){
+  const input = $('chatInput');
+  const text = input.value.trim();
+  if(!text) return;
+  input.value = '';
+  try{
+    await addDoc(collection(db, 'chats', chatId, 'messages'), {
+      from: currentUser.uid,
+      text: text,
+      at: serverTimestamp()
+    });
+    await updateDoc(doc(db, 'chats', chatId), {
+      lastMessage: { text, from: currentUser.uid },
+      lastAt: serverTimestamp()
+    });
+  }catch(e){ mbToast(e.message); }
+};
+
+/* ============= PROFILE ============= */
+function renderProfileInfo(){
+  const info = $('profInfo');
+  if(!info) return;
+  info.innerHTML = `
+    <div class="mb-info-row"><svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2z"/></svg><span><b>Email:</b> ${esc(currentProfile.email||'')}</span></div>
+    <div class="mb-info-row"><svg viewBox="0 0 24 24"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg><span><b>Phone:</b> ${esc(currentProfile.phone||'Not set')}</span></div>
+    <div class="mb-info-row"><svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/></svg><span><b>Location:</b> ${esc(currentProfile.location||'Not set')}</span></div>
+    <div class="mb-info-row"><svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"/></svg><span><b>Joined:</b> ${currentProfile.createdAt ? new Date(currentProfile.createdAt.seconds*1000).toLocaleDateString() : 'Just now'}</span></div>
+  `;
+
+  const cover = currentProfile.coverURL || 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=1200&q=80';
+  $('mbCoverImg').src = cover;
+  const photo = currentProfile.photoURL || `https://ui-avatars.com/api/?background=16a34a&color=fff&name=${encodeURIComponent(currentProfile.name)}`;
+  $('mbProfileImg').src = photo;
+}
+
+window.mbEditProfile = function(){
+  $('editName').value = currentProfile.name || '';
+  $('editBio').value = currentProfile.bio || '';
+  $('editLoc').value = currentProfile.location || '';
+  $('editPhone').value = currentProfile.phone || '';
+  $('mbEditModal').classList.add('open');
+};
+
+window.mbSaveProfile = async function(){
+  try{
+    const updates = {
+      name: $('editName').value.trim() || currentProfile.name,
+      bio: $('editBio').value.trim(),
+      location: $('editLoc').value.trim(),
+      phone: $('editPhone').value.trim()
+    };
+    await updateDoc(doc(db, 'users', currentUser.uid), updates);
+    currentProfile = { ...currentProfile, ...updates };
+    $('profName').textContent = updates.name;
+    $('profBio').textContent = updates.bio || 'Movie lover 🎬';
+    $('mbEditModal').classList.remove('open');
+    renderProfileInfo();
+    mbToast('Profile updated ✅');
+  }catch(e){ mbToast(e.message); }
+};
+
+window.mbChangeProfilePhoto = function(){
+  const inp = document.createElement('input');
+  inp.type = 'file'; inp.accept = 'image/*';
+  inp.onchange = async () => {
+    const f = inp.files[0];
+    if(!f) return;
+    mbToast('Uploading profile photo...');
+    try{
+      const url = await cloudinaryUpload(f);
+      await updateDoc(doc(db, 'users', currentUser.uid), { photoURL: url });
+      currentProfile.photoURL = url;
+      renderProfileInfo();
+      $('hdrAvatar').src = url;
+      $('composerAvatar').src = url;
+      $('composerAvatar2').src = url;
+      mbToast('Profile photo updated ✅');
+    }catch(e){ mbToast('Upload failed: ' + e.message); }
+  };
+  inp.click();
+};
+
+window.mbChangeCover = function(){
+  const inp = document.createElement('input');
+  inp.type = 'file'; inp.accept = 'image/*';
+  inp.onchange = async () => {
+    const f = inp.files[0];
+    if(!f) return;
+    mbToast('Uploading cover photo...');
+    try{
+      const url = await cloudinaryUpload(f);
+      await updateDoc(doc(db, 'users', currentUser.uid), { coverURL: url });
+      currentProfile.coverURL = url;
+      $('mbCoverImg').src = url;
+      mbToast('Cover photo updated ✅');
+    }catch(e){ mbToast('Upload failed: ' + e.message); }
+  };
+  inp.click();
+};
+
+/* Privacy */
+function loadPrivacy(){
+  const p = currentProfile.privacy || { info:true, posts:true, requests:true };
+  $('pv1').checked = !!p.info;
+  $('pv2').checked = !!p.posts;
+  $('pv3').checked = !!p.requests;
+}
+window.mbSavePrivacy = async function(){
+  try{
+    await updateDoc(doc(db, 'users', currentUser.uid), {
+      privacy: { info: $('pv1').checked, posts: $('pv2').checked, requests: $('pv3').checked }
+    });
+    currentProfile.privacy = { info: $('pv1').checked, posts: $('pv2').checked, requests: $('pv3').checked };
+    mbToast('Privacy updated');
+  }catch(e){ mbToast(e.message); }
+};
+</script>
+</body>
+</html>

@@ -1651,4 +1651,17 @@ export const movies4 = [
     description: "কলকাতার প্রেক্ষাপটে আবর্তিত এই গল্পে একজন নারী ও দুই পুরুষের জটিল সম্পর্কের মধ্য দিয়ে প্রেম, বন্ধুত্ব, মতাদর্শ ও ব্যক্তিগত স্বাধীনতার নানা দিক উঠে আসে। ❤️🏠🌆",
     views: 23847,
   },
+    {
+    id: 3232,
+    title: "Bachelor Point –season 5 Chapter 15 | Episodes 113–120 (2026)",
+    poster: "/3232id.jpg",
+    trailer: "https://www.youtube.com/embed/0k0S5G-oq6w?si",
+    telegramLink: "http://t.me/mvbdstore_bot?start=f_MTUyODUsMTUyODk",
+    genre: "Comedy | Drama | bangla",
+    year: "2026",
+    rating: "8.2",
+    language: "Bangla",
+    description: "Bachelor House-এর পরিচিত চরিত্রদের জীবনে নতুন নতুন ঘটনা, সম্পর্কের টানাপোড়েন ও মজার পরিস্থিতি তৈরি হতে থাকে। Bachchu Bhai, Pasha, Kabila ও বাকিদের ঘিরে Chapter 15-এ গল্প আরও নতুন দিকে এগিয়ে যায়। 😂🏠❤️",
+    views: 23847,
+  },
   ]

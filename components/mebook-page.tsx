@@ -8,74 +8,120 @@ import React, {
 } from "react"
 
 /* ============================================================
-   FIREBASE (client-only)
+   FIREBASE — explicit named imports (safe)
 ============================================================ */
 
-let firebaseInitialized = false
-let app: any = null
-let auth: any = null
-let db: any = null
-let fbMods: any = null
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyBtBaUSIlXwJDWytaiOfal3ha7OmZEwuYM",
+  authDomain: "mvbdminiapp.firebaseapp.com",
+  projectId: "mvbdminiapp",
+  storageBucket: "mvbdminiapp.firebasestorage.app",
+  messagingSenderId: "668051748254",
+  appId: "1:668051748254:web:d4804b68429d853a0c928f",
+  measurementId: "G-HQZ9SL4RX8",
+}
 
-async function initFirebase() {
-  if (firebaseInitialized) return { app, auth, db, fbMods }
+let _fb: {
+  app: any
+  auth: any
+  db: any
+  // auth methods
+  createUserWithEmailAndPassword: any
+  signInWithEmailAndPassword: any
+  signInWithPopup: any
+  GoogleAuthProvider: any
+  signOut: any
+  onAuthStateChanged: any
+  sendPasswordResetEmail: any
+  updateProfile: any
+  // firestore methods
+  collection: any
+  doc: any
+  setDoc: any
+  getDoc: any
+  getDocs: any
+  addDoc: any
+  updateDoc: any
+  deleteDoc: any
+  onSnapshot: any
+  query: any
+  where: any
+  orderBy: any
+  serverTimestamp: any
+  arrayUnion: any
+  arrayRemove: any
+  increment: any
+} | null = null
 
-  const appMod = await import(
-    "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js" as any
-  )
-  const authMod = await import(
-    "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js" as any
-  )
-  const fsMod = await import(
-    "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js" as any
-  )
+let _fbPromise: Promise<NonNullable<typeof _fb>> | null = null
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyBtBaUSIlXwJDWytaiOfal3ha7OmZEwuYM",
-    authDomain: "mvbdminiapp.firebaseapp.com",
-    projectId: "mvbdminiapp",
-    storageBucket: "mvbdminiapp.firebasestorage.app",
-    messagingSenderId: "668051748254",
-    appId: "1:668051748254:web:d4804b68429d853a0c928f",
-    measurementId: "G-HQZ9SL4RX8",
-  }
+async function getFirebase() {
+  if (_fb) return _fb
+  if (_fbPromise) return _fbPromise
 
-  app = appMod.initializeApp(firebaseConfig)
-  auth = authMod.getAuth(app)
-  db = fsMod.getFirestore(app)
-  fbMods = { ...authMod, ...fsMod }
+  _fbPromise = (async () => {
+    const [appMod, authMod, fsMod] = await Promise.all([
+      import(
+        /* webpackIgnore: true */
+        "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js" as any
+      ),
+      import(
+        /* webpackIgnore: true */
+        "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js" as any
+      ),
+      import(
+        /* webpackIgnore: true */
+        "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js" as any
+      ),
+    ])
 
-  firebaseInitialized = true
-  return { app, auth, db, fbMods }
+    const app = appMod.initializeApp(FIREBASE_CONFIG)
+    const auth = authMod.getAuth(app)
+    const db = fsMod.getFirestore(app)
+
+    _fb = {
+      app,
+      auth,
+      db,
+      createUserWithEmailAndPassword: authMod.createUserWithEmailAndPassword,
+      signInWithEmailAndPassword: authMod.signInWithEmailAndPassword,
+      signInWithPopup: authMod.signInWithPopup,
+      GoogleAuthProvider: authMod.GoogleAuthProvider,
+      signOut: authMod.signOut,
+      onAuthStateChanged: authMod.onAuthStateChanged,
+      sendPasswordResetEmail: authMod.sendPasswordResetEmail,
+      updateProfile: authMod.updateProfile,
+      collection: fsMod.collection,
+      doc: fsMod.doc,
+      setDoc: fsMod.setDoc,
+      getDoc: fsMod.getDoc,
+      getDocs: fsMod.getDocs,
+      addDoc: fsMod.addDoc,
+      updateDoc: fsMod.updateDoc,
+      deleteDoc: fsMod.deleteDoc,
+      onSnapshot: fsMod.onSnapshot,
+      query: fsMod.query,
+      where: fsMod.where,
+      orderBy: fsMod.orderBy,
+      serverTimestamp: fsMod.serverTimestamp,
+      arrayUnion: fsMod.arrayUnion,
+      arrayRemove: fsMod.arrayRemove,
+      increment: fsMod.increment,
+    }
+    return _fb
+  })()
+
+  return _fbPromise
 }
 
 /* ============================================================
-   CONSTANTS
+   CONSTANTS + HELPERS
 ============================================================ */
 
 const CLOUD_NAME = "xtbkyhrl"
 const UPLOAD_PRESET = "MeBook"
-
 const LOGO_URL =
   "https://i.postimg.cc/1XQQ8qRK/file-00000000b2708211900200b56e0579e1.png"
-
-/* ============================================================
-   HELPERS
-============================================================ */
-
-function esc(s: any) {
-  return String(s || "").replace(
-    /[&<>"']/g,
-    (c) =>
-      ({
-        "&": "&amp;",
-        "<": "&lt;",
-        ">": "&gt;",
-        '"': "&quot;",
-        "'": "&#39;",
-      }[c] as string)
-  )
-}
 
 function timeAgo(ts: any) {
   if (!ts) return "just now"
@@ -88,23 +134,28 @@ function timeAgo(ts: any) {
   return d.toLocaleDateString()
 }
 
-function friendlyErr(err: any) {
-  const m = err?.code || ""
-  if (m.includes("invalid-credential") || m.includes("wrong-password"))
+function friendlyErr(err: any): string {
+  const code = String(err?.code || "")
+  if (code.includes("invalid-credential") || code.includes("wrong-password"))
     return "Wrong email or password"
-  if (m.includes("user-not-found"))
+  if (code.includes("user-not-found"))
     return "No account found with this email"
-  if (m.includes("email-already-in-use"))
+  if (code.includes("email-already-in-use"))
     return "This email is already registered"
-  if (m.includes("weak-password")) return "Password too weak (min 6 chars)"
-  if (m.includes("invalid-email")) return "Invalid email address"
-  if (m.includes("popup-closed")) return "Popup closed"
-  if (m.includes("network")) return "Network error"
+  if (code.includes("weak-password"))
+    return "Password too weak (min 6 chars)"
+  if (code.includes("invalid-email")) return "Invalid email address"
+  if (code.includes("popup-closed")) return "Popup closed"
+  if (code.includes("popup-blocked"))
+    return "Popup blocked — please allow popups"
+  if (code.includes("network")) return "Network error"
+  if (code.includes("too-many-requests"))
+    return "Too many attempts — try again later"
   return err?.message || "Something went wrong"
 }
 
-function chatIdFor(uid1: string, uid2: string) {
-  return [uid1, uid2].sort().join("_")
+function chatIdFor(a: string, b: string) {
+  return [a, b].sort().join("_")
 }
 
 async function cloudinaryUpload(
@@ -138,10 +189,13 @@ async function cloudinaryUpload(
 }
 
 /* ============================================================
-   CSS — everything scoped under .mebook-root
+   STYLES — dark auth + gorgeous app UI
 ============================================================ */
 
 const MEBOOK_CSS = `
+  /* ============================================================
+     ROOT
+  ============================================================ */
   .mebook-root {
     --green:#16a34a;
     --green-dark:#15803d;
@@ -162,6 +216,7 @@ const MEBOOK_CSS = `
     --modal-bg:#ffffff;
     --chat-body-bg:#f7f8fa;
     --bubble-them-bg:#ffffff;
+
     background: var(--bg);
     color: var(--text);
     min-height: 100vh;
@@ -199,69 +254,249 @@ const MEBOOK_CSS = `
   .mebook-root img{display:block;}
   .mebook-root a{text-decoration:none;color:inherit;}
 
-  /* AUTH */
+  /* ============================================================
+     AUTH SCREEN — GORGEOUS DARK
+  ============================================================ */
   .mebook-root .auth-wrap{
     position:fixed;inset:0;z-index:5000;
-    background:linear-gradient(135deg,#0f172a 0%,#1e293b 60%,#16a34a 140%);
-    display:flex;align-items:center;justify-content:center;padding:20px;
-    overflow:hidden;
+    background:linear-gradient(135deg,#020617 0%,#0f172a 40%,#052e16 100%);
+    display:flex;align-items:center;justify-content:center;
+    padding:20px;overflow:hidden;
   }
+
+  /* animated color orbs */
   .mebook-root .auth-wrap::before{
     content:'';position:absolute;width:200%;height:200%;top:-50%;left:-50%;
-    background: radial-gradient(circle at 20% 30%, rgba(22,163,74,.25) 0%, transparent 50%),
-                radial-gradient(circle at 80% 70%, rgba(59,130,246,.2) 0%, transparent 50%),
-                radial-gradient(circle at 50% 50%, rgba(168,85,247,.15) 0%, transparent 50%);
-    animation: authGlow 12s ease-in-out infinite;z-index:0;
+    background:
+      radial-gradient(circle at 15% 25%, rgba(34,197,94,.28) 0%, transparent 45%),
+      radial-gradient(circle at 85% 20%, rgba(59,130,246,.22) 0%, transparent 45%),
+      radial-gradient(circle at 25% 85%, rgba(168,85,247,.18) 0%, transparent 45%),
+      radial-gradient(circle at 75% 75%, rgba(16,185,129,.22) 0%, transparent 45%);
+    animation: authGlow 16s ease-in-out infinite;
+    z-index:0;
+    filter: blur(60px);
   }
   @keyframes authGlow{
-    0%,100%{transform:translate(0,0) scale(1);}
-    33%{transform:translate(-5%,5%) scale(1.1);}
-    66%{transform:translate(5%,-5%) scale(.95);}
+    0%,100%{transform:translate(0,0) scale(1) rotate(0deg);}
+    33%{transform:translate(-4%,4%) scale(1.12) rotate(120deg);}
+    66%{transform:translate(4%,-4%) scale(.95) rotate(240deg);}
   }
+
+  /* starfield */
   .mebook-root .auth-wrap::after{
     content:'';position:absolute;inset:0;
     background-image:
-      radial-gradient(2px 2px at 20% 30%, rgba(255,255,255,.3), transparent),
-      radial-gradient(2px 2px at 40% 70%, rgba(255,255,255,.2), transparent),
-      radial-gradient(2px 2px at 60% 20%, rgba(255,255,255,.3), transparent),
-      radial-gradient(2px 2px at 80% 80%, rgba(255,255,255,.2), transparent),
-      radial-gradient(2px 2px at 10% 90%, rgba(255,255,255,.25), transparent),
-      radial-gradient(2px 2px at 90% 10%, rgba(255,255,255,.3), transparent);
-    background-size:200% 200%;animation:starDrift 20s linear infinite;z-index:0;pointer-events:none;
+      radial-gradient(1.5px 1.5px at 20% 30%, rgba(255,255,255,.5), transparent),
+      radial-gradient(1.5px 1.5px at 40% 70%, rgba(255,255,255,.4), transparent),
+      radial-gradient(1px 1px at 60% 20%, rgba(255,255,255,.6), transparent),
+      radial-gradient(1.5px 1.5px at 80% 80%, rgba(255,255,255,.4), transparent),
+      radial-gradient(1px 1px at 10% 90%, rgba(255,255,255,.5), transparent),
+      radial-gradient(1.5px 1.5px at 90% 10%, rgba(255,255,255,.5), transparent),
+      radial-gradient(1px 1px at 35% 45%, rgba(255,255,255,.4), transparent),
+      radial-gradient(1px 1px at 65% 60%, rgba(255,255,255,.5), transparent);
+    background-size:200% 200%;
+    animation: starDrift 30s linear infinite;
+    z-index:0;pointer-events:none;
   }
-  @keyframes starDrift{0%{background-position:0% 0%;}100%{background-position:100% 100%;}}
-  .mebook-root .auth-card{
-    background:#fff;border-radius:16px;box-shadow:var(--shadow-lg);
-    width:100%;max-width:420px;padding:32px 28px;position:relative;z-index:1;
-    animation:cardFloat .8s ease-out;background:rgba(255,255,255,.98);
-    backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,.3);
+  @keyframes starDrift{
+    0%{background-position:0% 0%;}
+    100%{background-position:100% 100%;}
   }
-  @keyframes cardFloat{from{opacity:0;transform:translateY(30px) scale(.96);}to{opacity:1;transform:translateY(0) scale(1);}}
-  .mebook-root .auth-logo{display:flex;align-items:center;gap:10px;justify-content:center;margin-bottom:6px;}
-  .mebook-root .auth-logo img{width:44px;height:44px;object-fit:contain;}
-  .mebook-root .auth-logo .mb-logo-text{font-size:26px;}
-  .mebook-root .auth-logo .me{color:var(--green);}
-  .mebook-root .auth-logo .book{color:#0f172a;}
-  .mebook-root .auth-sub{text-align:center;color:var(--text-muted);font-size:13.5px;margin-bottom:22px;}
-  .mebook-root .auth-tabs{display:flex;background:#f0f2f5;border-radius:10px;padding:4px;margin-bottom:18px;}
-  .mebook-root .auth-tab{flex:1;padding:9px;border-radius:8px;font-size:14.5px;font-weight:600;color:var(--text-muted);transition:all .2s ease;}
-  .mebook-root .auth-tab.active{background:#fff;color:var(--green-dark);box-shadow:0 1px 3px rgba(0,0,0,.08);}
-  .mebook-root .auth-field{margin-bottom:12px;}
-  .mebook-root .auth-field label{display:block;font-size:13px;font-weight:600;margin-bottom:5px;color:#374151;}
-  .mebook-root .auth-field input{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:10px;font-size:14.5px;outline:none;transition:border-color .2s ease,box-shadow .2s ease;background:var(--input-bg);color:var(--text);}
-  .mebook-root .auth-field input:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(22,163,74,.12);}
-  .mebook-root .auth-btn{width:100%;padding:12px;border-radius:10px;font-size:15px;font-weight:700;background:var(--green);color:#fff;margin-top:6px;transition:filter .2s ease;}
-  .mebook-root .auth-btn:hover{filter:brightness(1.08);}
-  .mebook-root .auth-btn:disabled{opacity:.65;cursor:not-allowed;}
-  .mebook-root .auth-divider{display:flex;align-items:center;gap:10px;margin:18px 0;color:#9ca3af;font-size:12.5px;}
-  .mebook-root .auth-divider::before,.mebook-root .auth-divider::after{content:"";flex:1;height:1px;background:var(--border);}
-  .mebook-root .auth-google{width:100%;padding:11px;border-radius:10px;font-size:14.5px;font-weight:600;background:#fff;color:#374151;border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;gap:10px;transition:background .18s ease;}
-  .mebook-root .auth-google:hover{background:#f9fafb;}
-  .mebook-root .auth-google svg{width:19px;height:19px;}
-  .mebook-root .auth-err{background:#fef2f2;color:#dc2626;font-size:13px;padding:9px 12px;border-radius:8px;margin-top:10px;display:none;}
-  .mebook-root .auth-err.show{display:block;}
 
-  /* HEADER */
+  .mebook-root .auth-card{
+    position:relative;z-index:2;
+    width:100%;max-width:440px;
+    padding:36px 32px 32px;
+    border-radius:24px;
+    background:rgba(17,24,39,.72);
+    backdrop-filter:blur(28px) saturate(180%);
+    -webkit-backdrop-filter:blur(28px) saturate(180%);
+    border:1px solid rgba(255,255,255,.08);
+    box-shadow:
+      0 32px 80px rgba(0,0,0,.55),
+      0 0 0 1px rgba(255,255,255,.04) inset,
+      0 1px 0 rgba(255,255,255,.10) inset;
+    animation: cardFloat .7s cubic-bezier(.2,.8,.3,1);
+    color:#f3f4f6;
+  }
+  @keyframes cardFloat{
+    from{opacity:0;transform:translateY(28px) scale(.96);}
+    to{opacity:1;transform:translateY(0) scale(1);}
+  }
+
+  .mebook-root .auth-logo{
+    display:flex;align-items:center;justify-content:center;
+    gap:12px;margin-bottom:8px;
+  }
+  .mebook-root .auth-logo img{
+    width:48px;height:48px;object-fit:contain;
+    filter:drop-shadow(0 4px 12px rgba(34,197,94,.4));
+  }
+  .mebook-root .auth-logo .mb-logo-text{
+    font-size:28px;font-weight:800;letter-spacing:-.8px;
+  }
+  .mebook-root .auth-logo .me{
+    background:linear-gradient(135deg,#22c55e,#4ade80);
+    -webkit-background-clip:text;background-clip:text;
+    -webkit-text-fill-color:transparent;
+  }
+  .mebook-root .auth-logo .book{
+    background:linear-gradient(135deg,#f3f4f6,#9ca3af);
+    -webkit-background-clip:text;background-clip:text;
+    -webkit-text-fill-color:transparent;
+  }
+
+  .mebook-root .auth-sub{
+    text-align:center;
+    color:#94a3b8;
+    font-size:13.5px;
+    margin-bottom:26px;
+    letter-spacing:.2px;
+  }
+
+  .mebook-root .auth-tabs{
+    display:flex;
+    background:rgba(255,255,255,.05);
+    border:1px solid rgba(255,255,255,.06);
+    border-radius:12px;
+    padding:5px;
+    margin-bottom:22px;
+  }
+  .mebook-root .auth-tab{
+    flex:1;padding:10px;border-radius:9px;
+    font-size:14.5px;font-weight:600;
+    color:#94a3b8;
+    transition:all .25s cubic-bezier(.2,.8,.3,1);
+    position:relative;
+  }
+  .mebook-root .auth-tab:hover{color:#e2e8f0;}
+  .mebook-root .auth-tab.active{
+    background:linear-gradient(135deg,#16a34a,#22c55e);
+    color:#fff;
+    box-shadow:
+      0 6px 18px rgba(34,197,94,.35),
+      0 1px 0 rgba(255,255,255,.15) inset;
+  }
+
+  .mebook-root .auth-field{
+    margin-bottom:14px;
+    animation: fieldIn .4s ease;
+  }
+  @keyframes fieldIn{
+    from{opacity:0;transform:translateY(6px);}
+    to{opacity:1;transform:none;}
+  }
+  .mebook-root .auth-field label{
+    display:block;
+    font-size:12.5px;
+    font-weight:600;
+    margin-bottom:6px;
+    color:#94a3b8;
+    letter-spacing:.3px;
+    text-transform:uppercase;
+  }
+  .mebook-root .auth-field input{
+    width:100%;
+    padding:13px 16px;
+    border:1.5px solid rgba(255,255,255,.08);
+    border-radius:12px;
+    font-size:15px;
+    outline:none;
+    background:rgba(255,255,255,.04);
+    color:#f3f4f6;
+    transition:border-color .2s ease, box-shadow .2s ease, background .2s ease;
+  }
+  .mebook-root .auth-field input::placeholder{
+    color:#475569;
+  }
+  .mebook-root .auth-field input:focus{
+    border-color:#22c55e;
+    background:rgba(34,197,94,.06);
+    box-shadow:0 0 0 4px rgba(34,197,94,.12);
+  }
+
+  .mebook-root .auth-btn{
+    width:100%;
+    padding:14px;
+    border-radius:12px;
+    font-size:15px;
+    font-weight:700;
+    color:#fff;
+    margin-top:8px;
+    background:linear-gradient(135deg,#16a34a,#22c55e);
+    box-shadow:
+      0 8px 24px rgba(34,197,94,.35),
+      0 1px 0 rgba(255,255,255,.15) inset;
+    transition:transform .15s ease, box-shadow .15s ease, filter .15s ease;
+    letter-spacing:.3px;
+  }
+  .mebook-root .auth-btn:hover:not(:disabled){
+    filter:brightness(1.08);
+    box-shadow:
+      0 12px 32px rgba(34,197,94,.5),
+      0 1px 0 rgba(255,255,255,.2) inset;
+  }
+  .mebook-root .auth-btn:active:not(:disabled){
+    transform:scale(.985);
+  }
+  .mebook-root .auth-btn:disabled{
+    opacity:.6;cursor:not-allowed;
+  }
+
+  .mebook-root .auth-divider{
+    display:flex;align-items:center;gap:12px;
+    margin:22px 0;
+    color:#64748b;
+    font-size:12px;
+    font-weight:500;
+    letter-spacing:1px;
+  }
+  .mebook-root .auth-divider::before,
+  .mebook-root .auth-divider::after{
+    content:"";flex:1;height:1px;
+    background:linear-gradient(90deg,transparent,rgba(255,255,255,.12),transparent);
+  }
+
+  .mebook-root .auth-google{
+    width:100%;
+    padding:13px;
+    border-radius:12px;
+    font-size:14.5px;
+    font-weight:600;
+    background:rgba(255,255,255,.05);
+    color:#f3f4f6;
+    border:1.5px solid rgba(255,255,255,.1);
+    display:flex;align-items:center;justify-content:center;gap:10px;
+    transition:background .18s ease, border-color .18s ease, transform .12s ease;
+  }
+  .mebook-root .auth-google:hover{
+    background:rgba(255,255,255,.09);
+    border-color:rgba(255,255,255,.18);
+  }
+  .mebook-root .auth-google:active{transform:scale(.985);}
+  .mebook-root .auth-google svg{width:20px;height:20px;flex-shrink:0;}
+
+  .mebook-root .auth-err{
+    background:rgba(220,38,38,.12);
+    border:1px solid rgba(220,38,38,.25);
+    color:#fca5a5;
+    font-size:13px;
+    padding:11px 14px;
+    border-radius:10px;
+    margin-top:12px;
+    display:none;
+    animation: shake .4s ease;
+  }
+  .mebook-root .auth-err.show{display:block;}
+  @keyframes shake{
+    0%,100%{transform:translateX(0);}
+    25%{transform:translateX(-4px);}
+    75%{transform:translateX(4px);}
+  }
+
+  /* ============================================================
+     HEADER
+  ============================================================ */
   .mebook-root .mb-header{
     position:sticky;top:0;left:0;right:0;height:60px;z-index:1000;
     background:var(--header-bg);
@@ -285,8 +520,10 @@ const MEBOOK_CSS = `
   .mebook-root .mb-avatar-btn:active{transform:scale(.93);}
   .mebook-root .mb-avatar-btn img{width:100%;height:100%;object-fit:cover;}
 
-  /* LAYOUT */
-  .mebook-root .mb-layout{display:grid;grid-template-columns:280px minmax(0,1fr) 300px;gap:20px;max-width:1400px;margin:0 auto;padding:20px 16px 40px;align-items:start;}
+  /* ============================================================
+     LAYOUT
+  ============================================================ */
+  .mebook-root .mb-layout{display:grid;grid-template-columns:280px minmax(0,1fr) 300px;gap:20px;max-width:1400px;margin:0 auto;padding:20px 16px 100px;align-items:start;}
   .mebook-root .mb-layout.full{grid-template-columns:280px minmax(0,1fr);}
   .mebook-root .mb-sidebar{position:sticky;top:80px;}
   .mebook-root .mb-side-item{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:10px;font-size:15px;font-weight:600;color:var(--text);transition:background .18s ease;width:100%;text-align:left;}
@@ -498,7 +735,7 @@ const MEBOOK_CSS = `
   /* MODAL */
   .mebook-root .mb-modal-overlay{position:fixed;inset:0;background:rgba(15,23,42,.5);backdrop-filter:blur(3px);z-index:1300;display:flex;align-items:center;justify-content:center;padding:16px;opacity:0;visibility:hidden;transition:opacity .28s ease,visibility .28s ease;}
   .mebook-root .mb-modal-overlay.open{opacity:1;visibility:visible;}
-  .mebook-root .mb-modal{background:var(--modal-bg);border-radius:14px;width:100%;max-width:520px;box-shadow:var(--shadow-lg);transform:scale(.94);transition:transform .28s cubic-bezier(.2,.8,.3,1);max-height:90vh;overflow-y:auto;}
+  .mebook-root .mb-modal{background:var(--modal-bg);border-radius:14px;width:100%;max-width:520px;box-shadow:var(--shadow-lg);transform:scale(.94);transition:transform .28s cubic-bezier(.2,.8,.3,1);max-height:90vh;overflow-y:auto;color:var(--text);}
   .mebook-root .mb-modal-overlay.open .mb-modal{transform:scale(1);}
   .mebook-root .mb-modal-head{display:flex;align-items:center;justify-content:center;position:relative;padding:14px;border-bottom:1px solid var(--border);font-size:18px;font-weight:700;color:var(--text);}
   .mebook-root .mb-modal-close{position:absolute;right:12px;top:50%;transform:translateY(-50%);width:34px;height:34px;border-radius:50%;background:var(--input-bg);display:flex;align-items:center;justify-content:center;}
@@ -526,7 +763,7 @@ const MEBOOK_CSS = `
   .mebook-root .mb-preview-remove svg{width:14px;height:14px;fill:#fff;}
 
   /* CHAT */
-  .mebook-root .mb-chat-wrap{background:var(--card);border-radius:12px;box-shadow:var(--shadow);height:calc(100vh - 160px);display:flex;overflow:hidden;}
+  .mebook-root .mb-chat-wrap{background:var(--card);border-radius:12px;box-shadow:var(--shadow);height:calc(100vh - 200px);min-height:400px;display:flex;overflow:hidden;}
   .mebook-root .mb-chat-list{width:300px;border-right:1px solid var(--border);overflow-y:auto;flex-shrink:0;}
   .mebook-root .mb-chat-item{display:flex;gap:10px;padding:12px 14px;cursor:pointer;transition:background .18s ease;border-bottom:1px solid var(--border);position:relative;}
   .mebook-root .mb-chat-item:hover{background:var(--hover);}
@@ -566,7 +803,6 @@ const MEBOOK_CSS = `
   .mebook-root .mb-empty{text-align:center;padding:50px 20px;color:var(--text-muted);background:var(--card);border-radius:12px;box-shadow:var(--shadow);}
   .mebook-root .mb-empty svg{width:52px;height:52px;fill:var(--border);margin:0 auto 12px;}
   .mebook-root .mb-loading{text-align:center;padding:40px;color:var(--text-muted);}
-
   .mebook-root .mb-theme-row{display:flex;align-items:center;justify-content:space-between;padding:14px 4px;border-bottom:1px solid var(--border);color:var(--text);}
   .mebook-root .mb-theme-row:last-child{border-bottom:none;}
   .mebook-root .mb-theme-row .mb-setting-txt h4{margin-bottom:2px;}
@@ -589,6 +825,9 @@ const MEBOOK_CSS = `
     .mebook-root .mb-profile-info{margin-top:-44px;}
     .mebook-root .mb-friends-grid{grid-template-columns:1fr;}
     .mebook-root .mb-mebook-grid{grid-template-columns:1fr 1fr;}
+    .mebook-root .auth-card{padding:28px 22px 24px;border-radius:20px;}
+    .mebook-root .auth-logo img{width:42px;height:42px;}
+    .mebook-root .auth-logo .mb-logo-text{font-size:24px;}
   }
 `
 
@@ -600,10 +839,8 @@ export default function MeBookPage() {
   const rootRef = useRef<HTMLDivElement>(null)
   const [ready, setReady] = useState(false)
 
-  /* ---------------------------------------------
-     State that mirrors the original HTML
-  --------------------------------------------- */
-  const [theme, setTheme] = useState<"light" | "dark">("light")
+  /* ------------- STATE ------------- */
+  const [theme, setTheme] = useState<"light" | "dark">("dark")
   const [authMode, setAuthMode] = useState<"signin" | "signup">("signin")
   const [authErr, setAuthErr] = useState<{ si: string; su: string }>({
     si: "",
@@ -666,31 +903,23 @@ export default function MeBookPage() {
   const unsubscribersRef = useRef<Array<() => void>>([])
   const chatUnsubRef = useRef<(() => void) | null>(null)
 
-  /* ---------------------------------------------
-     Inject CSS once
-  --------------------------------------------- */
+  /* ------------- CSS inject ------------- */
   useEffect(() => {
     const styleId = "mebook-styles"
-    if (document.getElementById(styleId)) {
-      setReady(true)
-      return
+    if (!document.getElementById(styleId)) {
+      const styleEl = document.createElement("style")
+      styleEl.id = styleId
+      styleEl.innerHTML = MEBOOK_CSS
+      document.head.appendChild(styleEl)
     }
-    const styleEl = document.createElement("style")
-    styleEl.id = styleId
-    styleEl.innerHTML = MEBOOK_CSS
-    document.head.appendChild(styleEl)
     setReady(true)
   }, [])
 
-  /* ---------------------------------------------
-     Theme init
-  --------------------------------------------- */
+  /* ------------- Theme init ------------- */
   useEffect(() => {
     const saved = localStorage.getItem("mebook-theme")
-    const prefersDark = window.matchMedia(
-      "(prefers-color-scheme: dark)"
-    ).matches
-    const isDark = saved ? saved === "dark" : prefersDark
+    // default to dark (since auth screen is dark)
+    const isDark = saved ? saved === "dark" : true
     setTheme(isDark ? "dark" : "light")
   }, [])
 
@@ -699,75 +928,14 @@ export default function MeBookPage() {
     localStorage.setItem("mebook-theme", isDark ? "dark" : "light")
   }
 
-  /* ---------------------------------------------
-     Toast helper
-  --------------------------------------------- */
+  /* ------------- Toast ------------- */
   const showToast = useCallback((msg: string) => {
     setToast({ msg, show: true })
     setTimeout(() => setToast((t) => ({ ...t, show: false })), 2400)
   }, [])
 
-  /* ---------------------------------------------
-     Firebase init + Auth
-  --------------------------------------------- */
-  useEffect(() => {
-    if (!ready) return
-    let cancelled = false
-    let unsubAuth: (() => void) | null = null
-
-    ;(async () => {
-      try {
-        const { auth: A, db: D, fbMods: M } = await initFirebase()
-        if (cancelled) return
-
-        unsubAuth = M.onAuthStateChanged(A, async (u: any) => {
-          if (cancelled) return
-          if (u) {
-            const userRef = M.doc(D, "users", u.uid)
-            let snap = await M.getDoc(userRef)
-            if (!snap.exists()) {
-              await M.setDoc(userRef, {
-                uid: u.uid,
-                name: u.displayName || "User",
-                email: u.email,
-                photoURL: u.photoURL || "",
-                coverURL: "",
-                bio: "Movie lover 🎬",
-                location: "",
-                phone: "",
-                createdAt: M.serverTimestamp(),
-                privacy: { info: true, posts: true, requests: true },
-              })
-              snap = await M.getDoc(userRef)
-            }
-            setUser(u)
-            const p = snap.data()
-            setProfile(p)
-            setPrivacy(p.privacy || { info: true, posts: true, requests: true })
-
-            // Start listeners
-            startAppListeners(u, p, M, D)
-          } else {
-            setUser(null)
-            setProfile(null)
-            cleanupListeners()
-          }
-        })
-      } catch (e) {
-        console.error(e)
-        showToast("Firebase init failed")
-      }
-    })()
-
-    return () => {
-      cancelled = true
-      if (unsubAuth) unsubAuth()
-      cleanupListeners()
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ready])
-
-  const cleanupListeners = () => {
+  /* ------------- cleanup ------------- */
+  const cleanupListeners = useCallback(() => {
     unsubscribersRef.current.forEach((u) => {
       try {
         u()
@@ -780,157 +948,222 @@ export default function MeBookPage() {
       } catch {}
       chatUnsubRef.current = null
     }
-    setActiveChat(null)
-  }
+  }, [])
 
-  /* ---------------------------------------------
-     Start all listeners once signed in
-  --------------------------------------------- */
-  const startAppListeners = async (
-    u: any,
-    p: any,
-    M: any,
-    D: any
-  ) => {
-    cleanupListeners()
+  /* ------------- Start listeners ------------- */
+  const startAppListeners = useCallback(
+    async (uid: string) => {
+      cleanupListeners()
+      const fb = await getFirebase()
 
-    /* Feed */
-    const feedQ = M.query(
-      M.collection(D, "posts"),
-      M.orderBy("createdAt", "desc")
-    )
-    unsubscribersRef.current.push(
-      M.onSnapshot(feedQ, (snap: any) => {
-        const arr: any[] = []
-        snap.forEach((d: any) => arr.push({ id: d.id, ...d.data() }))
-        setFeed(arr)
-      })
-    )
-
-    /* My posts */
-    const myQ = M.query(
-      M.collection(D, "posts"),
-      M.where("authorId", "==", u.uid)
-    )
-    unsubscribersRef.current.push(
-      M.onSnapshot(myQ, (snap: any) => {
-        const arr: any[] = []
-        snap.forEach((d: any) => arr.push({ id: d.id, ...d.data() }))
-        arr.sort(
-          (a, b) =>
-            (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0)
-        )
-        setMyPosts(arr)
-      })
-    )
-
-    /* Community feed */
-    const commQ = M.query(
-      M.collection(D, "communityPosts"),
-      M.orderBy("createdAt", "desc")
-    )
-    unsubscribersRef.current.push(
-      M.onSnapshot(commQ, (snap: any) => {
-        const arr: any[] = []
-        snap.forEach((d: any) => arr.push({ id: d.id, ...d.data() }))
-        setCommunityFeed(arr)
-      })
-    )
-
-    /* Friends (all users) */
-    const usersQ = M.query(M.collection(D, "users"))
-    unsubscribersRef.current.push(
-      M.onSnapshot(usersQ, (snap: any) => {
-        const arr: any[] = []
-        snap.forEach((d: any) => {
-          if (d.id !== u.uid) arr.push({ uid: d.id, ...d.data() })
+      // Feed
+      const feedQ = fb.query(
+        fb.collection(fb.db, "posts"),
+        fb.orderBy("createdAt", "desc")
+      )
+      unsubscribersRef.current.push(
+        fb.onSnapshot(feedQ, (snap: any) => {
+          const arr: any[] = []
+          snap.forEach((d: any) => arr.push({ id: d.id, ...d.data() }))
+          setFeed(arr)
         })
-        setFriends(arr)
-        setOnlineList(arr.slice(0, 5))
-      })
-    )
+      )
 
-    /* Friend requests */
-    const reqQ = M.query(
-      M.collection(D, "friendRequests"),
-      M.where("to", "==", u.uid),
-      M.where("status", "==", "pending")
-    )
-    unsubscribersRef.current.push(
-      M.onSnapshot(reqQ, async (snap: any) => {
-        const arr: any[] = []
-        for (const d of snap.docs) {
-          const data = d.data()
-          const fromSnap = await M.getDoc(M.doc(D, "users", data.from))
-          arr.push({
-            id: d.id,
-            from: data.from,
-            fromUser: fromSnap.exists()
-              ? fromSnap.data()
-              : { name: "User", photoURL: "" },
+      // My posts
+      const myQ = fb.query(
+        fb.collection(fb.db, "posts"),
+        fb.where("authorId", "==", uid)
+      )
+      unsubscribersRef.current.push(
+        fb.onSnapshot(myQ, (snap: any) => {
+          const arr: any[] = []
+          snap.forEach((d: any) => arr.push({ id: d.id, ...d.data() }))
+          arr.sort(
+            (a, b) =>
+              (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0)
+          )
+          setMyPosts(arr)
+        })
+      )
+
+      // Community
+      const commQ = fb.query(
+        fb.collection(fb.db, "communityPosts"),
+        fb.orderBy("createdAt", "desc")
+      )
+      unsubscribersRef.current.push(
+        fb.onSnapshot(commQ, (snap: any) => {
+          const arr: any[] = []
+          snap.forEach((d: any) => arr.push({ id: d.id, ...d.data() }))
+          setCommunityFeed(arr)
+        })
+      )
+
+      // Users
+      const usersQ = fb.query(fb.collection(fb.db, "users"))
+      unsubscribersRef.current.push(
+        fb.onSnapshot(usersQ, (snap: any) => {
+          const arr: any[] = []
+          snap.forEach((d: any) => {
+            if (d.id !== uid) arr.push({ uid: d.id, ...d.data() })
           })
-        }
-        setRequests(arr)
-      })
-    )
+          setFriends(arr)
+          setOnlineList(arr.slice(0, 5))
+        })
+      )
 
-    /* My friends */
-    const myFriendsQ = M.query(
-      M.collection(D, "friends"),
-      M.where("a", "==", u.uid)
-    )
-    unsubscribersRef.current.push(
-      M.onSnapshot(myFriendsQ, async (snap: any) => {
-        const arr: any[] = []
-        for (const d of snap.docs) {
-          const s = await M.getDoc(M.doc(D, "users", d.data().b))
-          if (s.exists()) arr.push({ uid: s.id, ...s.data() })
-        }
-        setMyFriends(arr)
-      })
-    )
+      // Requests
+      const reqQ = fb.query(
+        fb.collection(fb.db, "friendRequests"),
+        fb.where("to", "==", uid),
+        fb.where("status", "==", "pending")
+      )
+      unsubscribersRef.current.push(
+        fb.onSnapshot(reqQ, async (snap: any) => {
+          const arr: any[] = []
+          for (const d of snap.docs) {
+            const data = d.data()
+            const fromSnap = await fb.getDoc(
+              fb.doc(fb.db, "users", data.from)
+            )
+            arr.push({
+              id: d.id,
+              from: data.from,
+              fromUser: fromSnap.exists()
+                ? fromSnap.data()
+                : { name: "User", photoURL: "" },
+            })
+          }
+          setRequests(arr)
+        })
+      )
 
-    /* Chats */
-    const chatsQ = M.query(
-      M.collection(D, "chats"),
-      M.where("members", "array-contains", u.uid)
-    )
-    unsubscribersRef.current.push(
-      M.onSnapshot(chatsQ, async (snap: any) => {
-        const arr: any[] = []
-        for (const d of snap.docs) {
-          const data = d.data()
-          const otherId = data.members.find((m: string) => m !== u.uid)
-          if (!otherId) continue
-          const s = await M.getDoc(M.doc(D, "users", otherId))
-          if (!s.exists()) continue
-          arr.push({
-            id: d.id,
-            otherId,
-            other: s.data(),
-            last: data.lastMessage || "",
-            lastAt: data.lastAt,
-          })
-        }
-        arr.sort(
-          (a, b) => (b.lastAt?.seconds || 0) - (a.lastAt?.seconds || 0)
-        )
-        setChats(arr)
-      })
-    )
-  }
+      // My friends
+      const myFriendsQ = fb.query(
+        fb.collection(fb.db, "friends"),
+        fb.where("a", "==", uid)
+      )
+      unsubscribersRef.current.push(
+        fb.onSnapshot(myFriendsQ, async (snap: any) => {
+          const arr: any[] = []
+          for (const d of snap.docs) {
+            const s = await fb.getDoc(
+              fb.doc(fb.db, "users", d.data().b)
+            )
+            if (s.exists()) arr.push({ uid: s.id, ...s.data() })
+          }
+          setMyFriends(arr)
+        })
+      )
 
-  /* ---------------------------------------------
-     AUTH ACTIONS
-  --------------------------------------------- */
+      // Chats
+      const chatsQ = fb.query(
+        fb.collection(fb.db, "chats"),
+        fb.where("members", "array-contains", uid)
+      )
+      unsubscribersRef.current.push(
+        fb.onSnapshot(chatsQ, async (snap: any) => {
+          const arr: any[] = []
+          for (const d of snap.docs) {
+            const data = d.data()
+            const otherId = data.members.find((m: string) => m !== uid)
+            if (!otherId) continue
+            const s = await fb.getDoc(fb.doc(fb.db, "users", otherId))
+            if (!s.exists()) continue
+            arr.push({
+              id: d.id,
+              otherId,
+              other: s.data(),
+              last: data.lastMessage || "",
+              lastAt: data.lastAt,
+            })
+          }
+          arr.sort(
+            (a, b) => (b.lastAt?.seconds || 0) - (a.lastAt?.seconds || 0)
+          )
+          setChats(arr)
+        })
+      )
+    },
+    [cleanupListeners]
+  )
+
+  /* ------------- Firebase auth listener ------------- */
+  useEffect(() => {
+    if (!ready) return
+    let cancelled = false
+    let unsubAuth: (() => void) | null = null
+
+    ;(async () => {
+      try {
+        const fb = await getFirebase()
+        if (cancelled) return
+
+        unsubAuth = fb.onAuthStateChanged(fb.auth, async (u: any) => {
+          if (cancelled) return
+          if (u) {
+            const userRef = fb.doc(fb.db, "users", u.uid)
+            let snap = await fb.getDoc(userRef)
+            if (!snap.exists()) {
+              await fb.setDoc(userRef, {
+                uid: u.uid,
+                name: u.displayName || "User",
+                email: u.email,
+                photoURL: u.photoURL || "",
+                coverURL: "",
+                bio: "Movie lover 🎬",
+                location: "",
+                phone: "",
+                createdAt: fb.serverTimestamp(),
+                privacy: { info: true, posts: true, requests: true },
+              })
+              snap = await fb.getDoc(userRef)
+            }
+            setUser(u)
+            const p = snap.data()
+            setProfile(p)
+            setPrivacy(
+              p.privacy || { info: true, posts: true, requests: true }
+            )
+            setAuthBusy(false)
+            startAppListeners(u.uid)
+          } else {
+            setUser(null)
+            setProfile(null)
+            cleanupListeners()
+            setAuthBusy(false)
+          }
+        })
+      } catch (e) {
+        console.error("Firebase init failed:", e)
+        showToast("Firebase init failed")
+        setAuthBusy(false)
+      }
+    })()
+
+    return () => {
+      cancelled = true
+      if (unsubAuth) unsubAuth()
+      cleanupListeners()
+    }
+  }, [ready, startAppListeners, cleanupListeners, showToast])
+
+  /* ------------- AUTH ACTIONS ------------- */
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (authBusy) return
     setAuthBusy(true)
-    setAuthErr({ ...authErr, si: "" })
+    setAuthErr((prev) => ({ ...prev, si: "" }))
     try {
-      const { auth: A, fbMods: M } = await initFirebase()
-      await M.signInWithEmailAndPassword(A, siEmail.trim(), siPass)
+      const fb = await getFirebase()
+      await fb.signInWithEmailAndPassword(
+        fb.auth,
+        siEmail.trim(),
+        siPass
+      )
+      // onAuthStateChanged will handle the rest
     } catch (err: any) {
+      console.error("Sign in error:", err)
       setAuthErr((prev) => ({ ...prev, si: friendlyErr(err) }))
       setAuthBusy(false)
     }
@@ -938,17 +1171,20 @@ export default function MeBookPage() {
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (authBusy) return
     setAuthBusy(true)
-    setAuthErr({ ...authErr, su: "" })
+    setAuthErr((prev) => ({ ...prev, su: "" }))
     try {
-      const { auth: A, db: D, fbMods: M } = await initFirebase()
-      const cred = await M.createUserWithEmailAndPassword(
-        A,
+      const fb = await getFirebase()
+      const cred = await fb.createUserWithEmailAndPassword(
+        fb.auth,
         suEmail.trim(),
         suPass
       )
-      await M.updateProfile(cred.user, { displayName: suName.trim() })
-      await M.setDoc(M.doc(D, "users", cred.user.uid), {
+      await fb.updateProfile(cred.user, {
+        displayName: suName.trim(),
+      })
+      await fb.setDoc(fb.doc(fb.db, "users", cred.user.uid), {
         uid: cred.user.uid,
         name: suName.trim(),
         email: cred.user.email,
@@ -957,24 +1193,27 @@ export default function MeBookPage() {
         bio: "Movie lover 🎬",
         location: "",
         phone: "",
-        createdAt: M.serverTimestamp(),
+        createdAt: fb.serverTimestamp(),
         privacy: { info: true, posts: true, requests: true },
       })
     } catch (err: any) {
+      console.error("Sign up error:", err)
       setAuthErr((prev) => ({ ...prev, su: friendlyErr(err) }))
       setAuthBusy(false)
     }
   }
 
   const handleGoogleSignIn = async () => {
+    if (authBusy) return
+    setAuthBusy(true)
     try {
-      const { auth: A, db: D, fbMods: M } = await initFirebase()
-      const provider = new M.GoogleAuthProvider()
-      const cred = await M.signInWithPopup(A, provider)
-      const ref = M.doc(D, "users", cred.user.uid)
-      const snap = await M.getDoc(ref)
+      const fb = await getFirebase()
+      const provider = new fb.GoogleAuthProvider()
+      const cred = await fb.signInWithPopup(fb.auth, provider)
+      const ref = fb.doc(fb.db, "users", cred.user.uid)
+      const snap = await fb.getDoc(ref)
       if (!snap.exists()) {
-        await M.setDoc(ref, {
+        await fb.setDoc(ref, {
           uid: cred.user.uid,
           name: cred.user.displayName || "User",
           email: cred.user.email,
@@ -983,21 +1222,24 @@ export default function MeBookPage() {
           bio: "Movie lover 🎬",
           location: "",
           phone: "",
-          createdAt: M.serverTimestamp(),
+          createdAt: fb.serverTimestamp(),
           privacy: { info: true, posts: true, requests: true },
         })
       }
+      // onAuthStateChanged handles the rest
     } catch (err: any) {
+      console.error("Google sign in error:", err)
       showToast(friendlyErr(err))
+      setAuthBusy(false)
     }
   }
 
   const handleSignOut = async () => {
     if (!confirm("Log out of MeBook?")) return
     try {
-      const { auth: A, fbMods: M } = await initFirebase()
+      const fb = await getFirebase()
       cleanupListeners()
-      await M.signOut(A)
+      await fb.signOut(fb.auth)
     } catch (e: any) {
       showToast(e.message)
     }
@@ -1006,17 +1248,15 @@ export default function MeBookPage() {
   const handleResetPassword = async () => {
     if (!user?.email) return
     try {
-      const { auth: A, fbMods: M } = await initFirebase()
-      await M.sendPasswordResetEmail(A, user.email)
+      const fb = await getFirebase()
+      await fb.sendPasswordResetEmail(fb.auth, user.email)
       showToast("Password reset email sent ✅")
     } catch (e: any) {
       showToast(e.message)
     }
   }
 
-  /* ---------------------------------------------
-     NAV
-  --------------------------------------------- */
+  /* ------------- NAV ------------- */
   const goTo = (view: string) => {
     setCurrentView(view)
     setDrawerOpen(false)
@@ -1025,21 +1265,19 @@ export default function MeBookPage() {
     }, 50)
   }
 
-  /* ---------------------------------------------
-     POST ACTIONS
-  --------------------------------------------- */
+  /* ------------- POST ACTIONS ------------- */
   const handleLikePost = async (postId: string) => {
     try {
-      const { db: D, fbMods: M } = await initFirebase()
-      const ref = M.doc(D, "posts", postId)
-      const snap = await M.getDoc(ref)
+      const fb = await getFirebase()
+      const ref = fb.doc(fb.db, "posts", postId)
+      const snap = await fb.getDoc(ref)
       if (!snap.exists()) return
       const likes = snap.data().likes || []
       const has = likes.includes(user.uid)
-      await M.updateDoc(ref, {
+      await fb.updateDoc(ref, {
         likes: has
-          ? M.arrayRemove(user.uid)
-          : M.arrayUnion(user.uid),
+          ? fb.arrayRemove(user.uid)
+          : fb.arrayUnion(user.uid),
       })
     } catch (e: any) {
       showToast(e.message)
@@ -1050,10 +1288,10 @@ export default function MeBookPage() {
     text = (text || "").trim()
     if (!text) return
     try {
-      const { db: D, fbMods: M } = await initFirebase()
-      const ref = M.doc(D, "posts", postId)
-      await M.updateDoc(ref, {
-        comments: M.arrayUnion({
+      const fb = await getFirebase()
+      const ref = fb.doc(fb.db, "posts", postId)
+      await fb.updateDoc(ref, {
+        comments: fb.arrayUnion({
           uid: user.uid,
           name: profile.name,
           avatar: profile.photoURL || "",
@@ -1069,8 +1307,8 @@ export default function MeBookPage() {
 
   const handleSharePost = async (postId: string) => {
     try {
-      const { db: D, fbMods: M } = await initFirebase()
-      const snap = await M.getDoc(M.doc(D, "posts", postId))
+      const fb = await getFirebase()
+      const snap = await fb.getDoc(fb.doc(fb.db, "posts", postId))
       if (!snap.exists()) {
         showToast("Post not found")
         return
@@ -1088,8 +1326,8 @@ export default function MeBookPage() {
           text: shareText,
           url: postUrl,
         })
-        await M.updateDoc(M.doc(D, "posts", postId), {
-          shares: M.increment(1),
+        await fb.updateDoc(fb.doc(fb.db, "posts", postId), {
+          shares: fb.increment(1),
         })
         showToast("Shared ✅")
       } else {
@@ -1101,8 +1339,8 @@ export default function MeBookPage() {
           "_blank",
           "width=640,height=480"
         )
-        await M.updateDoc(M.doc(D, "posts", postId), {
-          shares: M.increment(1),
+        await fb.updateDoc(fb.doc(fb.db, "posts", postId), {
+          shares: fb.increment(1),
         })
         showToast("Sharing to Facebook...")
       }
@@ -1114,17 +1352,15 @@ export default function MeBookPage() {
   const handleDeletePost = async (postId: string) => {
     if (!confirm("Delete this post?")) return
     try {
-      const { db: D, fbMods: M } = await initFirebase()
-      await M.deleteDoc(M.doc(D, "posts", postId))
+      const fb = await getFirebase()
+      await fb.deleteDoc(fb.doc(fb.db, "posts", postId))
       showToast("Post deleted")
     } catch (e: any) {
       showToast(e.message)
     }
   }
 
-  /* ---------------------------------------------
-     COMPOSER
-  --------------------------------------------- */
+  /* ------------- COMPOSER ------------- */
   const handlePreviewFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
@@ -1144,10 +1380,10 @@ export default function MeBookPage() {
       showToast("Write something or add a photo")
       return
     }
-
+    if (postBusy) return
     setPostBusy(true)
     try {
-      const { db: D, fbMods: M } = await initFirebase()
+      const fb = await getFirebase()
       let imageUrl = ""
       if (selectedFile) {
         setUploadProgress(0)
@@ -1155,8 +1391,7 @@ export default function MeBookPage() {
           setUploadProgress(pct)
         )
       }
-
-      await M.addDoc(M.collection(D, "posts"), {
+      await fb.addDoc(fb.collection(fb.db, "posts"), {
         authorId: user.uid,
         authorName: profile.name,
         authorAvatar: profile.photoURL || "",
@@ -1166,9 +1401,8 @@ export default function MeBookPage() {
         likes: [],
         comments: [],
         shares: 0,
-        createdAt: M.serverTimestamp(),
+        createdAt: fb.serverTimestamp(),
       })
-
       setPostText("")
       setPostMovie("")
       removePreview()
@@ -1184,34 +1418,32 @@ export default function MeBookPage() {
     }
   }
 
-  /* ---------------------------------------------
-     FRIEND ACTIONS
-  --------------------------------------------- */
+  /* ------------- FRIENDS ------------- */
   const handleSendRequest = async (toUid: string) => {
     if (toUid === user.uid) return
     try {
-      const { db: D, fbMods: M } = await initFirebase()
-      const q1 = M.query(
-        M.collection(D, "friendRequests"),
-        M.where("from", "==", user.uid),
-        M.where("to", "==", toUid)
+      const fb = await getFirebase()
+      const q1 = fb.query(
+        fb.collection(fb.db, "friendRequests"),
+        fb.where("from", "==", user.uid),
+        fb.where("to", "==", toUid)
       )
-      const s1 = await M.getDocs(q1)
-      const q2 = M.query(
-        M.collection(D, "friendRequests"),
-        M.where("from", "==", toUid),
-        M.where("to", "==", user.uid)
+      const s1 = await fb.getDocs(q1)
+      const q2 = fb.query(
+        fb.collection(fb.db, "friendRequests"),
+        fb.where("from", "==", toUid),
+        fb.where("to", "==", user.uid)
       )
-      const s2 = await M.getDocs(q2)
+      const s2 = await fb.getDocs(q2)
       if (!s1.empty || !s2.empty) {
         showToast("Request already exists")
         return
       }
-      await M.addDoc(M.collection(D, "friendRequests"), {
+      await fb.addDoc(fb.collection(fb.db, "friendRequests"), {
         from: user.uid,
         to: toUid,
         status: "pending",
-        createdAt: M.serverTimestamp(),
+        createdAt: fb.serverTimestamp(),
       })
       showToast("Friend request sent ✅")
     } catch (e: any) {
@@ -1221,15 +1453,18 @@ export default function MeBookPage() {
 
   const handleAcceptRequest = async (reqId: string, fromUid: string) => {
     try {
-      const { db: D, fbMods: M } = await initFirebase()
-      await M.updateDoc(M.doc(D, "friendRequests", reqId), {
+      const fb = await getFirebase()
+      await fb.updateDoc(fb.doc(fb.db, "friendRequests", reqId), {
         status: "accepted",
       })
-      await M.setDoc(M.doc(D, "friends", user.uid + "_" + fromUid), {
-        a: user.uid,
-        b: fromUid,
-        createdAt: M.serverTimestamp(),
-      })
+      await fb.setDoc(
+        fb.doc(fb.db, "friends", user.uid + "_" + fromUid),
+        {
+          a: user.uid,
+          b: fromUid,
+          createdAt: fb.serverTimestamp(),
+        }
+      )
       showToast("You are now friends 🎉")
     } catch (e: any) {
       showToast(e.message)
@@ -1238,8 +1473,8 @@ export default function MeBookPage() {
 
   const handleDeclineRequest = async (reqId: string) => {
     try {
-      const { db: D, fbMods: M } = await initFirebase()
-      await M.updateDoc(M.doc(D, "friendRequests", reqId), {
+      const fb = await getFirebase()
+      await fb.updateDoc(fb.doc(fb.db, "friendRequests", reqId), {
         status: "declined",
       })
       showToast("Request declined")
@@ -1248,9 +1483,7 @@ export default function MeBookPage() {
     }
   }
 
-  /* ---------------------------------------------
-     CHAT
-  --------------------------------------------- */
+  /* ------------- CHAT ------------- */
   const startChat = async (
     otherId: string,
     otherName: string,
@@ -1262,15 +1495,15 @@ export default function MeBookPage() {
     }
     const cid = chatIdFor(user.uid, otherId)
     try {
-      const { db: D, fbMods: M } = await initFirebase()
-      const ref = M.doc(D, "chats", cid)
-      const snap = await M.getDoc(ref)
+      const fb = await getFirebase()
+      const ref = fb.doc(fb.db, "chats", cid)
+      const snap = await fb.getDoc(ref)
       if (!snap.exists()) {
-        await M.setDoc(ref, {
+        await fb.setDoc(ref, {
           members: [user.uid, otherId],
-          createdAt: M.serverTimestamp(),
+          createdAt: fb.serverTimestamp(),
           lastMessage: null,
-          lastAt: M.serverTimestamp(),
+          lastAt: fb.serverTimestamp(),
         })
       }
       goTo("messages")
@@ -1284,29 +1517,25 @@ export default function MeBookPage() {
     }
   }
 
-  const openChat = (chatId: string, otherId: string, other: any) => {
+  const openChat = async (chatId: string, otherId: string, other: any) => {
     setActiveChat(chatId)
     setChatPartner({ ...other, uid: otherId })
-
     if (chatUnsubRef.current) {
       try {
         chatUnsubRef.current()
       } catch {}
       chatUnsubRef.current = null
     }
-
-    ;(async () => {
-      const { db: D, fbMods: M } = await initFirebase()
-      const q = M.query(
-        M.collection(D, "chats", chatId, "messages"),
-        M.orderBy("at", "asc")
-      )
-      chatUnsubRef.current = M.onSnapshot(q, (snap: any) => {
-        const arr: any[] = []
-        snap.forEach((d: any) => arr.push({ id: d.id, ...d.data() }))
-        setChatMessages(arr)
-      })
-    })()
+    const fb = await getFirebase()
+    const q = fb.query(
+      fb.collection(fb.db, "chats", chatId, "messages"),
+      fb.orderBy("at", "asc")
+    )
+    chatUnsubRef.current = fb.onSnapshot(q, (snap: any) => {
+      const arr: any[] = []
+      snap.forEach((d: any) => arr.push({ id: d.id, ...d.data() }))
+      setChatMessages(arr)
+    })
   }
 
   const handleSendMessage = async () => {
@@ -1314,24 +1543,25 @@ export default function MeBookPage() {
     if (!text || !activeChat) return
     setChatInput("")
     try {
-      const { db: D, fbMods: M } = await initFirebase()
-      await M.addDoc(M.collection(D, "chats", activeChat, "messages"), {
-        from: user.uid,
-        text,
-        at: M.serverTimestamp(),
-      })
-      await M.updateDoc(M.doc(D, "chats", activeChat), {
+      const fb = await getFirebase()
+      await fb.addDoc(
+        fb.collection(fb.db, "chats", activeChat, "messages"),
+        {
+          from: user.uid,
+          text,
+          at: fb.serverTimestamp(),
+        }
+      )
+      await fb.updateDoc(fb.doc(fb.db, "chats", activeChat), {
         lastMessage: { text, from: user.uid },
-        lastAt: M.serverTimestamp(),
+        lastAt: fb.serverTimestamp(),
       })
     } catch (e: any) {
       showToast(e.message)
     }
   }
 
-  /* ---------------------------------------------
-     PROFILE
-  --------------------------------------------- */
+  /* ------------- PROFILE ------------- */
   const handleEditProfile = () => {
     setEditName(profile.name || "")
     setEditBio(profile.bio || "")
@@ -1342,14 +1572,14 @@ export default function MeBookPage() {
 
   const handleSaveProfile = async () => {
     try {
-      const { db: D, fbMods: M } = await initFirebase()
+      const fb = await getFirebase()
       const updates = {
         name: editName.trim() || profile.name,
         bio: editBio.trim(),
         location: editLoc.trim(),
         phone: editPhone.trim(),
       }
-      await M.updateDoc(M.doc(D, "users", user.uid), updates)
+      await fb.updateDoc(fb.doc(fb.db, "users", user.uid), updates)
       setProfile({ ...profile, ...updates })
       setEditOpen(false)
       showToast("Profile updated ✅")
@@ -1367,9 +1597,11 @@ export default function MeBookPage() {
       if (!f) return
       showToast("Uploading profile photo...")
       try {
-        const { db: D, fbMods: M } = await initFirebase()
+        const fb = await getFirebase()
         const url = await cloudinaryUpload(f)
-        await M.updateDoc(M.doc(D, "users", user.uid), { photoURL: url })
+        await fb.updateDoc(fb.doc(fb.db, "users", user.uid), {
+          photoURL: url,
+        })
         setProfile({ ...profile, photoURL: url })
         showToast("Profile photo updated ✅")
       } catch (e: any) {
@@ -1388,9 +1620,11 @@ export default function MeBookPage() {
       if (!f) return
       showToast("Uploading cover photo...")
       try {
-        const { db: D, fbMods: M } = await initFirebase()
+        const fb = await getFirebase()
         const url = await cloudinaryUpload(f)
-        await M.updateDoc(M.doc(D, "users", user.uid), { coverURL: url })
+        await fb.updateDoc(fb.doc(fb.db, "users", user.uid), {
+          coverURL: url,
+        })
         setProfile({ ...profile, coverURL: url })
         showToast("Cover photo updated ✅")
       } catch (e: any) {
@@ -1402,8 +1636,8 @@ export default function MeBookPage() {
 
   const handleSavePrivacy = async () => {
     try {
-      const { db: D, fbMods: M } = await initFirebase()
-      await M.updateDoc(M.doc(D, "users", user.uid), { privacy })
+      const fb = await getFirebase()
+      await fb.updateDoc(fb.doc(fb.db, "users", user.uid), { privacy })
       showToast("Privacy updated")
     } catch (e: any) {
       showToast(e.message)
@@ -1416,8 +1650,8 @@ export default function MeBookPage() {
       return
     }
     try {
-      const { db: D, fbMods: M } = await initFirebase()
-      const snap = await M.getDoc(M.doc(D, "users", uid))
+      const fb = await getFirebase()
+      const snap = await fb.getDoc(fb.doc(fb.db, "users", uid))
       if (!snap.exists()) {
         showToast("User not found")
         return
@@ -1516,9 +1750,7 @@ export default function MeBookPage() {
     }
   }
 
-  /* ---------------------------------------------
-     ESC close
-  --------------------------------------------- */
+  /* ------------- ESC ------------- */
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
@@ -1534,15 +1766,194 @@ export default function MeBookPage() {
 
   if (!ready) return null
 
-  /* ============================================
-     RENDER HELPERS
-  ============================================ */
-
+  /* ------------- HELPERS ------------- */
   const avatarUrl = (u: any) =>
     u?.photoURL ||
     `https://ui-avatars.com/api/?background=16a34a&color=fff&name=${encodeURIComponent(
       u?.name || "User"
     )}`
+
+  /* ============================================================
+     AUTH SCREEN
+  ============================================================ */
+  if (!user) {
+    return (
+      <div className="mebook-root dark-mode" ref={rootRef}>
+        <div className="auth-wrap">
+          <div className="auth-card">
+            <div className="auth-logo">
+              <img src={LOGO_URL} alt="MeBook" />
+              <div className="mb-logo-text">
+                <span className="me">Me</span>
+                <span className="book">Book</span>
+              </div>
+            </div>
+            <p className="auth-sub">Movie lovers' social network 🎬</p>
+
+            <div className="auth-tabs">
+              <button
+                type="button"
+                className={`auth-tab ${
+                  authMode === "signin" ? "active" : ""
+                }`}
+                onClick={() => {
+                  setAuthMode("signin")
+                  setAuthErr({ si: "", su: "" })
+                }}
+              >
+                Sign In
+              </button>
+              <button
+                type="button"
+                className={`auth-tab ${
+                  authMode === "signup" ? "active" : ""
+                }`}
+                onClick={() => {
+                  setAuthMode("signup")
+                  setAuthErr({ si: "", su: "" })
+                }}
+              >
+                Sign Up
+              </button>
+            </div>
+
+            {authMode === "signin" ? (
+              <form onSubmit={handleSignIn}>
+                <div className="auth-field">
+                  <label>Email</label>
+                  <input
+                    type="email"
+                    required
+                    autoComplete="email"
+                    placeholder="you@example.com"
+                    value={siEmail}
+                    onChange={(e) => setSiEmail(e.target.value)}
+                  />
+                </div>
+                <div className="auth-field">
+                  <label>Password</label>
+                  <input
+                    type="password"
+                    required
+                    autoComplete="current-password"
+                    placeholder="••••••••"
+                    minLength={6}
+                    value={siPass}
+                    onChange={(e) => setSiPass(e.target.value)}
+                  />
+                </div>
+                <button
+                  type="submit"
+                  className="auth-btn"
+                  disabled={authBusy}
+                >
+                  {authBusy ? "Signing in..." : "Sign In"}
+                </button>
+                {authErr.si && (
+                  <div className="auth-err show">{authErr.si}</div>
+                )}
+              </form>
+            ) : (
+              <form onSubmit={handleSignUp}>
+                <div className="auth-field">
+                  <label>Full Name</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="Your name"
+                    minLength={2}
+                    value={suName}
+                    onChange={(e) => setSuName(e.target.value)}
+                  />
+                </div>
+                <div className="auth-field">
+                  <label>Email</label>
+                  <input
+                    type="email"
+                    required
+                    autoComplete="email"
+                    placeholder="you@example.com"
+                    value={suEmail}
+                    onChange={(e) => setSuEmail(e.target.value)}
+                  />
+                </div>
+                <div className="auth-field">
+                  <label>Password (min 6 chars)</label>
+                  <input
+                    type="password"
+                    required
+                    autoComplete="new-password"
+                    placeholder="••••••••"
+                    minLength={6}
+                    value={suPass}
+                    onChange={(e) => setSuPass(e.target.value)}
+                  />
+                </div>
+                <button
+                  type="submit"
+                  className="auth-btn"
+                  disabled={authBusy}
+                >
+                  {authBusy ? "Creating..." : "Create Account"}
+                </button>
+                {authErr.su && (
+                  <div className="auth-err show">{authErr.su}</div>
+                )}
+              </form>
+            )}
+
+            <div className="auth-divider">OR</div>
+
+            <button
+              type="button"
+              className="auth-google"
+              onClick={handleGoogleSignIn}
+              disabled={authBusy}
+            >
+              <svg viewBox="0 0 48 48">
+                <path
+                  fill="#FFC107"
+                  d="M43.6 20.5H42V20H24v8h11.3c-1.6 4.6-6 8-11.3 8-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.1 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.2-.1-2.4-.4-3.5z"
+                />
+                <path
+                  fill="#FF3D00"
+                  d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.1 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"
+                />
+                <path
+                  fill="#4CAF50"
+                  d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2c-2 1.5-4.5 2.4-7.2 2.4-5.2 0-9.6-3.3-11.3-7.9l-6.5 5C9.5 39.6 16.2 44 24 44z"
+                />
+                <path
+                  fill="#1976D2"
+                  d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.1-4.1 5.5l6.2 5.2C41 35.4 44 30.1 44 24c0-1.2-.1-2.4-.4-3.5z"
+                />
+              </svg>
+              Continue with Google
+            </button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  /* ============================================================
+     MAIN APP
+  ============================================================ */
+  const unreadCount = chats.filter(
+    (c) =>
+      c.last &&
+      (c.last as any).read === false &&
+      (c.last as any).from !== user.uid
+  ).length
+
+  const filteredFriends = friends.filter((f) => {
+    const q = friendSearch.trim().toLowerCase()
+    if (!q) return true
+    return (
+      (f.name || "").toLowerCase().includes(q) ||
+      (f.email || "").toLowerCase().includes(q)
+    )
+  })
 
   const renderPost = (post: any, isMine = false) => {
     const liked =
@@ -1621,7 +2032,10 @@ export default function MeBookPage() {
           </div>
         ) : post.movie ? (
           <div style={{ padding: "0 16px 8px" }}>
-            <span className="mb-movie-badge" style={{ position: "static" }}>
+            <span
+              className="mb-movie-badge"
+              style={{ position: "static" }}
+            >
               <svg viewBox="0 0 24 24">
                 <path d="M18 4l2 4h-3l-2-4h-2l2 4h-3l-2-4H8l2 4H7L5 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4h-4z" />
               </svg>
@@ -1640,10 +2054,7 @@ export default function MeBookPage() {
                 <span className="like-count">{likesCount}</span>
               </span>
             ) : (
-              <span
-                className="like-count"
-                style={{ fontSize: 13 }}
-              >
+              <span className="like-count" style={{ fontSize: 13 }}>
                 0 likes
               </span>
             )}
@@ -1684,183 +2095,9 @@ export default function MeBookPage() {
     )
   }
 
-  /* ============================================
-     MAIN RENDER
-  ============================================ */
-
-  const rootClass = `mebook-root ${theme === "dark" ? "dark-mode" : ""}`
-
-  /* ---------- AUTH SCREEN ---------- */
-  if (!user) {
-    return (
-      <div className={rootClass} ref={rootRef}>
-        <div className="auth-wrap">
-          <div className="auth-card">
-            <div className="auth-logo">
-              <img src={LOGO_URL} alt="MeBook" />
-              <div className="mb-logo-text">
-                <span className="me">Me</span>
-                <span className="book">Book</span>
-              </div>
-            </div>
-            <p className="auth-sub">Movie lovers' social network 🎬</p>
-
-            <div className="auth-tabs">
-              <button
-                className={`auth-tab ${
-                  authMode === "signin" ? "active" : ""
-                }`}
-                onClick={() => setAuthMode("signin")}
-              >
-                Sign In
-              </button>
-              <button
-                className={`auth-tab ${
-                  authMode === "signup" ? "active" : ""
-                }`}
-                onClick={() => setAuthMode("signup")}
-              >
-                Sign Up
-              </button>
-            </div>
-
-            {authMode === "signin" ? (
-              <form onSubmit={handleSignIn}>
-                <div className="auth-field">
-                  <label>Email</label>
-                  <input
-                    type="email"
-                    required
-                    placeholder="you@example.com"
-                    value={siEmail}
-                    onChange={(e) => setSiEmail(e.target.value)}
-                  />
-                </div>
-                <div className="auth-field">
-                  <label>Password</label>
-                  <input
-                    type="password"
-                    required
-                    placeholder="••••••••"
-                    minLength={6}
-                    value={siPass}
-                    onChange={(e) => setSiPass(e.target.value)}
-                  />
-                </div>
-                <button
-                  type="submit"
-                  className="auth-btn"
-                  disabled={authBusy}
-                >
-                  {authBusy ? "Signing in..." : "Sign In"}
-                </button>
-                <div
-                  className={`auth-err ${
-                    authErr.si ? "show" : ""
-                  }`}
-                >
-                  {authErr.si}
-                </div>
-              </form>
-            ) : (
-              <form onSubmit={handleSignUp}>
-                <div className="auth-field">
-                  <label>Full Name</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="Your name"
-                    minLength={2}
-                    value={suName}
-                    onChange={(e) => setSuName(e.target.value)}
-                  />
-                </div>
-                <div className="auth-field">
-                  <label>Email</label>
-                  <input
-                    type="email"
-                    required
-                    placeholder="you@example.com"
-                    value={suEmail}
-                    onChange={(e) => setSuEmail(e.target.value)}
-                  />
-                </div>
-                <div className="auth-field">
-                  <label>Password (min 6 chars)</label>
-                  <input
-                    type="password"
-                    required
-                    placeholder="••••••••"
-                    minLength={6}
-                    value={suPass}
-                    onChange={(e) => setSuPass(e.target.value)}
-                  />
-                </div>
-                <button
-                  type="submit"
-                  className="auth-btn"
-                  disabled={authBusy}
-                >
-                  {authBusy ? "Creating..." : "Create Account"}
-                </button>
-                <div
-                  className={`auth-err ${
-                    authErr.su ? "show" : ""
-                  }`}
-                >
-                  {authErr.su}
-                </div>
-              </form>
-            )}
-
-            <div className="auth-divider">OR</div>
-
-            <button
-              className="auth-google"
-              onClick={handleGoogleSignIn}
-            >
-              <svg viewBox="0 0 48 48">
-                <path
-                  fill="#FFC107"
-                  d="M43.6 20.5H42V20H24v8h11.3c-1.6 4.6-6 8-11.3 8-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.1 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.2-.1-2.4-.4-3.5z"
-                />
-                <path
-                  fill="#FF3D00"
-                  d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.1 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"
-                />
-                <path
-                  fill="#4CAF50"
-                  d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2c-2 1.5-4.5 2.4-7.2 2.4-5.2 0-9.6-3.3-11.3-7.9l-6.5 5C9.5 39.6 16.2 44 24 44z"
-                />
-                <path
-                  fill="#1976D2"
-                  d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.1-4.1 5.5l6.2 5.2C41 35.4 44 30.1 44 24c0-1.2-.1-2.4-.4-3.5z"
-                />
-              </svg>
-              Continue with Google
-            </button>
-          </div>
-        </div>
-      </div>
-    )
-  }
-
-  /* ---------- MAIN APP ---------- */
-  const unreadCount = chats.filter(
-    (c) =>
-      c.last &&
-      (c.last as any).read === false &&
-      (c.last as any).from !== user.uid
-  ).length
-
-  const filteredFriends = friends.filter((f) => {
-    const q = friendSearch.trim().toLowerCase()
-    if (!q) return true
-    return (
-      (f.name || "").toLowerCase().includes(q) ||
-      (f.email || "").toLowerCase().includes(q)
-    )
-  })
+  const rootClass = `mebook-root ${
+    theme === "dark" ? "dark-mode" : ""
+  }`
 
   return (
     <div className={rootClass} ref={rootRef}>
@@ -1964,7 +2201,7 @@ export default function MeBookPage() {
             badge={unreadCount}
             icon={
               <svg viewBox="0 0 24 24">
-                <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z" />
+                <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z" />
               </svg>
             }
           />
@@ -2203,8 +2440,7 @@ export default function MeBookPage() {
                           <div className="mb-contact-name">
                             {r.fromUser.name}
                           </div>
-                          <div
-                            style={{
+                          <div                            style={{
                               fontSize: 12.5,
                               color: "var(--text-muted)",
                             }}
@@ -2423,9 +2659,7 @@ export default function MeBookPage() {
                       <button
                         className="mb-icon-btn"
                         style={{ background: "var(--input-bg)" }}
-                        onClick={() =>
-                          handleOpenUser(chatPartner.uid)
-                        }
+                        onClick={() => handleOpenUser(chatPartner.uid)}
                       >
                         <svg
                           viewBox="0 0 24 24"
@@ -2536,9 +2770,7 @@ export default function MeBookPage() {
                   onClick={() => {
                     setMebookTab(t.id)
                     if (t.id !== "featured")
-                      showToast(
-                        `${t.label} coming soon`
-                      )
+                      showToast(`${t.label} coming soon`)
                   }}
                 >
                   {t.label}
@@ -2802,7 +3034,10 @@ export default function MeBookPage() {
                     type="checkbox"
                     checked={privacy.info}
                     onChange={(e) => {
-                      setPrivacy({ ...privacy, info: e.target.checked })
+                      setPrivacy({
+                        ...privacy,
+                        info: e.target.checked,
+                      })
                       setTimeout(handleSavePrivacy, 0)
                     }}
                   />
@@ -2816,7 +3051,10 @@ export default function MeBookPage() {
                     type="checkbox"
                     checked={privacy.posts}
                     onChange={(e) => {
-                      setPrivacy({ ...privacy, posts: e.target.checked })
+                      setPrivacy({
+                        ...privacy,
+                        posts: e.target.checked,
+                      })
                       setTimeout(handleSavePrivacy, 0)
                     }}
                   />
@@ -3142,9 +3380,7 @@ export default function MeBookPage() {
 
       {/* COMPOSER MODAL */}
       <div
-        className={`mb-modal-overlay ${
-          composerOpen ? "open" : ""
-        }`}
+        className={`mb-modal-overlay ${composerOpen ? "open" : ""}`}
       >
         <div className="mb-modal">
           <div className="mb-modal-head">
@@ -3343,9 +3579,7 @@ export default function MeBookPage() {
 
       {/* USER PROFILE MODAL */}
       <div
-        className={`mb-modal-overlay ${
-          userModalOpen ? "open" : ""
-        }`}
+        className={`mb-modal-overlay ${userModalOpen ? "open" : ""}`}
       >
         <div className="mb-modal" style={{ maxWidth: 440 }}>
           <div className="mb-modal-head">
@@ -3375,7 +3609,7 @@ export default function MeBookPage() {
 }
 
 /* ============================================================
-   SMALL SUB-COMPONENTS
+   SUB-COMPONENTS
 ============================================================ */
 
 function DrawerItem({

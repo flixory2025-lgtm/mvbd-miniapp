@@ -8,7 +8,7 @@ import React, {
 } from "react"
 
 /* ============================================================
-   FIREBASE — explicit named imports (safe)
+   FIREBASE — explicit named imports
 ============================================================ */
 
 const FIREBASE_CONFIG = {
@@ -21,39 +21,8 @@ const FIREBASE_CONFIG = {
   measurementId: "G-HQZ9SL4RX8",
 }
 
-let _fb: {
-  app: any
-  auth: any
-  db: any
-  // auth methods
-  createUserWithEmailAndPassword: any
-  signInWithEmailAndPassword: any
-  signInWithPopup: any
-  GoogleAuthProvider: any
-  signOut: any
-  onAuthStateChanged: any
-  sendPasswordResetEmail: any
-  updateProfile: any
-  // firestore methods
-  collection: any
-  doc: any
-  setDoc: any
-  getDoc: any
-  getDocs: any
-  addDoc: any
-  updateDoc: any
-  deleteDoc: any
-  onSnapshot: any
-  query: any
-  where: any
-  orderBy: any
-  serverTimestamp: any
-  arrayUnion: any
-  arrayRemove: any
-  increment: any
-} | null = null
-
-let _fbPromise: Promise<NonNullable<typeof _fb>> | null = null
+let _fb: any = null
+let _fbPromise: Promise<any> | null = null
 
 async function getFirebase() {
   if (_fb) return _fb
@@ -103,10 +72,12 @@ async function getFirebase() {
       query: fsMod.query,
       where: fsMod.where,
       orderBy: fsMod.orderBy,
+      limit: fsMod.limit,
       serverTimestamp: fsMod.serverTimestamp,
       arrayUnion: fsMod.arrayUnion,
       arrayRemove: fsMod.arrayRemove,
       increment: fsMod.increment,
+      Timestamp: fsMod.Timestamp,
     }
     return _fb
   })()
@@ -115,13 +86,17 @@ async function getFirebase() {
 }
 
 /* ============================================================
-   CONSTANTS + HELPERS
+   CONSTANTS
 ============================================================ */
 
 const CLOUD_NAME = "xtbkyhrl"
 const UPLOAD_PRESET = "MeBook"
 const LOGO_URL =
   "https://i.postimg.cc/1XQQ8qRK/file-00000000b2708211900200b56e0579e1.png"
+
+/* ============================================================
+   HELPERS
+============================================================ */
 
 function timeAgo(ts: any) {
   if (!ts) return "just now"
@@ -134,23 +109,34 @@ function timeAgo(ts: any) {
   return d.toLocaleDateString()
 }
 
+function timeShort(ts: any) {
+  if (!ts) return ""
+  const d = ts.toDate ? ts.toDate() : new Date(ts)
+  const now = new Date()
+  const diff = now.getTime() - d.getTime()
+  const day = 86400000
+  if (diff < day) {
+    return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+  }
+  if (diff < day * 7) {
+    return d.toLocaleDateString([], { weekday: "short" })
+  }
+  return d.toLocaleDateString([], { month: "short", day: "numeric" })
+}
+
 function friendlyErr(err: any): string {
   const code = String(err?.code || "")
   if (code.includes("invalid-credential") || code.includes("wrong-password"))
     return "Wrong email or password"
-  if (code.includes("user-not-found"))
-    return "No account found with this email"
+  if (code.includes("user-not-found")) return "No account found with this email"
   if (code.includes("email-already-in-use"))
     return "This email is already registered"
-  if (code.includes("weak-password"))
-    return "Password too weak (min 6 chars)"
+  if (code.includes("weak-password")) return "Password too weak (min 6 chars)"
   if (code.includes("invalid-email")) return "Invalid email address"
   if (code.includes("popup-closed")) return "Popup closed"
-  if (code.includes("popup-blocked"))
-    return "Popup blocked — please allow popups"
+  if (code.includes("popup-blocked")) return "Popup blocked — please allow popups"
   if (code.includes("network")) return "Network error"
-  if (code.includes("too-many-requests"))
-    return "Too many attempts — try again later"
+  if (code.includes("too-many-requests")) return "Too many attempts — try again later"
   return err?.message || "Something went wrong"
 }
 
@@ -166,7 +152,6 @@ async function cloudinaryUpload(
   const fd = new FormData()
   fd.append("file", file)
   fd.append("upload_preset", UPLOAD_PRESET)
-
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest()
     xhr.open("POST", url)
@@ -189,13 +174,10 @@ async function cloudinaryUpload(
 }
 
 /* ============================================================
-   STYLES — dark auth + gorgeous app UI
+   STYLES
 ============================================================ */
 
 const MEBOOK_CSS = `
-  /* ============================================================
-     ROOT
-  ============================================================ */
   .mebook-root {
     --green:#16a34a;
     --green-dark:#15803d;
@@ -249,7 +231,7 @@ const MEBOOK_CSS = `
   }
 
   .mebook-root *{margin:0;padding:0;box-sizing:border-box;}
-  .mebook-root button{font-family:inherit;cursor:pointer;border:none;background:none;}
+  .mebook-root button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit;}
   .mebook-root input,.mebook-root textarea{font-family:inherit;color:var(--text);}
   .mebook-root img{display:block;}
   .mebook-root a{text-decoration:none;color:inherit;}
@@ -263,8 +245,6 @@ const MEBOOK_CSS = `
     display:flex;align-items:center;justify-content:center;
     padding:20px;overflow:hidden;
   }
-
-  /* animated color orbs */
   .mebook-root .auth-wrap::before{
     content:'';position:absolute;width:200%;height:200%;top:-50%;left:-50%;
     background:
@@ -273,16 +253,13 @@ const MEBOOK_CSS = `
       radial-gradient(circle at 25% 85%, rgba(168,85,247,.18) 0%, transparent 45%),
       radial-gradient(circle at 75% 75%, rgba(16,185,129,.22) 0%, transparent 45%);
     animation: authGlow 16s ease-in-out infinite;
-    z-index:0;
-    filter: blur(60px);
+    z-index:0;filter: blur(60px);
   }
   @keyframes authGlow{
     0%,100%{transform:translate(0,0) scale(1) rotate(0deg);}
     33%{transform:translate(-4%,4%) scale(1.12) rotate(120deg);}
     66%{transform:translate(4%,-4%) scale(.95) rotate(240deg);}
   }
-
-  /* starfield */
   .mebook-root .auth-wrap::after{
     content:'';position:absolute;inset:0;
     background-image:
@@ -291,9 +268,7 @@ const MEBOOK_CSS = `
       radial-gradient(1px 1px at 60% 20%, rgba(255,255,255,.6), transparent),
       radial-gradient(1.5px 1.5px at 80% 80%, rgba(255,255,255,.4), transparent),
       radial-gradient(1px 1px at 10% 90%, rgba(255,255,255,.5), transparent),
-      radial-gradient(1.5px 1.5px at 90% 10%, rgba(255,255,255,.5), transparent),
-      radial-gradient(1px 1px at 35% 45%, rgba(255,255,255,.4), transparent),
-      radial-gradient(1px 1px at 65% 60%, rgba(255,255,255,.5), transparent);
+      radial-gradient(1.5px 1.5px at 90% 10%, rgba(255,255,255,.5), transparent);
     background-size:200% 200%;
     animation: starDrift 30s linear infinite;
     z-index:0;pointer-events:none;
@@ -302,7 +277,6 @@ const MEBOOK_CSS = `
     0%{background-position:0% 0%;}
     100%{background-position:100% 100%;}
   }
-
   .mebook-root .auth-card{
     position:relative;z-index:2;
     width:100%;max-width:440px;
@@ -323,7 +297,6 @@ const MEBOOK_CSS = `
     from{opacity:0;transform:translateY(28px) scale(.96);}
     to{opacity:1;transform:translateY(0) scale(1);}
   }
-
   .mebook-root .auth-logo{
     display:flex;align-items:center;justify-content:center;
     gap:12px;margin-bottom:8px;
@@ -345,147 +318,85 @@ const MEBOOK_CSS = `
     -webkit-background-clip:text;background-clip:text;
     -webkit-text-fill-color:transparent;
   }
-
   .mebook-root .auth-sub{
-    text-align:center;
-    color:#94a3b8;
-    font-size:13.5px;
-    margin-bottom:26px;
-    letter-spacing:.2px;
+    text-align:center;color:#94a3b8;font-size:13.5px;
+    margin-bottom:26px;letter-spacing:.2px;
   }
-
   .mebook-root .auth-tabs{
-    display:flex;
-    background:rgba(255,255,255,.05);
+    display:flex;background:rgba(255,255,255,.05);
     border:1px solid rgba(255,255,255,.06);
-    border-radius:12px;
-    padding:5px;
-    margin-bottom:22px;
+    border-radius:12px;padding:5px;margin-bottom:22px;
   }
   .mebook-root .auth-tab{
     flex:1;padding:10px;border-radius:9px;
-    font-size:14.5px;font-weight:600;
-    color:#94a3b8;
+    font-size:14.5px;font-weight:600;color:#94a3b8;
     transition:all .25s cubic-bezier(.2,.8,.3,1);
-    position:relative;
   }
   .mebook-root .auth-tab:hover{color:#e2e8f0;}
   .mebook-root .auth-tab.active{
     background:linear-gradient(135deg,#16a34a,#22c55e);
     color:#fff;
-    box-shadow:
-      0 6px 18px rgba(34,197,94,.35),
-      0 1px 0 rgba(255,255,255,.15) inset;
+    box-shadow:0 6px 18px rgba(34,197,94,.35), 0 1px 0 rgba(255,255,255,.15) inset;
   }
-
-  .mebook-root .auth-field{
-    margin-bottom:14px;
-    animation: fieldIn .4s ease;
-  }
-  @keyframes fieldIn{
-    from{opacity:0;transform:translateY(6px);}
-    to{opacity:1;transform:none;}
-  }
+  .mebook-root .auth-field{margin-bottom:14px;animation: fieldIn .4s ease;}
+  @keyframes fieldIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
   .mebook-root .auth-field label{
-    display:block;
-    font-size:12.5px;
-    font-weight:600;
-    margin-bottom:6px;
-    color:#94a3b8;
-    letter-spacing:.3px;
-    text-transform:uppercase;
+    display:block;font-size:12.5px;font-weight:600;
+    margin-bottom:6px;color:#94a3b8;
+    letter-spacing:.3px;text-transform:uppercase;
   }
   .mebook-root .auth-field input{
-    width:100%;
-    padding:13px 16px;
+    width:100%;padding:13px 16px;
     border:1.5px solid rgba(255,255,255,.08);
-    border-radius:12px;
-    font-size:15px;
-    outline:none;
-    background:rgba(255,255,255,.04);
-    color:#f3f4f6;
+    border-radius:12px;font-size:15px;outline:none;
+    background:rgba(255,255,255,.04);color:#f3f4f6;
     transition:border-color .2s ease, box-shadow .2s ease, background .2s ease;
   }
-  .mebook-root .auth-field input::placeholder{
-    color:#475569;
-  }
+  .mebook-root .auth-field input::placeholder{color:#475569;}
   .mebook-root .auth-field input:focus{
-    border-color:#22c55e;
-    background:rgba(34,197,94,.06);
+    border-color:#22c55e;background:rgba(34,197,94,.06);
     box-shadow:0 0 0 4px rgba(34,197,94,.12);
   }
-
   .mebook-root .auth-btn{
-    width:100%;
-    padding:14px;
-    border-radius:12px;
-    font-size:15px;
-    font-weight:700;
-    color:#fff;
-    margin-top:8px;
+    width:100%;padding:14px;border-radius:12px;
+    font-size:15px;font-weight:700;color:#fff;margin-top:8px;
     background:linear-gradient(135deg,#16a34a,#22c55e);
-    box-shadow:
-      0 8px 24px rgba(34,197,94,.35),
-      0 1px 0 rgba(255,255,255,.15) inset;
+    box-shadow:0 8px 24px rgba(34,197,94,.35), 0 1px 0 rgba(255,255,255,.15) inset;
     transition:transform .15s ease, box-shadow .15s ease, filter .15s ease;
     letter-spacing:.3px;
   }
   .mebook-root .auth-btn:hover:not(:disabled){
     filter:brightness(1.08);
-    box-shadow:
-      0 12px 32px rgba(34,197,94,.5),
-      0 1px 0 rgba(255,255,255,.2) inset;
+    box-shadow:0 12px 32px rgba(34,197,94,.5), 0 1px 0 rgba(255,255,255,.2) inset;
   }
-  .mebook-root .auth-btn:active:not(:disabled){
-    transform:scale(.985);
-  }
-  .mebook-root .auth-btn:disabled{
-    opacity:.6;cursor:not-allowed;
-  }
-
+  .mebook-root .auth-btn:active:not(:disabled){transform:scale(.985);}
+  .mebook-root .auth-btn:disabled{opacity:.6;cursor:not-allowed;}
   .mebook-root .auth-divider{
-    display:flex;align-items:center;gap:12px;
-    margin:22px 0;
-    color:#64748b;
-    font-size:12px;
-    font-weight:500;
-    letter-spacing:1px;
+    display:flex;align-items:center;gap:12px;margin:22px 0;
+    color:#64748b;font-size:12px;font-weight:500;letter-spacing:1px;
   }
   .mebook-root .auth-divider::before,
   .mebook-root .auth-divider::after{
     content:"";flex:1;height:1px;
     background:linear-gradient(90deg,transparent,rgba(255,255,255,.12),transparent);
   }
-
   .mebook-root .auth-google{
-    width:100%;
-    padding:13px;
-    border-radius:12px;
-    font-size:14.5px;
-    font-weight:600;
-    background:rgba(255,255,255,.05);
-    color:#f3f4f6;
+    width:100%;padding:13px;border-radius:12px;
+    font-size:14.5px;font-weight:600;
+    background:rgba(255,255,255,.05);color:#f3f4f6;
     border:1.5px solid rgba(255,255,255,.1);
     display:flex;align-items:center;justify-content:center;gap:10px;
     transition:background .18s ease, border-color .18s ease, transform .12s ease;
   }
   .mebook-root .auth-google:hover{
-    background:rgba(255,255,255,.09);
-    border-color:rgba(255,255,255,.18);
+    background:rgba(255,255,255,.09);border-color:rgba(255,255,255,.18);
   }
   .mebook-root .auth-google:active{transform:scale(.985);}
   .mebook-root .auth-google svg{width:20px;height:20px;flex-shrink:0;}
-
   .mebook-root .auth-err{
-    background:rgba(220,38,38,.12);
-    border:1px solid rgba(220,38,38,.25);
-    color:#fca5a5;
-    font-size:13px;
-    padding:11px 14px;
-    border-radius:10px;
-    margin-top:12px;
-    display:none;
-    animation: shake .4s ease;
+    background:rgba(220,38,38,.12);border:1px solid rgba(220,38,38,.25);
+    color:#fca5a5;font-size:13px;padding:11px 14px;border-radius:10px;
+    margin-top:12px;display:none;animation: shake .4s ease;
   }
   .mebook-root .auth-err.show{display:block;}
   @keyframes shake{
@@ -524,7 +435,6 @@ const MEBOOK_CSS = `
      LAYOUT
   ============================================================ */
   .mebook-root .mb-layout{display:grid;grid-template-columns:280px minmax(0,1fr) 300px;gap:20px;max-width:1400px;margin:0 auto;padding:20px 16px 100px;align-items:start;}
-  .mebook-root .mb-layout.full{grid-template-columns:280px minmax(0,1fr);}
   .mebook-root .mb-sidebar{position:sticky;top:80px;}
   .mebook-root .mb-side-item{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:10px;font-size:15px;font-weight:600;color:var(--text);transition:background .18s ease;width:100%;text-align:left;}
   .mebook-root .mb-side-item:hover{background:var(--hover);}
@@ -536,7 +446,6 @@ const MEBOOK_CSS = `
   .mebook-root .mb-side-divider{height:1px;background:var(--border);margin:8px 4px;}
   .mebook-root .mb-main{min-width:0;}
 
-  /* COMPOSER */
   .mebook-root .mb-composer{background:var(--card);border-radius:12px;box-shadow:var(--shadow);padding:12px 16px 10px;margin-bottom:16px;transition:background .3s ease;}
   .mebook-root .mb-composer-top{display:flex;gap:10px;align-items:center;}
   .mebook-root .mb-composer-avatar{width:40px;height:40px;border-radius:50%;object-fit:cover;background:#cbd5e1;flex-shrink:0;}
@@ -562,7 +471,7 @@ const MEBOOK_CSS = `
   .mebook-root .mb-post-more{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--text-muted);transition:background .18s ease;}
   .mebook-root .mb-post-more:hover{background:var(--hover);}
   .mebook-root .mb-post-more svg{width:20px;height:20px;fill:currentColor;}
-  .mebook-root .mb-post-caption{padding:2px 16px 10px;font-size:15px;line-height:1.45;color:var(--text);}
+  .mebook-root .mb-post-caption{padding:2px 16px 10px;font-size:15px;line-height:1.45;color:var(--text);white-space:pre-wrap;word-wrap:break-word;}
   .mebook-root .mb-post-media{background:#000;position:relative;max-height:560px;overflow:hidden;}
   .mebook-root .mb-post-media img{width:100%;max-height:560px;object-fit:contain;margin:0 auto;}
   .mebook-root .mb-movie-badge{position:absolute;top:12px;left:12px;display:flex;align-items:center;gap:6px;background:rgba(0,0,0,.68);backdrop-filter:blur(6px);color:#fff;font-size:12px;font-weight:600;padding:5px 10px;border-radius:20px;letter-spacing:.2px;}
@@ -577,18 +486,472 @@ const MEBOOK_CSS = `
   .mebook-root .mb-action.liked{color:#ef4444;}
   .mebook-root .mb-action svg{width:19px;height:19px;fill:currentColor;}
 
-  /* COMMENTS */
-  .mebook-root .mb-comments{padding:0 16px 12px;border-top:1px solid var(--border);margin-top:4px;display:none;}
-  .mebook-root .mb-comments.open{display:block;}
-  .mebook-root .mb-comment{display:flex;gap:8px;margin-top:10px;}
-  .mebook-root .mb-comment img{width:32px;height:32px;border-radius:50%;object-fit:cover;background:#cbd5e1;flex-shrink:0;}
-  .mebook-root .mb-comment-body{background:var(--input-bg);border-radius:14px;padding:8px 12px;font-size:14px;line-height:1.4;color:var(--text);}
-  .mebook-root .mb-comment-body b{font-weight:700;display:block;font-size:13.5px;margin-bottom:2px;}
-  .mebook-root .mb-comment-input{display:flex;gap:8px;margin-top:12px;align-items:center;}
-  .mebook-root .mb-comment-input img{width:32px;height:32px;border-radius:50%;object-fit:cover;background:#cbd5e1;}
-  .mebook-root .mb-comment-input input{flex:1;background:var(--input-bg);border:none;border-radius:20px;padding:9px 14px;font-size:14px;outline:none;color:var(--text);}
+  /* ============================================================
+     FB-STYLE COMMENTS (mobile bottom sheet)
+  ============================================================ */
+  .mebook-root .cmt-backdrop{
+    position:fixed;inset:0;z-index:2000;
+    background:rgba(0,0,0,.5);
+    opacity:0;visibility:hidden;
+    transition:opacity .25s ease, visibility .25s ease;
+  }
+  .mebook-root .cmt-backdrop.open{opacity:1;visibility:visible;}
 
-  /* RIGHT SIDEBAR */
+  .mebook-root .cmt-sheet{
+    position:fixed;left:0;right:0;bottom:0;z-index:2001;
+    background:var(--card);
+    border-radius:18px 18px 0 0;
+    max-height:82vh;
+    display:flex;flex-direction:column;
+    transform:translateY(100%);
+    transition:transform .32s cubic-bezier(.2,.8,.3,1);
+    box-shadow:0 -12px 40px rgba(0,0,0,.28);
+    padding-bottom: env(safe-area-inset-bottom, 0);
+  }
+  .mebook-root .cmt-sheet.open{transform:translateY(0);}
+  .mebook-root .cmt-sheet-head{
+    display:flex;align-items:center;justify-content:center;
+    position:relative;padding:14px 16px 10px;
+    border-bottom:1px solid var(--border);
+    flex-shrink:0;
+  }
+  .mebook-root .cmt-sheet-head::before{
+    content:'';position:absolute;top:6px;left:50%;
+    width:38px;height:4px;border-radius:2px;
+    background:var(--border);transform:translateX(-50%);
+  }
+  .mebook-root .cmt-sheet-title{
+    font-size:15px;font-weight:700;color:var(--text);
+    margin-top:6px;
+  }
+  .mebook-root .cmt-sheet-close{
+    position:absolute;right:12px;top:12px;
+    width:32px;height:32px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    background:var(--input-bg);color:var(--text);
+  }
+  .mebook-root .cmt-sheet-close:hover{background:var(--border);}
+  .mebook-root .cmt-sheet-close svg{width:14px;height:14px;fill:currentColor;}
+
+  .mebook-root .cmt-list{
+    flex:1;overflow-y:auto;
+    padding:14px 16px;
+    background:var(--card);
+  }
+  .mebook-root .cmt-list::-webkit-scrollbar{width:6px;}
+  .mebook-root .cmt-list::-webkit-scrollbar-thumb{background:var(--border);border-radius:10px;}
+
+  .mebook-root .cmt-row{
+    display:flex;gap:8px;margin-bottom:12px;
+    animation: cmtIn .3s ease;
+  }
+  @keyframes cmtIn{
+    from{opacity:0;transform:translateY(6px);}
+    to{opacity:1;transform:none;}
+  }
+  .mebook-root .cmt-row-avatar{
+    width:34px;height:34px;border-radius:50%;
+    object-fit:cover;flex-shrink:0;background:#cbd5e1;
+  }
+  .mebook-root .cmt-bubble{
+    background:var(--input-bg);
+    border-radius:16px 16px 16px 4px;
+    padding:8px 12px;
+    font-size:14px;line-height:1.42;
+    color:var(--text);
+    max-width:78%;
+    word-wrap:break-word;
+    white-space:pre-wrap;
+  }
+  .mebook-root .cmt-bubble b{
+    display:block;font-size:13px;font-weight:700;
+    margin-bottom:2px;color:var(--text);
+  }
+  .mebook-root .cmt-bubble .cmt-time{
+    display:block;font-size:11px;
+    color:var(--text-muted);
+    margin-top:3px;
+    font-weight:500;
+  }
+  .mebook-root .cmt-empty{
+    text-align:center;padding:40px 20px;
+    color:var(--text-muted);font-size:14px;
+  }
+
+  .mebook-root .cmt-input-wrap{
+    display:flex;gap:8px;align-items:flex-end;
+    padding:10px 14px 14px;
+    border-top:1px solid var(--border);
+    background:var(--card);
+    flex-shrink:0;
+  }
+  .mebook-root .cmt-input-avatar{
+    width:34px;height:34px;border-radius:50%;
+    object-fit:cover;flex-shrink:0;background:#cbd5e1;
+  }
+  .mebook-root .cmt-input{
+    flex:1;background:var(--input-bg);
+    border:none;border-radius:20px;
+    padding:10px 14px;font-size:14.5px;
+    outline:none;color:var(--text);
+    resize:none;max-height:120px;
+    font-family:inherit;
+    line-height:1.4;
+  }
+  .mebook-root .cmt-send{
+    width:38px;height:38px;border-radius:50%;
+    background:var(--green);color:#fff;
+    display:flex;align-items:center;justify-content:center;
+    flex-shrink:0;
+    transition:transform .15s ease, filter .15s ease;
+  }
+  .mebook-root .cmt-send:hover{filter:brightness(1.08);}
+  .mebook-root .cmt-send:active{transform:scale(.92);}
+  .mebook-root .cmt-send:disabled{opacity:.5;cursor:not-allowed;}
+  .mebook-root .cmt-send svg{width:18px;height:18px;fill:#fff;}
+
+  /* ============================================================
+     FB-STYLE SHARE SHEET
+  ============================================================ */
+  .mebook-root .share-backdrop{
+    position:fixed;inset:0;z-index:2100;
+    background:rgba(0,0,0,.55);
+    opacity:0;visibility:hidden;
+    transition:opacity .25s ease, visibility .25s ease;
+    display:flex;align-items:center;justify-content:center;
+    padding:16px;
+  }
+  .mebook-root .share-backdrop.open{opacity:1;visibility:visible;}
+  .mebook-root .share-sheet{
+    background:var(--modal-bg);
+    border-radius:18px;
+    width:100%;max-width:460px;
+    max-height:86vh;overflow-y:auto;
+    transform:scale(.94);
+    transition:transform .28s cubic-bezier(.2,.8,.3,1);
+    box-shadow:0 24px 60px rgba(0,0,0,.4);
+  }
+  .mebook-root .share-backdrop.open .share-sheet{transform:scale(1);}
+  .mebook-root .share-head{
+    display:flex;align-items:center;justify-content:center;position:relative;
+    padding:16px;border-bottom:1px solid var(--border);
+    font-size:16px;font-weight:700;
+  }
+  .mebook-root .share-close{
+    position:absolute;right:12px;top:50%;
+    transform:translateY(-50%);
+    width:32px;height:32px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    background:var(--input-bg);
+  }
+  .mebook-root .share-close:hover{background:var(--border);}
+  .mebook-root .share-close svg{width:14px;height:14px;fill:var(--text);}
+
+  .mebook-root .share-body{padding:14px 16px 20px;}
+  .mebook-root .share-preview{
+    display:flex;gap:10px;align-items:center;
+    padding:10px;border-radius:12px;
+    background:var(--input-bg);margin-bottom:14px;
+  }
+  .mebook-root .share-preview img{
+    width:52px;height:52px;border-radius:8px;
+    object-fit:cover;background:#cbd5e1;flex-shrink:0;
+  }
+  .mebook-root .share-preview-info{flex:1;min-width:0;}
+  .mebook-root .share-preview-title{
+    font-size:14px;font-weight:700;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  }
+  .mebook-root .share-preview-sub{
+    font-size:12px;color:var(--text-muted);margin-top:2px;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  }
+
+  .mebook-root .share-caption{
+    width:100%;min-height:64px;
+    padding:12px 14px;border-radius:12px;
+    background:var(--input-bg);color:var(--text);
+    border:1px solid transparent;
+    outline:none;font-size:14px;
+    resize:vertical;margin-bottom:14px;
+    font-family:inherit;
+  }
+  .mebook-root .share-caption:focus{
+    border-color:var(--green);
+    box-shadow:0 0 0 3px rgba(22,163,74,.12);
+  }
+
+  .mebook-root .share-options{
+    display:grid;grid-template-columns:1fr 1fr;gap:10px;
+  }
+  .mebook-root .share-option{
+    display:flex;align-items:center;gap:10px;
+    padding:12px;border-radius:12px;
+    background:var(--input-bg);
+    transition:background .18s ease, transform .12s ease;
+    text-align:left;
+  }
+  .mebook-root .share-option:hover{background:var(--border);}
+  .mebook-root .share-option:active{transform:scale(.98);}
+  .mebook-root .share-option-icon{
+    width:38px;height:38px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    flex-shrink:0;
+  }
+  .mebook-root .share-option-icon svg{width:20px;height:20px;}
+  .mebook-root .share-option-icon.fb{background:#1877f2;color:#fff;}
+  .mebook-root .share-option-icon.wa{background:#25d366;color:#fff;}
+  .mebook-root .share-option-icon.tg{background:#229ed9;color:#fff;}
+  .mebook-root .share-option-icon.link{background:var(--border);color:var(--text);}
+  .mebook-root .share-option-icon.profile{background:linear-gradient(135deg,#16a34a,#22c55e);color:#fff;}
+  .mebook-root .share-option-text{font-size:13.5px;font-weight:600;line-height:1.3;}
+  .mebook-root .share-option-text small{display:block;font-size:11.5px;color:var(--text-muted);font-weight:500;margin-top:2px;}
+
+  .mebook-root .share-submit{
+    width:100%;margin-top:14px;padding:12px;
+    border-radius:12px;background:var(--green);color:#fff;
+    font-weight:700;font-size:15px;
+    transition:filter .18s ease;
+  }
+  .mebook-root .share-submit:hover{filter:brightness(1.08);}
+  .mebook-root .share-submit:disabled{opacity:.5;cursor:not-allowed;}
+
+  /* ============================================================
+     MESSENGER — mobile-first chat
+  ============================================================ */
+  .mebook-root .msgr-wrap{
+    background:var(--card);border-radius:12px;
+    box-shadow:var(--shadow);
+    height:calc(100vh - 200px);min-height:420px;
+    display:flex;overflow:hidden;
+    position:relative;
+  }
+  .mebook-root .msgr-list{
+    width:320px;border-right:1px solid var(--border);
+    overflow-y:auto;flex-shrink:0;
+  }
+  .mebook-root .msgr-list-head{
+    padding:14px 16px 8px;
+    font-size:20px;font-weight:800;
+    display:flex;align-items:center;justify-content:space-between;
+    position:sticky;top:0;background:var(--card);z-index:2;
+  }
+  .mebook-root .msgr-section{
+    font-size:12px;font-weight:700;
+    color:var(--text-muted);text-transform:uppercase;
+    letter-spacing:.6px;padding:10px 16px 6px;
+  }
+  .mebook-root .msgr-online-row{
+    display:flex;gap:10px;overflow-x:auto;
+    padding:4px 14px 12px;
+    border-bottom:1px solid var(--border);
+  }
+  .mebook-root .msgr-online-row::-webkit-scrollbar{height:0;}
+  .mebook-root .msgr-online-item{
+    flex-shrink:0;text-align:center;width:62px;cursor:pointer;
+  }
+  .mebook-root .msgr-online-avatar-wrap{
+    position:relative;width:52px;height:52px;margin:0 auto;
+  }
+  .mebook-root .msgr-online-avatar-wrap img{
+    width:52px;height:52px;border-radius:50%;
+    object-fit:cover;background:#cbd5e1;
+    border:2px solid transparent;
+  }
+  .mebook-root .msgr-online-item:hover .msgr-online-avatar-wrap img{
+    border-color:var(--green);
+  }
+  .mebook-root .msgr-online-dot{
+    position:absolute;right:2px;bottom:2px;
+    width:13px;height:13px;border-radius:50%;
+    background:#22c55e;border:2.5px solid var(--card);
+  }
+  .mebook-root .msgr-online-name{
+    font-size:11.5px;margin-top:4px;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+    color:var(--text-muted);
+  }
+
+  .mebook-root .msgr-item{
+    display:flex;gap:10px;padding:10px 14px;
+    cursor:pointer;transition:background .15s ease;
+    position:relative;
+  }
+  .mebook-root .msgr-item:hover{background:var(--hover);}
+  .mebook-root .msgr-item.active{background:rgba(22,163,74,.12);}
+  .mebook-root .msgr-item-avatar-wrap{
+    position:relative;width:48px;height:48px;flex-shrink:0;
+  }
+  .mebook-root .msgr-item-avatar-wrap img{
+    width:48px;height:48px;border-radius:50%;
+    object-fit:cover;background:#cbd5e1;
+  }
+  .mebook-root .msgr-item-dot{
+    position:absolute;right:0;bottom:0;
+    width:13px;height:13px;border-radius:50%;
+    background:#22c55e;border:2.5px solid var(--card);
+  }
+  .mebook-root .msgr-item-body{flex:1;min-width:0;}
+  .mebook-root .msgr-item-name{
+    font-size:14.5px;font-weight:600;color:var(--text);
+    margin-bottom:2px;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  }
+  .mebook-root .msgr-item-last{
+    font-size:13px;color:var(--text-muted);
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  }
+  .mebook-root .msgr-item-last.unread{
+    color:var(--text);font-weight:600;
+  }
+  .mebook-root .msgr-item-time{
+    font-size:11px;color:var(--text-muted);flex-shrink:0;
+  }
+  .mebook-root .msgr-item-unread{
+    background:var(--green);color:#fff;
+    font-size:11px;font-weight:700;
+    min-width:20px;height:20px;border-radius:10px;
+    display:flex;align-items:center;justify-content:center;
+    padding:0 6px;margin-top:4px;
+  }
+
+  .mebook-root .msgr-window{
+    flex:1;display:flex;flex-direction:column;min-width:0;
+    background:var(--card);
+  }
+  .mebook-root .msgr-head{
+    display:flex;align-items:center;gap:10px;
+    padding:10px 14px;border-bottom:1px solid var(--border);
+    flex-shrink:0;background:var(--card);
+  }
+  .mebook-root .msgr-head-back{
+    width:36px;height:36px;border-radius:50%;
+    display:none;align-items:center;justify-content:center;
+    color:var(--text);
+  }
+  .mebook-root .msgr-head-back:hover{background:var(--hover);}
+  .mebook-root .msgr-head-back svg{width:22px;height:22px;fill:currentColor;}
+  .mebook-root .msgr-head img{
+    width:40px;height:40px;border-radius:50%;
+    object-fit:cover;background:#cbd5e1;
+  }
+  .mebook-root .msgr-head-info{flex:1;min-width:0;}
+  .mebook-root .msgr-head-name{
+    font-size:15px;font-weight:700;color:var(--text);
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  }
+  .mebook-root .msgr-head-status{
+    font-size:12.5px;color:#22c55e;display:flex;align-items:center;gap:5px;
+  }
+  .mebook-root .msgr-head-status .dot{
+    width:8px;height:8px;border-radius:50%;background:#22c55e;
+  }
+  .mebook-root .msgr-head-btn{
+    width:38px;height:38px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    color:var(--green);
+  }
+  .mebook-root .msgr-head-btn:hover{background:var(--hover);}
+  .mebook-root .msgr-head-btn svg{width:20px;height:20px;fill:currentColor;}
+
+  .mebook-root .msgr-body{
+    flex:1;overflow-y:auto;padding:14px 12px;
+    background:var(--chat-body-bg);
+    display:flex;flex-direction:column;gap:4px;
+  }
+  .mebook-root .msgr-body::-webkit-scrollbar{width:6px;}
+  .mebook-root .msgr-body::-webkit-scrollbar-thumb{background:var(--border);border-radius:10px;}
+  .mebook-root .msgr-bubble-wrap{
+    display:flex;align-items:flex-end;gap:6px;
+    margin-top:2px;
+  }
+  .mebook-root .msgr-bubble-wrap.me{justify-content:flex-end;}
+  .mebook-root .msgr-bubble-wrap.them{justify-content:flex-start;}
+  .mebook-root .msgr-bubble-avatar{
+    width:28px;height:28px;border-radius:50%;
+    object-fit:cover;flex-shrink:0;background:#cbd5e1;
+    opacity:0;transition:opacity .2s ease;
+  }
+  .mebook-root .msgr-bubble-wrap.show-avatar .msgr-bubble-avatar{opacity:1;}
+  .mebook-root .msgr-bubble{
+    max-width:72%;padding:9px 14px;
+    border-radius:20px;font-size:14.5px;line-height:1.4;
+    word-wrap:break-word;white-space:pre-wrap;
+    animation:bubbleIn .22s ease;
+  }
+  @keyframes bubbleIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
+  .mebook-root .msgr-bubble.me{
+    background:linear-gradient(135deg,#16a34a,#22c55e);
+    color:#fff;border-bottom-right-radius:6px;
+  }
+  .mebook-root .msgr-bubble.them{
+    background:var(--bubble-them-bg);color:var(--text);
+    border-bottom-left-radius:6px;
+    box-shadow:0 1px 2px rgba(0,0,0,.08);
+  }
+  .mebook-root .msgr-time-sep{
+    text-align:center;font-size:11px;
+    color:var(--text-muted);margin:12px 0 4px;
+  }
+  .mebook-root .msgr-empty{
+    flex:1;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;
+    color:var(--text-muted);gap:10px;
+    padding:24px;text-align:center;
+  }
+  .mebook-root .msgr-empty svg{
+    width:64px;height:64px;fill:var(--border);
+  }
+  .mebook-root .msgr-empty b{font-size:16px;}
+  .mebook-root .msgr-empty p{font-size:13.5px;line-height:1.5;}
+
+  .mebook-root .msgr-input{
+    display:flex;gap:8px;align-items:flex-end;
+    padding:10px 12px 12px;
+    background:var(--card);
+    border-top:1px solid var(--border);
+    flex-shrink:0;
+    padding-bottom: calc(12px + env(safe-area-inset-bottom, 0));
+  }
+  .mebook-root .msgr-input-add{
+    width:38px;height:38px;border-radius:50%;
+    background:var(--input-bg);color:var(--green);
+    display:flex;align-items:center;justify-content:center;
+    flex-shrink:0;
+  }
+  .mebook-root .msgr-input-add svg{width:20px;height:20px;fill:currentColor;}
+  .mebook-root .msgr-input-field{
+    flex:1;background:var(--input-bg);
+    border:none;border-radius:20px;
+    padding:10px 14px;font-size:14.5px;
+    outline:none;color:var(--text);
+    resize:none;max-height:100px;
+    font-family:inherit;line-height:1.4;
+  }
+  .mebook-root .msgr-input-send{
+    width:38px;height:38px;border-radius:50%;
+    background:var(--green);color:#fff;
+    display:flex;align-items:center;justify-content:center;
+    flex-shrink:0;
+    transition:transform .12s ease;
+  }
+  .mebook-root .msgr-input-send:active{transform:scale(.9);}
+  .mebook-root .msgr-input-send:disabled{opacity:.5;}
+  .mebook-root .msgr-input-send svg{width:18px;height:18px;fill:#fff;}
+
+  /* Mobile: switch list/window */
+  .mebook-root .msgr-wrap.mobile-on-window .msgr-list{display:none;}
+  .mebook-root .msgr-wrap.mobile-on-list .msgr-window{display:none;}
+
+  @media (max-width: 820px) {
+    .mebook-root .msgr-head-back{display:flex;}
+    .mebook-root .msgr-list{width:100%;border-right:none;}
+    .mebook-root .msgr-wrap{height:calc(100vh - 190px);border-radius:0;}
+  }
+
+  /* ============================================================
+     OTHER MODALS / DRAWER / MISC
+  ============================================================ */
   .mebook-root .mb-right{position:sticky;top:80px;display:flex;flex-direction:column;gap:16px;}
   .mebook-root .mb-card{background:var(--card);border-radius:12px;box-shadow:var(--shadow);padding:14px 16px;transition:background .3s ease;}
   .mebook-root .mb-card-title{font-size:16px;font-weight:700;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;}
@@ -600,7 +963,6 @@ const MEBOOK_CSS = `
   .mebook-root .mb-contact-name{font-size:14.5px;font-weight:600;}
   .mebook-root .mb-online{position:absolute;bottom:7px;left:34px;width:11px;height:11px;border-radius:50%;background:var(--green-light);border:2px solid var(--card);}
 
-  /* OVERLAY / DRAWER */
   .mebook-root .mb-overlay{position:fixed;inset:0;background:rgba(15,23,42,.35);backdrop-filter:blur(2px);z-index:1100;opacity:0;visibility:hidden;transition:opacity .3s ease,visibility .3s ease;}
   .mebook-root .mb-overlay.open{opacity:1;visibility:visible;}
   .mebook-root .mb-drawer{position:fixed;top:0;right:0;height:100%;width:330px;max-width:88vw;z-index:1200;transform:translateX(105%);transition:transform .42s cubic-bezier(.16,1,.3,1);background:var(--drawer-bg);backdrop-filter:blur(26px) saturate(180%);-webkit-backdrop-filter:blur(26px) saturate(180%);border-left:1px solid var(--border);box-shadow:-16px 0 44px rgba(0,0,0,.22);display:flex;flex-direction:column;border-radius:24px 0 0 24px;}
@@ -629,14 +991,12 @@ const MEBOOK_CSS = `
   .mebook-root .mb-drawer-foot{padding:12px 18px 18px;font-size:12px;color:var(--text-muted);display:flex;align-items:center;gap:6px;}
   .mebook-root .mb-drawer-foot .dot{width:4px;height:4px;border-radius:50%;background:var(--text-muted);}
 
-  /* VIEWS */
   .mebook-root .mb-view{display:none;animation:viewIn .3s ease;}
   .mebook-root .mb-view.active{display:block;}
   @keyframes viewIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
   .mebook-root .mb-page-title{font-size:24px;font-weight:800;margin-bottom:16px;display:flex;align-items:center;gap:10px;color:var(--text);}
   .mebook-root .mb-page-title svg{width:26px;height:26px;fill:var(--green);}
 
-  /* FRIENDS */
   .mebook-root .mb-friends-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
   .mebook-root .mb-friend-card{background:var(--card);border-radius:12px;box-shadow:var(--shadow);overflow:hidden;transition:transform .2s ease,box-shadow .2s ease;}
   .mebook-root .mb-friend-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-lg);}
@@ -654,13 +1014,10 @@ const MEBOOK_CSS = `
   .mebook-root .mb-btn-secondary:hover{background:var(--border);}
   .mebook-root .mb-btn-outline{background:transparent;color:var(--text);border:1px solid var(--border);}
   .mebook-root .mb-btn-outline:hover{background:var(--hover);}
-  .mebook-root .mb-btn-danger{background:#dc2626;color:#fff;}
-  .mebook-root .mb-btn-danger:hover{filter:brightness(1.1);}
   .mebook-root .mb-search-box{display:flex;align-items:center;gap:10px;background:var(--card);border-radius:24px;padding:10px 16px;box-shadow:var(--shadow);margin-bottom:18px;}
   .mebook-root .mb-search-box svg{width:20px;height:20px;fill:var(--text-muted);flex-shrink:0;}
   .mebook-root .mb-search-box input{border:none;outline:none;flex:1;font-size:15px;background:transparent;color:var(--text);}
 
-  /* PROFILE */
   .mebook-root .mb-profile-head{background:var(--card);border-radius:12px;box-shadow:var(--shadow);overflow:hidden;margin-bottom:16px;}
   .mebook-root .mb-profile-cover{height:220px;background:linear-gradient(135deg,#0f172a,#16a34a);position:relative;cursor:pointer;overflow:hidden;}
   .mebook-root .mb-profile-cover img{width:100%;height:100%;object-fit:cover;}
@@ -674,7 +1031,7 @@ const MEBOOK_CSS = `
   .mebook-root .mb-profile-avatar-wrap:hover .mb-profile-avatar-add{opacity:1;}
   .mebook-root .mb-profile-avatar-add svg{width:26px;height:26px;fill:#fff;}
   .mebook-root .mb-profile-text{flex:1;min-width:200px;padding-bottom:8px;}
-  .mebook-root .mb-profile-name{font-size:26px;font-weight:800;line-height:1.2;color:var(--text);}
+  .mebook-root .mb-profile-name{font-size:26px;font-weight:800;line-height:1.2;color:var(--text);display:flex;align-items:center;gap:6px;}
   .mebook-root .mb-profile-bio{font-size:14.5px;color:var(--text-muted);margin-top:4px;}
   .mebook-root .mb-profile-actions{display:flex;gap:8px;padding:0 20px 18px;flex-wrap:wrap;}
   .mebook-root .mb-profile-actions .mb-btn{width:auto;padding:9px 18px;}
@@ -691,7 +1048,6 @@ const MEBOOK_CSS = `
   .mebook-root .mb-switch input:checked + .mb-slider{background:var(--green);}
   .mebook-root .mb-switch input:checked + .mb-slider::before{transform:translateX(20px);}
 
-  /* SETTINGS */
   .mebook-root .mb-settings-group{margin-bottom:16px;}
   .mebook-root .mb-setting-row{display:flex;align-items:center;gap:14px;padding:14px 4px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .18s ease;border-radius:8px;color:var(--text);}
   .mebook-root .mb-setting-row:hover{background:var(--hover);}
@@ -703,7 +1059,6 @@ const MEBOOK_CSS = `
   .mebook-root .mb-setting-txt p{font-size:12.5px;color:var(--text-muted);margin-top:1px;}
   .mebook-root .mb-setting-row .chev{width:18px;height:18px;fill:var(--text-muted);flex-shrink:0;}
 
-  /* COMMUNITY / MEBOOK HERO */
   .mebook-root .mb-community-hero{background:linear-gradient(135deg,#0f172a 0%,#16a34a 100%);border-radius:12px;padding:26px 22px;color:#fff;margin-bottom:18px;box-shadow:var(--shadow);}
   .mebook-root .mb-community-hero h2{font-size:23px;font-weight:800;}
   .mebook-root .mb-community-hero p{font-size:14px;opacity:.85;margin-top:5px;}
@@ -732,7 +1087,6 @@ const MEBOOK_CSS = `
   .mebook-root .mb-mebook-tab.active{background:var(--green);color:#fff;border-color:var(--green);}
   .mebook-root .mb-mebook-tab:hover:not(.active){background:var(--hover);}
 
-  /* MODAL */
   .mebook-root .mb-modal-overlay{position:fixed;inset:0;background:rgba(15,23,42,.5);backdrop-filter:blur(3px);z-index:1300;display:flex;align-items:center;justify-content:center;padding:16px;opacity:0;visibility:hidden;transition:opacity .28s ease,visibility .28s ease;}
   .mebook-root .mb-modal-overlay.open{opacity:1;visibility:visible;}
   .mebook-root .mb-modal{background:var(--modal-bg);border-radius:14px;width:100%;max-width:520px;box-shadow:var(--shadow-lg);transform:scale(.94);transition:transform .28s cubic-bezier(.2,.8,.3,1);max-height:90vh;overflow-y:auto;color:var(--text);}
@@ -762,40 +1116,6 @@ const MEBOOK_CSS = `
   .mebook-root .mb-preview-remove{position:absolute;top:8px;right:8px;width:30px;height:30px;border-radius:50%;background:rgba(0,0,0,.65);display:flex;align-items:center;justify-content:center;}
   .mebook-root .mb-preview-remove svg{width:14px;height:14px;fill:#fff;}
 
-  /* CHAT */
-  .mebook-root .mb-chat-wrap{background:var(--card);border-radius:12px;box-shadow:var(--shadow);height:calc(100vh - 200px);min-height:400px;display:flex;overflow:hidden;}
-  .mebook-root .mb-chat-list{width:300px;border-right:1px solid var(--border);overflow-y:auto;flex-shrink:0;}
-  .mebook-root .mb-chat-item{display:flex;gap:10px;padding:12px 14px;cursor:pointer;transition:background .18s ease;border-bottom:1px solid var(--border);position:relative;}
-  .mebook-root .mb-chat-item:hover{background:var(--hover);}
-  .mebook-root .mb-chat-item.active{background:rgba(22,163,74,.12);}
-  .mebook-root .mb-chat-item img{width:44px;height:44px;border-radius:50%;object-fit:cover;background:#cbd5e1;flex-shrink:0;}
-  .mebook-root .mb-chat-item-body{flex:1;min-width:0;}
-  .mebook-root .mb-chat-item-name{font-size:14.5px;font-weight:600;margin-bottom:2px;color:var(--text);}
-  .mebook-root .mb-chat-item-last{font-size:13px;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-  .mebook-root .mb-chat-item-time{font-size:11px;color:var(--text-muted);flex-shrink:0;}
-  .mebook-root .mb-chat-window{flex:1;display:flex;flex-direction:column;min-width:0;}
-  .mebook-root .mb-chat-head{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--border);flex-shrink:0;}
-  .mebook-root .mb-chat-head img{width:40px;height:40px;border-radius:50%;object-fit:cover;background:#cbd5e1;}
-  .mebook-root .mb-chat-head-info{flex:1;}
-  .mebook-root .mb-chat-head-name{font-size:15px;font-weight:700;color:var(--text);}
-  .mebook-root .mb-chat-head-status{font-size:12.5px;color:var(--green);}
-  .mebook-root .mb-chat-body{flex:1;overflow-y:auto;padding:16px;background:var(--chat-body-bg);display:flex;flex-direction:column;gap:8px;}
-  .mebook-root .mb-chat-body::-webkit-scrollbar{width:6px;}
-  .mebook-root .mb-chat-body::-webkit-scrollbar-thumb{background:var(--border);border-radius:10px;}
-  .mebook-root .mb-bubble{max-width:65%;padding:9px 14px;border-radius:18px;font-size:14.5px;line-height:1.4;word-wrap:break-word;animation:bubbleIn .22s ease;}
-  @keyframes bubbleIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
-  .mebook-root .mb-bubble.me{align-self:flex-end;background:var(--green);color:#fff;border-bottom-right-radius:5px;}
-  .mebook-root .mb-bubble.them{align-self:flex-start;background:var(--bubble-them-bg);color:var(--text);border-bottom-left-radius:5px;box-shadow:0 1px 2px rgba(0,0,0,.08);}
-  .mebook-root .mb-bubble-time{font-size:10.5px;opacity:.7;margin-top:3px;display:block;text-align:right;}
-  .mebook-root .mb-chat-input{display:flex;gap:10px;padding:12px 16px;border-top:1px solid var(--border);background:var(--card);flex-shrink:0;}
-  .mebook-root .mb-chat-input input{flex:1;background:var(--input-bg);border:none;border-radius:22px;padding:11px 16px;font-size:14.5px;outline:none;color:var(--text);}
-  .mebook-root .mb-chat-input button{width:44px;height:44px;border-radius:50%;background:var(--green);color:#fff;display:flex;align-items:center;justify-content:center;transition:filter .18s ease;}
-  .mebook-root .mb-chat-input button:hover{filter:brightness(1.1);}
-  .mebook-root .mb-chat-input button svg{width:20px;height:20px;fill:#fff;}
-  .mebook-root .mb-chat-empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--text-muted);gap:10px;}
-  .mebook-root .mb-chat-empty svg{width:60px;height:60px;fill:var(--border);}
-
-  /* TOAST */
   .mebook-root .mb-toast{position:fixed;bottom:80px;left:50%;transform:translate(-50%,80px);background:#0f172a;color:#fff;padding:12px 22px;border-radius:10px;font-size:14px;font-weight:500;z-index:6000;opacity:0;transition:transform .35s cubic-bezier(.2,.8,.3,1),opacity .35s ease;box-shadow:var(--shadow-lg);display:flex;align-items:center;gap:8px;max-width:90vw;}
   .mebook-root .mb-toast.show{transform:translate(-50%,0);opacity:1;}
   .mebook-root .mb-toast svg{width:17px;height:17px;fill:#22c55e;flex-shrink:0;}
@@ -805,8 +1125,10 @@ const MEBOOK_CSS = `
   .mebook-root .mb-loading{text-align:center;padding:40px;color:var(--text-muted);}
   .mebook-root .mb-theme-row{display:flex;align-items:center;justify-content:space-between;padding:14px 4px;border-bottom:1px solid var(--border);color:var(--text);}
   .mebook-root .mb-theme-row:last-child{border-bottom:none;}
-  .mebook-root .mb-theme-row .mb-setting-txt h4{margin-bottom:2px;}
 
+  /* ============================================================
+     RESPONSIVE
+  ============================================================ */
   @media(max-width:1100px){
     .mebook-root .mb-layout{grid-template-columns:240px minmax(0,1fr);}
     .mebook-root .mb-right{display:none;}
@@ -814,9 +1136,6 @@ const MEBOOK_CSS = `
   @media(max-width:820px){
     .mebook-root .mb-layout{grid-template-columns:minmax(0,1fr);padding:14px 10px 100px;}
     .mebook-root .mb-sidebar{display:none;}
-    .mebook-root .mb-chat-list{width:100%;}
-    .mebook-root .mb-chat-list.hide-mobile{display:none;}
-    .mebook-root .mb-chat-window.hide-mobile{display:none;}
   }
   @media(max-width:600px){
     .mebook-root .mb-logo-text{font-size:19px;}
@@ -828,6 +1147,7 @@ const MEBOOK_CSS = `
     .mebook-root .auth-card{padding:28px 22px 24px;border-radius:20px;}
     .mebook-root .auth-logo img{width:42px;height:42px;}
     .mebook-root .auth-logo .mb-logo-text{font-size:24px;}
+    .mebook-root .share-options{grid-template-columns:1fr;}
   }
 `
 
@@ -839,13 +1159,10 @@ export default function MeBookPage() {
   const rootRef = useRef<HTMLDivElement>(null)
   const [ready, setReady] = useState(false)
 
-  /* ------------- STATE ------------- */
+  /* ---- Core state ---- */
   const [theme, setTheme] = useState<"light" | "dark">("dark")
   const [authMode, setAuthMode] = useState<"signin" | "signup">("signin")
-  const [authErr, setAuthErr] = useState<{ si: string; su: string }>({
-    si: "",
-    su: "",
-  })
+  const [authErr, setAuthErr] = useState<{ si: string; su: string }>({ si: "", su: "" })
   const [authBusy, setAuthBusy] = useState(false)
   const [user, setUser] = useState<any>(null)
   const [profile, setProfile] = useState<any>(null)
@@ -855,10 +1172,7 @@ export default function MeBookPage() {
   const [editOpen, setEditOpen] = useState(false)
   const [userModalOpen, setUserModalOpen] = useState(false)
   const [userModalBody, setUserModalBody] = useState<React.ReactNode>(null)
-  const [toast, setToast] = useState<{ msg: string; show: boolean }>({
-    msg: "",
-    show: false,
-  })
+  const [toast, setToast] = useState<{ msg: string; show: boolean }>({ msg: "", show: false })
   const [mebookTab, setMebookTab] = useState("featured")
 
   const [feed, setFeed] = useState<any[]>([])
@@ -872,6 +1186,7 @@ export default function MeBookPage() {
   const [activeChat, setActiveChat] = useState<string | null>(null)
   const [chatMessages, setChatMessages] = useState<any[]>([])
   const [chatPartner, setChatPartner] = useState<any>(null)
+  const [mobileChatWindow, setMobileChatWindow] = useState(false)
 
   const [postText, setPostText] = useState("")
   const [postMovie, setPostMovie] = useState("")
@@ -884,12 +1199,7 @@ export default function MeBookPage() {
   const [editBio, setEditBio] = useState("")
   const [editLoc, setEditLoc] = useState("")
   const [editPhone, setEditPhone] = useState("")
-
-  const [privacy, setPrivacy] = useState({
-    info: true,
-    posts: true,
-    requests: true,
-  })
+  const [privacy, setPrivacy] = useState({ info: true, posts: true, requests: true })
 
   const [siEmail, setSiEmail] = useState("")
   const [siPass, setSiPass] = useState("")
@@ -900,10 +1210,21 @@ export default function MeBookPage() {
   const [friendSearch, setFriendSearch] = useState("")
   const [chatInput, setChatInput] = useState("")
 
+  /* ---- Comments sheet ---- */
+  const [commentPost, setCommentPost] = useState<any>(null)
+  const [commentText, setCommentText] = useState("")
+  const [commentBusy, setCommentBusy] = useState(false)
+  const commentListRef = useRef<HTMLDivElement>(null)
+
+  /* ---- Share sheet ---- */
+  const [sharePost, setSharePost] = useState<any>(null)
+  const [shareCaption, setShareCaption] = useState("")
+  const [shareBusy, setShareBusy] = useState(false)
+
   const unsubscribersRef = useRef<Array<() => void>>([])
   const chatUnsubRef = useRef<(() => void) | null>(null)
 
-  /* ------------- CSS inject ------------- */
+  /* ---- CSS inject ---- */
   useEffect(() => {
     const styleId = "mebook-styles"
     if (!document.getElementById(styleId)) {
@@ -915,10 +1236,9 @@ export default function MeBookPage() {
     setReady(true)
   }, [])
 
-  /* ------------- Theme init ------------- */
+  /* ---- Theme ---- */
   useEffect(() => {
     const saved = localStorage.getItem("mebook-theme")
-    // default to dark (since auth screen is dark)
     const isDark = saved ? saved === "dark" : true
     setTheme(isDark ? "dark" : "light")
   }, [])
@@ -928,48 +1248,45 @@ export default function MeBookPage() {
     localStorage.setItem("mebook-theme", isDark ? "dark" : "light")
   }
 
-  /* ------------- Toast ------------- */
+  /* ---- Toast ---- */
   const showToast = useCallback((msg: string) => {
     setToast({ msg, show: true })
     setTimeout(() => setToast((t) => ({ ...t, show: false })), 2400)
   }, [])
 
-  /* ------------- cleanup ------------- */
+  /* ---- Cleanup ---- */
   const cleanupListeners = useCallback(() => {
     unsubscribersRef.current.forEach((u) => {
-      try {
-        u()
-      } catch {}
+      try { u() } catch {}
     })
     unsubscribersRef.current = []
     if (chatUnsubRef.current) {
-      try {
-        chatUnsubRef.current()
-      } catch {}
+      try { chatUnsubRef.current() } catch {}
       chatUnsubRef.current = null
     }
   }, [])
 
-  /* ------------- Start listeners ------------- */
+  /* ---- Feed listeners ---- */
   const startAppListeners = useCallback(
     async (uid: string) => {
       cleanupListeners()
       const fb = await getFirebase()
 
-      // Feed
-      const feedQ = fb.query(
-        fb.collection(fb.db, "posts"),
-        fb.orderBy("createdAt", "desc")
-      )
+      const feedQ = fb.query(fb.collection(fb.db, "posts"), fb.orderBy("createdAt", "desc"))
       unsubscribersRef.current.push(
         fb.onSnapshot(feedQ, (snap: any) => {
           const arr: any[] = []
           snap.forEach((d: any) => arr.push({ id: d.id, ...d.data() }))
+          arr.sort((a, b) => {
+            const aOff = a.isOfficial ? 1 : 0
+            const bOff = b.isOfficial ? 1 : 0
+            if (aOff !== bOff) return bOff - aOff
+            return (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0)
+          })
           setFeed(arr)
         })
       )
 
-      // My posts
       const myQ = fb.query(
         fb.collection(fb.db, "posts"),
         fb.where("authorId", "==", uid)
@@ -978,15 +1295,11 @@ export default function MeBookPage() {
         fb.onSnapshot(myQ, (snap: any) => {
           const arr: any[] = []
           snap.forEach((d: any) => arr.push({ id: d.id, ...d.data() }))
-          arr.sort(
-            (a, b) =>
-              (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0)
-          )
+          arr.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0))
           setMyPosts(arr)
         })
       )
 
-      // Community
       const commQ = fb.query(
         fb.collection(fb.db, "communityPosts"),
         fb.orderBy("createdAt", "desc")
@@ -999,7 +1312,6 @@ export default function MeBookPage() {
         })
       )
 
-      // Users
       const usersQ = fb.query(fb.collection(fb.db, "users"))
       unsubscribersRef.current.push(
         fb.onSnapshot(usersQ, (snap: any) => {
@@ -1008,11 +1320,10 @@ export default function MeBookPage() {
             if (d.id !== uid) arr.push({ uid: d.id, ...d.data() })
           })
           setFriends(arr)
-          setOnlineList(arr.slice(0, 5))
+          setOnlineList(arr.slice(0, 8))
         })
       )
 
-      // Requests
       const reqQ = fb.query(
         fb.collection(fb.db, "friendRequests"),
         fb.where("to", "==", uid),
@@ -1023,9 +1334,7 @@ export default function MeBookPage() {
           const arr: any[] = []
           for (const d of snap.docs) {
             const data = d.data()
-            const fromSnap = await fb.getDoc(
-              fb.doc(fb.db, "users", data.from)
-            )
+            const fromSnap = await fb.getDoc(fb.doc(fb.db, "users", data.from))
             arr.push({
               id: d.id,
               from: data.from,
@@ -1038,7 +1347,6 @@ export default function MeBookPage() {
         })
       )
 
-      // My friends
       const myFriendsQ = fb.query(
         fb.collection(fb.db, "friends"),
         fb.where("a", "==", uid)
@@ -1047,16 +1355,13 @@ export default function MeBookPage() {
         fb.onSnapshot(myFriendsQ, async (snap: any) => {
           const arr: any[] = []
           for (const d of snap.docs) {
-            const s = await fb.getDoc(
-              fb.doc(fb.db, "users", d.data().b)
-            )
+            const s = await fb.getDoc(fb.doc(fb.db, "users", d.data().b))
             if (s.exists()) arr.push({ uid: s.id, ...s.data() })
           }
           setMyFriends(arr)
         })
       )
 
-      // Chats
       const chatsQ = fb.query(
         fb.collection(fb.db, "chats"),
         fb.where("members", "array-contains", uid)
@@ -1078,9 +1383,7 @@ export default function MeBookPage() {
               lastAt: data.lastAt,
             })
           }
-          arr.sort(
-            (a, b) => (b.lastAt?.seconds || 0) - (a.lastAt?.seconds || 0)
-          )
+          arr.sort((a, b) => (b.lastAt?.seconds || 0) - (a.lastAt?.seconds || 0))
           setChats(arr)
         })
       )
@@ -1088,7 +1391,7 @@ export default function MeBookPage() {
     [cleanupListeners]
   )
 
-  /* ------------- Firebase auth listener ------------- */
+  /* ---- Firebase auth ---- */
   useEffect(() => {
     if (!ready) return
     let cancelled = false
@@ -1114,6 +1417,7 @@ export default function MeBookPage() {
                 bio: "Movie lover 🎬",
                 location: "",
                 phone: "",
+                verified: false,
                 createdAt: fb.serverTimestamp(),
                 privacy: { info: true, posts: true, requests: true },
               })
@@ -1122,10 +1426,15 @@ export default function MeBookPage() {
             setUser(u)
             const p = snap.data()
             setProfile(p)
-            setPrivacy(
-              p.privacy || { info: true, posts: true, requests: true }
-            )
+            setPrivacy(p.privacy || { info: true, posts: true, requests: true })
             setAuthBusy(false)
+
+            // Real-time profile listener — so admin verify instantly updates
+            const profileUnsub = fb.onSnapshot(userRef, (s: any) => {
+              if (s.exists()) setProfile(s.data())
+            })
+            unsubscribersRef.current.push(profileUnsub)
+
             startAppListeners(u.uid)
           } else {
             setUser(null)
@@ -1148,7 +1457,7 @@ export default function MeBookPage() {
     }
   }, [ready, startAppListeners, cleanupListeners, showToast])
 
-  /* ------------- AUTH ACTIONS ------------- */
+  /* ---- Auth actions ---- */
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault()
     if (authBusy) return
@@ -1156,12 +1465,7 @@ export default function MeBookPage() {
     setAuthErr((prev) => ({ ...prev, si: "" }))
     try {
       const fb = await getFirebase()
-      await fb.signInWithEmailAndPassword(
-        fb.auth,
-        siEmail.trim(),
-        siPass
-      )
-      // onAuthStateChanged will handle the rest
+      await fb.signInWithEmailAndPassword(fb.auth, siEmail.trim(), siPass)
     } catch (err: any) {
       console.error("Sign in error:", err)
       setAuthErr((prev) => ({ ...prev, si: friendlyErr(err) }))
@@ -1181,9 +1485,7 @@ export default function MeBookPage() {
         suEmail.trim(),
         suPass
       )
-      await fb.updateProfile(cred.user, {
-        displayName: suName.trim(),
-      })
+      await fb.updateProfile(cred.user, { displayName: suName.trim() })
       await fb.setDoc(fb.doc(fb.db, "users", cred.user.uid), {
         uid: cred.user.uid,
         name: suName.trim(),
@@ -1193,6 +1495,7 @@ export default function MeBookPage() {
         bio: "Movie lover 🎬",
         location: "",
         phone: "",
+        verified: false,
         createdAt: fb.serverTimestamp(),
         privacy: { info: true, posts: true, requests: true },
       })
@@ -1222,11 +1525,11 @@ export default function MeBookPage() {
           bio: "Movie lover 🎬",
           location: "",
           phone: "",
+          verified: false,
           createdAt: fb.serverTimestamp(),
           privacy: { info: true, posts: true, requests: true },
         })
       }
-      // onAuthStateChanged handles the rest
     } catch (err: any) {
       console.error("Google sign in error:", err)
       showToast(friendlyErr(err))
@@ -1256,16 +1559,15 @@ export default function MeBookPage() {
     }
   }
 
-  /* ------------- NAV ------------- */
+  /* ---- Navigation ---- */
   const goTo = (view: string) => {
     setCurrentView(view)
     setDrawerOpen(false)
-    setTimeout(() => {
-      window.scrollTo({ top: 0, behavior: "smooth" })
-    }, 50)
+    if (view !== "messages") setMobileChatWindow(false)
+    setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 50)
   }
 
-  /* ------------- POST ACTIONS ------------- */
+  /* ---- Like ---- */
   const handleLikePost = async (postId: string) => {
     try {
       const fb = await getFirebase()
@@ -1275,21 +1577,47 @@ export default function MeBookPage() {
       const likes = snap.data().likes || []
       const has = likes.includes(user.uid)
       await fb.updateDoc(ref, {
-        likes: has
-          ? fb.arrayRemove(user.uid)
-          : fb.arrayUnion(user.uid),
+        likes: has ? fb.arrayRemove(user.uid) : fb.arrayUnion(user.uid),
       })
     } catch (e: any) {
       showToast(e.message)
     }
   }
 
-  const handleAddComment = async (postId: string, text: string) => {
-    text = (text || "").trim()
-    if (!text) return
+  /* ---- Comment sheet ---- */
+  const openComments = (post: any) => {
+    setCommentPost(post)
+    setCommentText("")
+    // Real-time listener for this post's comments
+    ;(async () => {
+      const fb = await getFirebase()
+      const ref = fb.doc(fb.db, "posts", post.id)
+      const unsub = fb.onSnapshot(ref, (snap: any) => {
+        if (snap.exists()) {
+          setCommentPost({ id: snap.id, ...snap.data() })
+        }
+      })
+      unsubscribersRef.current.push(unsub)
+    })()
+    setTimeout(() => {
+      if (commentListRef.current) {
+        commentListRef.current.scrollTop = commentListRef.current.scrollHeight
+      }
+    }, 200)
+  }
+
+  const closeComments = () => {
+    setCommentPost(null)
+    setCommentText("")
+  }
+
+  const handleAddComment = async () => {
+    const text = commentText.trim()
+    if (!text || !commentPost || commentBusy) return
+    setCommentBusy(true)
     try {
       const fb = await getFirebase()
-      const ref = fb.doc(fb.db, "posts", postId)
+      const ref = fb.doc(fb.db, "posts", commentPost.id)
       await fb.updateDoc(ref, {
         comments: fb.arrayUnion({
           uid: user.uid,
@@ -1299,56 +1627,122 @@ export default function MeBookPage() {
           at: Date.now(),
         }),
       })
-      showToast("Comment added")
+      setCommentText("")
+      setTimeout(() => {
+        if (commentListRef.current) {
+          commentListRef.current.scrollTop = commentListRef.current.scrollHeight
+        }
+      }, 100)
     } catch (e: any) {
       showToast(e.message)
+    } finally {
+      setCommentBusy(false)
     }
   }
 
-  const handleSharePost = async (postId: string) => {
+  /* ---- Share ---- */
+  const openShare = (post: any) => {
+    setSharePost(post)
+    setShareCaption("")
+  }
+
+  const closeShare = () => {
+    setSharePost(null)
+    setShareCaption("")
+  }
+
+  const buildShareUrl = (postId: string) =>
+    `${location.origin}${location.pathname}#post-${postId}`
+
+  const shareToProfile = async () => {
+    if (!sharePost || shareBusy) return
+    setShareBusy(true)
     try {
       const fb = await getFirebase()
-      const snap = await fb.getDoc(fb.doc(fb.db, "posts", postId))
-      if (!snap.exists()) {
-        showToast("Post not found")
-        return
-      }
-      const post = snap.data()
-      const postUrl =
-        location.origin + location.pathname + "#post-" + postId
-      const shareText = `Check out this movie review on MeBook: "${
-        post.caption || "Movie review"
-      }" — ${post.movie || ""}`
+      const caption = shareCaption.trim()
+      await fb.addDoc(fb.collection(fb.db, "posts"), {
+        authorId: user.uid,
+        authorName: profile.name,
+        authorAvatar: profile.photoURL || "",
+        verified: profile.verified === true,
+        caption:
+          (caption ? caption + "\n\n" : "") +
+          `🔁 Shared from ${sharePost.authorName || "MeBook"}` +
+          (sharePost.movie ? ` · 🎬 ${sharePost.movie}` : ""),
+        movie: sharePost.movie || "",
+        image: sharePost.image || "",
+        originalPostId: sharePost.id,
+        originalAuthor: sharePost.authorName || "",
+        likes: [],
+        comments: [],
+        shares: 0,
+        createdAt: fb.serverTimestamp(),
+      })
 
-      if ((navigator as any).share) {
-        await (navigator as any).share({
-          title: "MeBook Movie Review",
-          text: shareText,
-          url: postUrl,
+      await fb.updateDoc(fb.doc(fb.db, "posts", sharePost.id), {
+        shares: fb.increment(1),
+      })
+
+      if (sharePost.authorId && sharePost.authorId !== "admin") {
+        await fb.addDoc(fb.collection(fb.db, "notifications"), {
+          uid: sharePost.authorId,
+          title: "Post Shared",
+          message: `${profile.name} shared your post on their profile.`,
+          type: "share",
+          read: false,
+          createdAt: fb.serverTimestamp(),
         })
-        await fb.updateDoc(fb.doc(fb.db, "posts", postId), {
-          shares: fb.increment(1),
-        })
-        showToast("Shared ✅")
-      } else {
-        await navigator.clipboard.writeText(postUrl).catch(() => {})
-        window.open(
-          `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
-            postUrl
-          )}`,
-          "_blank",
-          "width=640,height=480"
-        )
-        await fb.updateDoc(fb.doc(fb.db, "posts", postId), {
-          shares: fb.increment(1),
-        })
-        showToast("Sharing to Facebook...")
       }
+
+      closeShare()
+      showToast("Shared to your profile ✓")
+      goTo("home")
     } catch (e: any) {
-      if (e.name !== "AbortError") showToast("Share cancelled or failed")
+      console.error(e)
+      showToast("Share failed: " + e.message)
+    } finally {
+      setShareBusy(false)
     }
   }
 
+  const shareToFacebook = () => {
+    if (!sharePost) return
+    const url = encodeURIComponent(buildShareUrl(sharePost.id))
+    window.open(
+      `https://www.facebook.com/sharer/sharer.php?u=${url}`,
+      "_blank",
+      "width=640,height=480"
+    )
+  }
+
+  const shareToWhatsApp = () => {
+    if (!sharePost) return
+    const url = encodeURIComponent(buildShareUrl(sharePost.id))
+    const text = encodeURIComponent(
+      `${sharePost.authorName} on MeBook: ${sharePost.movie || "Movie"}`
+    )
+    window.open(`https://wa.me/?text=${text}%20${url}`, "_blank")
+  }
+
+  const shareToTelegram = () => {
+    if (!sharePost) return
+    const url = encodeURIComponent(buildShareUrl(sharePost.id))
+    window.open(`https://t.me/share/url?url=${url}`, "_blank")
+  }
+
+  const copyLink = async () => {
+    if (!sharePost) return
+    const url = buildShareUrl(sharePost.id)
+    try {
+      await navigator.clipboard.writeText(url)
+      showToast("Link copied ✓")
+      closeShare()
+    } catch {
+      showToast("Could not copy")
+    }
+  }
+
+  /* ---- Delete post ---- */
   const handleDeletePost = async (postId: string) => {
     if (!confirm("Delete this post?")) return
     try {
@@ -1360,7 +1754,7 @@ export default function MeBookPage() {
     }
   }
 
-  /* ------------- COMPOSER ------------- */
+  /* ---- Composer ---- */
   const handlePreviewFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
@@ -1395,6 +1789,7 @@ export default function MeBookPage() {
         authorId: user.uid,
         authorName: profile.name,
         authorAvatar: profile.photoURL || "",
+        verified: profile.verified === true,
         caption: text,
         movie,
         image: imageUrl,
@@ -1408,7 +1803,7 @@ export default function MeBookPage() {
       removePreview()
       setUploadProgress(null)
       setComposerOpen(false)
-      showToast("Post published ✅")
+      showToast("Post published ✓")
       goTo("home")
     } catch (err: any) {
       console.error(err)
@@ -1418,7 +1813,7 @@ export default function MeBookPage() {
     }
   }
 
-  /* ------------- FRIENDS ------------- */
+  /* ---- Friends ---- */
   const handleSendRequest = async (toUid: string) => {
     if (toUid === user.uid) return
     try {
@@ -1445,7 +1840,7 @@ export default function MeBookPage() {
         status: "pending",
         createdAt: fb.serverTimestamp(),
       })
-      showToast("Friend request sent ✅")
+      showToast("Friend request sent ✓")
     } catch (e: any) {
       showToast(e.message)
     }
@@ -1454,17 +1849,12 @@ export default function MeBookPage() {
   const handleAcceptRequest = async (reqId: string, fromUid: string) => {
     try {
       const fb = await getFirebase()
-      await fb.updateDoc(fb.doc(fb.db, "friendRequests", reqId), {
-        status: "accepted",
+      await fb.updateDoc(fb.doc(fb.db, "friendRequests", reqId), { status: "accepted" })
+      await fb.setDoc(fb.doc(fb.db, "friends", user.uid + "_" + fromUid), {
+        a: user.uid,
+        b: fromUid,
+        createdAt: fb.serverTimestamp(),
       })
-      await fb.setDoc(
-        fb.doc(fb.db, "friends", user.uid + "_" + fromUid),
-        {
-          a: user.uid,
-          b: fromUid,
-          createdAt: fb.serverTimestamp(),
-        }
-      )
       showToast("You are now friends 🎉")
     } catch (e: any) {
       showToast(e.message)
@@ -1474,21 +1864,15 @@ export default function MeBookPage() {
   const handleDeclineRequest = async (reqId: string) => {
     try {
       const fb = await getFirebase()
-      await fb.updateDoc(fb.doc(fb.db, "friendRequests", reqId), {
-        status: "declined",
-      })
+      await fb.updateDoc(fb.doc(fb.db, "friendRequests", reqId), { status: "declined" })
       showToast("Request declined")
     } catch (e: any) {
       showToast(e.message)
     }
   }
 
-  /* ------------- CHAT ------------- */
-  const startChat = async (
-    otherId: string,
-    otherName: string,
-    otherPhoto: string
-  ) => {
+  /* ---- Chat ---- */
+  const startChat = async (otherId: string, otherName: string, otherPhoto: string) => {
     if (otherId === user.uid) {
       showToast("You can't chat with yourself")
       return
@@ -1520,10 +1904,9 @@ export default function MeBookPage() {
   const openChat = async (chatId: string, otherId: string, other: any) => {
     setActiveChat(chatId)
     setChatPartner({ ...other, uid: otherId })
+    setMobileChatWindow(true)
     if (chatUnsubRef.current) {
-      try {
-        chatUnsubRef.current()
-      } catch {}
+      try { chatUnsubRef.current() } catch {}
       chatUnsubRef.current = null
     }
     const fb = await getFirebase()
@@ -1535,6 +1918,10 @@ export default function MeBookPage() {
       const arr: any[] = []
       snap.forEach((d: any) => arr.push({ id: d.id, ...d.data() }))
       setChatMessages(arr)
+      setTimeout(() => {
+        const body = document.getElementById("mebook-chat-body")
+        if (body) body.scrollTop = body.scrollHeight
+      }, 80)
     })
   }
 
@@ -1544,14 +1931,11 @@ export default function MeBookPage() {
     setChatInput("")
     try {
       const fb = await getFirebase()
-      await fb.addDoc(
-        fb.collection(fb.db, "chats", activeChat, "messages"),
-        {
-          from: user.uid,
-          text,
-          at: fb.serverTimestamp(),
-        }
-      )
+      await fb.addDoc(fb.collection(fb.db, "chats", activeChat, "messages"), {
+        from: user.uid,
+        text,
+        at: fb.serverTimestamp(),
+      })
       await fb.updateDoc(fb.doc(fb.db, "chats", activeChat), {
         lastMessage: { text, from: user.uid },
         lastAt: fb.serverTimestamp(),
@@ -1561,7 +1945,7 @@ export default function MeBookPage() {
     }
   }
 
-  /* ------------- PROFILE ------------- */
+  /* ---- Profile ---- */
   const handleEditProfile = () => {
     setEditName(profile.name || "")
     setEditBio(profile.bio || "")
@@ -1582,7 +1966,7 @@ export default function MeBookPage() {
       await fb.updateDoc(fb.doc(fb.db, "users", user.uid), updates)
       setProfile({ ...profile, ...updates })
       setEditOpen(false)
-      showToast("Profile updated ✅")
+      showToast("Profile updated ✓")
     } catch (e: any) {
       showToast(e.message)
     }
@@ -1599,11 +1983,9 @@ export default function MeBookPage() {
       try {
         const fb = await getFirebase()
         const url = await cloudinaryUpload(f)
-        await fb.updateDoc(fb.doc(fb.db, "users", user.uid), {
-          photoURL: url,
-        })
+        await fb.updateDoc(fb.doc(fb.db, "users", user.uid), { photoURL: url })
         setProfile({ ...profile, photoURL: url })
-        showToast("Profile photo updated ✅")
+        showToast("Profile photo updated ✓")
       } catch (e: any) {
         showToast("Upload failed: " + e.message)
       }
@@ -1622,11 +2004,9 @@ export default function MeBookPage() {
       try {
         const fb = await getFirebase()
         const url = await cloudinaryUpload(f)
-        await fb.updateDoc(fb.doc(fb.db, "users", user.uid), {
-          coverURL: url,
-        })
+        await fb.updateDoc(fb.doc(fb.db, "users", user.uid), { coverURL: url })
         setProfile({ ...profile, coverURL: url })
-        showToast("Cover photo updated ✅")
+        showToast("Cover photo updated ✓")
       } catch (e: any) {
         showToast("Upload failed: " + e.message)
       }
@@ -1645,7 +2025,7 @@ export default function MeBookPage() {
   }
 
   const handleOpenUser = async (uid: string) => {
-    if (uid === user.uid) {
+    if (uid === user.uid || uid === "admin") {
       goTo("profile")
       return
     }
@@ -1659,12 +2039,11 @@ export default function MeBookPage() {
       const u = snap.data()
       const photo =
         u.photoURL ||
-        `https://ui-avatars.com/api/?background=16a34a&color=fff&name=${encodeURIComponent(
-          u.name || "U"
-        )}`
+        `https://ui-avatars.com/api/?background=16a34a&color=fff&name=${encodeURIComponent(u.name || "U")}`
       const cover =
         u.coverURL ||
         "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=1200&q=80"
+      const isVerified = u.verified === true || u.isOfficial === true
 
       setUserModalBody(
         <div style={{ textAlign: "center" }}>
@@ -1694,42 +2073,29 @@ export default function MeBookPage() {
               fontWeight: 800,
               marginTop: 8,
               color: "var(--text)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 6,
             }}
           >
             {u.name}
+            {isVerified && (
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="#22c55e">
+                <path d="M23 12l-2.44-2.79.34-3.69-3.61-.82-1.89-3.2L12 2.96 8.6 1.5 6.71 4.69l-3.61.82.34 3.69L1 12l2.44 2.79-.34 3.7 3.61.82L8.6 22.5l3.4-1.47 3.4 1.46 1.89-3.19 3.61-.82-.34-3.69L23 12zm-12.91 4.72l-3.8-3.81 1.48-1.48 2.32 2.33 5.85-5.87 1.48 1.48-7.33 7.35z" />
+              </svg>
+            )}
           </div>
-          <div
-            style={{
-              color: "var(--text-muted)",
-              fontSize: 13.5,
-              marginTop: 3,
-            }}
-          >
+          <div style={{ color: "var(--text-muted)", fontSize: 13.5, marginTop: 3 }}>
             {u.bio || "Movie lover 🎬"}
           </div>
           {u.location && (
-            <div
-              style={{
-                color: "var(--text-muted)",
-                fontSize: 13,
-                marginTop: 3,
-              }}
-            >
+            <div style={{ color: "var(--text-muted)", fontSize: 13, marginTop: 3 }}>
               📍 {u.location}
             </div>
           )}
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: 8,
-              marginTop: 16,
-            }}
-          >
-            <button
-              className="mb-btn mb-btn-primary"
-              onClick={() => handleSendRequest(u.uid)}
-            >
+          <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 16 }}>
+            <button className="mb-btn mb-btn-primary" onClick={() => handleSendRequest(u.uid)}>
               ＋ Add Friend
             </button>
             <button
@@ -1750,7 +2116,7 @@ export default function MeBookPage() {
     }
   }
 
-  /* ------------- ESC ------------- */
+  /* ---- ESC ---- */
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
@@ -1758,6 +2124,8 @@ export default function MeBookPage() {
         setComposerOpen(false)
         setEditOpen(false)
         setUserModalOpen(false)
+        closeComments()
+        closeShare()
       }
     }
     document.addEventListener("keydown", onKey)
@@ -1766,12 +2134,13 @@ export default function MeBookPage() {
 
   if (!ready) return null
 
-  /* ------------- HELPERS ------------- */
+  /* ---- Helpers ---- */
   const avatarUrl = (u: any) =>
     u?.photoURL ||
-    `https://ui-avatars.com/api/?background=16a34a&color=fff&name=${encodeURIComponent(
-      u?.name || "User"
-    )}`
+    `https://ui-avatars.com/api/?background=16a34a&color=fff&name=${encodeURIComponent(u?.name || "User")}`
+
+  const isVerified = (obj: any) =>
+    obj?.verified === true || obj?.isOfficial === true
 
   /* ============================================================
      AUTH SCREEN
@@ -1793,9 +2162,7 @@ export default function MeBookPage() {
             <div className="auth-tabs">
               <button
                 type="button"
-                className={`auth-tab ${
-                  authMode === "signin" ? "active" : ""
-                }`}
+                className={`auth-tab ${authMode === "signin" ? "active" : ""}`}
                 onClick={() => {
                   setAuthMode("signin")
                   setAuthErr({ si: "", su: "" })
@@ -1805,9 +2172,7 @@ export default function MeBookPage() {
               </button>
               <button
                 type="button"
-                className={`auth-tab ${
-                  authMode === "signup" ? "active" : ""
-                }`}
+                className={`auth-tab ${authMode === "signup" ? "active" : ""}`}
                 onClick={() => {
                   setAuthMode("signup")
                   setAuthErr({ si: "", su: "" })
@@ -1842,16 +2207,10 @@ export default function MeBookPage() {
                     onChange={(e) => setSiPass(e.target.value)}
                   />
                 </div>
-                <button
-                  type="submit"
-                  className="auth-btn"
-                  disabled={authBusy}
-                >
+                <button type="submit" className="auth-btn" disabled={authBusy}>
                   {authBusy ? "Signing in..." : "Sign In"}
                 </button>
-                {authErr.si && (
-                  <div className="auth-err show">{authErr.si}</div>
-                )}
+                {authErr.si && <div className="auth-err show">{authErr.si}</div>}
               </form>
             ) : (
               <form onSubmit={handleSignUp}>
@@ -1889,16 +2248,10 @@ export default function MeBookPage() {
                     onChange={(e) => setSuPass(e.target.value)}
                   />
                 </div>
-                <button
-                  type="submit"
-                  className="auth-btn"
-                  disabled={authBusy}
-                >
+                <button type="submit" className="auth-btn" disabled={authBusy}>
                   {authBusy ? "Creating..." : "Create Account"}
                 </button>
-                {authErr.su && (
-                  <div className="auth-err show">{authErr.su}</div>
-                )}
+                {authErr.su && <div className="auth-err show">{authErr.su}</div>}
               </form>
             )}
 
@@ -1911,22 +2264,10 @@ export default function MeBookPage() {
               disabled={authBusy}
             >
               <svg viewBox="0 0 48 48">
-                <path
-                  fill="#FFC107"
-                  d="M43.6 20.5H42V20H24v8h11.3c-1.6 4.6-6 8-11.3 8-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.1 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.2-.1-2.4-.4-3.5z"
-                />
-                <path
-                  fill="#FF3D00"
-                  d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.1 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"
-                />
-                <path
-                  fill="#4CAF50"
-                  d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2c-2 1.5-4.5 2.4-7.2 2.4-5.2 0-9.6-3.3-11.3-7.9l-6.5 5C9.5 39.6 16.2 44 24 44z"
-                />
-                <path
-                  fill="#1976D2"
-                  d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.1-4.1 5.5l6.2 5.2C41 35.4 44 30.1 44 24c0-1.2-.1-2.4-.4-3.5z"
-                />
+                <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3c-1.6 4.6-6 8-11.3 8-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.1 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.2-.1-2.4-.4-3.5z"/>
+                <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.1 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/>
+                <path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2c-2 1.5-4.5 2.4-7.2 2.4-5.2 0-9.6-3.3-11.3-7.9l-6.5 5C9.5 39.6 16.2 44 24 44z"/>
+                <path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.1-4.1 5.5l6.2 5.2C41 35.4 44 30.1 44 24c0-1.2-.1-2.4-.4-3.5z"/>
               </svg>
               Continue with Google
             </button>
@@ -1937,38 +2278,19 @@ export default function MeBookPage() {
   }
 
   /* ============================================================
-     MAIN APP
+     POST RENDER
   ============================================================ */
-  const unreadCount = chats.filter(
-    (c) =>
-      c.last &&
-      (c.last as any).read === false &&
-      (c.last as any).from !== user.uid
-  ).length
-
-  const filteredFriends = friends.filter((f) => {
-    const q = friendSearch.trim().toLowerCase()
-    if (!q) return true
-    return (
-      (f.name || "").toLowerCase().includes(q) ||
-      (f.email || "").toLowerCase().includes(q)
-    )
-  })
-
   const renderPost = (post: any, isMine = false) => {
-    const liked =
-      Array.isArray(post.likes) && post.likes.includes(user?.uid)
+    const liked = Array.isArray(post.likes) && post.likes.includes(user?.uid)
     const likesCount = Array.isArray(post.likes) ? post.likes.length : 0
-    const commentsCount = Array.isArray(post.comments)
-      ? post.comments.length
-      : 0
+    const commentsCount = Array.isArray(post.comments) ? post.comments.length : 0
     const shares = post.shares || 0
     const authorAvatar =
       post.authorAvatar ||
-      `https://ui-avatars.com/api/?background=16a34a&color=fff&name=${encodeURIComponent(
-        post.authorName || "User"
-      )}`
+      `https://ui-avatars.com/api/?background=16a34a&color=fff&name=${encodeURIComponent(post.authorName || "User")}`
     const timeText = post.timeText || timeAgo(post.createdAt)
+    const postVerified = isVerified(post)
+    const isOfficial = post.isOfficial === true
 
     return (
       <article className="mb-post" key={post.id}>
@@ -1985,19 +2307,23 @@ export default function MeBookPage() {
               onClick={() => handleOpenUser(post.authorId)}
             >
               {post.authorName || "User"}
-              {post.verified && (
-                <svg
-                  width="14"
-                  height="14"
-                  viewBox="0 0 24 24"
-                  fill="#16a34a"
-                >
+              {postVerified && (
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="#22c55e" style={{ flexShrink: 0 }}>
                   <path d="M23 12l-2.44-2.79.34-3.69-3.61-.82-1.89-3.2L12 2.96 8.6 1.5 6.71 4.69l-3.61.82.34 3.69L1 12l2.44 2.79-.34 3.7 3.61.82L8.6 22.5l3.4-1.47 3.4 1.46 1.89-3.19 3.61-.82-.34-3.69L23 12zm-12.91 4.72l-3.8-3.81 1.48-1.48 2.32 2.33 5.85-5.87 1.48 1.48-7.33 7.35z" />
                 </svg>
               )}
             </div>
             <div className="mb-post-meta">
-              {timeText} •{" "}
+              {timeText}
+              {isOfficial && (
+                <>
+                  {" · "}
+                  <span style={{ color: "#22c55e", fontWeight: 700, fontSize: 11.5 }}>
+                    OFFICIAL
+                  </span>
+                </>
+              )}
+              {" · "}
               <svg className="globe" viewBox="0 0 24 24">
                 <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" />
               </svg>
@@ -2016,9 +2342,7 @@ export default function MeBookPage() {
           )}
         </div>
 
-        {post.caption && (
-          <div className="mb-post-caption">{post.caption}</div>
-        )}
+        {post.caption && <div className="mb-post-caption">{post.caption}</div>}
 
         {post.image ? (
           <div className="mb-post-media">
@@ -2032,10 +2356,7 @@ export default function MeBookPage() {
           </div>
         ) : post.movie ? (
           <div style={{ padding: "0 16px 8px" }}>
-            <span
-              className="mb-movie-badge"
-              style={{ position: "static" }}
-            >
+            <span className="mb-movie-badge" style={{ position: "static" }}>
               <svg viewBox="0 0 24 24">
                 <path d="M18 4l2 4h-3l-2-4h-2l2 4h-3l-2-4H8l2 4H7L5 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4h-4z" />
               </svg>
@@ -2054,13 +2375,11 @@ export default function MeBookPage() {
                 <span className="like-count">{likesCount}</span>
               </span>
             ) : (
-              <span className="like-count" style={{ fontSize: 13 }}>
-                0 likes
-              </span>
+              <span className="like-count" style={{ fontSize: 13 }}>0 likes</span>
             )}
           </div>
           <div>
-            <span className="cmt-count">{commentsCount}</span> comments •{" "}
+            <span className="cmt-count">{commentsCount}</span> comments ·{" "}
             <span className="shr-count">{shares}</span> shares
           </div>
         </div>
@@ -2075,16 +2394,13 @@ export default function MeBookPage() {
             </svg>
             Like
           </button>
-          <CommentButton
-            postId={post.id}
-            comments={post.comments || []}
-            user={profile}
-            onAdd={handleAddComment}
-          />
-          <button
-            className="mb-action"
-            onClick={() => handleSharePost(post.id)}
-          >
+          <button className="mb-action" onClick={() => openComments(post)}>
+            <svg viewBox="0 0 24 24">
+              <path d="M21.99 4c0-1.1-.89-2-1.99-2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14l4 4-.01-18z" />
+            </svg>
+            Comment
+          </button>
+          <button className="mb-action" onClick={() => openShare(post)}>
             <svg viewBox="0 0 24 24">
               <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z" />
             </svg>
@@ -2095,10 +2411,30 @@ export default function MeBookPage() {
     )
   }
 
-  const rootClass = `mebook-root ${
-    theme === "dark" ? "dark-mode" : ""
-  }`
+  /* ============================================================
+     COMPUTED
+  ============================================================ */
+  const unreadCount = chats.filter(
+    (c) =>
+      c.last &&
+      (c.last as any).read === false &&
+      (c.last as any).from !== user.uid
+  ).length
 
+  const filteredFriends = friends.filter((f) => {
+    const q = friendSearch.trim().toLowerCase()
+    if (!q) return true
+    return (
+      (f.name || "").toLowerCase().includes(q) ||
+      (f.email || "").toLowerCase().includes(q)
+    )
+  })
+
+  const rootClass = `mebook-root ${theme === "dark" ? "dark-mode" : ""}`
+
+  /* ============================================================
+     MAIN RENDER
+  ============================================================ */
   return (
     <div className={rootClass} ref={rootRef}>
       {/* HEADER */}
@@ -2112,39 +2448,21 @@ export default function MeBookPage() {
         </div>
 
         <div className="mb-header-right">
-          <button
-            className="mb-icon-btn"
-            title="Messages"
-            onClick={() => goTo("messages")}
-          >
+          <button className="mb-icon-btn" title="Messages" onClick={() => goTo("messages")}>
             <svg viewBox="0 0 24 24">
               <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z" />
             </svg>
-            {unreadCount > 0 && (
-              <span className="mb-badge-dot">{unreadCount}</span>
-            )}
+            {unreadCount > 0 && <span className="mb-badge-dot">{unreadCount}</span>}
           </button>
-          <button
-            className="mb-icon-btn"
-            title="Settings"
-            onClick={() => goTo("settings")}
-          >
+          <button className="mb-icon-btn" title="Settings" onClick={() => goTo("settings")}>
             <svg viewBox="0 0 24 24">
               <path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.49.49 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.48.48 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z" />
             </svg>
           </button>
-          <button
-            className="mb-avatar-btn"
-            title="Profile"
-            onClick={() => goTo("profile")}
-          >
+          <button className="mb-avatar-btn" title="Profile" onClick={() => goTo("profile")}>
             <img src={avatarUrl(profile)} alt="Profile" />
           </button>
-          <button
-            className="mb-icon-btn"
-            title="Menu"
-            onClick={() => setDrawerOpen((v) => !v)}
-          >
+          <button className="mb-icon-btn" title="Menu" onClick={() => setDrawerOpen((v) => !v)}>
             <svg viewBox="0 0 24 24">
               <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
             </svg>
@@ -2153,10 +2471,7 @@ export default function MeBookPage() {
       </header>
 
       {/* DRAWER */}
-      <div
-        className={`mb-overlay ${drawerOpen ? "open" : ""}`}
-        onClick={() => setDrawerOpen(false)}
-      />
+      <div className={`mb-overlay ${drawerOpen ? "open" : ""}`} onClick={() => setDrawerOpen(false)} />
       <aside className={`mb-drawer ${drawerOpen ? "open" : ""}`}>
         <div className="mb-drawer-head">
           <img src={LOGO_URL} alt="MeBook" />
@@ -2164,10 +2479,7 @@ export default function MeBookPage() {
             <span className="me">Me</span>
             <span className="book">Book</span>
           </div>
-          <button
-            className="mb-drawer-close"
-            onClick={() => setDrawerOpen(false)}
-          >
+          <button className="mb-drawer-close" onClick={() => setDrawerOpen(false)}>
             <svg viewBox="0 0 24 24">
               <path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
             </svg>
@@ -2175,12 +2487,7 @@ export default function MeBookPage() {
         </div>
         <div className="mb-drawer-divider" />
         <nav className="mb-drawer-nav">
-          <DrawerItem
-            id="home"
-            label="Home"
-            active={currentView === "home"}
-            onClick={goTo}
-          />
+          <DrawerItem id="home" label="Home" active={currentView === "home"} onClick={goTo} />
           <DrawerItem
             id="friends"
             label="Friends"
@@ -2216,24 +2523,9 @@ export default function MeBookPage() {
               </svg>
             }
           />
-          <DrawerItem
-            id="settings"
-            label="Settings"
-            active={currentView === "settings"}
-            onClick={goTo}
-          />
-          <DrawerItem
-            id="community"
-            label="MeBook Community"
-            active={currentView === "community"}
-            onClick={goTo}
-          />
-          <DrawerItem
-            id="profile"
-            label="Profile"
-            active={currentView === "profile"}
-            onClick={goTo}
-          />
+          <DrawerItem id="settings" label="Settings" active={currentView === "settings"} onClick={goTo} />
+          <DrawerItem id="community" label="MeBook Community" active={currentView === "community"} onClick={goTo} />
+          <DrawerItem id="profile" label="Profile" active={currentView === "profile"} onClick={goTo} />
         </nav>
         <div className="mb-drawer-divider" />
         <div className="mb-drawer-foot">
@@ -2248,130 +2540,40 @@ export default function MeBookPage() {
       {/* MAIN LAYOUT */}
       <div className="mb-layout">
         <aside className="mb-sidebar">
-          <SideItem
-            id="home"
-            label="Home"
-            active={currentView === "home"}
-            onClick={goTo}
-            icon={
-              <svg viewBox="0 0 24 24">
-                <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
-              </svg>
-            }
-          />
-          <SideItem
-            id="friends"
-            label="Friends"
-            active={currentView === "friends"}
-            onClick={goTo}
-            icon={
-              <svg viewBox="0 0 24 24">
-                <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" />
-              </svg>
-            }
-          />
-          <SideItem
-            id="messages"
-            label="Messages"
-            active={currentView === "messages"}
-            onClick={goTo}
-            icon={
-              <svg viewBox="0 0 24 24">
-                <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z" />
-              </svg>
-            }
-          />
+          <SideItem id="home" label="Home" active={currentView === "home"} onClick={goTo} />
+          <SideItem id="friends" label="Friends" active={currentView === "friends"} onClick={goTo} />
+          <SideItem id="messages" label="Messages" active={currentView === "messages"} onClick={goTo} />
           <div className="mb-side-divider" />
-          <SideItem
-            id="mebook"
-            label="MeBook"
-            active={currentView === "mebook"}
-            onClick={goTo}
-            icon={
-              <svg viewBox="0 0 24 24">
-                <path d="M21 5c-1.11-.35-2.33-.5-3.5-.5-1.95 0-4.05.4-5.5 1.5-1.45-1.1-3.55-1.5-5.5-1.5S2.45 4.9 1 6v14.65c0 .25.25.5.5.5.1 0 .15-.05.25-.05C3.1 20.45 5.05 20 6.5 20c1.95 0 4.05.4 5.5 1.5 1.35-.85 3.8-1.5 5.5-1.5 1.65 0 3.35.3 4.75 1.05.1.05.15.05.25.05.25 0 .5-.25.5-.5V6c-.6-.45-1.25-.75-2-1zm0 13.5c-1.1-.35-2.3-.5-3.5-.5-1.7 0-4.15.65-5.5 1.5V8c1.35-.85 3.8-1.5 5.5-1.5 1.2 0 2.4.15 3.5.5v11.5z" />
-              </svg>
-            }
-          />
-          <SideItem
-            id="community"
-            label="Community"
-            active={currentView === "community"}
-            onClick={goTo}
-            icon={
-              <svg viewBox="0 0 24 24">
-                <path d="M21 6h-2v9H6v2c0 .55.45 1 1 1h11l4 4V7c0-.55-.45-1-1-1z" />
-              </svg>
-            }
-          />
-          <SideItem
-            id="profile"
-            label="Profile"
-            active={currentView === "profile"}
-            onClick={goTo}
-            icon={
-              <svg viewBox="0 0 24 24">
-                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
-              </svg>
-            }
-          />
-          <SideItem
-            id="settings"
-            label="Settings"
-            active={currentView === "settings"}
-            onClick={goTo}
-            icon={
-              <svg viewBox="0 0 24 24">
-                <path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.49.49 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.48.48 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z" />
-              </svg>
-            }
-          />
+          <SideItem id="mebook" label="MeBook" active={currentView === "mebook"} onClick={goTo} />
+          <SideItem id="community" label="Community" active={currentView === "community"} onClick={goTo} />
+          <SideItem id="profile" label="Profile" active={currentView === "profile"} onClick={goTo} />
+          <SideItem id="settings" label="Settings" active={currentView === "settings"} onClick={goTo} />
         </aside>
 
         <main className="mb-main">
           {/* HOME */}
-          <section
-            className={`mb-view ${
-              currentView === "home" ? "active" : ""
-            }`}
-          >
+          <section className={`mb-view ${currentView === "home" ? "active" : ""}`}>
             <div className="mb-composer">
               <div className="mb-composer-top">
-                <img
-                  className="mb-composer-avatar"
-                  src={avatarUrl(profile)}
-                  alt="You"
-                />
-                <button
-                  className="mb-composer-input"
-                  onClick={() => setComposerOpen(true)}
-                >
+                <img className="mb-composer-avatar" src={avatarUrl(profile)} alt="You" />
+                <button className="mb-composer-input" onClick={() => setComposerOpen(true)}>
                   Share a movie screenshot or review...
                 </button>
               </div>
               <div className="mb-composer-actions">
-                <button
-                  className="mb-comp-action"
-                  onClick={() => setComposerOpen(true)}
-                >
+                <button className="mb-comp-action" onClick={() => setComposerOpen(true)}>
                   <svg viewBox="0 0 24 24" fill="#16a34a">
                     <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z" />
                   </svg>
                   Photo
                 </button>
-                <button
-                  className="mb-comp-action"
-                  onClick={() => setComposerOpen(true)}
-                >
+                <button className="mb-comp-action" onClick={() => setComposerOpen(true)}>
                   <svg viewBox="0 0 24 24" fill="#f59e0b">
                     <path d="M18 4l2 4h-3l-2-4h-2l2 4h-3l-2-4H8l2 4H7L5 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4h-4z" />
                   </svg>
                   Movie Tag
                 </button>
-                <button
-                  className="mb-comp-action"
-                  onClick={() => setComposerOpen(true)}
-                >
+                <button className="mb-comp-action" onClick={() => setComposerOpen(true)}>
                   <svg viewBox="0 0 24 24" fill="#8b5cf6">
                     <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z" />
                   </svg>
@@ -2389,18 +2591,13 @@ export default function MeBookPage() {
           </section>
 
           {/* FRIENDS */}
-          <section
-            className={`mb-view ${
-              currentView === "friends" ? "active" : ""
-            }`}
-          >
+          <section className={`mb-view ${currentView === "friends" ? "active" : ""}`}>
             <h1 className="mb-page-title">
               <svg viewBox="0 0 24 24">
                 <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" />
               </svg>
               Friends
             </h1>
-
             <div className="mb-search-box">
               <svg viewBox="0 0 24 24">
                 <path d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
@@ -2417,57 +2614,31 @@ export default function MeBookPage() {
               <div className="mb-card-title">Friend Requests</div>
               <div>
                 {requests.length === 0 ? (
-                  <div
-                    style={{
-                      color: "var(--text-muted)",
-                      fontSize: 14,
-                      padding: 4,
-                    }}
-                  >
+                  <div style={{ color: "var(--text-muted)", fontSize: 14, padding: 4 }}>
                     No pending friend requests.
                   </div>
                 ) : (
                   requests.map((r) => {
                     const photo = avatarUrl(r.fromUser)
                     return (
-                      <div
-                        className="mb-contact"
-                        key={r.id}
-                        style={{ padding: "10px 6px" }}
-                      >
+                      <div className="mb-contact" key={r.id} style={{ padding: "10px 6px" }}>
                         <img src={photo} alt="" />
                         <div style={{ flex: 1, minWidth: 0 }}>
-                          <div className="mb-contact-name">
-                            {r.fromUser.name}
-                          </div>
-                          <div                            style={{
-                              fontSize: 12.5,
-                              color: "var(--text-muted)",
-                            }}
-                          >
+                          <div className="mb-contact-name">{r.fromUser.name}</div>
+                          <div style={{ fontSize: 12.5, color: "var(--text-muted)" }}>
                             Wants to be friends
                           </div>
                         </div>
                         <button
                           className="mb-btn mb-btn-primary"
-                          style={{
-                            width: "auto",
-                            padding: "7px 14px",
-                            fontSize: 13,
-                          }}
-                          onClick={() =>
-                            handleAcceptRequest(r.id, r.from)
-                          }
+                          style={{ width: "auto", padding: "7px 14px", fontSize: 13 }}
+                          onClick={() => handleAcceptRequest(r.id, r.from)}
                         >
                           Accept
                         </button>
                         <button
                           className="mb-btn mb-btn-secondary"
-                          style={{
-                            width: "auto",
-                            padding: "7px 14px",
-                            fontSize: 13,
-                          }}
+                          style={{ width: "auto", padding: "7px 14px", fontSize: 13 }}
                           onClick={() => handleDeclineRequest(r.id)}
                         >
                           Decline
@@ -2491,14 +2662,8 @@ export default function MeBookPage() {
                         <div className="mb-contact-name">{f.name}</div>
                         <button
                           className="mb-btn mb-btn-secondary"
-                          style={{
-                            width: "auto",
-                            padding: "6px 12px",
-                            fontSize: 12.5,
-                          }}
-                          onClick={() =>
-                            startChat(f.uid, f.name, photo)
-                          }
+                          style={{ width: "auto", padding: "6px 12px", fontSize: 12.5 }}
+                          onClick={() => startChat(f.uid, f.name, photo)}
                         >
                           Message
                         </button>
@@ -2509,20 +2674,12 @@ export default function MeBookPage() {
               </div>
             )}
 
-            <div
-              className="mb-card-title"
-              style={{ fontSize: 18, marginBottom: 10 }}
-            >
+            <div className="mb-card-title" style={{ fontSize: 18, marginBottom: 10 }}>
               All MeBook Users
             </div>
             <div className="mb-friends-grid">
               {filteredFriends.length === 0 ? (
-                <div
-                  className="mb-empty"
-                  style={{ gridColumn: "1/-1" }}
-                >
-                  No users found.
-                </div>
+                <div className="mb-empty" style={{ gridColumn: "1/-1" }}>No users found.</div>
               ) : (
                 filteredFriends.map((u) => {
                   const photo = avatarUrl(u)
@@ -2530,43 +2687,27 @@ export default function MeBookPage() {
                     <div className="mb-friend-card" key={u.uid}>
                       <div
                         className="mb-friend-cover"
-                        style={
-                          u.coverURL
-                            ? {
-                                background: `url('${u.coverURL}') center/cover`,
-                              }
-                            : undefined
-                        }
+                        style={u.coverURL ? { background: `url('${u.coverURL}') center/cover` } : undefined}
                       />
                       <div className="mb-friend-body">
-                        <img
-                          src={photo}
-                          alt={u.name}
-                          onClick={() => handleOpenUser(u.uid)}
-                        />
-                        <div className="mb-friend-name">{u.name}</div>
-                        <div className="mb-friend-mutual">
-                          MeBook Member
+                        <img src={photo} alt={u.name} onClick={() => handleOpenUser(u.uid)} />
+                        <div className="mb-friend-name" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 5 }}>
+                          {u.name}
+                          {isVerified(u) && (
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="#22c55e">
+                              <path d="M23 12l-2.44-2.79.34-3.69-3.61-.82-1.89-3.2L12 2.96 8.6 1.5 6.71 4.69l-3.61.82.34 3.69L1 12l2.44 2.79-.34 3.7 3.61.82L8.6 22.5l3.4-1.47 3.4 1.46 1.89-3.19 3.61-.82-.34-3.69L23 12zm-12.91 4.72l-3.8-3.81 1.48-1.48 2.32 2.33 5.85-5.87 1.48 1.48-7.33 7.35z" />
+                            </svg>
+                          )}
                         </div>
+                        <div className="mb-friend-mutual">MeBook Member</div>
                         <div className="mb-friend-btns">
-                          <button
-                            className="mb-btn mb-btn-primary"
-                            onClick={() => handleSendRequest(u.uid)}
-                          >
+                          <button className="mb-btn mb-btn-primary" onClick={() => handleSendRequest(u.uid)}>
                             Add Friend
                           </button>
-                          <button
-                            className="mb-btn mb-btn-secondary"
-                            onClick={() => handleOpenUser(u.uid)}
-                          >
+                          <button className="mb-btn mb-btn-secondary" onClick={() => handleOpenUser(u.uid)}>
                             View Profile
                           </button>
-                          <button
-                            className="mb-btn mb-btn-outline"
-                            onClick={() =>
-                              startChat(u.uid, u.name, photo)
-                            }
-                          >
+                          <button className="mb-btn mb-btn-outline" onClick={() => startChat(u.uid, u.name, photo)}>
                             Message
                           </button>
                         </div>
@@ -2578,136 +2719,222 @@ export default function MeBookPage() {
             </div>
           </section>
 
-          {/* MESSAGES */}
-          <section
-            className={`mb-view ${
-              currentView === "messages" ? "active" : ""
-            }`}
-          >
-            <h1 className="mb-page-title">
+          {/* MESSAGES — Messenger style */}
+          <section className={`mb-view ${currentView === "messages" ? "active" : ""}`}>
+            <h1 className="mb-page-title" style={{ marginBottom: 12 }}>
               <svg viewBox="0 0 24 24">
                 <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z" />
               </svg>
               Messages
             </h1>
-            <div className="mb-chat-wrap">
-              <div className="mb-chat-list">
+
+            <div className={`msgr-wrap ${mobileChatWindow && chatPartner ? "mobile-on-window" : "mobile-on-list"}`}>
+              {/* LIST */}
+              <div className="msgr-list">
+                <div className="msgr-list-head">
+                  <span>Chats</span>
+                  {unreadCount > 0 && (
+                    <span
+                      style={{
+                        background: "var(--green)",
+                        color: "#fff",
+                        fontSize: 12,
+                        fontWeight: 700,
+                        borderRadius: 12,
+                        padding: "3px 10px",
+                      }}
+                    >
+                      {unreadCount} new
+                    </span>
+                  )}
+                </div>
+
+                {onlineList.length > 0 && (
+                  <>
+                    <div className="msgr-section">Online now</div>
+                    <div className="msgr-online-row">
+                      {onlineList.map((u) => {
+                        const photo = avatarUrl(u)
+                        return (
+                          <div
+                            key={u.uid}
+                            className="msgr-online-item"
+                            onClick={() => startChat(u.uid, u.name, photo)}
+                          >
+                            <div className="msgr-online-avatar-wrap">
+                              <img src={photo} alt="" />
+                              <span className="msgr-online-dot" />
+                            </div>
+                            <div className="msgr-online-name">{u.name?.split(" ")[0]}</div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </>
+                )}
+
+                <div className="msgr-section">Recent</div>
                 {chats.length === 0 ? (
-                  <div
-                    style={{
-                      padding: 20,
-                      color: "var(--text-muted)",
-                      fontSize: 14,
-                      textAlign: "center",
-                    }}
-                  >
+                  <div style={{ padding: 20, color: "var(--text-muted)", fontSize: 14, textAlign: "center" }}>
                     No conversations yet. Start one from Friends page!
                   </div>
                 ) : (
                   chats.map((c) => {
                     const photo = avatarUrl(c.other)
+                    const isActive = activeChat === c.id
                     return (
                       <div
-                        className={`mb-chat-item ${
-                          activeChat === c.id ? "active" : ""
-                        }`}
+                        className={`msgr-item ${isActive ? "active" : ""}`}
                         key={c.id}
-                        onClick={() =>
-                          openChat(c.id, c.otherId, c.other)
-                        }
+                        onClick={() => openChat(c.id, c.otherId, c.other)}
                       >
-                        <img src={photo} alt="" />
-                        <div className="mb-chat-item-body">
-                          <div className="mb-chat-item-name">
+                        <div className="msgr-item-avatar-wrap">
+                          <img src={photo} alt="" />
+                          <span className="msgr-item-dot" />
+                        </div>
+                        <div className="msgr-item-body">
+                          <div className="msgr-item-name">
                             {c.other.name}
+                            {isVerified(c.other) && (
+                              <svg
+                                width="13"
+                                height="13"
+                                viewBox="0 0 24 24"
+                                fill="#22c55e"
+                                style={{ marginLeft: 4, verticalAlign: "middle", display: "inline" }}
+                              >
+                                <path d="M23 12l-2.44-2.79.34-3.69-3.61-.82-1.89-3.2L12 2.96 8.6 1.5 6.71 4.69l-3.61.82.34 3.69L1 12l2.44 2.79-.34 3.7 3.61.82L8.6 22.5l3.4-1.47 3.4 1.46 1.89-3.19 3.61-.82-.34-3.69L23 12zm-12.91 4.72l-3.8-3.81 1.48-1.48 2.32 2.33 5.85-5.87 1.48 1.48-7.33 7.35z" />
+                              </svg>
+                            )}
                           </div>
-                          <div className="mb-chat-item-last">
+                          <div className={`msgr-item-last ${unreadCount > 0 ? "unread" : ""}`}>
                             {(c.last as any)?.text || "Say hi 👋"}
                           </div>
                         </div>
-                        <div className="mb-chat-item-time">
-                          {c.lastAt ? timeAgo(c.lastAt) : ""}
+                        <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
+                          <div className="msgr-item-time">
+                            {c.lastAt ? timeShort(c.lastAt) : ""}
+                          </div>
                         </div>
                       </div>
                     )
                   })
                 )}
               </div>
-              <div className="mb-chat-window">
+
+              {/* WINDOW */}
+              <div className="msgr-window">
                 {!activeChat || !chatPartner ? (
-                  <div className="mb-chat-empty">
+                  <div className="msgr-empty">
                     <svg viewBox="0 0 24 24">
                       <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z" />
                     </svg>
                     <b>Select a conversation</b>
-                    <p style={{ fontSize: 13 }}>
-                      Choose someone to start chatting
-                    </p>
+                    <p>Choose someone from the list to start chatting</p>
                   </div>
                 ) : (
                   <>
-                    <div className="mb-chat-head">
+                    <div className="msgr-head">
+                      <button
+                        className="msgr-head-back"
+                        onClick={() => setMobileChatWindow(false)}
+                      >
+                        <svg viewBox="0 0 24 24">
+                          <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" />
+                        </svg>
+                      </button>
                       <img src={avatarUrl(chatPartner)} alt="" />
-                      <div className="mb-chat-head-info">
-                        <div className="mb-chat-head-name">
+                      <div className="msgr-head-info">
+                        <div className="msgr-head-name">
                           {chatPartner.name}
+                          {isVerified(chatPartner) && (
+                            <svg
+                              width="14"
+                              height="14"
+                              viewBox="0 0 24 24"
+                              fill="#22c55e"
+                              style={{ marginLeft: 5, verticalAlign: "middle", display: "inline" }}
+                            >
+                              <path d="M23 12l-2.44-2.79.34-3.69-3.61-.82-1.89-3.2L12 2.96 8.6 1.5 6.71 4.69l-3.61.82.34 3.69L1 12l2.44 2.79-.34 3.7 3.61.82L8.6 22.5l3.4-1.47 3.4 1.46 1.89-3.19 3.61-.82-.34-3.69L23 12zm-12.91 4.72l-3.8-3.81 1.48-1.48 2.32 2.33 5.85-5.87 1.48 1.48-7.33 7.35z" />
+                            </svg>
+                          )}
                         </div>
-                        <div className="mb-chat-head-status">
-                          ● Active on MeBook
+                        <div className="msgr-head-status">
+                          <span className="dot" />
+                          Active now
                         </div>
                       </div>
                       <button
-                        className="mb-icon-btn"
-                        style={{ background: "var(--input-bg)" }}
+                        className="msgr-head-btn"
+                        title="View profile"
                         onClick={() => handleOpenUser(chatPartner.uid)}
                       >
-                        <svg
-                          viewBox="0 0 24 24"
-                          style={{ fill: "var(--text)" }}
-                        >
+                        <svg viewBox="0 0 24 24">
                           <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
                         </svg>
                       </button>
                     </div>
-                    <div className="mb-chat-body">
-                      {chatMessages.map((m) => {
-                        const mine = m.from === user.uid
-                        const time = m.at
-                          ? new Date(
-                              m.at.seconds * 1000
-                            ).toLocaleTimeString([], {
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            })
-                          : ""
-                        return (
-                          <div
-                            className={`mb-bubble ${
-                              mine ? "me" : "them"
-                            }`}
-                            key={m.id}
-                          >
-                            {m.text}
-                            <span className="mb-bubble-time">
-                              {time}
-                            </span>
-                          </div>
-                        )
-                      })}
+
+                    <div className="msgr-body" id="mebook-chat-body">
+                      {chatMessages.length === 0 ? (
+                        <div className="msgr-empty" style={{ padding: 40 }}>
+                          <b>No messages yet</b>
+                          <p>Say hi 👋</p>
+                        </div>
+                      ) : (
+                        chatMessages.map((m, idx) => {
+                          const mine = m.from === user.uid
+                          const prevMsg = idx > 0 ? chatMessages[idx - 1] : null
+                          const showAvatar =
+                            !mine && (!prevMsg || prevMsg.from !== m.from)
+                          const time = m.at
+                            ? new Date(m.at.seconds * 1000).toLocaleTimeString([], {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              })
+                            : ""
+                          return (
+                            <div
+                              key={m.id}
+                              className={`msgr-bubble-wrap ${
+                                mine ? "me" : "them"
+                              } ${showAvatar ? "show-avatar" : ""}`}
+                            >
+                              {!mine && (
+                                <img
+                                  className="msgr-bubble-avatar"
+                                  src={avatarUrl(chatPartner)}
+                                  alt=""
+                                />
+                              )}
+                              <div className={`msgr-bubble ${mine ? "me" : "them"}`}>
+                                {m.text}
+                              </div>
+                            </div>
+                          )
+                        })
+                      )}
                     </div>
-                    <div className="mb-chat-input">
-                      <input
-                        type="text"
-                        placeholder="Type a message..."
+
+                    <div className="msgr-input">
+                      <textarea
+                        className="msgr-input-field"
+                        placeholder="Aa"
+                        rows={1}
                         value={chatInput}
-                        onChange={(e) =>
-                          setChatInput(e.target.value)
-                        }
+                        onChange={(e) => setChatInput(e.target.value)}
                         onKeyDown={(e) => {
-                          if (e.key === "Enter") handleSendMessage()
+                          if (e.key === "Enter" && !e.shiftKey) {
+                            e.preventDefault()
+                            handleSendMessage()
+                          }
                         }}
                       />
-                      <button onClick={handleSendMessage}>
+                      <button
+                        className="msgr-input-send"
+                        onClick={handleSendMessage}
+                        disabled={!chatInput.trim()}
+                      >
                         <svg viewBox="0 0 24 24">
                           <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
                         </svg>
@@ -2720,22 +2947,12 @@ export default function MeBookPage() {
           </section>
 
           {/* MEBOOK */}
-          <section
-            className={`mb-view ${
-              currentView === "mebook" ? "active" : ""
-            }`}
-          >
+          <section className={`mb-view ${currentView === "mebook" ? "active" : ""}`}>
             <div className="mb-mebook-hero">
               <h2>📖 Welcome to MeBook</h2>
-              <p>
-                Your personal movie library, watchlist, and review hub —
-                all in one place.
-              </p>
-              <span className="mb-mebook-badge">
-                🎬 Powered by MeBook Community
-              </span>
+              <p>Your personal movie library, watchlist, and review hub — all in one place.</p>
+              <span className="mb-mebook-badge">🎬 Powered by MeBook Community</span>
             </div>
-
             <div className="mb-mebook-grid">
               <div className="mb-mebook-stat">
                 <div className="num">128</div>
@@ -2754,7 +2971,6 @@ export default function MeBookPage() {
                 <div className="lbl">Favorites</div>
               </div>
             </div>
-
             <div className="mb-mebook-tabs">
               {[
                 { id: "featured", label: "⭐ Featured" },
@@ -2764,93 +2980,51 @@ export default function MeBookPage() {
               ].map((t) => (
                 <button
                   key={t.id}
-                  className={`mb-mebook-tab ${
-                    mebookTab === t.id ? "active" : ""
-                  }`}
+                  className={`mb-mebook-tab ${mebookTab === t.id ? "active" : ""}`}
                   onClick={() => {
                     setMebookTab(t.id)
-                    if (t.id !== "featured")
-                      showToast(`${t.label} coming soon`)
+                    if (t.id !== "featured") showToast(`${t.label} coming soon`)
                   }}
                 >
                   {t.label}
                 </button>
               ))}
             </div>
-
             <div>
               <div className="mb-card" style={{ marginBottom: 16 }}>
-                <div className="mb-card-title">
-                  🎬 Editor's Picks This Week
-                </div>
+                <div className="mb-card-title">🎬 Editor's Picks This Week</div>
                 <div className="mb-mebook-list">
                   {[
-                    {
-                      img: "https://image.tmdb.org/t/p/w200/8cdWjvZQUExUUTzyp4t6EDMubfO.jpg",
-                      seed: "dune",
-                      title: "Dune: Part Two",
-                      desc: "Paul Atreides unites with Chani and the Fremen while seeking revenge.",
-                      meta: "⭐ 8.7 • Sci-Fi • 2024",
-                    },
-                    {
-                      img: "https://image.tmdb.org/t/p/w200/iuFNMS8U5cb6xfzi51Dbkovj7vM.jpg",
-                      seed: "oppen",
-                      title: "Oppenheimer",
-                      desc: "The story of J. Robert Oppenheimer and the atomic bomb.",
-                      meta: "⭐ 8.5 • Biography • 2023",
-                    },
-                    {
-                      img: "https://image.tmdb.org/t/p/w200/1E5baAaEse26fej7uHcjOgEE2t2.jpg",
-                      seed: "inter",
-                      title: "Interstellar",
-                      desc: "Explorers travel through a wormhole in search of a new home.",
-                      meta: "⭐ 8.7 • Adventure • 2014",
-                    },
-                    {
-                      img: "https://image.tmdb.org/t/p/w200/gEU2QniE6E77NI6lCU6MxlNBvIx.jpg",
-                      seed: "incept",
-                      title: "Inception",
-                      desc: "A thief plants an idea in a target's subconscious.",
-                      meta: "⭐ 8.8 • Sci-Fi • 2010",
-                    },
+                    { img: "https://image.tmdb.org/t/p/w200/8cdWjvZQUExUUTzyp4t6EDMubfO.jpg", seed: "dune", title: "Dune: Part Two", desc: "Paul Atreides unites with Chani and the Fremen while seeking revenge.", meta: "⭐ 8.7 • Sci-Fi • 2024" },
+                    { img: "https://image.tmdb.org/t/p/w200/iuFNMS8U5cb6xfzi51Dbkovj7vM.jpg", seed: "oppen", title: "Oppenheimer", desc: "The story of J. Robert Oppenheimer and the atomic bomb.", meta: "⭐ 8.5 • Biography • 2023" },
+                    { img: "https://image.tmdb.org/t/p/w200/1E5baAaEse26fej7uHcjOgEE2t2.jpg", seed: "inter", title: "Interstellar", desc: "Explorers travel through a wormhole in search of a new home.", meta: "⭐ 8.7 • Adventure • 2014" },
+                    { img: "https://image.tmdb.org/t/p/w200/gEU2QniE6E77NI6lCU6MxlNBvIx.jpg", seed: "incept", title: "Inception", desc: "A thief plants an idea in a target's subconscious.", meta: "⭐ 8.8 • Sci-Fi • 2010" },
                   ].map((m) => (
                     <div className="mb-mebook-item" key={m.title}>
                       <img
                         src={m.img}
                         onError={(e) => {
-                          ;(e.target as HTMLImageElement).src =
-                            `https://picsum.photos/seed/${m.seed}/200/260`
+                          ;(e.target as HTMLImageElement).src = `https://picsum.photos/seed/${m.seed}/200/260`
                         }}
                       />
                       <div className="mb-mebook-item-body">
-                        <div className="mb-mebook-item-title">
-                          {m.title}
-                        </div>
-                        <div className="mb-mebook-item-desc">
-                          {m.desc}
-                        </div>
-                        <div className="mb-mebook-item-meta">
-                          {m.meta}
-                        </div>
+                        <div className="mb-mebook-item-title">{m.title}</div>
+                        <div className="mb-mebook-item-desc">{m.desc}</div>
+                        <div className="mb-mebook-item-meta">{m.meta}</div>
                       </div>
                     </div>
                   ))}
                 </div>
               </div>
-
               <div className="mb-card">
                 <div className="mb-card-title">💡 Quick Actions</div>
                 <div className="mb-mebook-list">
-                  <div
-                    className="mb-mebook-item"
-                    onClick={() => setComposerOpen(true)}
-                  >
+                  <div className="mb-mebook-item" onClick={() => setComposerOpen(true)}>
                     <div
                       style={{
                         width: 64,
                         height: 84,
-                        background:
-                          "linear-gradient(135deg,#16a34a,#0f172a)",
+                        background: "linear-gradient(135deg,#16a34a,#0f172a)",
                         borderRadius: 8,
                         display: "flex",
                         alignItems: "center",
@@ -2858,37 +3032,24 @@ export default function MeBookPage() {
                         flexShrink: 0,
                       }}
                     >
-                      <svg
-                        width="28"
-                        height="28"
-                        viewBox="0 0 24 24"
-                        fill="#fff"
-                      >
+                      <svg width="28" height="28" viewBox="0 0 24 24" fill="#fff">
                         <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
                       </svg>
                     </div>
                     <div className="mb-mebook-item-body">
-                      <div className="mb-mebook-item-title">
-                        Add New Review
-                      </div>
+                      <div className="mb-mebook-item-title">Add New Review</div>
                       <div className="mb-mebook-item-desc">
                         Share your thoughts on a movie you just watched.
                       </div>
-                      <div className="mb-mebook-item-meta">
-                        Tap to create →
-                      </div>
+                      <div className="mb-mebook-item-meta">Tap to create →</div>
                     </div>
                   </div>
-                  <div
-                    className="mb-mebook-item"
-                    onClick={() => goTo("community")}
-                  >
+                  <div className="mb-mebook-item" onClick={() => goTo("community")}>
                     <div
                       style={{
                         width: 64,
                         height: 84,
-                        background:
-                          "linear-gradient(135deg,#8b5cf6,#0f172a)",
+                        background: "linear-gradient(135deg,#8b5cf6,#0f172a)",
                         borderRadius: 8,
                         display: "flex",
                         alignItems: "center",
@@ -2896,25 +3057,16 @@ export default function MeBookPage() {
                         flexShrink: 0,
                       }}
                     >
-                      <svg
-                        width="28"
-                        height="28"
-                        viewBox="0 0 24 24"
-                        fill="#fff"
-                      >
+                      <svg width="28" height="28" viewBox="0 0 24 24" fill="#fff">
                         <path d="M21 6h-2v9H6v2c0 .55.45 1 1 1h11l4 4V7c0-.55-.45-1-1-1zm-4 6V3c0-.55-.45-1-1-1H3c-.55 0-1 .45-1 1v14l4-4h10c.55 0 1-.45 1-1z" />
                       </svg>
                     </div>
                     <div className="mb-mebook-item-body">
-                      <div className="mb-mebook-item-title">
-                        Visit Community
-                      </div>
+                      <div className="mb-mebook-item-title">Visit Community</div>
                       <div className="mb-mebook-item-desc">
                         See what other movie lovers are talking about.
                       </div>
-                      <div className="mb-mebook-item-meta">
-                        Explore →
-                      </div>
+                      <div className="mb-mebook-item-meta">Explore →</div>
                     </div>
                   </div>
                 </div>
@@ -2923,16 +3075,9 @@ export default function MeBookPage() {
           </section>
 
           {/* PROFILE */}
-          <section
-            className={`mb-view ${
-              currentView === "profile" ? "active" : ""
-            }`}
-          >
+          <section className={`mb-view ${currentView === "profile" ? "active" : ""}`}>
             <div className="mb-profile-head">
-              <div
-                className="mb-profile-cover"
-                onClick={handleChangeCover}
-              >
+              <div className="mb-profile-cover" onClick={handleChangeCover}>
                 <img
                   src={
                     profile.coverURL ||
@@ -2948,10 +3093,7 @@ export default function MeBookPage() {
                 </div>
               </div>
               <div className="mb-profile-info">
-                <div
-                  className="mb-profile-avatar-wrap"
-                  onClick={handleChangeProfilePhoto}
-                >
+                <div className="mb-profile-avatar-wrap" onClick={handleChangeProfilePhoto}>
                   <img src={avatarUrl(profile)} alt="Profile" />
                   <div className="mb-profile-avatar-add">
                     <svg viewBox="0 0 24 24">
@@ -2960,23 +3102,22 @@ export default function MeBookPage() {
                   </div>
                 </div>
                 <div className="mb-profile-text">
-                  <div className="mb-profile-name">{profile.name}</div>
-                  <div className="mb-profile-bio">
-                    {profile.bio || "Movie lover 🎬"}
+                  <div className="mb-profile-name">
+                    {profile.name}
+                    {isVerified(profile) && (
+                      <svg width="22" height="22" viewBox="0 0 24 24" fill="#22c55e">
+                        <path d="M23 12l-2.44-2.79.34-3.69-3.61-.82-1.89-3.2L12 2.96 8.6 1.5 6.71 4.69l-3.61.82.34 3.69L1 12l2.44 2.79-.34 3.7 3.61.82L8.6 22.5l3.4-1.47 3.4 1.46 1.89-3.19 3.61-.82-.34-3.69L23 12zm-12.91 4.72l-3.8-3.81 1.48-1.48 2.32 2.33 5.85-5.87 1.48 1.48-7.33 7.35z" />
+                      </svg>
+                    )}
                   </div>
+                  <div className="mb-profile-bio">{profile.bio || "Movie lover 🎬"}</div>
                 </div>
               </div>
               <div className="mb-profile-actions">
-                <button
-                  className="mb-btn mb-btn-primary"
-                  onClick={() => setComposerOpen(true)}
-                >
+                <button className="mb-btn mb-btn-primary" onClick={() => setComposerOpen(true)}>
                   ＋ Create Post
                 </button>
-                <button
-                  className="mb-btn mb-btn-secondary"
-                  onClick={handleEditProfile}
-                >
+                <button className="mb-btn mb-btn-secondary" onClick={handleEditProfile}>
                   Edit Profile
                 </button>
               </div>
@@ -2989,25 +3130,19 @@ export default function MeBookPage() {
                   <svg viewBox="0 0 24 24">
                     <path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2z" />
                   </svg>
-                  <span>
-                    <b>Email:</b> {profile.email || ""}
-                  </span>
+                  <span><b>Email:</b> {profile.email || ""}</span>
                 </div>
                 <div className="mb-info-row">
                   <svg viewBox="0 0 24 24">
                     <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z" />
                   </svg>
-                  <span>
-                    <b>Phone:</b> {profile.phone || "Not set"}
-                  </span>
+                  <span><b>Phone:</b> {profile.phone || "Not set"}</span>
                 </div>
                 <div className="mb-info-row">
                   <svg viewBox="0 0 24 24">
                     <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" />
                   </svg>
-                  <span>
-                    <b>Location:</b> {profile.location || "Not set"}
-                  </span>
+                  <span><b>Location:</b> {profile.location || "Not set"}</span>
                 </div>
                 <div className="mb-info-row">
                   <svg viewBox="0 0 24 24">
@@ -3016,9 +3151,7 @@ export default function MeBookPage() {
                   <span>
                     <b>Joined:</b>{" "}
                     {profile.createdAt
-                      ? new Date(
-                          profile.createdAt.seconds * 1000
-                        ).toLocaleDateString()
+                      ? new Date(profile.createdAt.seconds * 1000).toLocaleDateString()
                       : "Just now"}
                   </span>
                 </div>
@@ -3034,10 +3167,7 @@ export default function MeBookPage() {
                     type="checkbox"
                     checked={privacy.info}
                     onChange={(e) => {
-                      setPrivacy({
-                        ...privacy,
-                        info: e.target.checked,
-                      })
+                      setPrivacy({ ...privacy, info: e.target.checked })
                       setTimeout(handleSavePrivacy, 0)
                     }}
                   />
@@ -3051,10 +3181,7 @@ export default function MeBookPage() {
                     type="checkbox"
                     checked={privacy.posts}
                     onChange={(e) => {
-                      setPrivacy({
-                        ...privacy,
-                        posts: e.target.checked,
-                      })
+                      setPrivacy({ ...privacy, posts: e.target.checked })
                       setTimeout(handleSavePrivacy, 0)
                     }}
                   />
@@ -3068,10 +3195,7 @@ export default function MeBookPage() {
                     type="checkbox"
                     checked={privacy.requests}
                     onChange={(e) => {
-                      setPrivacy({
-                        ...privacy,
-                        requests: e.target.checked,
-                      })
+                      setPrivacy({ ...privacy, requests: e.target.checked })
                       setTimeout(handleSavePrivacy, 0)
                     }}
                   />
@@ -3080,10 +3204,7 @@ export default function MeBookPage() {
               </div>
             </div>
 
-            <div
-              className="mb-card-title"
-              style={{ fontSize: 18, marginBottom: 10 }}
-            >
+            <div className="mb-card-title" style={{ fontSize: 18, marginBottom: 10 }}>
               My Posts
             </div>
             <div>
@@ -3093,9 +3214,7 @@ export default function MeBookPage() {
                     <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z" />
                   </svg>
                   <b>No posts yet</b>
-                  <p style={{ fontSize: 14, marginTop: 4 }}>
-                    Create your first movie review!
-                  </p>
+                  <p style={{ fontSize: 14, marginTop: 4 }}>Create your first movie review!</p>
                 </div>
               ) : (
                 myPosts.map((p) => renderPost(p, true))
@@ -3104,11 +3223,7 @@ export default function MeBookPage() {
           </section>
 
           {/* SETTINGS */}
-          <section
-            className={`mb-view ${
-              currentView === "settings" ? "active" : ""
-            }`}
-          >
+          <section className={`mb-view ${currentView === "settings" ? "active" : ""}`}>
             <h1 className="mb-page-title">
               <svg viewBox="0 0 24 24">
                 <path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.49.49 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.48.48 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z" />
@@ -3132,10 +3247,7 @@ export default function MeBookPage() {
                   <path d="M8.59 16.59 13.17 12 8.59 7.41 10 6l6 6-6 6z" />
                 </svg>
               </div>
-              <div
-                className="mb-setting-row"
-                onClick={handleResetPassword}
-              >
+              <div className="mb-setting-row" onClick={handleResetPassword}>
                 <span className="mb-setting-ico">
                   <svg viewBox="0 0 24 24">
                     <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zM9 8V6c0-1.66 1.34-3 3-3s3 1.34 3 3v2H9z" />
@@ -3144,23 +3256,6 @@ export default function MeBookPage() {
                 <div className="mb-setting-txt">
                   <h4>Password & Security</h4>
                   <p>Reset password via email</p>
-                </div>
-                <svg className="chev" viewBox="0 0 24 24">
-                  <path d="M8.59 16.59 13.17 12 8.59 7.41 10 6l6 6-6 6z" />
-                </svg>
-              </div>
-              <div
-                className="mb-setting-row"
-                onClick={() => showToast("Privacy settings synced")}
-              >
-                <span className="mb-setting-ico">
-                  <svg viewBox="0 0 24 24">
-                    <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z" />
-                  </svg>
-                </span>
-                <div className="mb-setting-txt">
-                  <h4>Privacy</h4>
-                  <p>Control who sees your posts & info</p>
                 </div>
                 <svg className="chev" viewBox="0 0 24 24">
                   <path d="M8.59 16.59 13.17 12 8.59 7.41 10 6l6 6-6 6z" />
@@ -3184,49 +3279,12 @@ export default function MeBookPage() {
                   <span className="mb-slider" />
                 </label>
               </div>
-              <div
-                className="mb-setting-row"
-                onClick={() => showToast("Language: English")}
-              >
-                <span className="mb-setting-ico">
-                  <svg viewBox="0 0 24 24">
-                    <path d="M12.87 15.07l-2.54-2.51.03-.03A17.52 17.52 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11.76-2.04zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2l-4.5-12z" />
-                  </svg>
-                </span>
-                <div className="mb-setting-txt">
-                  <h4>Language</h4>
-                  <p>English (US)</p>
-                </div>
-                <svg className="chev" viewBox="0 0 24 24">
-                  <path d="M8.59 16.59 13.17 12 8.59 7.41 10 6l6 6-6 6z" />
-                </svg>
-              </div>
             </div>
 
             <div className="mb-card mb-settings-group">
               <div className="mb-card-title">Support</div>
-              <div
-                className="mb-setting-row"
-                onClick={() => showToast("Help center — coming soon")}
-              >
-                <span className="mb-setting-ico">
-                  <svg viewBox="0 0 24 24">
-                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26A1.99 1.99 0 0 0 12 7a2 2 0 0 0-2 2H8a4 4 0 0 1 8 0c0 .88-.36 1.68-.93 2.25z" />
-                  </svg>
-                </span>
-                <div className="mb-setting-txt">
-                  <h4>Help Center</h4>
-                  <p>FAQs and support</p>
-                </div>
-                <svg className="chev" viewBox="0 0 24 24">
-                  <path d="M8.59 16.59 13.17 12 8.59 7.41 10 6l6 6-6 6z" />
-                </svg>
-              </div>
               <div className="mb-setting-row" onClick={handleSignOut}>
-                <span
-                  className="mb-setting-ico"
-                  style={{ background: "#fee2e2" }}
-                >
+                <span className="mb-setting-ico" style={{ background: "#fee2e2" }}>
                   <svg viewBox="0 0 24 24" fill="#dc2626">
                     <path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z" />
                   </svg>
@@ -3243,17 +3301,10 @@ export default function MeBookPage() {
           </section>
 
           {/* COMMUNITY */}
-          <section
-            className={`mb-view ${
-              currentView === "community" ? "active" : ""
-            }`}
-          >
+          <section className={`mb-view ${currentView === "community" ? "active" : ""}`}>
             <div className="mb-community-hero">
               <h2>🎬 MeBook Community</h2>
-              <p>
-                Official posts, announcements and featured reviews from
-                the MeBook team.
-              </p>
+              <p>Official posts, announcements and featured reviews from the MeBook team.</p>
             </div>
             <div>
               {communityFeed.length === 0 ? (
@@ -3265,27 +3316,11 @@ export default function MeBookPage() {
                       authorName: "MeBook Official",
                       authorAvatar: LOGO_URL,
                       verified: true,
+                      isOfficial: true,
                       caption:
                         "🎉 Welcome to the MeBook Community! Share your favourite movie screenshots & reviews. Use #MeBookReview to get featured!",
                       movie: "Community Announcement",
-                      image:
-                        "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=900&q=80",
-                      likes: [],
-                      comments: [],
-                      shares: 0,
-                      timeText: "just now",
-                    },
-                    {
-                      id: "comm-2",
-                      authorId: "admin",
-                      authorName: "MeBook Official",
-                      authorAvatar: LOGO_URL,
-                      verified: true,
-                      caption:
-                        "🎬 This week's featured reviews are coming! Keep posting your best reviews.",
-                      movie: "Weekly Spotlight",
-                      image:
-                        "https://images.unsplash.com/photo-1478720568477-152d9b164e26?w=900&q=80",
+                      image: "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=900&q=80",
                       likes: [],
                       comments: [],
                       shares: 0,
@@ -3304,69 +3339,35 @@ export default function MeBookPage() {
           <div className="mb-card">
             <div className="mb-card-title">🔥 Trending Now</div>
             {[
-              {
-                img: "https://image.tmdb.org/t/p/w92/8cdWjvZQUExUUTzyp4t6EDMubfO.jpg",
-                seed: "m1",
-                name: "Dune: Part Two",
-                meta: "⭐ 8.7 • Sci-Fi",
-              },
-              {
-                img: "https://image.tmdb.org/t/p/w92/iuFNMS8U5cb6xfzi51Dbkovj7vM.jpg",
-                seed: "m2",
-                name: "Oppenheimer",
-                meta: "⭐ 8.5 • Biography",
-              },
-              {
-                img: "https://image.tmdb.org/t/p/w92/1E5baAaEse26fej7uHcjOgEE2t2.jpg",
-                seed: "m3",
-                name: "Interstellar",
-                meta: "⭐ 8.7 • Adventure",
-              },
+              { img: "https://image.tmdb.org/t/p/w92/8cdWjvZQUExUUTzyp4t6EDMubfO.jpg", seed: "m1", name: "Dune: Part Two", meta: "⭐ 8.7 • Sci-Fi" },
+              { img: "https://image.tmdb.org/t/p/w92/iuFNMS8U5cb6xfzi51Dbkovj7vM.jpg", seed: "m2", name: "Oppenheimer", meta: "⭐ 8.5 • Biography" },
+              { img: "https://image.tmdb.org/t/p/w92/1E5baAaEse26fej7uHcjOgEE2t2.jpg", seed: "m3", name: "Interstellar", meta: "⭐ 8.7 • Adventure" },
             ].map((m) => (
               <div className="mb-contact" key={m.name}>
                 <img
                   src={m.img}
                   onError={(e) => {
-                    ;(e.target as HTMLImageElement).src =
-                      `https://picsum.photos/seed/${m.seed}/80`
+                    ;(e.target as HTMLImageElement).src = `https://picsum.photos/seed/${m.seed}/80`
                   }}
                 />
                 <div>
                   <div className="mb-contact-name">{m.name}</div>
-                  <div
-                    style={{
-                      fontSize: 12,
-                      color: "var(--text-muted)",
-                    }}
-                  >
-                    {m.meta}
-                  </div>
+                  <div style={{ fontSize: 12, color: "var(--text-muted)" }}>{m.meta}</div>
                 </div>
               </div>
             ))}
           </div>
-
           <div className="mb-card">
             <div className="mb-card-title">👥 Online Friends</div>
             {onlineList.length === 0 ? (
-              <div
-                style={{
-                  fontSize: 13,
-                  color: "var(--text-muted)",
-                  padding: 6,
-                }}
-              >
+              <div style={{ fontSize: 13, color: "var(--text-muted)", padding: 6 }}>
                 No other users yet
               </div>
             ) : (
               onlineList.map((u) => {
                 const photo = avatarUrl(u)
                 return (
-                  <div
-                    className="mb-contact"
-                    key={u.uid}
-                    onClick={() => startChat(u.uid, u.name, photo)}
-                  >
+                  <div className="mb-contact" key={u.uid} onClick={() => startChat(u.uid, u.name, photo)}>
                     <img src={photo} alt="" />
                     <span className="mb-online" />
                     <div className="mb-contact-name">{u.name}</div>
@@ -3378,17 +3379,206 @@ export default function MeBookPage() {
         </aside>
       </div>
 
-      {/* COMPOSER MODAL */}
+      {/* =====================================================
+          COMMENTS SHEET (mobile bottom sheet — FB style)
+      ===================================================== */}
       <div
-        className={`mb-modal-overlay ${composerOpen ? "open" : ""}`}
+        className={`cmt-backdrop ${commentPost ? "open" : ""}`}
+        onClick={closeComments}
+      />
+      <div className={`cmt-sheet ${commentPost ? "open" : ""}`}>
+        <div className="cmt-sheet-head">
+          <div className="cmt-sheet-title">
+            {commentPost?.comments?.length || 0} Comments
+          </div>
+          <button className="cmt-sheet-close" onClick={closeComments}>
+            <svg viewBox="0 0 24 24">
+              <path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
+            </svg>
+          </button>
+        </div>
+
+        <div className="cmt-list" ref={commentListRef}>
+          {!commentPost?.comments?.length ? (
+            <div className="cmt-empty">
+              <b>No comments yet</b>
+              <p style={{ marginTop: 6 }}>Be the first to comment</p>
+            </div>
+          ) : (
+            commentPost.comments.map((c: any, i: number) => {
+              const avatar =
+                c.avatar ||
+                `https://ui-avatars.com/api/?background=16a34a&color=fff&name=${encodeURIComponent(
+                  c.name || "U"
+                )}`
+              return (
+                <div className="cmt-row" key={i}>
+                  <img className="cmt-row-avatar" src={avatar} alt="" />
+                  <div className="cmt-bubble">
+                    <b>{c.name || "User"}</b>
+                    {c.text || ""}
+                    <span className="cmt-time">{timeAgo(c.at)}</span>
+                  </div>
+                </div>
+              )
+            })
+          )}
+        </div>
+
+        <div className="cmt-input-wrap">
+          <img className="cmt-input-avatar" src={avatarUrl(profile)} alt="" />
+          <textarea
+            className="cmt-input"
+            rows={1}
+            placeholder="Write a comment..."
+            value={commentText}
+            onChange={(e) => setCommentText(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault()
+                handleAddComment()
+              }
+            }}
+          />
+          <button
+            className="cmt-send"
+            onClick={handleAddComment}
+            disabled={!commentText.trim() || commentBusy}
+          >
+            <svg viewBox="0 0 24 24">
+              <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      {/* =====================================================
+          SHARE SHEET
+      ===================================================== */}
+      <div
+        className={`share-backdrop ${sharePost ? "open" : ""}`}
+        onClick={closeShare}
       >
+        <div className="share-sheet" onClick={(e) => e.stopPropagation()}>
+          <div className="share-head">
+            Share Post
+            <button className="share-close" onClick={closeShare}>
+              <svg viewBox="0 0 24 24">
+                <path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
+              </svg>
+            </button>
+          </div>
+
+          <div className="share-body">
+            {sharePost && (
+              <div className="share-preview">
+                <img
+                  src={
+                    sharePost.image ||
+                    sharePost.authorAvatar ||
+                    LOGO_URL
+                  }
+                  alt=""
+                />
+                <div className="share-preview-info">
+                  <div className="share-preview-title">
+                    {sharePost.movie || "Movie Review"}
+                  </div>
+                  <div className="share-preview-sub">
+                    by {sharePost.authorName || "MeBook User"}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <textarea
+              className="share-caption"
+              placeholder="Say something about this..."
+              value={shareCaption}
+              onChange={(e) => setShareCaption(e.target.value)}
+            />
+
+            <div className="share-options">
+              <button className="share-option" onClick={shareToProfile}>
+                <span className="share-option-icon profile">
+                  <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                  </svg>
+                </span>
+                <div className="share-option-text">
+                  Your Profile
+                  <small>Share to MeBook</small>
+                </div>
+              </button>
+
+              <button className="share-option" onClick={shareToFacebook}>
+                <span className="share-option-icon fb">
+                  <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M24 12.07C24 5.4 18.63 0 12 0S0 5.4 0 12.07C0 18.1 4.39 23.1 10.13 24v-8.44H7.08v-3.49h3.05V9.41c0-3.02 1.79-4.69 4.53-4.69 1.31 0 2.68.24 2.68.24v2.96h-1.51c-1.49 0-1.95.93-1.95 1.88v2.27h3.32l-.53 3.49h-2.79V24C19.61 23.1 24 18.1 24 12.07z" />
+                  </svg>
+                </span>
+                <div className="share-option-text">
+                  Facebook
+                  <small>Share to feed</small>
+                </div>
+              </button>
+
+              <button className="share-option" onClick={shareToWhatsApp}>
+                <span className="share-option-icon wa">
+                  <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M17.47 14.38c-.3-.15-1.75-.86-2.02-.96-.27-.1-.47-.15-.67.15-.2.3-.77.96-.94 1.16-.17.2-.35.22-.64.07-.3-.15-1.25-.46-2.38-1.47-.88-.79-1.48-1.75-1.65-2.05-.17-.3-.02-.46.13-.6.13-.13.3-.35.44-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.07-.15-.65-1.58-.9-2.16-.24-.57-.48-.5-.66-.5-.17 0-.37-.02-.56-.02-.2 0-.5.07-.77.37-.27.3-1.02 1-1.02 2.42 0 1.43 1.04 2.81 1.19 3 .15.2 2.05 3.13 4.97 4.38.7.3 1.24.48 1.66.62.7.22 1.33.19 1.83.11.56-.08 1.75-.72 2-1.41.25-.7.25-1.29.17-1.41-.07-.13-.27-.2-.56-.35zM12 0C5.4 0 0 5.4 0 12c0 2.11.55 4.11 1.51 5.84L0 24l6.32-1.66C8.02 23.15 9.96 24 12 24c6.6 0 12-5.4 12-12S18.6 0 12 0zm0 22c-1.83 0-3.53-.5-5-1.35l-.36-.22-3.75.98.99-3.66-.24-.37C2.65 15.84 2 13.99 2 12 2 6.49 6.49 2 12 2s10 4.49 10 10-4.49 10-10 10z" />
+                  </svg>
+                </span>
+                <div className="share-option-text">
+                  WhatsApp
+                  <small>Send to chat</small>
+                </div>
+              </button>
+
+              <button className="share-option" onClick={shareToTelegram}>
+                <span className="share-option-icon tg">
+                  <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M9.78 18.65l.28-4.23 7.68-6.92c.34-.31-.07-.46-.52-.19L7.74 13.3 3.64 12c-.88-.25-.89-.86.2-1.3l15.97-6.16c.73-.33 1.43.18 1.15 1.3l-2.72 12.81c-.19.91-.74 1.13-1.5.71L12.6 16.3l-1.99 1.93c-.23.23-.42.42-.83.42z" />
+                  </svg>
+                </span>
+                <div className="share-option-text">
+                  Telegram
+                  <small>Share to chat</small>
+                </div>
+              </button>
+
+              <button className="share-option" onClick={copyLink}>
+                <span className="share-option-icon link">
+                  <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z" />
+                  </svg>
+                </span>
+                <div className="share-option-text">
+                  Copy Link
+                  <small>Share anywhere</small>
+                </div>
+              </button>
+            </div>
+
+            <button
+              className="share-submit"
+              onClick={shareToProfile}
+              disabled={shareBusy}
+            >
+              {shareBusy ? "Sharing..." : "🔁 Share to My Profile"}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* =====================================================
+          COMPOSER MODAL
+      ===================================================== */}
+      <div className={`mb-modal-overlay ${composerOpen ? "open" : ""}`}>
         <div className="mb-modal">
           <div className="mb-modal-head">
             Create Post
-            <button
-              className="mb-modal-close"
-              onClick={() => setComposerOpen(false)}
-            >
+            <button className="mb-modal-close" onClick={() => setComposerOpen(false)}>
               <svg viewBox="0 0 24 24">
                 <path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
               </svg>
@@ -3399,11 +3589,7 @@ export default function MeBookPage() {
               <img src={avatarUrl(profile)} alt="You" />
               <div>
                 <b>{profile.name}</b>
-                <div
-                  style={{ fontSize: 12, color: "var(--text-muted)" }}
-                >
-                  Public
-                </div>
+                <div style={{ fontSize: 12, color: "var(--text-muted)" }}>Public</div>
               </div>
             </div>
             <textarea
@@ -3427,11 +3613,7 @@ export default function MeBookPage() {
               <div>
                 <div
                   className="mb-upload-box"
-                  onClick={() =>
-                    document
-                      .getElementById("mebook-file-input")
-                      ?.click()
-                  }
+                  onClick={() => document.getElementById("mebook-file-input")?.click()}
                 >
                   <svg viewBox="0 0 24 24">
                     <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z" />
@@ -3450,10 +3632,7 @@ export default function MeBookPage() {
             ) : (
               <div className="mb-preview">
                 <img src={previewUrl} alt="preview" />
-                <button
-                  className="mb-preview-remove"
-                  onClick={removePreview}
-                >
+                <button className="mb-preview-remove" onClick={removePreview}>
                   <svg viewBox="0 0 24 24">
                     <path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
                   </svg>
@@ -3479,23 +3658,14 @@ export default function MeBookPage() {
                     }}
                   />
                 </div>
-                <div
-                  style={{
-                    fontSize: 12,
-                    color: "var(--text-muted)",
-                    marginTop: 4,
-                  }}
-                >
+                <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 4 }}>
                   Uploading... {uploadProgress}%
                 </div>
               </div>
             )}
           </div>
           <div className="mb-modal-foot">
-            <button
-              className="mb-btn mb-btn-secondary"
-              onClick={() => setComposerOpen(false)}
-            >
+            <button className="mb-btn mb-btn-secondary" onClick={() => setComposerOpen(false)}>
               Cancel
             </button>
             <button
@@ -3509,15 +3679,12 @@ export default function MeBookPage() {
         </div>
       </div>
 
-      {/* EDIT PROFILE MODAL */}
+      {/* EDIT PROFILE */}
       <div className={`mb-modal-overlay ${editOpen ? "open" : ""}`}>
         <div className="mb-modal">
           <div className="mb-modal-head">
             Edit Profile
-            <button
-              className="mb-modal-close"
-              onClick={() => setEditOpen(false)}
-            >
+            <button className="mb-modal-close" onClick={() => setEditOpen(false)}>
               <svg viewBox="0 0 24 24">
                 <path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
               </svg>
@@ -3526,11 +3693,7 @@ export default function MeBookPage() {
           <div className="mb-modal-body">
             <div className="auth-field">
               <label>Full Name</label>
-              <input
-                type="text"
-                value={editName}
-                onChange={(e) => setEditName(e.target.value)}
-              />
+              <input type="text" value={editName} onChange={(e) => setEditName(e.target.value)} />
             </div>
             <div className="auth-field">
               <label>Bio</label>
@@ -3561,33 +3724,22 @@ export default function MeBookPage() {
             </div>
           </div>
           <div className="mb-modal-foot">
-            <button
-              className="mb-btn mb-btn-secondary"
-              onClick={() => setEditOpen(false)}
-            >
+            <button className="mb-btn mb-btn-secondary" onClick={() => setEditOpen(false)}>
               Cancel
             </button>
-            <button
-              className="mb-btn mb-btn-primary"
-              onClick={handleSaveProfile}
-            >
+            <button className="mb-btn mb-btn-primary" onClick={handleSaveProfile}>
               Save
             </button>
           </div>
         </div>
       </div>
 
-      {/* USER PROFILE MODAL */}
-      <div
-        className={`mb-modal-overlay ${userModalOpen ? "open" : ""}`}
-      >
+      {/* USER MODAL */}
+      <div className={`mb-modal-overlay ${userModalOpen ? "open" : ""}`}>
         <div className="mb-modal" style={{ maxWidth: 440 }}>
           <div className="mb-modal-head">
             Profile
-            <button
-              className="mb-modal-close"
-              onClick={() => setUserModalOpen(false)}
-            >
+            <button className="mb-modal-close" onClick={() => setUserModalOpen(false)}>
               <svg viewBox="0 0 24 24">
                 <path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
               </svg>
@@ -3639,9 +3791,7 @@ function DrawerItem({
     >
       <span className="mb-nav-ico">{icon || defaultIcon}</span>
       {label}
-      {badge && badge > 0 ? (
-        <span className="mb-nav-badge">{badge}</span>
-      ) : null}
+      {badge && badge > 0 ? <span className="mb-nav-badge">{badge}</span> : null}
     </button>
   )
 }
@@ -3673,90 +3823,5 @@ function SideItem({
       </span>
       {label}
     </button>
-  )
-}
-
-function CommentButton({
-  postId,
-  comments,
-  user,
-  onAdd,
-}: {
-  postId: string
-  comments: any[]
-  user: any
-  onAdd: (postId: string, text: string) => void
-}) {
-  const [open, setOpen] = useState(false)
-  const [text, setText] = useState("")
-
-  return (
-    <>
-      <button
-        className="mb-action"
-        onClick={() => setOpen((v) => !v)}
-      >
-        <svg viewBox="0 0 24 24">
-          <path d="M21.99 4c0-1.1-.89-2-1.99-2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14l4 4-.01-18z" />
-        </svg>
-        Comment
-      </button>
-      {open && (
-        <div
-          className="mb-comments open"
-          style={{ width: "100%" }}
-        >
-          {comments.map((c, i) => (
-            <div className="mb-comment" key={i}>
-              <img
-                src={
-                  c.avatar ||
-                  `https://ui-avatars.com/api/?background=16a34a&color=fff&name=${encodeURIComponent(
-                    c.name || "U"
-                  )}`
-                }
-                alt=""
-              />
-              <div className="mb-comment-body">
-                <b>{c.name || "User"}</b>
-                {c.text || ""}
-                <div
-                  style={{
-                    fontSize: 11,
-                    color: "var(--text-muted)",
-                    marginTop: 3,
-                  }}
-                >
-                  {timeAgo(c.at)}
-                </div>
-              </div>
-            </div>
-          ))}
-          <div className="mb-comment-input">
-            <img
-              src={
-                user?.photoURL ||
-                `https://ui-avatars.com/api/?background=16a34a&color=fff&name=${encodeURIComponent(
-                  user?.name || "U"
-                )}`
-              }
-              alt=""
-            />
-            <input
-              type="text"
-              placeholder="Write a comment..."
-              value={text}
-              onChange={(e) => setText(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  onAdd(postId, text)
-                  setText("")
-                }
-              }}
-            />
-          </div>
-        </div>
-      )}
-    </>
   )
 }

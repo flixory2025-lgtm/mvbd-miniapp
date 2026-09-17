@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { X, Send, PartyPopper } from "lucide-react"
+import { X, Send, PartyPopper, PlayCircle, CheckCircle2 } from "lucide-react"
 
 interface WelcomePopupProps {
   onClose: () => void
@@ -17,6 +17,10 @@ export default function WelcomePopup({ onClose }: WelcomePopupProps) {
 
   const openRequestGroup = () => {
     window.open("https://t.me/mvbdreq", "_blank", "noopener,noreferrer")
+  }
+
+  const openTutorial = () => {
+    window.open("https://t.me/MVBDtutorial/31", "_blank", "noopener,noreferrer")
   }
 
   return (
@@ -43,6 +47,20 @@ export default function WelcomePopup({ onClose }: WelcomePopupProps) {
         @keyframes mvbdGlow {
           0%, 100% { opacity: .35; transform: scale(.85); }
           50%      { opacity: .9;  transform: scale(1.05); }
+        }
+        @keyframes mvbdPulseRing {
+          0%   { box-shadow: 0 0 0 0 rgba(34,211,238,.45); }
+          70%  { box-shadow: 0 0 0 10px rgba(34,211,238,0); }
+          100% { box-shadow: 0 0 0 0 rgba(34,211,238,0); }
+        }
+        @keyframes mvbdPulseRingGreen {
+          0%   { box-shadow: 0 0 0 0 rgba(52,211,153,.45); }
+          70%  { box-shadow: 0 0 0 10px rgba(52,211,153,0); }
+          100% { box-shadow: 0 0 0 0 rgba(52,211,153,0); }
+        }
+        @keyframes mvbdArrow {
+          0%, 100% { transform: translateX(0); }
+          50%      { transform: translateX(3px); }
         }
 
         .mvbd-popup {
@@ -138,6 +156,46 @@ export default function WelcomePopup({ onClose }: WelcomePopupProps) {
           border: 1px solid rgba(134,239,172,.25);
           box-shadow: inset 0 1px 0 rgba(255,255,255,.05);
         }
+
+        /* Request Group button — cyan themed */
+        .mvbd-btn-request {
+          background: linear-gradient(135deg, rgba(34,211,238,.20), rgba(59,130,246,.14));
+          border: 1px solid rgba(103,232,249,.35);
+          box-shadow:
+            inset 0 1px 0 rgba(255,255,255,.12),
+            0 6px 20px rgba(34,211,238,.18);
+          transition: all .25s cubic-bezier(.22,1,.36,1);
+          animation: mvbdPulseRing 2.6s ease-in-out infinite;
+        }
+        .mvbd-btn-request:hover {
+          background: linear-gradient(135deg, rgba(34,211,238,.32), rgba(59,130,246,.24));
+          border-color: rgba(103,232,249,.6);
+          box-shadow:
+            inset 0 1px 0 rgba(255,255,255,.18),
+            0 8px 28px rgba(34,211,238,.35);
+          transform: translateY(-1px);
+        }
+
+        /* Watch Tutorial button — emerald themed */
+        .mvbd-btn-tutorial {
+          background: linear-gradient(135deg, rgba(52,211,153,.20), rgba(16,185,129,.12));
+          border: 1px solid rgba(134,239,172,.35);
+          box-shadow:
+            inset 0 1px 0 rgba(255,255,255,.12),
+            0 6px 20px rgba(52,211,153,.18);
+          transition: all .25s cubic-bezier(.22,1,.36,1);
+          animation: mvbdPulseRingGreen 2.6s ease-in-out infinite .4s;
+        }
+        .mvbd-btn-tutorial:hover {
+          background: linear-gradient(135deg, rgba(52,211,153,.32), rgba(16,185,129,.22));
+          border-color: rgba(134,239,172,.6);
+          box-shadow:
+            inset 0 1px 0 rgba(255,255,255,.18),
+            0 8px 28px rgba(52,211,153,.35);
+          transform: translateY(-1px);
+        }
+
+        .mvbd-btn-tutorial:hover .mvbd-arrow { animation: mvbdArrow 1s ease-in-out infinite; }
       `}</style>
 
       {/* Popup */}
@@ -160,7 +218,7 @@ export default function WelcomePopup({ onClose }: WelcomePopupProps) {
 
           <div className="flex items-center gap-2.5">
 
-            {/* Logo image (replaces M letter) */}
+            {/* Logo image */}
             <div className="mvbd-float flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-400/25 to-amber-400/15 border border-emerald-300/30 overflow-hidden">
               <img
                 src="https://i.postimg.cc/2SfxkxqH/16769-removebg-preview.png"
@@ -208,51 +266,31 @@ export default function WelcomePopup({ onClose }: WelcomePopupProps) {
         <div className="relative px-4 pt-3.5 pb-4">
           <div className="px-1">
 
+            {/* Important Notice */}
             <p className="text-white/90 text-[12.5px] leading-6 text-center drop-shadow-[0_1px_2px_rgba(0,0,0,.6)]">
               <span className="text-emerald-300 font-semibold">MoviesVerseBD</span>{" "}
-              এর সাথে থাকার জন্য আপনাকে অসংখ্য ধন্যবাদ। ❤️ আজ আমাদের{" "}
-              <span className="text-white font-medium">২য় Anniversary</span> —
-              এই পথচলা সহজ করেনি, কিন্তু আপনার ভালোবাসায় আমরা আজ এখানে।
+              এর সকল Movie Telegram এর Cloud Bot-এ Upload করা থাকে, তাই আমাদের
+              Mini App ব্যবহার করতে হলে আপনাকে অবশ্যই{" "}
+              <span className="text-cyan-300 font-semibold">Telegram</span>{" "}
+              ব্যবহার করতে হবে।
             </p>
 
-            <p className="text-white/65 text-[11px] leading-5 text-center mt-2 drop-shadow-[0_1px_2px_rgba(0,0,0,.5)]">
-              এই বিশেষ দিনে আমাদের পুরোনো Members-দের জন্য থাকছে
-              <span className="text-amber-300 font-semibold">
-                {" "}বিশেষ ১ মাসের FREE Subscription!
-              </span>
+            {/* Tutorial Instruction */}
+            <p className="text-white/70 text-[11px] leading-5 text-center mt-3 drop-shadow-[0_1px_2px_rgba(0,0,0,.5)]">
+              MoviesVerseBD Mini App এর ব্যবহার যদি আপনি না বুঝে থাকেন, তাহলে{" "}
+              <span className="text-emerald-300 font-medium">Category</span>{" "}
+              থেকে Tutorial Video টি দেখে নিন। আর যদি Telegram থেকে দেখতে চান,
+              তাহলে নিচের{" "}
+              <span className="text-emerald-300 font-semibold">Watch Tutorial</span>{" "}
+              Button-এ ক্লিক করুন। 👇
             </p>
 
-            {/* Offer Instruction */}
-            <div className="mt-3 rounded-xl mvbd-code px-3 py-2.5">
-              <p className="text-white/70 text-[10.5px] text-center leading-5">
-                Subscription Plan থেকে{" "}
-                <span className="text-cyan-300 font-semibold">1 Month</span>{" "}
-                সিলেক্ট করে নিচের Code-টি লিখে Admin-কে পাঠান
-              </p>
-              <div className="flex justify-center mt-1.5">
-                <span className="text-emerald-300 text-[13px] font-bold tracking-[2px]">
-                  MVBD2YEAR
-                </span>
-              </div>
-            </div>
-
-            <p className="text-white/55 text-[10.5px] leading-5 text-center mt-2 drop-shadow-[0_1px_2px_rgba(0,0,0,.5)]">
-              Admin দ্রুত আপনার Account-এ
-              <span className="text-emerald-300">
-                {" "}১ মাসের Free Subscription
-              </span>{" "}
-              চালু করে দেবে।
-            </p>
-
-            <p className="text-amber-300/90 text-[10.5px] text-center font-medium mt-2">
-              ⏳ অফারটি শুধুমাত্র ১৫ সেপ্টেম্বর পর্যন্ত — দেরি করবেন না!
-            </p>
           </div>
 
           {/* Request Group Button */}
           <button
             onClick={openRequestGroup}
-            className="mvbd-button mt-3 w-full rounded-xl py-2.5 text-[12px] font-semibold text-white flex items-center justify-center gap-2"
+            className="mvbd-btn-request mt-4 w-full rounded-xl py-2.5 text-[12px] font-semibold text-white flex items-center justify-center gap-2"
           >
             <Send className="w-3.5 h-3.5 text-cyan-300" />
             Request Group
@@ -262,11 +300,22 @@ export default function WelcomePopup({ onClose }: WelcomePopupProps) {
             কিছু বুঝতে সমস্যা হলে Request Group-এ জানালেই Admin বুঝিয়ে দেবে।
           </p>
 
+          {/* Watch Tutorial Button */}
+          <button
+            onClick={openTutorial}
+            className="mvbd-btn-tutorial mt-2.5 w-full rounded-xl py-2.5 text-[12px] font-semibold text-white flex items-center justify-center gap-2"
+          >
+            <PlayCircle className="w-4 h-4 text-emerald-300" />
+            Watch Tutorial
+            <span className="mvbd-arrow inline-flex">→</span>
+          </button>
+
           {/* Close Button */}
           <button
             onClick={onClose}
-            className="mvbd-button mt-2 w-full rounded-xl py-2.5 text-[12px] font-semibold text-white"
+            className="mvbd-button mt-2.5 w-full rounded-xl py-2.5 text-[12px] font-semibold text-white flex items-center justify-center gap-2"
           >
+            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-300" />
             বুঝেছি
           </button>
         </div>

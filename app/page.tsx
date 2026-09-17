@@ -28,9 +28,15 @@ import { movies, genres } from "@/lib/movie-data"
 import { animes } from "@/lib/anime-data"
 import type { Anime } from "@/lib/anime-data"
 
+/* =========================================================
+   TAB ORDER — MUST MATCH bottom-navigation.tsx
+   Home → Anime(shorts) → MeBook(mebook) → Subscriptions(exclusive) → Profile
+========================================================= */
+
 const tabs = [
   "home",
   "shorts",
+  "mebook",
   "exclusive",
   "profile",
 ] as const
@@ -282,8 +288,6 @@ export default function Home() {
 
   /* =========================================================
      WELCOME POPUP
-     
-     Shows every time page mounts.
   ========================================================= */
 
   useEffect(() => {
@@ -402,6 +406,15 @@ export default function Home() {
 
     const targetTab =
       newTab as TabId
+
+    /* -----------------------------------------
+       MeBook → open HTML page
+    ----------------------------------------- */
+
+    if (targetTab === "mebook") {
+      window.location.href = "/mebook.html"
+      return
+    }
 
     if (
       targetTab === activeTab
@@ -888,6 +901,24 @@ export default function Home() {
             committed &&
             target
           ) {
+            /* ---------------------------------------
+               MeBook swipe → open HTML
+            --------------------------------------- */
+
+            if (target === "mebook") {
+              settleTargetRef.current =
+                null
+
+              setSettleMode(null)
+
+              setIsSwiping(false)
+
+              window.location.href =
+                "/mebook.html"
+
+              return
+            }
+
             setActiveTab(
               target
             )
@@ -1324,9 +1355,6 @@ export default function Home() {
 
   /* =========================================================
      HOME PAGE
-     
-     FIX:
-     Home keeps the small bottom spacing.
   ========================================================= */
 
   const renderHomePage = () => (
@@ -1460,9 +1488,6 @@ export default function Home() {
 
   /* =========================================================
      ANIME PAGE
-     
-     FIX:
-     Same bottom spacing as Home.
   ========================================================= */
 
   const renderAnimePage = () => (
@@ -1478,9 +1503,6 @@ export default function Home() {
 
   /* =========================================================
      SERIES / SUBSCRIPTION PAGE
-     
-     FIX:
-     Same bottom spacing as Home.
   ========================================================= */
 
   const renderSeriesPage = () => (
@@ -1491,9 +1513,6 @@ export default function Home() {
 
   /* =========================================================
      PROFILE PAGE
-     
-     FIX:
-     Same bottom spacing as Home.
   ========================================================= */
 
   const renderProfilePage = () => (
@@ -1559,6 +1578,34 @@ export default function Home() {
 
       case "shorts":
         return renderAnimePage()
+
+      /* -----------------------------------------
+         MeBook → usually reached via swipe only.
+         Rendered as a lightweight fallback page
+         so swipe physics does not crash.
+      ----------------------------------------- */
+
+      case "mebook":
+        return (
+          <div className="bg-black min-h-screen flex items-center justify-center">
+            <div className="text-center px-6">
+              <h1 className="text-2xl font-bold text-white mb-3">
+                MeBook
+              </h1>
+
+              <p className="text-slate-400 mb-6">
+                MeBook পেজ লোড হচ্ছে...
+              </p>
+
+              <a
+                href="/mebook.html"
+                className="inline-block px-6 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition"
+              >
+                MeBook খুলুন
+              </a>
+            </div>
+          </div>
+        )
 
       case "exclusive":
         return renderSeriesPage()
@@ -1707,11 +1754,6 @@ export default function Home() {
 
   /* =========================================================
      MAIN RENDER
-     
-     FIX:
-     Removed min-h-[100svh].
-     This prevents the swipe shell from creating
-     unnecessary document height.
   ========================================================= */
 
   return (

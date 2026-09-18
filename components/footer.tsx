@@ -190,7 +190,7 @@ export default function UniversalFooter() {
     {
       name: "YouTube",
       label: "YouTube",
-      url: "https://youtube.com/@mvbdstudio?si=d0_d4Bxxsz8_Awaz",
+      url: "https://youtube.com/@moviesversebd2026?si=k8NI9hy-t8Zd-QsL",
       platform: "youtube",
     },
     {

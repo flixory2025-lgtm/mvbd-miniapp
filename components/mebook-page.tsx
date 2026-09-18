@@ -236,9 +236,7 @@ position: relative;
 .mebook-root img{display:block;}
 .mebook-root a{text-decoration:none;color:inherit;}
 
-/* ============================================================
-AUTH SCREEN — GORGEOUS DARK
-============================================================ */
+/* AUTH */
 .mebook-root .auth-wrap{
 position:fixed;inset:0;z-index:5000;
 background:linear-gradient(135deg,#020617 0%,#0f172a 40%,#052e16 100%);
@@ -405,9 +403,7 @@ margin-top:12px;display:none;animation: shake .4s ease;
 75%{transform:translateX(4px);}
 }
 
-/* ============================================================
-HEADER
-============================================================ */
+/* HEADER */
 .mebook-root .mb-header{
 position:sticky;top:0;left:0;right:0;height:60px;z-index:1000;
 background:var(--header-bg);
@@ -431,9 +427,7 @@ transition:background .3s ease;
 .mebook-root .mb-avatar-btn:active{transform:scale(.93);}
 .mebook-root .mb-avatar-btn img{width:100%;height:100%;object-fit:cover;}
 
-/* ============================================================
-LAYOUT
-============================================================ */
+/* LAYOUT */
 .mebook-root .mb-layout{display:grid;grid-template-columns:280px minmax(0,1fr) 300px;gap:20px;max-width:1400px;margin:0 auto;padding:20px 16px 100px;align-items:start;}
 .mebook-root .mb-sidebar{position:sticky;top:80px;}
 .mebook-root .mb-side-item{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:10px;font-size:15px;font-weight:600;color:var(--text);transition:background .18s ease;width:100%;text-align:left;}
@@ -457,7 +451,6 @@ LAYOUT
 .mebook-root .mb-comp-action:hover{background:var(--hover);}
 .mebook-root .mb-comp-action svg{width:20px;height:20px;}
 
-/* POST */
 .mebook-root .mb-post{background:var(--card);border-radius:12px;box-shadow:var(--shadow);margin-bottom:16px;overflow:hidden;animation:postIn .35s cubic-bezier(.2,.8,.3,1);transition:background .3s ease;}
 @keyframes postIn{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:none;}}
 .mebook-root .mb-post-head{display:flex;align-items:center;gap:10px;padding:12px 16px 8px;}
@@ -486,9 +479,7 @@ LAYOUT
 .mebook-root .mb-action.liked{color:#ef4444;}
 .mebook-root .mb-action svg{width:19px;height:19px;fill:currentColor;}
 
-/* ============================================================
-FB-STYLE COMMENTS (mobile bottom sheet)
-============================================================ */
+/* COMMENTS */
 .mebook-root .cmt-backdrop{
 position:fixed;inset:0;z-index:2000;
 background:rgba(0,0,0,.5);
@@ -498,27 +489,24 @@ transition:opacity .25s ease, visibility .25s ease;
 .mebook-root .cmt-backdrop.open{opacity:1;visibility:visible;}
 
 .mebook-root .cmt-sheet{
-position:fixed;left:0;right:0;bottom:0;z-index:2001;
+position:fixed;top:50%;left:50%;z-index:2001;
+width:min(480px,calc(100vw - 32px));
+max-height:min(80dvh,640px);
 background:var(--card);
-border-radius:18px 18px 0 0;
-max-height:82vh;
+border-radius:18px;
 display:flex;flex-direction:column;
-transform:translateY(100%);
-transition:transform .32s cubic-bezier(.2,.8,.3,1);
-box-shadow:0 -12px 40px rgba(0,0,0,.28);
-padding-bottom: env(safe-area-inset-bottom, 0);
+transform:translate(-50%,-50%) scale(.94);
+opacity:0;visibility:hidden;
+transition:transform .32s cubic-bezier(.2,.8,.3,1),opacity .32s ease,visibility .32s ease;
+box-shadow:0 24px 80px rgba(0,0,0,.28);
+overscroll-behavior:contain;
 }
-.mebook-root .cmt-sheet.open{transform:translateY(0);}
+.mebook-root .cmt-sheet.open{transform:translate(-50%,-50%) scale(1);opacity:1;visibility:visible;}
 .mebook-root .cmt-sheet-head{
 display:flex;align-items:center;justify-content:center;
 position:relative;padding:14px 16px 10px;
 border-bottom:1px solid var(--border);
 flex-shrink:0;
-}
-.mebook-root .cmt-sheet-head::before{
-content:'';position:absolute;top:6px;left:50%;
-width:38px;height:4px;border-radius:2px;
-background:var(--border);transform:translateX(-50%);
 }
 .mebook-root .cmt-sheet-title{
 font-size:15px;font-weight:700;color:var(--text);
@@ -610,9 +598,7 @@ transition:transform .15s ease, filter .15s ease;
 .mebook-root .cmt-send:disabled{opacity:.5;cursor:not-allowed;}
 .mebook-root .cmt-send svg{width:18px;height:18px;fill:#fff;}
 
-/* ============================================================
-FB-STYLE SHARE SHEET
-============================================================ */
+/* SHARE SHEET */
 .mebook-root .share-backdrop{
 position:fixed;inset:0;z-index:2100;
 background:rgba(0,0,0,.55);
@@ -716,9 +702,7 @@ transition:filter .18s ease;
 .mebook-root .share-submit:hover{filter:brightness(1.08);}
 .mebook-root .share-submit:disabled{opacity:.5;cursor:not-allowed;}
 
-/* ============================================================
-MESSENGER — mobile-first chat
-============================================================ */
+/* MESSENGER */
 .mebook-root .msgr-wrap{
 background:var(--card);border-radius:12px;
 box-shadow:var(--shadow);
@@ -939,7 +923,6 @@ transition:transform .12s ease;
 .mebook-root .msgr-input-send:disabled{opacity:.5;}
 .mebook-root .msgr-input-send svg{width:18px;height:18px;fill:#fff;}
 
-/* Mobile: switch list/window */
 .mebook-root .msgr-wrap.mobile-on-window .msgr-list{display:none;}
 .mebook-root .msgr-wrap.mobile-on-list .msgr-window{display:none;}
 
@@ -949,9 +932,7 @@ transition:transform .12s ease;
 .mebook-root .msgr-wrap{height:calc(100vh - 190px);border-radius:0;}
 }
 
-/* ============================================================
-OTHER MODALS / DRAWER / MISC
-============================================================ */
+/* OTHER MODALS / DRAWER */
 .mebook-root .mb-right{position:sticky;top:80px;display:flex;flex-direction:column;gap:16px;}
 .mebook-root .mb-card{background:var(--card);border-radius:12px;box-shadow:var(--shadow);padding:14px 16px;transition:background .3s ease;}
 .mebook-root .mb-card-title{font-size:16px;font-weight:700;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;}
@@ -1126,9 +1107,7 @@ OTHER MODALS / DRAWER / MISC
 .mebook-root .mb-theme-row{display:flex;align-items:center;justify-content:space-between;padding:14px 4px;border-bottom:1px solid var(--border);color:var(--text);}
 .mebook-root .mb-theme-row:last-child{border-bottom:none;}
 
-/* ============================================================
-POPUP / MODAL SYSTEM — fixed viewport, no background scroll, liquid glass
-============================================================ */
+/* POPUP SCROLL LOCK */
 html.mebook-popup-open, body.mebook-popup-open{overflow:hidden !important;overscroll-behavior:none !important;}
 .mebook-root .mb-modal-overlay,.mebook-root .share-backdrop,.mebook-root .cmt-backdrop{isolation:isolate;overscroll-behavior:contain;touch-action:none;}
 .mebook-root .mb-modal-overlay{background:rgba(0,0,0,.42);backdrop-filter:blur(14px) saturate(125%);-webkit-backdrop-filter:blur(14px) saturate(125%);}
@@ -1136,18 +1115,29 @@ html.mebook-popup-open, body.mebook-popup-open{overflow:hidden !important;oversc
 .mebook-root .share-backdrop{background:rgba(0,0,0,.42);backdrop-filter:blur(14px) saturate(125%);-webkit-backdrop-filter:blur(14px) saturate(125%);touch-action:none;overscroll-behavior:contain;}
 .mebook-root .share-sheet{max-height:min(86dvh,720px);overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.88);backdrop-filter:blur(30px) saturate(180%);-webkit-backdrop-filter:blur(30px) saturate(180%);}
 .mebook-root .cmt-backdrop{background:rgba(0,0,0,.42);backdrop-filter:blur(14px) saturate(125%);-webkit-backdrop-filter:blur(14px) saturate(125%);touch-action:none;}
-.mebook-root .cmt-sheet{overscroll-behavior:contain;}
+.mebook-root .cmt-sheet{overscroll-behavior:contain;-webkit-overflow-scrolling:touch;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.88);backdrop-filter:blur(30px) saturate(180%);-webkit-backdrop-filter:blur(30px) saturate(180%);}
 .mebook-root.dark-mode{--bg:#000;--card:#080808;--text:#f5f5f5;--text-muted:#a3a3a3;--border:#242424;--hover:#151515;--input-bg:#111;--modal-bg:#080808;--chat-body-bg:#050505;--bubble-them-bg:#111;--drawer-bg:rgba(8,8,8,.72);--nav-item-bg:rgba(255,255,255,.045);--nav-item-hover:rgba(255,255,255,.09);--shadow:0 1px 2px rgba(0,0,0,.7),0 8px 28px rgba(0,0,0,.35);--shadow-lg:0 20px 70px rgba(0,0,0,.72);}
-.mebook-root.dark-mode .mb-modal,.mebook-root.dark-mode .share-sheet{background:rgba(8,8,8,.88);border-color:rgba(255,255,255,.12);box-shadow:0 28px 90px rgba(0,0,0,.72),0 1px 0 rgba(255,255,255,.08) inset;}
+.mebook-root.dark-mode .mb-modal,.mebook-root.dark-mode .share-sheet,.mebook-root.dark-mode .cmt-sheet{background:rgba(8,8,8,.88);border-color:rgba(255,255,255,.12);box-shadow:0 28px 90px rgba(0,0,0,.72),0 1px 0 rgba(255,255,255,.08) inset;}
 .mebook-root .mb-modal::-webkit-scrollbar,.mebook-root .share-sheet::-webkit-scrollbar{width:6px;}
 .mebook-root .mb-modal::-webkit-scrollbar-thumb,.mebook-root .share-sheet::-webkit-scrollbar-thumb{background:rgba(128,128,128,.38);border-radius:20px;}
 .mebook-root{transition:background .45s ease,color .45s ease;}
 @media(prefers-reduced-motion:no-preference){.mebook-root.dark-mode .mb-modal,.mebook-root.dark-mode .share-sheet,.mebook-root.dark-mode .cmt-sheet{animation:mebookLiquidDarkIn .42s cubic-bezier(.2,.8,.2,1);}}
 @keyframes mebookLiquidDarkIn{from{opacity:.72;transform:scale(.965) translateY(8px);filter:brightness(1.25);}to{opacity:1;transform:scale(1) translateY(0);filter:brightness(1);}}
 
-/* ============================================================
-RESPONSIVE
-============================================================ */
+/* THEME RIPPLE */
+.mebook-theme-ripple{
+position:fixed;z-index:9999;width:32px;height:32px;border-radius:50%;
+transform:translate(-50%,-50%) scale(0);
+pointer-events:none;
+animation:mebookRippleGrow .65s cubic-bezier(.2,.8,.2,1) forwards;
+}
+@keyframes mebookRippleGrow{
+0%{transform:translate(-50%,-50%) scale(0);opacity:.85;}
+60%{opacity:.45;}
+100%{transform:translate(-50%,-50%) scale(80);opacity:0;}
+}
+
+/* RESPONSIVE */
 @media(max-width:1100px){
 .mebook-root .mb-layout{grid-template-columns:240px minmax(0,1fr);}
 .mebook-root .mb-right{display:none;}
@@ -1178,7 +1168,6 @@ export default function MeBookPage() {
   const rootRef = useRef<HTMLDivElement>(null)
   const [ready, setReady] = useState(false)
 
-  /* ---- Core state ---- */
   const [theme, setTheme] = useState<"light" | "dark">("light")
   const [authMode, setAuthMode] = useState<"signin" | "signup">("signin")
   const [authErr, setAuthErr] = useState<{ si: string; su: string }>({ si: "", su: "" })
@@ -1192,6 +1181,7 @@ export default function MeBookPage() {
   const [userModalOpen, setUserModalOpen] = useState(false)
   const [userModalBody, setUserModalBody] = useState<React.ReactNode>(null)
   const popupPointRef = useRef({ x: 0, y: 0 })
+  const [themeRipple, setThemeRipple] = useState<{ x: number; y: number; color: string } | null>(null)
   const [toast, setToast] = useState<{ msg: string; show: boolean }>({ msg: "", show: false })
   const [mebookTab, setMebookTab] = useState("featured")
 
@@ -1230,13 +1220,11 @@ export default function MeBookPage() {
   const [friendSearch, setFriendSearch] = useState("")
   const [chatInput, setChatInput] = useState("")
 
-  /* ---- Comments sheet ---- */
   const [commentPost, setCommentPost] = useState<any>(null)
   const [commentText, setCommentText] = useState("")
   const [commentBusy, setCommentBusy] = useState(false)
   const commentListRef = useRef<HTMLDivElement>(null)
 
-  /* ---- Share sheet ---- */
   const [sharePost, setSharePost] = useState<any>(null)
   const [shareCaption, setShareCaption] = useState("")
   const [shareBusy, setShareBusy] = useState(false)
@@ -1244,7 +1232,6 @@ export default function MeBookPage() {
   const unsubscribersRef = useRef<Array<() => void>>([])
   const chatUnsubRef = useRef<(() => void) | null>(null)
 
-  /* ---- CSS inject ---- */
   useEffect(() => {
     const styleId = "mebook-styles"
     if (!document.getElementById(styleId)) {
@@ -1256,7 +1243,6 @@ export default function MeBookPage() {
     setReady(true)
   }, [])
 
-  /* ---- Theme ---- */
   useEffect(() => {
     const saved = localStorage.getItem("mebook-theme")
     const isDark = saved ? saved === "dark" : false
@@ -1264,17 +1250,22 @@ export default function MeBookPage() {
   }, [])
 
   const toggleTheme = (isDark: boolean) => {
+    const pos = popupPointRef.current
+    setThemeRipple({
+      x: pos.x || window.innerWidth / 2,
+      y: pos.y || window.innerHeight / 2,
+      color: isDark ? "#000000" : "#f0f2f5",
+    })
     setTheme(isDark ? "dark" : "light")
     localStorage.setItem("mebook-theme", isDark ? "dark" : "light")
+    setTimeout(() => setThemeRipple(null), 680)
   }
 
-  /* ---- Toast ---- */
   const showToast = useCallback((msg: string) => {
     setToast({ msg, show: true })
     setTimeout(() => setToast((t) => ({ ...t, show: false })), 2400)
   }, [])
 
-  /* ---- Cleanup ---- */
   const cleanupListeners = useCallback(() => {
     unsubscribersRef.current.forEach((u) => {
       try { u() } catch {}
@@ -1286,7 +1277,6 @@ export default function MeBookPage() {
     }
   }, [])
 
-  /* ---- Feed listeners ---- */
   const startAppListeners = useCallback(
     async (uid: string) => {
       cleanupListeners()
@@ -1411,7 +1401,6 @@ export default function MeBookPage() {
     [cleanupListeners]
   )
 
-  /* ---- Firebase auth ---- */
   useEffect(() => {
     if (!ready) return
     let cancelled = false
@@ -1449,7 +1438,6 @@ export default function MeBookPage() {
             setPrivacy(p.privacy || { info: true, posts: true, requests: true })
             setAuthBusy(false)
 
-            // Real-time profile listener
             const profileUnsub = fb.onSnapshot(userRef, (s: any) => {
               if (s.exists()) setProfile(s.data())
             })
@@ -1477,7 +1465,6 @@ export default function MeBookPage() {
     }
   }, [ready, startAppListeners, cleanupListeners, showToast])
 
-  /* ---- Auth actions ---- */
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault()
     if (authBusy) return
@@ -1579,7 +1566,6 @@ export default function MeBookPage() {
     }
   }
 
-  /* ---- Navigation ---- */
   const goTo = (view: string) => {
     setCurrentView(view)
     setDrawerOpen(false)
@@ -1587,7 +1573,6 @@ export default function MeBookPage() {
     setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 50)
   }
 
-  /* ---- Like ---- */
   const handleLikePost = async (postId: string) => {
     try {
       const fb = await getFirebase()
@@ -1604,7 +1589,6 @@ export default function MeBookPage() {
     }
   }
 
-  /* ---- Comment sheet ---- */
   const openComments = (post: any) => {
     setCommentPost(post)
     setCommentText("")
@@ -1659,7 +1643,6 @@ export default function MeBookPage() {
     }
   }
 
-  /* ---- Share ---- */
   const openShare = (post: any) => {
     setSharePost(post)
     setShareCaption("")
@@ -1760,7 +1743,6 @@ export default function MeBookPage() {
     }
   }
 
-  /* ---- Delete post ---- */
   const handleDeletePost = async (postId: string) => {
     if (!confirm("Delete this post?")) return
     try {
@@ -1772,7 +1754,6 @@ export default function MeBookPage() {
     }
   }
 
-  /* ---- Composer ---- */
   const handlePreviewFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
@@ -1831,7 +1812,6 @@ export default function MeBookPage() {
     }
   }
 
-  /* ---- Friends ---- */
   const handleSendRequest = async (toUid: string) => {
     if (toUid === user.uid) return
     try {
@@ -1889,7 +1869,6 @@ export default function MeBookPage() {
     }
   }
 
-  /* ---- Chat ---- */
   const startChat = async (otherId: string, otherName: string, otherPhoto: string) => {
     if (otherId === user.uid) {
       showToast("You can't chat with yourself")
@@ -1963,7 +1942,6 @@ export default function MeBookPage() {
     }
   }
 
-  /* ---- Profile ---- */
   const handleEditProfile = () => {
     setEditName(profile.name || "")
     setEditBio(profile.bio || "")
@@ -2061,7 +2039,7 @@ export default function MeBookPage() {
       const cover =
         u.coverURL ||
         "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=1200&q=80"
-      const isVerified = u.verified === true || u.isOfficial === true
+      const isVerifiedUser = u.verified === true || u.isOfficial === true
 
       setUserModalBody(
         <div style={{ textAlign: "center" }}>
@@ -2098,7 +2076,7 @@ export default function MeBookPage() {
             }}
           >
             {u.name}
-            {isVerified && (
+            {isVerifiedUser && (
               <svg width="18" height="18" viewBox="0 0 24 24" fill="#22c55e">
                 <path d="M23 12l-2.44-2.79.34-3.69-3.61-.82-1.89-3.2L12 2.96 8.6 1.5 6.71 4.69l-3.61.82.34 3.69L1 12l2.44 2.79-.34 3.7 3.61.82L8.6 22.5l3.4-1.47 3.4 1.46 1.89-3.19 3.61-.82-.34-3.69L23 12zm-12.91 4.72l-3.8-3.81 1.48-1.48 2.32 2.33 5.85-5.87 1.48 1.48-7.33 7.35z" />
               </svg>
@@ -2134,23 +2112,47 @@ export default function MeBookPage() {
     }
   }
 
-  /* ---- Modal / popup background scroll lock ---- */
   useEffect(() => {
     const popupOpen = composerOpen || editOpen || userModalOpen || !!commentPost || !!sharePost
+    const html = document.documentElement
+    const body = document.body
+
     if (popupOpen) {
-      document.documentElement.classList.add("mebook-popup-open")
-      document.body.classList.add("mebook-popup-open")
+      const scrollY = window.scrollY || window.pageYOffset || 0
+      body.dataset.mebookScrollY = String(scrollY)
+      body.style.position = "fixed"
+      body.style.top = `-${scrollY}px`
+      body.style.left = "0"
+      body.style.right = "0"
+      body.style.width = "100%"
+      html.classList.add("mebook-popup-open")
+      body.classList.add("mebook-popup-open")
     } else {
-      document.documentElement.classList.remove("mebook-popup-open")
-      document.body.classList.remove("mebook-popup-open")
+      const savedY = parseInt(body.dataset.mebookScrollY || "0", 10)
+      body.style.position = ""
+      body.style.top = ""
+      body.style.left = ""
+      body.style.right = ""
+      body.style.width = ""
+      html.classList.remove("mebook-popup-open")
+      body.classList.remove("mebook-popup-open")
+      if (body.dataset.mebookScrollY !== undefined) {
+        window.scrollTo(0, savedY)
+        delete body.dataset.mebookScrollY
+      }
     }
+
     return () => {
-      document.documentElement.classList.remove("mebook-popup-open")
-      document.body.classList.remove("mebook-popup-open")
+      body.style.position = ""
+      body.style.top = ""
+      body.style.left = ""
+      body.style.right = ""
+      body.style.width = ""
+      html.classList.remove("mebook-popup-open")
+      body.classList.remove("mebook-popup-open")
     }
   }, [composerOpen, editOpen, userModalOpen, commentPost, sharePost])
 
-  /* ---- ESC ---- */
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
@@ -2168,7 +2170,6 @@ export default function MeBookPage() {
 
   if (!ready) return null
 
-  /* ---- Helpers ---- */
   const avatarUrl = (u: any) =>
     u?.photoURL ||
     `https://ui-avatars.com/api/?background=16a34a&color=fff&name=${encodeURIComponent(u?.name || "User")}`
@@ -2176,9 +2177,6 @@ export default function MeBookPage() {
   const isVerified = (obj: any) =>
     obj?.verified === true || obj?.isOfficial === true
 
-  /* ============================================================
-  AUTH SCREEN
-  ============================================================ */
   if (!user) {
     return (
       <div className="mebook-root dark-mode" ref={rootRef}>
@@ -2311,9 +2309,6 @@ export default function MeBookPage() {
     )
   }
 
-  /* ============================================================
-  POST RENDER
-  ============================================================ */
   const renderPost = (post: any, isMine = false) => {
     const liked = Array.isArray(post.likes) && post.likes.includes(user?.uid)
     const likesCount = Array.isArray(post.likes) ? post.likes.length : 0
@@ -2445,9 +2440,6 @@ export default function MeBookPage() {
     )
   }
 
-  /* ============================================================
-  COMPUTED
-  ============================================================ */
   const unreadCount = chats.filter(
     (c) =>
       c.last &&
@@ -2466,16 +2458,23 @@ export default function MeBookPage() {
 
   const rootClass = `mebook-root ${theme === "dark" ? "dark-mode" : ""}`
 
-  /* ============================================================
-  MAIN RENDER
-  ============================================================ */
   return (
     <div
       className={rootClass}
       ref={rootRef}
       onPointerDown={(e) => { popupPointRef.current = { x: e.clientX, y: e.clientY } }}
     >
-      {/* HEADER */}
+      {themeRipple && (
+        <div
+          className="mebook-theme-ripple"
+          style={{
+            left: themeRipple.x,
+            top: themeRipple.y,
+            background: themeRipple.color,
+          }}
+        />
+      )}
+
       <header className="mb-header">
         <div className="mb-header-left">
           <img className="mb-logo-img" src={LOGO_URL} alt="MeBook Logo" />
@@ -2508,7 +2507,6 @@ export default function MeBookPage() {
         </div>
       </header>
 
-      {/* DRAWER */}
       <div className={`mb-overlay${drawerOpen ? " open" : ""}`} onClick={() => setDrawerOpen(false)} />
       <aside className={`mb-drawer ${drawerOpen ? "open" : ""}`}>
         <div className="mb-drawer-head">
@@ -2575,7 +2573,6 @@ export default function MeBookPage() {
         </div>
       </aside>
 
-      {/* MAIN LAYOUT */}
       <div className="mb-layout">
         <aside className="mb-sidebar">
           <SideItem id="home" label="Home" active={currentView === "home"} onClick={goTo} />
@@ -2767,7 +2764,6 @@ export default function MeBookPage() {
             </h1>
 
             <div className={`msgr-wrap ${mobileChatWindow && chatPartner ? "mobile-on-window" : "mobile-on-list"}`}>
-              {/* LIST */}
               <div className="msgr-list">
                 <div className="msgr-list-head">
                   <span>Chats</span>
@@ -2854,7 +2850,6 @@ export default function MeBookPage() {
                 )}
               </div>
 
-              {/* WINDOW */}
               <div className="msgr-window">
                 {!activeChat || !chatPartner ? (
                   <div className="msgr-empty">
@@ -2919,12 +2914,6 @@ export default function MeBookPage() {
                           const prevMsg = idx > 0 ? chatMessages[idx - 1] : null
                           const showAvatar =
                             !mine && (!prevMsg || prevMsg.from !== m.from)
-                          const time = m.at
-                            ? new Date(m.at.seconds * 1000).toLocaleTimeString([], {
-                                hour: "2-digit",
-                                minute: "2-digit",
-                              })
-                            : ""
                           return (
                             <div
                               key={m.id}
@@ -3411,9 +3400,7 @@ export default function MeBookPage() {
         </aside>
       </div>
 
-      {/* =====================================================
-      COMMENTS SHEET (mobile bottom sheet — FB style)
-      ===================================================== */}
+      {/* COMMENTS SHEET */}
       <div
         className={`cmt-backdrop${commentPost ? " open" : ""}`}
         onClick={closeComments}
@@ -3484,9 +3471,7 @@ export default function MeBookPage() {
         </div>
       </div>
 
-      {/* =====================================================
-      SHARE SHEET
-      ===================================================== */}
+      {/* SHARE SHEET */}
       <div
         className={`share-backdrop ${sharePost ? "open" : ""}`}
         onClick={closeShare}
@@ -3603,9 +3588,7 @@ export default function MeBookPage() {
         </div>
       </div>
 
-      {/* =====================================================
-      COMPOSER MODAL
-      ===================================================== */}
+      {/* COMPOSER MODAL */}
       <div className={`mb-modal-overlay${composerOpen ? " open" : ""}`}>
         <div className="mb-modal">
           <div className="mb-modal-head">
@@ -3701,7 +3684,7 @@ export default function MeBookPage() {
         </div>
       </div>
 
-      {/* EDIT PROFILE */}
+      {/* EDIT PROFILE MODAL */}
       <div className={`mb-modal-overlay${editOpen ? " open" : ""}`}>
         <div className="mb-modal">
           <div className="mb-modal-head">
@@ -3846,4 +3829,4 @@ function SideItem({
       {label}
     </button>
   )
-                                             }
+}

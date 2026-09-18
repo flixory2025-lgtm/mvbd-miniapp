@@ -240,19 +240,14 @@ animation:cardFloat .7s cubic-bezier(.2,.8,.3,1);color:#f3f4f6;
 .mebook-root .auth-err.show{display:block;}
 @keyframes shake{0%,100%{transform:translateX(0);}25%{transform:translateX(-4px);}75%{transform:translateX(4px);}}
 
-/* ============ HEADER (auto-hide) ============ */
+/* ============ HEADER (always visible) ============ */
 .mebook-root .mb-header{
 position:fixed;top:0;left:0;right:0;height:60px;z-index:1000;
 background:var(--header-bg);
 display:flex;align-items:center;justify-content:space-between;
 padding:0 16px;
 box-shadow:0 2px 12px rgba(0,0,0,.18);
-transition:transform .38s cubic-bezier(.2,.8,.3,1), background .3s ease, box-shadow .3s ease;
-will-change:transform;
-}
-.mebook-root .mb-header.hidden{
-transform:translateY(-100%);
-box-shadow:0 0 0 rgba(0,0,0,0);
+transition:background .3s ease,box-shadow .3s ease;
 }
 .mebook-root .mb-header-left{display:flex;align-items:center;gap:10px;}
 .mebook-root .mb-logo-img{width:38px;height:38px;object-fit:contain;border-radius:9px;background:rgba(255,255,255,.08);padding:4px;}
@@ -282,7 +277,7 @@ transition:opacity .2s ease, visibility .2s ease;
 
 .mebook-root .mb-menu{
 position:fixed;top:68px;right:16px;z-index:1060;
-min-width:270px;max-width:calc(100vw - 32px);
+min-width:290px;max-width:calc(100vw - 32px);
 background:var(--card);
 border-radius:14px;
 box-shadow:0 16px 48px rgba(0,0,0,.18), 0 0 0 1px rgba(0,0,0,.05);
@@ -308,7 +303,11 @@ display:flex;align-items:center;gap:10px;
 padding:10px 10px 12px;
 border-bottom:1px solid var(--border);
 margin-bottom:6px;
+cursor:pointer;
+transition:background .15s;
+border-radius:8px;
 }
+.mebook-root .mb-menu-head:hover{background:var(--hover);}
 .mebook-root .mb-menu-head img{
 width:42px;height:42px;border-radius:50%;
 object-fit:cover;background:#cbd5e1;flex-shrink:0;
@@ -346,6 +345,20 @@ display:flex;align-items:center;justify-content:center;
 background:var(--input-bg);flex-shrink:0;
 }
 .mebook-root .mb-menu-ico svg{width:18px;height:18px;fill:var(--text);}
+.mebook-root .mb-menu-ico.green{background:rgba(34,197,94,.15);}
+.mebook-root .mb-menu-ico.green svg{fill:var(--green);}
+.mebook-root .mb-menu-ico.red{background:rgba(239,68,68,.15);}
+.mebook-root .mb-menu-ico.red svg{fill:#ef4444;}
+.mebook-root .mb-menu-ico.blue{background:rgba(59,130,246,.15);}
+.mebook-root .mb-menu-ico.blue svg{fill:#3b82f6;}
+
+.mebook-root .mb-menu-badge{
+margin-left:auto;
+background:#ef4444;color:#fff;
+font-size:11px;font-weight:700;
+border-radius:10px;padding:2px 7px;
+min-width:20px;text-align:center;
+}
 
 .mebook-root .mb-menu-divider{
 height:1px;background:var(--border);margin:6px 4px;
@@ -375,13 +388,15 @@ padding-bottom:12px;
 scrollbar-width:none;
 }
 .mebook-root .mb-sidebar::-webkit-scrollbar{width:0;}
-.mebook-root .mb-side-item{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:10px;font-size:15px;font-weight:600;color:var(--text);transition:background .18s;width:100%;text-align:left;margin-bottom:2px;}
+.mebook-root .mb-side-item{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:10px;font-size:15px;font-weight:600;color:var(--text);transition:background .18s;width:100%;text-align:left;margin-bottom:2px;position:relative;}
 .mebook-root .mb-side-item:hover{background:var(--hover);}
 .mebook-root .mb-side-item.active{background:var(--green);color:#fff;}
 .mebook-root .mb-side-ico{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--border);flex-shrink:0;}
 .mebook-root .mb-side-item.active .mb-side-ico{background:rgba(255,255,255,.2);}
 .mebook-root .mb-side-ico svg{width:20px;height:20px;fill:var(--text);}
 .mebook-root .mb-side-item.active .mb-side-ico svg{fill:#fff;}
+.mebook-root .mb-side-badge{margin-left:auto;background:#ef4444;color:#fff;font-size:11px;font-weight:700;border-radius:10px;padding:2px 7px;min-width:20px;text-align:center;}
+.mebook-root .mb-side-item.active .mb-side-badge{background:rgba(255,255,255,.3);}
 .mebook-root .mb-side-divider{height:1px;background:var(--border);margin:8px 4px;}
 .mebook-root .mb-main{min-width:0;padding-bottom:24px;}
 
@@ -400,6 +415,8 @@ scrollbar-width:none;
 /* ============ POST ============ */
 .mebook-root .mb-post{background:var(--card);border-radius:12px;box-shadow:var(--shadow);margin-bottom:16px;overflow:hidden;animation:postIn .35s cubic-bezier(.2,.8,.3,1);transition:background .3s;}
 @keyframes postIn{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:none;}}
+.mebook-root .mb-post.official{border:1.5px solid rgba(34,197,94,.35);}
+.mebook-root.dark-mode .mb-post.official{border-color:rgba(34,197,94,.4);}
 .mebook-root .mb-post-head{display:flex;align-items:center;gap:10px;padding:12px 16px 8px;}
 .mebook-root .mb-post-head-avatar{width:42px;height:42px;border-radius:50%;object-fit:cover;background:#cbd5e1;cursor:pointer;transition:transform .15s;}
 .mebook-root .mb-post-head-avatar:hover{transform:scale(1.05);}
@@ -488,6 +505,9 @@ scrollbar-width:none;
 .mebook-root .msgr-head-name{font-size:15px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .mebook-root .msgr-head-status{font-size:12.5px;color:#22c55e;display:flex;align-items:center;gap:5px;}
 .mebook-root .msgr-head-status .dot{width:8px;height:8px;border-radius:50%;background:#22c55e;}
+.mebook-root .msgr-head-btn{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--text-muted);}
+.mebook-root .msgr-head-btn:hover{background:var(--hover);}
+.mebook-root .msgr-head-btn svg{width:20px;height:20px;fill:currentColor;}
 .mebook-root .msgr-body{flex:1;overflow-y:auto;padding:14px 12px;background:var(--chat-body-bg);display:flex;flex-direction:column;gap:4px;}
 .mebook-root .msgr-body::-webkit-scrollbar{width:6px;}
 .mebook-root .msgr-body::-webkit-scrollbar-thumb{background:var(--border);border-radius:10px;}
@@ -561,6 +581,72 @@ scrollbar-width:none;
 .mebook-root .share-option-text{font-size:13.5px;font-weight:600;line-height:1.3;}
 .mebook-root .share-option-text small{display:block;font-size:11.5px;color:var(--text-muted);font-weight:500;margin-top:2px;}
 
+/* ============ NOTIFICATIONS PAGE ============ */
+.mebook-root .notif-page-wrap{background:var(--card);border-radius:12px;box-shadow:var(--shadow);overflow:hidden;margin-bottom:16px;}
+.mebook-root .notif-page-head{padding:16px;border-bottom:1px solid var(--border);font-size:18px;font-weight:800;display:flex;align-items:center;justify-content:space-between;}
+.mebook-root .notif-mark-all{padding:6px 12px;border-radius:8px;font-size:12.5px;font-weight:600;background:var(--input-bg);color:var(--text-muted);transition:background .18s;}
+.mebook-root .notif-mark-all:hover{background:var(--border);color:var(--text);}
+.mebook-root .notif-list{padding:0;}
+.mebook-root .notif-item{display:flex;gap:12px;padding:14px 16px;border-bottom:1px solid var(--border);transition:background .18s;cursor:pointer;position:relative;}
+.mebook-root .notif-item:last-child{border-bottom:none;}
+.mebook-root .notif-item:hover{background:var(--hover);}
+.mebook-root .notif-item.unread{background:rgba(22,163,74,.05);}
+.mebook-root.dark-mode .notif-item.unread{background:rgba(34,197,94,.08);}
+.mebook-root .notif-icon{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;position:relative;}
+.mebook-root .notif-icon svg{width:22px;height:22px;fill:#fff;}
+.mebook-root .notif-icon.like{background:linear-gradient(135deg,#ef4444,#f97316);}
+.mebook-root .notif-icon.comment{background:linear-gradient(135deg,#3b82f6,#6366f1);}
+.mebook-root .notif-icon.share{background:linear-gradient(135deg,#10b981,#059669);}
+.mebook-root .notif-icon.friend{background:linear-gradient(135deg,#8b5cf6,#a855f7);}
+.mebook-root .notif-icon.verification{background:linear-gradient(135deg,#16a34a,#22c55e);}
+.mebook-root .notif-icon.subscription{background:linear-gradient(135deg,#f59e0b,#eab308);}
+.mebook-root .notif-icon.account{background:linear-gradient(135deg,#dc2626,#ef4444);}
+.mebook-root .notif-icon.admin{background:linear-gradient(135deg,#0f172a,#334155);}
+.mebook-root .notif-icon.post{background:linear-gradient(135deg,#0891b2,#06b6d4);}
+.mebook-root .notif-avatar{width:48px;height:48px;border-radius:50%;object-fit:cover;flex-shrink:0;background:#cbd5e1;border:2px solid var(--border);}
+.mebook-root .notif-body{flex:1;min-width:0;padding-right:8px;}
+.mebook-root .notif-text{font-size:14.5px;line-height:1.45;color:var(--text);word-wrap:break-word;}
+.mebook-root .notif-text b{font-weight:700;}
+.mebook-root .notif-time{font-size:12px;color:var(--text-muted);margin-top:3px;font-weight:500;}
+.mebook-root .notif-dot{width:10px;height:10px;border-radius:50%;background:#22c55e;position:absolute;top:16px;right:16px;flex-shrink:0;}
+.mebook-root .notif-empty{padding:60px 20px;text-align:center;color:var(--text-muted);}
+.mebook-root .notif-empty svg{width:72px;height:72px;fill:var(--border);margin-bottom:12px;}
+.mebook-root .notif-empty b{font-size:17px;display:block;margin-bottom:4px;color:var(--text);}
+.mebook-root .notif-actions{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;}
+.mebook-root .notif-action-btn{padding:7px 14px;border-radius:8px;font-size:13px;font-weight:600;transition:filter .18s,transform .12s;}
+.mebook-root .notif-action-btn:active{transform:scale(.97);}
+.mebook-root .notif-action-btn.accept{background:var(--green);color:#fff;}
+.mebook-root .notif-action-btn.accept:hover{filter:brightness(1.08);}
+.mebook-root .notif-action-btn.decline{background:var(--input-bg);color:var(--text);}
+.mebook-root .notif-action-btn.decline:hover{background:var(--border);}
+
+/* ============ FRIENDS PAGE (in menu) ============ */
+.mebook-root .fr-page{background:var(--card);border-radius:12px;box-shadow:var(--shadow);overflow:hidden;margin-bottom:16px;}
+.mebook-root .fr-tabs{display:flex;border-bottom:1px solid var(--border);padding:0 8px;}
+.mebook-root .fr-tab{padding:14px 16px;font-size:14.5px;font-weight:600;color:var(--text-muted);border-bottom:3px solid transparent;transition:all .2s;position:relative;}
+.mebook-root .fr-tab:hover{color:var(--text);background:var(--hover);}
+.mebook-root .fr-tab.active{color:var(--green);border-bottom-color:var(--green);}
+.mebook-root .fr-tab-badge{display:inline-flex;align-items:center;justify-content:center;background:#ef4444;color:#fff;font-size:11px;font-weight:700;border-radius:10px;padding:1px 7px;margin-left:6px;min-width:18px;}
+.mebook-root .fr-body{padding:16px;}
+.mebook-root .fr-request-row{display:flex;gap:12px;padding:12px;border-radius:12px;transition:background .18s;align-items:center;}
+.mebook-root .fr-request-row:hover{background:var(--hover);}
+.mebook-root .fr-request-row img{width:72px;height:72px;border-radius:50%;object-fit:cover;background:#cbd5e1;flex-shrink:0;cursor:pointer;}
+.mebook-root .fr-request-info{flex:1;min-width:0;}
+.mebook-root .fr-request-name{font-size:15.5px;font-weight:700;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:5px;}
+.mebook-root .fr-request-name:hover{text-decoration:underline;}
+.mebook-root .fr-request-mutual{font-size:12.5px;color:var(--text-muted);margin-top:3px;}
+.mebook-root .fr-request-actions{display:flex;flex-direction:column;gap:6px;flex-shrink:0;}
+.mebook-root .fr-request-actions .mb-btn{width:auto;padding:8px 18px;font-size:13.5px;white-space:nowrap;}
+.mebook-root .fr-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px;}
+.mebook-root .fr-card{background:var(--input-bg);border-radius:12px;overflow:hidden;transition:transform .2s,box-shadow .2s;cursor:pointer;}
+.mebook-root .fr-card:hover{transform:translateY(-3px);box-shadow:var(--shadow-lg);}
+.mebook-root .fr-card-img{width:100%;aspect-ratio:1;object-fit:cover;background:#cbd5e1;}
+.mebook-root .fr-card-info{padding:10px 12px 12px;}
+.mebook-root .fr-card-name{font-size:14.5px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.mebook-root .fr-card-mutual{font-size:12px;color:var(--text-muted);margin-top:2px;}
+.mebook-root .fr-card-actions{display:flex;gap:6px;margin-top:8px;}
+.mebook-root .fr-card-actions .mb-btn{font-size:12.5px;padding:7px;}
+
 /* ============ RIGHT SIDEBAR / CARDS ============ */
 .mebook-root .mb-right{position:sticky;top:80px;align-self:start;display:flex;flex-direction:column;gap:16px;max-height:calc(100vh - 100px);overflow-y:auto;scrollbar-width:none;}
 .mebook-root .mb-right::-webkit-scrollbar{width:0;}
@@ -573,15 +659,6 @@ scrollbar-width:none;
 .mebook-root .mb-online{position:absolute;bottom:7px;left:34px;width:11px;height:11px;border-radius:50%;background:var(--green-light);border:2px solid var(--card);}
 .mebook-root .mb-page-title{font-size:24px;font-weight:800;margin-bottom:16px;display:flex;align-items:center;gap:10px;color:var(--text);}
 .mebook-root .mb-page-title svg{width:26px;height:26px;fill:var(--green);}
-.mebook-root .mb-friends-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
-.mebook-root .mb-friend-card{background:var(--card);border-radius:12px;box-shadow:var(--shadow);overflow:hidden;transition:transform .2s,box-shadow .2s;}
-.mebook-root .mb-friend-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-lg);}
-.mebook-root .mb-friend-cover{height:100px;background:linear-gradient(135deg,#16a34a,#0f172a);}
-.mebook-root .mb-friend-body{padding:0 14px 14px;text-align:center;margin-top:-38px;}
-.mebook-root .mb-friend-body img{width:76px;height:76px;border-radius:50%;object-fit:cover;border:4px solid var(--card);margin:0 auto 8px;background:#cbd5e1;cursor:pointer;}
-.mebook-root .mb-friend-name{font-size:16px;font-weight:700;color:var(--text);}
-.mebook-root .mb-friend-mutual{font-size:12.5px;color:var(--text-muted);margin-top:2px;}
-.mebook-root .mb-friend-btns{display:flex;flex-direction:column;gap:8px;margin-top:12px;}
 .mebook-root .mb-search-box{display:flex;align-items:center;gap:10px;background:var(--card);border-radius:24px;padding:10px 16px;box-shadow:var(--shadow);margin-bottom:18px;}
 .mebook-root .mb-search-box svg{width:20px;height:20px;fill:var(--text-muted);flex-shrink:0;}
 .mebook-root .mb-search-box input{border:none;outline:none;flex:1;font-size:15px;background:transparent;color:var(--text);}
@@ -600,6 +677,9 @@ scrollbar-width:none;
 .mebook-root .mb-profile-text{flex:1;min-width:200px;padding-bottom:8px;}
 .mebook-root .mb-profile-name{font-size:26px;font-weight:800;line-height:1.2;color:var(--text);display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
 .mebook-root .mb-profile-bio{font-size:14.5px;color:var(--text-muted);margin-top:4px;}
+.mebook-root .mb-profile-stats{display:flex;gap:18px;margin-top:10px;flex-wrap:wrap;}
+.mebook-root .mb-profile-stat{display:flex;align-items:baseline;gap:4px;font-size:14px;color:var(--text-muted);}
+.mebook-root .mb-profile-stat b{font-size:16px;font-weight:800;color:var(--text);}
 .mebook-root .mb-profile-actions{display:flex;gap:8px;padding:0 20px 18px;flex-wrap:wrap;}
 .mebook-root .mb-profile-actions .mb-btn{width:auto;padding:9px 18px;}
 .mebook-root .mb-info-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
@@ -739,17 +819,18 @@ animation:mebookRippleGrow .65s cubic-bezier(.2,.8,.2,1) forwards;
 .mebook-root .mb-sidebar{display:none;}
 .mebook-root .mb-toast-container{left:10px;right:10px;max-width:none;top:70px;}
 .mebook-root .mb-menu{top:66px;right:10px;left:10px;max-width:none;}
+.mebook-root .fr-grid{grid-template-columns:repeat(auto-fill,minmax(160px,1fr));}
+.mebook-root .fr-request-actions{flex-direction:row;}
 }
 @media(max-width:600px){
 .mebook-root .mb-logo-text{font-size:19px;}
 .mebook-root .mb-profile-avatar-wrap img{width:100px;height:100px;}
 .mebook-root .mb-profile-name{font-size:21px;}
 .mebook-root .mb-profile-info{margin-top:-44px;}
-.mebook-root .mb-friends-grid{grid-template-columns:1fr;}
-.mebook-root .mb-mebook-grid{grid-template-columns:1fr 1fr;}
 .mebook-root .auth-card{padding:28px 22px 24px;border-radius:20px;}
 .mebook-root .share-options{grid-template-columns:1fr;}
 .mebook-root .mb-info-grid{grid-template-columns:1fr;}
+.mebook-root .fr-grid{grid-template-columns:1fr 1fr;}
 }
 `
 
@@ -850,10 +931,6 @@ export default function MeBookPage() {
   const popupPointRef = useRef({ x: 0, y: 0 })
   const [themeRipple, setThemeRipple] = useState<{ x: number; y: number; color: string } | null>(null)
 
-  /* ---- Auto-hide header ---- */
-  const [headerHidden, setHeaderHidden] = useState(false)
-  const lastScrollYRef = useRef(0)
-
   /* ---- 3-dots menu ---- */
   const [menuOpen, setMenuOpen] = useState(false)
 
@@ -880,6 +957,7 @@ export default function MeBookPage() {
   const [friends, setFriends] = useState<any[]>([])
   const [requests, setRequests] = useState<any[]>([])
   const [myFriends, setMyFriends] = useState<any[]>([])
+  const [sentFriendRequests, setSentFriendRequests] = useState<any[]>([])
   const [chats, setChats] = useState<any[]>([])
   const [onlineList, setOnlineList] = useState<any[]>([])
   const [activeChat, setActiveChat] = useState<string | null>(null)
@@ -891,6 +969,13 @@ export default function MeBookPage() {
 
   const [viewingUser, setViewingUser] = useState<any>(null)
   const [viewingUserPosts, setViewingUserPosts] = useState<any[]>([])
+
+  /* ---- Notifications ---- */
+  const [notifications, setNotifications] = useState<any[]>([])
+  const [unreadNotifCount, setUnreadNotifCount] = useState(0)
+
+  /* ---- Friends page tabs ---- */
+  const [friendsTab, setFriendsTab] = useState<"requests" | "sent" | "all" | "mutual">("requests")
 
   const [postText, setPostText] = useState("")
   const [postMovie, setPostMovie] = useState("")
@@ -979,16 +1064,18 @@ export default function MeBookPage() {
       cleanupListeners()
       const fb = await getFirebase()
 
+      // Feed — latest posts first, official posts drift down
       const feedQ = fb.query(fb.collection(fb.db, "posts"), fb.orderBy("createdAt", "desc"))
       unsubscribersRef.current.push(
         fb.onSnapshot(feedQ, (snap: any) => {
           const arr: any[] = []
           snap.forEach((d: any) => arr.push({ id: d.id, ...d.data() }))
+          // Latest first; but official posts get pushed down automatically
+          // because sort is by time only — newest posts appear on top for everyone
           arr.sort((a, b) => {
-            const aOff = a.isOfficial ? 1 : 0
-            const bOff = b.isOfficial ? 1 : 0
-            if (aOff !== bOff) return bOff - aOff
-            return (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0)
+            const aTime = a.createdAt?.seconds || 0
+            const bTime = b.createdAt?.seconds || 0
+            return bTime - aTime
           })
           setFeed(arr)
         })
@@ -1004,7 +1091,8 @@ export default function MeBookPage() {
         })
       )
 
-      const commQ = fb.query(fb.collection(fb.db, "communityPosts"), fb.orderBy("createdAt", "desc"))
+      // Community feed — same source, filter official only in Community page later
+      const commQ = fb.query(fb.collection(fb.db, "posts"), fb.orderBy("createdAt", "desc"))
       unsubscribersRef.current.push(
         fb.onSnapshot(commQ, (snap: any) => {
           const arr: any[] = []
@@ -1025,6 +1113,7 @@ export default function MeBookPage() {
         })
       )
 
+      // Incoming friend requests
       const reqQ = fb.query(
         fb.collection(fb.db, "friendRequests"),
         fb.where("to", "==", uid),
@@ -1046,6 +1135,29 @@ export default function MeBookPage() {
         })
       )
 
+      // Sent friend requests
+      const sentQ = fb.query(
+        fb.collection(fb.db, "friendRequests"),
+        fb.where("from", "==", uid)
+      )
+      unsubscribersRef.current.push(
+        fb.onSnapshot(sentQ, async (snap: any) => {
+          const arr: any[] = []
+          for (const d of snap.docs) {
+            const data = d.data()
+            const toSnap = await fb.getDoc(fb.doc(fb.db, "users", data.to))
+            arr.push({
+              id: d.id,
+              to: data.to,
+              status: data.status,
+              toUser: toSnap.exists() ? toSnap.data() : { name: "User", photoURL: "" },
+            })
+          }
+          setSentFriendRequests(arr)
+        })
+      )
+
+      // My friends (accepted)
       const myFriendsQ = fb.query(fb.collection(fb.db, "friends"), fb.where("a", "==", uid))
       unsubscribersRef.current.push(
         fb.onSnapshot(myFriendsQ, async (snap: any) => {
@@ -1058,6 +1170,7 @@ export default function MeBookPage() {
         })
       )
 
+      // Chats
       const chatsQ = fb.query(fb.collection(fb.db, "chats"), fb.where("members", "array-contains", uid))
       unsubscribersRef.current.push(
         fb.onSnapshot(chatsQ, async (snap: any) => {
@@ -1078,6 +1191,21 @@ export default function MeBookPage() {
           }
           arr.sort((a, b) => (b.lastAt?.seconds || 0) - (a.lastAt?.seconds || 0))
           setChats(arr)
+        })
+      )
+
+      // Notifications
+      const notifQ = fb.query(
+        fb.collection(fb.db, "notifications"),
+        fb.where("uid", "==", uid)
+      )
+      unsubscribersRef.current.push(
+        fb.onSnapshot(notifQ, (snap: any) => {
+          const arr: any[] = []
+          snap.forEach((d: any) => arr.push({ id: d.id, ...d.data() }))
+          arr.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0))
+          setNotifications(arr)
+          setUnreadNotifCount(arr.filter((n) => !n.read).length)
         })
       )
     },
@@ -1149,28 +1277,6 @@ export default function MeBookPage() {
       cleanupListeners()
     }
   }, [ready, startAppListeners, cleanupListeners, showToast])
-
-  /* ---- Auto-hide header on scroll ---- */
-  useEffect(() => {
-    const handleScroll = () => {
-      const y = window.scrollY || window.pageYOffset || 0
-      const lastY = lastScrollYRef.current
-      const diff = y - lastY
-
-      if (y < 60) {
-        setHeaderHidden(false)
-      } else if (diff > 6 && y > 80) {
-        setHeaderHidden(true)
-      } else if (diff < -6) {
-        setHeaderHidden(false)
-      }
-
-      lastScrollYRef.current = y
-    }
-
-    window.addEventListener("scroll", handleScroll, { passive: true })
-    return () => window.removeEventListener("scroll", handleScroll)
-  }, [])
 
   /* ---- Escape key closes menu ---- */
   useEffect(() => {
@@ -1359,6 +1465,10 @@ export default function MeBookPage() {
       goTo("profile")
       return
     }
+    if (uid === "admin") {
+      goTo("community")
+      return
+    }
     try {
       const fb = await getFirebase()
       const snap = await fb.getDoc(fb.doc(fb.db, "users", uid))
@@ -1502,6 +1612,21 @@ export default function MeBookPage() {
         status: "pending",
         createdAt: fb.serverTimestamp(),
       })
+
+      // Notify target user
+      await fb.addDoc(fb.collection(fb.db, "notifications"), {
+        uid: toUid,
+        title: "New Friend Request",
+        message: `${profile.name} sent you a friend request.`,
+        type: "friend",
+        fromUid: user.uid,
+        fromName: profile.name,
+        fromAvatar: profile.photoURL || "",
+        requestId: toUid + "_" + user.uid,
+        read: false,
+        createdAt: fb.serverTimestamp(),
+      })
+
       setTimeout(() => {
         setSentRequests((s) => ({ ...s, [toUid]: "sent" }))
         showToast("Request sent!", "Friend request has been sent", "success")
@@ -1544,9 +1669,18 @@ export default function MeBookPage() {
     try {
       const fb = await getFirebase()
       await fb.updateDoc(fb.doc(fb.db, "friendRequests", reqId), { status: "accepted" })
-      await fb.setDoc(fb.doc(fb.db, "friends", user.uid + "_" + fromUid), {
+      await fb.setDoc(fb.doc(fb.db, "friends", [user.uid, fromUid].sort().join("_")), {
         a: user.uid,
         b: fromUid,
+        createdAt: fb.serverTimestamp(),
+      })
+      // Notify the requester
+      await fb.addDoc(fb.collection(fb.db, "notifications"), {
+        uid: fromUid,
+        title: "Friend Request Accepted",
+        message: `${profile.name} accepted your friend request.`,
+        type: "friend",
+        read: false,
         createdAt: fb.serverTimestamp(),
       })
       showToast("You are now friends!", "Start chatting with them", "success")
@@ -1563,6 +1697,29 @@ export default function MeBookPage() {
     } catch (e: any) {
       showToast("Error", e.message, "error")
     }
+  }
+
+  /* ============================================================
+  NOTIFICATIONS
+  ============================================================ */
+  const markAllNotificationsRead = async () => {
+    try {
+      const fb = await getFirebase()
+      const unread = notifications.filter((n) => !n.read)
+      await Promise.all(
+        unread.map((n) => fb.updateDoc(fb.doc(fb.db, "notifications", n.id), { read: true }))
+      )
+      showToast("Marked as read", "All notifications marked as read", "success")
+    } catch (e: any) {
+      showToast("Error", e.message, "error")
+    }
+  }
+
+  const markNotificationRead = async (notifId: string) => {
+    try {
+      const fb = await getFirebase()
+      await fb.updateDoc(fb.doc(fb.db, "notifications", notifId), { read: true })
+    } catch {}
   }
 
   /* ============================================================
@@ -1734,6 +1891,7 @@ export default function MeBookPage() {
     try {
       const fb = await getFirebase()
       const ref = fb.doc(fb.db, "posts", postId)
+      const snap = await fb.getDoc(ref)
       await fb.updateDoc(ref, {
         comments: fb.arrayUnion({
           uid: user.uid,
@@ -1743,6 +1901,20 @@ export default function MeBookPage() {
           at: Date.now(),
         }),
       })
+      // Notify post owner
+      if (snap.exists()) {
+        const post = snap.data()
+        if (post.authorId && post.authorId !== user.uid && post.authorId !== "admin") {
+          await fb.addDoc(fb.collection(fb.db, "notifications"), {
+            uid: post.authorId,
+            title: "New Comment",
+            message: `${profile.name} commented on your post.`,
+            type: "comment",
+            read: false,
+            createdAt: fb.serverTimestamp(),
+          })
+        }
+      }
       setCommentText("")
       showToast("Comment added!", "Your comment is now visible", "success")
       setTimeout(() => {
@@ -2002,7 +2174,7 @@ export default function MeBookPage() {
     const isOfficial = post.isOfficial === true
 
     return (
-      <article className="mb-post" key={post.id}>
+      <article className={`mb-post${isOfficial ? " official" : ""}`} key={post.id}>
         <div className="mb-post-head">
           <img
             className="mb-post-head-avatar"
@@ -2117,6 +2289,10 @@ export default function MeBookPage() {
   const renderFriendCard = (u: any) => {
     const photo = avatarUrl(u)
     const reqState = sentRequests[u.uid]
+    const isFriend = myFriends.some((f) => f.uid === u.uid)
+    const hasPendingSent = sentFriendRequests.some(
+      (r) => r.to === u.uid && r.status === "pending"
+    )
 
     return (
       <div className="mb-friend-card" key={u.uid}>
@@ -2139,18 +2315,15 @@ export default function MeBookPage() {
           </div>
           <div className="mb-friend-mutual">MeBook Member</div>
           <div className="mb-friend-btns">
-            {!reqState ? (
-              <button
-                className="mb-btn mb-btn-primary"
-                onClick={() => handleSendRequest(u.uid)}
-              >
-                Add Friend
+            {isFriend ? (
+              <button className="mb-btn mb-btn-primary" disabled>
+                ✓ Friends
               </button>
             ) : reqState === "sending" ? (
               <button className="mb-btn mb-friend-btn sending" disabled>
                 Sending...
               </button>
-            ) : (
+            ) : reqState === "sent" || hasPendingSent ? (
               <div className="mb-friend-btn-row">
                 <button
                   className="mb-btn mb-btn-secondary"
@@ -2162,13 +2335,14 @@ export default function MeBookPage() {
                   ✓ Sent
                 </button>
               </div>
+            ) : (
+              <button
+                className="mb-btn mb-btn-primary"
+                onClick={() => handleSendRequest(u.uid)}
+              >
+                Add Friend
+              </button>
             )}
-            <button
-              className="mb-btn mb-btn-secondary"
-              onClick={() => openUserProfile(u.uid)}
-            >
-              View Profile
-            </button>
             <button
               className="mb-btn mb-btn-outline"
               onClick={() => startChat(u.uid, u.name, photo)}
@@ -2201,6 +2375,14 @@ export default function MeBookPage() {
     myPosts.find((p) => p.id === postId) ||
     viewingUserPosts.find((p) => p.id === postId)
 
+  /* ---- Mutual friends helper ---- */
+  const getMutualFriends = (otherUid: string) => {
+    const myFriendIds = new Set(myFriends.map((f) => f.uid))
+    // We don't have their friends loaded, so approximate with shared "friends" collection
+    // For a complete mutual friend experience we'd need their friend list
+    return 0
+  }
+
   /* ============================================================
   MAIN RENDER
   ============================================================ */
@@ -2225,8 +2407,8 @@ export default function MeBookPage() {
 
       <ToastStack toasts={toasts} onDone={removeToast} />
 
-      {/* ============ HEADER (auto-hide) ============ */}
-      <header className={`mb-header${headerHidden ? " hidden" : ""}`}>
+      {/* ============ HEADER (always visible) ============ */}
+      <header className="mb-header">
         <div
           className="mb-header-left"
           onClick={() => goTo("home")}
@@ -2240,6 +2422,22 @@ export default function MeBookPage() {
         </div>
 
         <div className="mb-header-right">
+          {/* Notification icon */}
+          <button
+            className="mb-icon-btn"
+            title="Notifications"
+            onClick={() => goTo("notifications")}
+          >
+            <svg viewBox="0 0 24 24">
+              <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z" />
+            </svg>
+            {unreadNotifCount > 0 && (
+              <span className="mb-badge-dot">
+                {unreadNotifCount > 99 ? "99+" : unreadNotifCount}
+              </span>
+            )}
+          </button>
+          {/* Messages */}
           <button
             className="mb-icon-btn"
             title="Messages"
@@ -2250,14 +2448,18 @@ export default function MeBookPage() {
             </svg>
             {unreadCount > 0 && <span className="mb-badge-dot">{unreadCount}</span>}
           </button>
+          {/* Friends */}
           <button
             className="mb-icon-btn"
-            title="Settings"
-            onClick={() => goTo("settings")}
+            title="Friends"
+            onClick={() => goTo("friends")}
           >
             <svg viewBox="0 0 24 24">
-              <path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.49.49 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.48.48 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z" />
+              <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" />
             </svg>
+            {requests.length > 0 && (
+              <span className="mb-badge-dot">{requests.length}</span>
+            )}
           </button>
           <button
             className="mb-avatar-btn"
@@ -2285,13 +2487,59 @@ export default function MeBookPage() {
         onClick={() => setMenuOpen(false)}
       />
       <div className={`mb-menu${menuOpen ? " open" : ""}`} role="menu">
-        <div className="mb-menu-head">
+        <div
+          className="mb-menu-head"
+          onClick={() => {
+            setMenuOpen(false)
+            goTo("profile")
+          }}
+        >
           <img src={avatarUrl(profile)} alt="" />
           <div className="mb-menu-head-info">
             <div className="mb-menu-head-name">{profile.name}</div>
             <div className="mb-menu-head-email">{profile.email}</div>
           </div>
         </div>
+
+        {/* Friends — Facebook style */}
+        <button
+          className="mb-menu-item"
+          onClick={() => {
+            setMenuOpen(false)
+            goTo("friends")
+          }}
+        >
+          <span className="mb-menu-ico blue">
+            <svg viewBox="0 0 24 24">
+              <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" />
+            </svg>
+          </span>
+          Friends
+          {requests.length > 0 && (
+            <span className="mb-menu-badge">{requests.length}</span>
+          )}
+        </button>
+
+        {/* Notifications */}
+        <button
+          className="mb-menu-item"
+          onClick={() => {
+            setMenuOpen(false)
+            goTo("notifications")
+          }}
+        >
+          <span className="mb-menu-ico green">
+            <svg viewBox="0 0 24 24">
+              <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z" />
+            </svg>
+          </span>
+          Notifications
+          {unreadNotifCount > 0 && (
+            <span className="mb-menu-badge">{unreadNotifCount}</span>
+          )}
+        </button>
+
+        <div className="mb-menu-divider" />
 
         <button
           className="mb-menu-item"
@@ -2366,7 +2614,7 @@ export default function MeBookPage() {
             goTo("mebook")
           }}
         >
-          <span className="mb-menu-ico">
+          <span className="mb-menu-ico green">
             <svg viewBox="0 0 24 24">
               <path d="M21 5c-1.11-.35-2.33-.5-3.5-.5-1.95 0-4.05.4-5.5 1.5-1.45-1.1-3.55-1.5-5.5-1.5S2.45 4.9 1 6v14.65c0 .25.25.5.5.5.1 0 .15-.05.25-.05C3.1 20.45 5.05 20 6.5 20c1.95 0 4.05.4 5.5 1.5 1.35-.85 3.8-1.5 5.5-1.5 1.65 0 3.35.3 4.75 1.05.1.05.15.05.25.05.25 0 .5-.25.5-.5V6c-.6-.45-1.25-.75-2-1z" />
             </svg>
@@ -2381,7 +2629,7 @@ export default function MeBookPage() {
             goTo("community")
           }}
         >
-          <span className="mb-menu-ico">
+          <span className="mb-menu-ico blue">
             <svg viewBox="0 0 24 24">
               <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" />
             </svg>
@@ -2398,7 +2646,7 @@ export default function MeBookPage() {
             handleSignOut()
           }}
         >
-          <span className="mb-menu-ico">
+          <span className="mb-menu-ico red">
             <svg viewBox="0 0 24 24">
               <path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z" />
             </svg>
@@ -2410,14 +2658,98 @@ export default function MeBookPage() {
       {/* ============ LAYOUT ============ */}
       <div className="mb-layout">
         <aside className="mb-sidebar">
-          <SideItem id="home" label="Home" active={currentView === "home"} onClick={handleNavClick} />
-          <SideItem id="friends" label="Friends" active={currentView === "friends"} onClick={handleNavClick} />
-          <SideItem id="messages" label="Messages" active={currentView === "messages"} onClick={handleNavClick} />
+          <SideItem
+            id="home"
+            label="Home"
+            active={currentView === "home"}
+            onClick={handleNavClick}
+            icon={
+              <svg viewBox="0 0 24 24">
+                <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
+              </svg>
+            }
+          />
+          <SideItem
+            id="friends"
+            label="Friends"
+            active={currentView === "friends"}
+            onClick={handleNavClick}
+            badge={requests.length}
+            icon={
+              <svg viewBox="0 0 24 24">
+                <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" />
+              </svg>
+            }
+          />
+          <SideItem
+            id="messages"
+            label="Messages"
+            active={currentView === "messages"}
+            onClick={handleNavClick}
+            badge={unreadCount}
+            icon={
+              <svg viewBox="0 0 24 24">
+                <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z" />
+              </svg>
+            }
+          />
+          <SideItem
+            id="notifications"
+            label="Notifications"
+            active={currentView === "notifications"}
+            onClick={handleNavClick}
+            badge={unreadNotifCount}
+            icon={
+              <svg viewBox="0 0 24 24">
+                <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z" />
+              </svg>
+            }
+          />
           <div className="mb-side-divider" />
-          <SideItem id="mebook" label="MeBook" active={currentView === "mebook"} onClick={handleNavClick} />
-          <SideItem id="community" label="Community" active={currentView === "community"} onClick={handleNavClick} />
-          <SideItem id="profile" label="Profile" active={currentView === "profile"} onClick={handleNavClick} />
-          <SideItem id="settings" label="Settings" active={currentView === "settings"} onClick={handleNavClick} />
+          <SideItem
+            id="mebook"
+            label="MeBook"
+            active={currentView === "mebook"}
+            onClick={handleNavClick}
+            icon={
+              <svg viewBox="0 0 24 24">
+                <path d="M21 5c-1.11-.35-2.33-.5-3.5-.5-1.95 0-4.05.4-5.5 1.5-1.45-1.1-3.55-1.5-5.5-1.5S2.45 4.9 1 6v14.65c0 .25.25.5.5.5.1 0 .15-.05.25-.05C3.1 20.45 5.05 20 6.5 20c1.95 0 4.05.4 5.5 1.5 1.35-.85 3.8-1.5 5.5-1.5 1.65 0 3.35.3 4.75 1.05.1.05.15.05.25.05.25 0 .5-.25.5-.5V6c-.6-.45-1.25-.75-2-1z" />
+              </svg>
+            }
+          />
+          <SideItem
+            id="community"
+            label="Community"
+            active={currentView === "community"}
+            onClick={handleNavClick}
+            icon={
+              <svg viewBox="0 0 24 24">
+                <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" />
+              </svg>
+            }
+          />
+          <SideItem
+            id="profile"
+            label="Profile"
+            active={currentView === "profile"}
+            onClick={handleNavClick}
+            icon={
+              <svg viewBox="0 0 24 24">
+                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+              </svg>
+            }
+          />
+          <SideItem
+            id="settings"
+            label="Settings"
+            active={currentView === "settings"}
+            onClick={handleNavClick}
+            icon={
+              <svg viewBox="0 0 24 24">
+                <path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.49.49 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.48.48 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z" />
+              </svg>
+            }
+          />
         </aside>
 
         <main className="mb-main">
@@ -2458,6 +2790,743 @@ export default function MeBookPage() {
                 ) : (
                   feed.map((p) => renderPost(p))
                 )}
+              </div>
+            </div>
+          )}
+
+          {/* ============ NOTIFICATIONS ============ */}
+          {currentView === "notifications" && (
+            <div className="mb-view active">
+              <h1 className="mb-page-title">
+                <svg viewBox="0 0 24 24">
+                  <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z" />
+                </svg>
+                Notifications
+              </h1>
+              <div className="notif-page-wrap">
+                <div className="notif-page-head">
+                  <span>{notifications.length} total</span>
+                  {unreadNotifCount > 0 && (
+                    <button
+                      className="notif-mark-all"
+                      onClick={markAllNotificationsRead}
+                    >
+                      Mark all as read
+                    </button>
+                  )}
+                </div>
+                <div className="notif-list">
+                  {notifications.length === 0 ? (
+                    <div className="notif-empty">
+                      <svg viewBox="0 0 24 24">
+                        <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z" />
+                      </svg>
+                      <b>No notifications yet</b>
+                      <p>When someone likes, comments or sends a friend request, you'll see it here.</p>
+                    </div>
+                  ) : (
+                    notifications.map((n) => {
+                      const type = n.type || "admin"
+                      const iconClass =
+                        type === "like"
+                          ? "like"
+                          : type === "comment"
+                          ? "comment"
+                          : type === "share"
+                          ? "share"
+                          : type === "friend"
+                          ? "friend"
+                          : type === "verification"
+                          ? "verification"
+                          : type === "subscription"
+                          ? "subscription"
+                          : type === "account"
+                          ? "account"
+                          : type === "post"
+                          ? "post"
+                          : "admin"
+
+                      const isFriendRequest =
+                        type === "friend" && n.requestId && !n.read
+
+                      return (
+                        <div
+                          className={`notif-item${!n.read ? " unread" : ""}`}
+                          key={n.id}
+                          onClick={() => !n.read && markNotificationRead(n.id)}
+                        >
+                          {n.fromAvatar ? (
+                            <img className="notif-avatar" src={n.fromAvatar} alt="" />
+                          ) : (
+                            <div className={`notif-icon ${iconClass}`}>
+                              {type === "like" && (
+                                <svg viewBox="0 0 24 24">
+                                  <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+                                </svg>
+                              )}
+                              {type === "comment" && (
+                                <svg viewBox="0 0 24 24">
+                                  <path d="M21.99 4c0-1.1-.89-2-1.99-2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14l4 4-.01-18z" />
+                                </svg>
+                              )}
+                              {type === "share" && (
+                                <svg viewBox="0 0 24 24">
+                                  <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z" />
+                                </svg>
+                              )}
+                              {type === "friend" && (
+                                <svg viewBox="0 0 24 24">
+                                  <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" />
+                                </svg>
+                              )}
+                              {type === "verification" && (
+                                <svg viewBox="0 0 24 24">
+                                  <path d="M23 12l-2.44-2.79.34-3.69-3.61-.82-1.89-3.2L12 2.96 8.6 1.5 6.71 4.69l-3.61.82.34 3.69L1 12l2.44 2.79-.34 3.7 3.61.82L8.6 22.5l3.4-1.47 3.4 1.46 1.89-3.19 3.61-.82-.34-3.69L23 12zm-12.91 4.72l-3.8-3.81 1.48-1.48 2.32 2.33 5.85-5.87 1.48 1.48-7.33 7.35z" />
+                                </svg>
+                              )}
+                              {type === "admin" && (
+                                <svg viewBox="0 0 24 24">
+                                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" />
+                                </svg>
+                              )}
+                              {type === "post" && (
+                                <svg viewBox="0 0 24 24">
+                                  <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z" />
+                                </svg>
+                              )}
+                            </div>
+                          )}
+                          <div className="notif-body">
+                            <div className="notif-text">
+                              <b>{n.title}</b>
+                              {n.message && <> — {n.message}</>}
+                            </div>
+                            <div className="notif-time">{timeAgo(n.createdAt)}</div>
+                            {isFriendRequest && (
+                              <div className="notif-actions">
+                                <button
+                                  className="notif-action-btn accept"
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    handleAcceptRequest(n.requestId, n.fromUid)
+                                    markNotificationRead(n.id)
+                                  }}
+                                >
+                                  Accept
+                                </button>
+                                <button
+                                  className="notif-action-btn decline"
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    handleDeclineRequest(n.requestId)
+                                    markNotificationRead(n.id)
+                                  }}
+                                >
+                                  Decline
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                          {!n.read && <span className="notif-dot" />}
+                        </div>
+                      )
+                    })
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ============ FRIENDS ============ */}
+          {currentView === "friends" && (
+            <div className="mb-view active">
+              <h1 className="mb-page-title">
+                <svg viewBox="0 0 24 24">
+                  <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" />
+                </svg>
+                Friends
+              </h1>
+
+              <div className="fr-page">
+                <div className="fr-tabs">
+                  <button
+                    className={`fr-tab${friendsTab === "requests" ? " active" : ""}`}
+                    onClick={() => setFriendsTab("requests")}
+                  >
+                    Requests
+                    {requests.length > 0 && (
+                      <span className="fr-tab-badge">{requests.length}</span>
+                    )}
+                  </button>
+                  <button
+                    className={`fr-tab${friendsTab === "sent" ? " active" : ""}`}
+                    onClick={() => setFriendsTab("sent")}
+                  >
+                    Sent
+                    {sentFriendRequests.filter((r) => r.status === "pending").length > 0 && (
+                      <span className="fr-tab-badge">
+                        {sentFriendRequests.filter((r) => r.status === "pending").length}
+                      </span>
+                    )}
+                  </button>
+                  <button
+                    className={`fr-tab${friendsTab === "all" ? " active" : ""}`}
+                    onClick={() => setFriendsTab("all")}
+                  >
+                    My Friends ({myFriends.length})
+                  </button>
+                  <button
+                    className={`fr-tab${friendsTab === "mutual" ? " active" : ""}`}
+                    onClick={() => setFriendsTab("mutual")}
+                  >
+                    Find Friends
+                  </button>
+                </div>
+
+                <div className="fr-body">
+                  {/* Requests tab */}
+                  {friendsTab === "requests" && (
+                    <>
+                      {requests.length === 0 ? (
+                        <div className="mb-empty">
+                          <svg viewBox="0 0 24 24">
+                            <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" />
+                          </svg>
+                          <b>No pending friend requests</b>
+                          <p>When someone sends you a request, it'll show up here.</p>
+                        </div>
+                      ) : (
+                        requests.map((r) => {
+                          const photo = avatarUrl(r.fromUser)
+                          return (
+                            <div className="fr-request-row" key={r.id}>
+                              <img
+                                src={photo}
+                                alt=""
+                                onClick={() => openUserProfile(r.from)}
+                              />
+                              <div className="fr-request-info">
+                                <div
+                                  className="fr-request-name"
+                                  onClick={() => openUserProfile(r.from)}
+                                >
+                                  {r.fromUser.name}
+                                  {isVerified(r.fromUser) && (
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="#22c55e">
+                                      <path d="M23 12l-2.44-2.79.34-3.69-3.61-.82-1.89-3.2L12 2.96 8.6 1.5 6.71 4.69l-3.61.82.34 3.69L1 12l2.44 2.79-.34 3.7 3.61.82L8.6 22.5l3.4-1.47 3.4 1.46 1.89-3.19 3.61-.82-.34-3.69L23 12zm-12.91 4.72l-3.8-3.81 1.48-1.48 2.32 2.33 5.85-5.87 1.48 1.48-7.33 7.35z" />
+                                    </svg>
+                                  )}
+                                </div>
+                                <div className="fr-request-mutual">Wants to be your friend</div>
+                              </div>
+                              <div className="fr-request-actions">
+                                <button
+                                  className="mb-btn mb-btn-primary"
+                                  onClick={() => handleAcceptRequest(r.id, r.from)}
+                                >
+                                  Confirm
+                                </button>
+                                <button
+                                  className="mb-btn mb-btn-secondary"
+                                  onClick={() => handleDeclineRequest(r.id)}
+                                >
+                                  Delete
+                                </button>
+                              </div>
+                            </div>
+                          )
+                        })
+                      )}
+                    </>
+                  )}
+
+                  {/* Sent tab */}
+                  {friendsTab === "sent" && (
+                    <>
+                      {sentFriendRequests.length === 0 ? (
+                        <div className="mb-empty">
+                          <svg viewBox="0 0 24 24">
+                            <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
+                          </svg>
+                          <b>No sent requests</b>
+                          <p>Requests you send will appear here.</p>
+                        </div>
+                      ) : (
+                        sentFriendRequests.map((r) => {
+                          const photo = avatarUrl(r.toUser)
+                          return (
+                            <div className="fr-request-row" key={r.id}>
+                              <img src={photo} alt="" onClick={() => openUserProfile(r.to)} />
+                              <div className="fr-request-info">
+                                <div
+                                  className="fr-request-name"
+                                  onClick={() => openUserProfile(r.to)}
+                                >
+                                  {r.toUser.name}
+                                </div>
+                                <div className="fr-request-mutual">
+                                  Status: {r.status === "pending" ? "Pending" : r.status === "accepted" ? "Accepted ✓" : "Declined"}
+                                </div>
+                              </div>
+                              <div className="fr-request-actions">
+                                {r.status === "pending" && (
+                                  <button
+                                    className="mb-btn mb-btn-secondary"
+                                    onClick={() => handleCancelRequest(r.to)}
+                                  >
+                                    Cancel
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+                          )
+                        })
+                      )}
+                    </>
+                  )}
+
+                  {/* My Friends tab */}
+                  {friendsTab === "all" && (
+                    <>
+                      <div className="mb-search-box" style={{ marginBottom: 14 }}>
+                        <svg viewBox="0 0 24 24">
+                          <path d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
+                        </svg>
+                        <input
+                          type="text"
+                          placeholder="Search your friends..."
+                          value={friendSearch}
+                          onChange={(e) => setFriendSearch(e.target.value)}
+                        />
+                      </div>
+                      {myFriends.length === 0 ? (
+                        <div className="mb-empty">
+                          <svg viewBox="0 0 24 24">
+                            <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" />
+                          </svg>
+                          <b>No friends yet</b>
+                          <p>Start sending friend requests to build your network!</p>
+                        </div>
+                      ) : (
+                        <div className="fr-grid">
+                          {myFriends
+                            .filter((f) => {
+                              const q = friendSearch.trim().toLowerCase()
+                              if (!q) return true
+                              return (f.name || "").toLowerCase().includes(q)
+                            })
+                            .map((f) => {
+                              const photo = avatarUrl(f)
+                              return (
+                                <div
+                                  className="fr-card"
+                                  key={f.uid}
+                                  onClick={() => openUserProfile(f.uid)}
+                                >
+                                  <img className="fr-card-img" src={photo} alt="" />
+                                  <div className="fr-card-info">
+                                    <div className="fr-card-name">
+                                      {f.name}
+                                      {isVerified(f) && " ✓"}
+                                    </div>
+                                    <div className="fr-card-mutual">
+                                      {getMutualFriends(f.uid)} mutual friends
+                                    </div>
+                                    <div className="fr-card-actions">
+                                      <button
+                                        className="mb-btn mb-btn-secondary"
+                                        onClick={(e) => {
+                                          e.stopPropagation()
+                                          startChat(f.uid, f.name, photo)
+                                        }}
+                                      >
+                                        Message
+                                      </button>
+                                    </div>
+                                  </div>
+                                </div>
+                              )
+                            })}
+                        </div>
+                      )}
+                    </>
+                  )}
+
+                  {/* Find Friends tab */}
+                  {friendsTab === "mutual" && (
+                    <>
+                      <div className="mb-search-box" style={{ marginBottom: 14 }}>
+                        <svg viewBox="0 0 24 24">
+                          <path d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
+                        </svg>
+                        <input
+                          type="text"
+                          placeholder="Search all MeBook users..."
+                          value={friendSearch}
+                          onChange={(e) => setFriendSearch(e.target.value)}
+                        />
+                      </div>
+                      {filteredFriends.length === 0 ? (
+                        <div className="mb-empty">
+                          <b>No users found</b>
+                          <p>Try a different search term.</p>
+                        </div>
+                      ) : (
+                        <div className="fr-grid">
+                          {filteredFriends.map((u) => {
+                            const photo = avatarUrl(u)
+                            const isFriend = myFriends.some((f) => f.uid === u.uid)
+                            const hasPendingSent = sentFriendRequests.some(
+                              (r) => r.to === u.uid && r.status === "pending"
+                            )
+                            return (
+                              <div
+                                className="fr-card"
+                                key={u.uid}
+                                onClick={() => openUserProfile(u.uid)}
+                              >
+                                <img className="fr-card-img" src={photo} alt="" />
+                                <div className="fr-card-info">
+                                  <div className="fr-card-name">
+                                    {u.name}
+                                    {isVerified(u) && " ✓"}
+                                  </div>
+                                  <div className="fr-card-mutual">
+                                    {getMutualFriends(u.uid)} mutual friends
+                                  </div>
+                                  <div className="fr-card-actions">
+                                    {isFriend ? (
+                                      <button className="mb-btn mb-btn-primary" disabled>
+                                        ✓ Friends
+                                      </button>
+                                    ) : hasPendingSent ? (
+                                      <button className="mb-btn mb-btn-secondary" disabled>
+                                        Sent ✓
+                                      </button>
+                                    ) : (
+                                      <button
+                                        className="mb-btn mb-btn-primary"
+                                        onClick={(e) => {
+                                          e.stopPropagation()
+                                          handleSendRequest(u.uid)
+                                        }}
+                                      >
+                                        Add Friend
+                                      </button>
+                                    )}
+                                    <button
+                                      className="mb-btn mb-btn-secondary"
+                                      onClick={(e) => {
+                                        e.stopPropagation()
+                                        startChat(u.uid, u.name, photo)
+                                      }}
+                                    >
+                                      Message
+                                    </button>
+                                  </div>
+                                </div>
+                              </div>
+                            )
+                          })}
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ============ USER PROFILE ============ */}
+          {currentView === "user-profile" && viewingUser && (
+            <div className="mb-view active">
+              <button className="mb-back-btn" onClick={goBack}>
+                <svg viewBox="0 0 24 24">
+                  <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" />
+                </svg>
+                Back
+              </button>
+              <div className="mb-profile-head">
+                <div className="mb-profile-cover">
+                  <img
+                    src={
+                      viewingUser.coverURL ||
+                      "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=1200&q=80"
+                    }
+                    alt="Cover"
+                  />
+                </div>
+                <div className="mb-profile-info">
+                  <div className="mb-profile-avatar-wrap">
+                    <img src={avatarUrl(viewingUser)} alt="Profile" />
+                  </div>
+                  <div className="mb-profile-text">
+                    <div className="mb-profile-name">
+                      {viewingUser.name}
+                      {isVerified(viewingUser) && (
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="#22c55e">
+                          <path d="M23 12l-2.44-2.79.34-3.69-3.61-.82-1.89-3.2L12 2.96 8.6 1.5 6.71 4.69l-3.61.82.34 3.69L1 12l2.44 2.79-.34 3.7 3.61.82L8.6 22.5l3.4-1.47 3.4 1.46 1.89-3.19 3.61-.82-.34-3.69L23 12zm-12.91 4.72l-3.8-3.81 1.48-1.48 2.32 2.33 5.85-5.87 1.48 1.48-7.33 7.35z" />
+                        </svg>
+                      )}
+                    </div>
+                    <div className="mb-profile-bio">
+                      {viewingUser.bio || "Movie lover 🎬"}
+                    </div>
+                    {viewingUser.location && (
+                      <div className="mb-profile-bio">📍 {viewingUser.location}</div>
+                    )}
+                    <div className="mb-profile-stats">
+                      <div className="mb-profile-stat">
+                        <b>{viewingUserPosts.length}</b> posts
+                      </div>
+                      <div className="mb-profile-stat">
+                        <b>{getMutualFriends(viewingUser.uid)}</b> mutual friends
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div className="mb-profile-actions">
+                  {myFriends.some((f) => f.uid === viewingUser.uid) ? (
+                    <button className="mb-btn mb-btn-primary" disabled>
+                      ✓ Friends
+                    </button>
+                  ) : sentRequests[viewingUser.uid] === "sending" ? (
+                    <button className="mb-btn mb-friend-btn sending" disabled>
+                      Sending...
+                    </button>
+                  ) : sentFriendRequests.some(
+                      (r) => r.to === viewingUser.uid && r.status === "pending"
+                    ) ? (
+                    <button
+                      className="mb-btn mb-btn-secondary"
+                      onClick={() => handleCancelRequest(viewingUser.uid)}
+                    >
+                      Cancel Request
+                    </button>
+                  ) : (
+                    <button
+                      className="mb-btn mb-btn-primary"
+                      onClick={() => handleSendRequest(viewingUser.uid)}
+                    >
+                      ＋ Add Friend
+                    </button>
+                  )}
+                  <button
+                    className="mb-btn mb-btn-secondary"
+                    onClick={() =>
+                      startChat(viewingUser.uid, viewingUser.name, avatarUrl(viewingUser))
+                    }
+                  >
+                    💬 Message
+                  </button>
+                </div>
+              </div>
+
+              <div className="mb-card-title" style={{ fontSize: 18, marginBottom: 10 }}>
+                Posts ({viewingUserPosts.length})
+              </div>
+              <div>
+                {viewingUserPosts.length === 0 ? (
+                  <div className="mb-empty">
+                    <svg viewBox="0 0 24 24">
+                      <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z" />
+                    </svg>
+                    <b>No posts yet</b>
+                    <p style={{ fontSize: 14, marginTop: 4 }}>
+                      This user hasn't posted anything
+                    </p>
+                  </div>
+                ) : (
+                  viewingUserPosts.map((p) => renderPost(p))
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* ============ MESSAGES ============ */}
+          {currentView === "messages" && (
+            <div className="mb-view active">
+              <h1 className="mb-page-title" style={{ marginBottom: 12 }}>
+                <svg viewBox="0 0 24 24">
+                  <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z" />
+                </svg>
+                Messages
+              </h1>
+              <div
+                className={`msgr-wrap ${
+                  mobileChatWindow && chatPartner ? "mobile-on-window" : "mobile-on-list"
+                }`}
+              >
+                <div className="msgr-list">
+                  <div className="msgr-list-head">
+                    <span>Chats</span>
+                  </div>
+
+                  {onlineList.length > 0 && (
+                    <>
+                      <div className="msgr-section">Online now</div>
+                      <div className="msgr-online-row">
+                        {onlineList.map((u) => {
+                          const photo = avatarUrl(u)
+                          return (
+                            <div
+                              key={u.uid}
+                              className="msgr-online-item"
+                              onClick={() => startChat(u.uid, u.name, photo)}
+                            >
+                              <div className="msgr-online-avatar-wrap">
+                                <img src={photo} alt="" />
+                                <span className="msgr-online-dot" />
+                              </div>
+                              <div className="msgr-online-name">
+                                {u.name?.split(" ")[0]}
+                              </div>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    </>
+                  )}
+
+                  <div className="msgr-section">Recent</div>
+                  {chats.length === 0 ? (
+                    <div
+                      style={{
+                        padding: 20,
+                        color: "var(--text-muted)",
+                        fontSize: 14,
+                        textAlign: "center",
+                      }}
+                    >
+                      No conversations yet. Start one from Friends page!
+                    </div>
+                  ) : (
+                    chats.map((c) => {
+                      const photo = avatarUrl(c.other)
+                      const isActive = activeChat === c.id
+                      return (
+                        <div
+                          className={`msgr-item ${isActive ? "active" : ""}`}
+                          key={c.id}
+                          onClick={() => openChat(c.id, c.otherId, c.other)}
+                        >
+                          <div className="msgr-item-avatar-wrap">
+                            <img src={photo} alt="" />
+                            <span className="msgr-item-dot" />
+                          </div>
+                          <div className="msgr-item-body">
+                            <div className="msgr-item-name">{c.other.name}</div>
+                            <div className={`msgr-item-last ${unreadCount > 0 ? "unread" : ""}`}>
+                              {(c.last as any)?.text || "Say hi 👋"}
+                            </div>
+                          </div>
+                          <div className="msgr-item-time">
+                            {c.lastAt ? timeShort(c.lastAt) : ""}
+                          </div>
+                        </div>
+                      )
+                    })
+                  )}
+                </div>
+
+                <div className="msgr-window">
+                  {!activeChat || !chatPartner ? (
+                    <div className="msgr-empty">
+                      <svg viewBox="0 0 24 24">
+                        <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z" />
+                      </svg>
+                      <b>Select a conversation</b>
+                      <p>Choose someone from the list to start chatting</p>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="msgr-head">
+                        <button
+                          className="msgr-head-back"
+                          onClick={() => setMobileChatWindow(false)}
+                        >
+                          <svg viewBox="0 0 24 24">
+                            <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" />
+                          </svg>
+                        </button>
+                        <img src={avatarUrl(chatPartner)} alt="" />
+                        <div className="msgr-head-info">
+                          <div className="msgr-head-name">{chatPartner.name}</div>
+                          <div className="msgr-head-status">
+                            <span className="dot" />
+                            Active now
+                          </div>
+                        </div>
+                        <button
+                          className="msgr-head-btn"
+                          onClick={() => openUserProfile(chatPartner.uid)}
+                        >
+                          <svg viewBox="0 0 24 24">
+                            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                          </svg>
+                        </button>
+                      </div>
+                      <div className="msgr-body" id="mebook-chat-body">
+                        {chatMessages.length === 0 ? (
+                          <div className="msgr-empty" style={{ padding: 40 }}>
+                            <b>No messages yet</b>
+                            <p>Say hi 👋</p>
+                          </div>
+                        ) : (
+                          chatMessages.map((m, idx) => {
+                            const mine = m.from === user.uid
+                            const prevMsg = idx > 0 ? chatMessages[idx - 1] : null
+                            const showAvatar =
+                              !mine && (!prevMsg || prevMsg.from !== m.from)
+                            return (
+                              <div
+                                key={m.id}
+                                className={`msgr-bubble-wrap ${mine ? "me" : "them"} ${
+                                  showAvatar ? "show-avatar" : ""
+                                }`}
+                              >
+                                {!mine && (
+                                  <img
+                                    className="msgr-bubble-avatar"
+                                    src={avatarUrl(chatPartner)}
+                                    alt=""
+                                  />
+                                )}
+                                <div className={`msgr-bubble ${mine ? "me" : "them"}`}>
+                                  {m.text}
+                                </div>
+                              </div>
+                            )
+                          })
+                        )}
+                      </div>
+                      <div className="msgr-input">
+                        <textarea
+                          className="msgr-input-field"
+                          placeholder="Aa"
+                          rows={1}
+                          value={chatInput}
+                          onChange={(e) => setChatInput(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" && !e.shiftKey) {
+                              e.preventDefault()
+                              handleSendMessage()
+                            }
+                          }}
+                        />
+                        <button
+                          className="msgr-input-send"
+                          onClick={handleSendMessage}
+                          disabled={!chatInput.trim()}
+                        >
+                          <svg viewBox="0 0 24 24">
+                            <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
+                          </svg>
+                        </button>
+                      </div>
+                    </>
+                  )}
+                </div>
               </div>
             </div>
           )}
@@ -2759,526 +3828,6 @@ export default function MeBookPage() {
             )
           })()}
 
-          {/* ============ USER PROFILE ============ */}
-          {currentView === "user-profile" && viewingUser && (
-            <div className="mb-view active">
-              <button className="mb-back-btn" onClick={goBack}>
-                <svg viewBox="0 0 24 24">
-                  <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" />
-                </svg>
-                Back
-              </button>
-              <div className="mb-profile-head">
-                <div className="mb-profile-cover">
-                  <img
-                    src={
-                      viewingUser.coverURL ||
-                      "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=1200&q=80"
-                    }
-                    alt="Cover"
-                  />
-                </div>
-                <div className="mb-profile-info">
-                  <div className="mb-profile-avatar-wrap">
-                    <img src={avatarUrl(viewingUser)} alt="Profile" />
-                  </div>
-                  <div className="mb-profile-text">
-                    <div className="mb-profile-name">
-                      {viewingUser.name}
-                      {isVerified(viewingUser) && (
-                        <svg width="22" height="22" viewBox="0 0 24 24" fill="#22c55e">
-                          <path d="M23 12l-2.44-2.79.34-3.69-3.61-.82-1.89-3.2L12 2.96 8.6 1.5 6.71 4.69l-3.61.82.34 3.69L1 12l2.44 2.79-.34 3.7 3.61.82L8.6 22.5l3.4-1.47 3.4 1.46 1.89-3.19 3.61-.82-.34-3.69L23 12zm-12.91 4.72l-3.8-3.81 1.48-1.48 2.32 2.33 5.85-5.87 1.48 1.48-7.33 7.35z" />
-                        </svg>
-                      )}
-                    </div>
-                    <div className="mb-profile-bio">
-                      {viewingUser.bio || "Movie lover 🎬"}
-                    </div>
-                    {viewingUser.location && (
-                      <div className="mb-profile-bio">📍 {viewingUser.location}</div>
-                    )}
-                  </div>
-                </div>
-                <div className="mb-profile-actions">
-                  {!sentRequests[viewingUser.uid] ? (
-                    <button
-                      className="mb-btn mb-btn-primary"
-                      onClick={() => handleSendRequest(viewingUser.uid)}
-                    >
-                      ＋ Add Friend
-                    </button>
-                  ) : sentRequests[viewingUser.uid] === "sending" ? (
-                    <button className="mb-btn mb-friend-btn sending" disabled>
-                      Sending...
-                    </button>
-                  ) : (
-                    <>
-                      <button
-                        className="mb-btn mb-btn-secondary"
-                        onClick={() => handleCancelRequest(viewingUser.uid)}
-                      >
-                        Cancel
-                      </button>
-                      <button className="mb-btn mb-btn-primary" disabled>
-                        ✓ Request Sent
-                      </button>
-                    </>
-                  )}
-                  <button
-                    className="mb-btn mb-btn-secondary"
-                    onClick={() =>
-                      startChat(viewingUser.uid, viewingUser.name, avatarUrl(viewingUser))
-                    }
-                  >
-                    💬 Message
-                  </button>
-                </div>
-              </div>
-
-              <div className="mb-card-title" style={{ fontSize: 18, marginBottom: 10 }}>
-                Posts ({viewingUserPosts.length})
-              </div>
-              <div>
-                {viewingUserPosts.length === 0 ? (
-                  <div className="mb-empty">
-                    <svg viewBox="0 0 24 24">
-                      <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z" />
-                    </svg>
-                    <b>No posts yet</b>
-                    <p style={{ fontSize: 14, marginTop: 4 }}>
-                      This user hasn't posted anything
-                    </p>
-                  </div>
-                ) : (
-                  viewingUserPosts.map((p) => renderPost(p))
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* ============ FRIENDS ============ */}
-          {currentView === "friends" && (
-            <div className="mb-view active">
-              <h1 className="mb-page-title">
-                <svg viewBox="0 0 24 24">
-                  <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" />
-                </svg>
-                Friends
-              </h1>
-              <div className="mb-search-box">
-                <svg viewBox="0 0 24 24">
-                  <path d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
-                </svg>
-                <input
-                  type="text"
-                  placeholder="Search all MeBook users..."
-                  value={friendSearch}
-                  onChange={(e) => setFriendSearch(e.target.value)}
-                />
-              </div>
-
-              <div className="mb-card" style={{ marginBottom: 16 }}>
-                <div className="mb-card-title">Friend Requests</div>
-                <div>
-                  {requests.length === 0 ? (
-                    <div style={{ color: "var(--text-muted)", fontSize: 14, padding: 4 }}>
-                      No pending friend requests.
-                    </div>
-                  ) : (
-                    requests.map((r) => {
-                      const photo = avatarUrl(r.fromUser)
-                      return (
-                        <div className="mb-contact" key={r.id} style={{ padding: "10px 6px" }}>
-                          <img src={photo} alt="" />
-                          <div style={{ flex: 1, minWidth: 0 }}>
-                            <div className="mb-contact-name">{r.fromUser.name}</div>
-                            <div style={{ fontSize: 12.5, color: "var(--text-muted)" }}>
-                              Wants to be friends
-                            </div>
-                          </div>
-                          <button
-                            className="mb-btn mb-btn-primary"
-                            style={{ width: "auto", padding: "7px 14px", fontSize: 13 }}
-                            onClick={() => handleAcceptRequest(r.id, r.from)}
-                          >
-                            Accept
-                          </button>
-                          <button
-                            className="mb-btn mb-btn-secondary"
-                            style={{ width: "auto", padding: "7px 14px", fontSize: 13 }}
-                            onClick={() => handleDeclineRequest(r.id)}
-                          >
-                            Decline
-                          </button>
-                        </div>
-                      )
-                    })
-                  )}
-                </div>
-              </div>
-
-              {myFriends.length > 0 && (
-                <div className="mb-card" style={{ marginBottom: 16 }}>
-                  <div className="mb-card-title">My Friends</div>
-                  <div>
-                    {myFriends.map((f) => {
-                      const photo = avatarUrl(f)
-                      return (
-                        <div className="mb-contact" key={f.uid}>
-                          <img src={photo} alt="" onClick={() => openUserProfile(f.uid)} />
-                          <div
-                            className="mb-contact-name"
-                            onClick={() => openUserProfile(f.uid)}
-                            style={{ cursor: "pointer" }}
-                          >
-                            {f.name}
-                          </div>
-                          <button
-                            className="mb-btn mb-btn-secondary"
-                            style={{ width: "auto", padding: "6px 12px", fontSize: 12.5 }}
-                            onClick={() => startChat(f.uid, f.name, photo)}
-                          >
-                            Message
-                          </button>
-                        </div>
-                      )
-                    })}
-                  </div>
-                </div>
-              )}
-
-              <div className="mb-card-title" style={{ fontSize: 18, marginBottom: 10 }}>
-                All MeBook Users
-              </div>
-              <div className="mb-friends-grid">
-                {filteredFriends.length === 0 ? (
-                  <div className="mb-empty" style={{ gridColumn: "1/-1" }}>
-                    No users found.
-                  </div>
-                ) : (
-                  filteredFriends.map((u) => renderFriendCard(u))
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* ============ MESSAGES ============ */}
-          {currentView === "messages" && (
-            <div className="mb-view active">
-              <h1 className="mb-page-title" style={{ marginBottom: 12 }}>
-                <svg viewBox="0 0 24 24">
-                  <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z" />
-                </svg>
-                Messages
-              </h1>
-              <div
-                className={`msgr-wrap ${
-                  mobileChatWindow && chatPartner ? "mobile-on-window" : "mobile-on-list"
-                }`}
-              >
-                <div className="msgr-list">
-                  <div className="msgr-list-head">
-                    <span>Chats</span>
-                  </div>
-
-                  {onlineList.length > 0 && (
-                    <>
-                      <div className="msgr-section">Online now</div>
-                      <div className="msgr-online-row">
-                        {onlineList.map((u) => {
-                          const photo = avatarUrl(u)
-                          return (
-                            <div
-                              key={u.uid}
-                              className="msgr-online-item"
-                              onClick={() => startChat(u.uid, u.name, photo)}
-                            >
-                              <div className="msgr-online-avatar-wrap">
-                                <img src={photo} alt="" />
-                                <span className="msgr-online-dot" />
-                              </div>
-                              <div className="msgr-online-name">
-                                {u.name?.split(" ")[0]}
-                              </div>
-                            </div>
-                          )
-                        })}
-                      </div>
-                    </>
-                  )}
-
-                  <div className="msgr-section">Recent</div>
-                  {chats.length === 0 ? (
-                    <div
-                      style={{
-                        padding: 20,
-                        color: "var(--text-muted)",
-                        fontSize: 14,
-                        textAlign: "center",
-                      }}
-                    >
-                      No conversations yet. Start one from Friends page!
-                    </div>
-                  ) : (
-                    chats.map((c) => {
-                      const photo = avatarUrl(c.other)
-                      const isActive = activeChat === c.id
-                      return (
-                        <div
-                          className={`msgr-item ${isActive ? "active" : ""}`}
-                          key={c.id}
-                          onClick={() => openChat(c.id, c.otherId, c.other)}
-                        >
-                          <div className="msgr-item-avatar-wrap">
-                            <img src={photo} alt="" />
-                            <span className="msgr-item-dot" />
-                          </div>
-                          <div className="msgr-item-body">
-                            <div className="msgr-item-name">{c.other.name}</div>
-                            <div className={`msgr-item-last ${unreadCount > 0 ? "unread" : ""}`}>
-                              {(c.last as any)?.text || "Say hi 👋"}
-                            </div>
-                          </div>
-                          <div className="msgr-item-time">
-                            {c.lastAt ? timeShort(c.lastAt) : ""}
-                          </div>
-                        </div>
-                      )
-                    })
-                  )}
-                </div>
-
-                <div className="msgr-window">
-                  {!activeChat || !chatPartner ? (
-                    <div className="msgr-empty">
-                      <svg viewBox="0 0 24 24">
-                        <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z" />
-                      </svg>
-                      <b>Select a conversation</b>
-                      <p>Choose someone from the list to start chatting</p>
-                    </div>
-                  ) : (
-                    <>
-                      <div className="msgr-head">
-                        <button
-                          className="msgr-head-back"
-                          onClick={() => setMobileChatWindow(false)}
-                        >
-                          <svg viewBox="0 0 24 24">
-                            <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" />
-                          </svg>
-                        </button>
-                        <img src={avatarUrl(chatPartner)} alt="" />
-                        <div className="msgr-head-info">
-                          <div className="msgr-head-name">{chatPartner.name}</div>
-                          <div className="msgr-head-status">
-                            <span className="dot" />
-                            Active now
-                          </div>
-                        </div>
-                        <button
-                          className="msgr-head-btn"
-                          onClick={() => openUserProfile(chatPartner.uid)}
-                        >
-                          <svg viewBox="0 0 24 24">
-                            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
-                          </svg>
-                        </button>
-                      </div>
-                      <div className="msgr-body" id="mebook-chat-body">
-                        {chatMessages.length === 0 ? (
-                          <div className="msgr-empty" style={{ padding: 40 }}>
-                            <b>No messages yet</b>
-                            <p>Say hi 👋</p>
-                          </div>
-                        ) : (
-                          chatMessages.map((m, idx) => {
-                            const mine = m.from === user.uid
-                            const prevMsg = idx > 0 ? chatMessages[idx - 1] : null
-                            const showAvatar =
-                              !mine && (!prevMsg || prevMsg.from !== m.from)
-                            return (
-                              <div
-                                key={m.id}
-                                className={`msgr-bubble-wrap ${mine ? "me" : "them"} ${
-                                  showAvatar ? "show-avatar" : ""
-                                }`}
-                              >
-                                {!mine && (
-                                  <img
-                                    className="msgr-bubble-avatar"
-                                    src={avatarUrl(chatPartner)}
-                                    alt=""
-                                  />
-                                )}
-                                <div className={`msgr-bubble ${mine ? "me" : "them"}`}>
-                                  {m.text}
-                                </div>
-                              </div>
-                            )
-                          })
-                        )}
-                      </div>
-                      <div className="msgr-input">
-                        <textarea
-                          className="msgr-input-field"
-                          placeholder="Aa"
-                          rows={1}
-                          value={chatInput}
-                          onChange={(e) => setChatInput(e.target.value)}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter" && !e.shiftKey) {
-                              e.preventDefault()
-                              handleSendMessage()
-                            }
-                          }}
-                        />
-                        <button
-                          className="msgr-input-send"
-                          onClick={handleSendMessage}
-                          disabled={!chatInput.trim()}
-                        >
-                          <svg viewBox="0 0 24 24">
-                            <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
-                          </svg>
-                        </button>
-                      </div>
-                    </>
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* ============ MEBOOK ============ */}
-          {currentView === "mebook" && (
-            <div className="mb-view active">
-              <div className="mb-mebook-hero">
-                <h2>📖 Welcome to MeBook</h2>
-                <p>Your personal movie library, watchlist, and review hub.</p>
-                <span className="mb-mebook-badge">🎬 Powered by MeBook Community</span>
-              </div>
-              <div className="mb-mebook-grid">
-                <div className="mb-mebook-stat">
-                  <div className="num">128</div>
-                  <div className="lbl">Movies Reviewed</div>
-                </div>
-                <div className="mb-mebook-stat">
-                  <div className="num">42</div>
-                  <div className="lbl">In Watchlist</div>
-                </div>
-                <div className="mb-mebook-stat">
-                  <div className="num">17</div>
-                  <div className="lbl">Reviews Written</div>
-                </div>
-                <div className="mb-mebook-stat">
-                  <div className="num">9</div>
-                  <div className="lbl">Favorites</div>
-                </div>
-              </div>
-              <div className="mb-mebook-tabs">
-                {[
-                  { id: "featured", label: "⭐ Featured" },
-                  { id: "watchlist", label: "📌 Watchlist" },
-                  { id: "favorites", label: "❤️ Favorites" },
-                  { id: "notes", label: "📝 My Notes" },
-                ].map((t) => (
-                  <button
-                    key={t.id}
-                    className={`mb-mebook-tab ${mebookTab === t.id ? "active" : ""}`}
-                    onClick={() => {
-                      setMebookTab(t.id)
-                      if (t.id !== "featured")
-                        showToast("Coming soon", `${t.label} is under development`, "info")
-                    }}
-                  >
-                    {t.label}
-                  </button>
-                ))}
-              </div>
-              <div className="mb-card" style={{ marginBottom: 16 }}>
-                <div className="mb-card-title">🎬 Editor's Picks This Week</div>
-                <div className="mb-mebook-list">
-                  {[
-                    { img: "https://image.tmdb.org/t/p/w200/8cdWjvZQUExUUTzyp4t6EDMubfO.jpg", seed: "dune", title: "Dune: Part Two", desc: "Paul Atreides unites with Chani and the Fremen while seeking revenge.", meta: "⭐ 8.7 • Sci-Fi • 2024" },
-                    { img: "https://image.tmdb.org/t/p/w200/iuFNMS8U5cb6xfzi51Dbkovj7vM.jpg", seed: "oppen", title: "Oppenheimer", desc: "The story of J. Robert Oppenheimer and the atomic bomb.", meta: "⭐ 8.5 • Biography • 2023" },
-                    { img: "https://image.tmdb.org/t/p/w200/1E5baAaEse26fej7uHcjOgEE2t2.jpg", seed: "inter", title: "Interstellar", desc: "Explorers travel through a wormhole in search of a new home.", meta: "⭐ 8.7 • Adventure • 2014" },
-                    { img: "https://image.tmdb.org/t/p/w200/gEU2QniE6E77NI6lCU6MxlNBvIx.jpg", seed: "incept", title: "Inception", desc: "A thief plants an idea in a target's subconscious.", meta: "⭐ 8.8 • Sci-Fi • 2010" },
-                  ].map((m) => (
-                    <div className="mb-mebook-item" key={m.title}>
-                      <img
-                        src={m.img}
-                        onError={(e) => {
-                          ;(e.target as HTMLImageElement).src = `https://picsum.photos/seed/${m.seed}/200/260`
-                        }}
-                      />
-                      <div className="mb-mebook-item-body">
-                        <div className="mb-mebook-item-title">{m.title}</div>
-                        <div className="mb-mebook-item-desc">{m.desc}</div>
-                        <div className="mb-mebook-item-meta">{m.meta}</div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-              <div className="mb-card">
-                <div className="mb-card-title">💡 Quick Actions</div>
-                <div className="mb-mebook-list">
-                  <div className="mb-mebook-item" onClick={openCreatePost}>
-                    <div
-                      style={{
-                        width: 64,
-                        height: 84,
-                        background: "linear-gradient(135deg,#16a34a,#0f172a)",
-                        borderRadius: 8,
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        flexShrink: 0,
-                      }}
-                    >
-                      <svg width="28" height="28" viewBox="0 0 24 24" fill="#fff">
-                        <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
-                      </svg>
-                    </div>
-                    <div className="mb-mebook-item-body">
-                      <div className="mb-mebook-item-title">Add New Review</div>
-                      <div className="mb-mebook-item-desc">
-                        Share your thoughts on a movie you just watched.
-                      </div>
-                      <div className="mb-mebook-item-meta">Tap to create →</div>
-                    </div>
-                  </div>
-                  <div className="mb-mebook-item" onClick={() => goTo("community")}>
-                    <div
-                      style={{
-                        width: 64,
-                        height: 84,
-                        background: "linear-gradient(135deg,#8b5cf6,#0f172a)",
-                        borderRadius: 8,
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        flexShrink: 0,
-                      }}
-                    >
-                      <svg width="28" height="28" viewBox="0 0 24 24" fill="#fff">
-                        <path d="M21 6h-2v9H6v2c0 .55.45 1 1 1h11l4 4V7c0-.55-.45-1-1-1zm-4 6V3c0-.55-.45-1-1-1H3c-.55 0-1 .45-1 1v14l4-4h10c.55 0 1-.45 1-1z" />
-                      </svg>
-                    </div>
-                    <div className="mb-mebook-item-body">
-                      <div className="mb-mebook-item-title">Visit Community</div>
-                      <div className="mb-mebook-item-desc">
-                        See what other movie lovers are talking about.
-                      </div>
-                      <div className="mb-mebook-item-meta">Explore →</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
           {/* ============ PROFILE ============ */}
           {currentView === "profile" && (
             <div className="mb-view active">
@@ -3317,6 +3866,14 @@ export default function MeBookPage() {
                       )}
                     </div>
                     <div className="mb-profile-bio">{profile.bio || "Movie lover 🎬"}</div>
+                    <div className="mb-profile-stats">
+                      <div className="mb-profile-stat">
+                        <b>{myPosts.length}</b> posts
+                      </div>
+                      <div className="mb-profile-stat">
+                        <b>{myFriends.length}</b> friends
+                      </div>
+                    </div>
                   </div>
                 </div>
                 <div className="mb-profile-actions">
@@ -3325,6 +3882,12 @@ export default function MeBookPage() {
                   </button>
                   <button className="mb-btn mb-btn-secondary" onClick={openEditProfile}>
                     Edit Profile
+                  </button>
+                  <button
+                    className="mb-btn mb-btn-secondary"
+                    onClick={() => goTo("friends")}
+                  >
+                    View Friends
                   </button>
                 </div>
               </div>
@@ -3568,6 +4131,90 @@ export default function MeBookPage() {
             </div>
           )}
 
+          {/* ============ MEBOOK ============ */}
+          {currentView === "mebook" && (
+            <div className="mb-view active">
+              <div className="mb-mebook-hero">
+                <h2>📖 Welcome to MeBook</h2>
+                <p>Your personal movie library, watchlist, and review hub.</p>
+                <span className="mb-mebook-badge">🎬 Powered by MeBook Community</span>
+              </div>
+              <div className="mb-mebook-grid">
+                <div className="mb-mebook-stat">
+                  <div className="num">{myPosts.length}</div>
+                  <div className="lbl">My Posts</div>
+                </div>
+                <div className="mb-mebook-stat">
+                  <div className="num">{myFriends.length}</div>
+                  <div className="lbl">Friends</div>
+                </div>
+                <div className="mb-mebook-stat">
+                  <div className="num">{feed.length}</div>
+                  <div className="lbl">Feed Posts</div>
+                </div>
+                <div className="mb-mebook-stat">
+                  <div className="num">{requests.length}</div>
+                  <div className="lbl">Pending Requests</div>
+                </div>
+              </div>
+              <div className="mb-card" style={{ marginBottom: 16 }}>
+                <div className="mb-card-title">🎬 Quick Actions</div>
+                <div className="mb-mebook-list">
+                  <div className="mb-mebook-item" onClick={openCreatePost}>
+                    <div
+                      style={{
+                        width: 64,
+                        height: 84,
+                        background: "linear-gradient(135deg,#16a34a,#0f172a)",
+                        borderRadius: 8,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        flexShrink: 0,
+                      }}
+                    >
+                      <svg width="28" height="28" viewBox="0 0 24 24" fill="#fff">
+                        <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
+                      </svg>
+                    </div>
+                    <div className="mb-mebook-item-body">
+                      <div className="mb-mebook-item-title">Add New Review</div>
+                      <div className="mb-mebook-item-desc">
+                        Share your thoughts on a movie you just watched.
+                      </div>
+                      <div className="mb-mebook-item-meta">Tap to create →</div>
+                    </div>
+                  </div>
+                  <div className="mb-mebook-item" onClick={() => goTo("community")}>
+                    <div
+                      style={{
+                        width: 64,
+                        height: 84,
+                        background: "linear-gradient(135deg,#8b5cf6,#0f172a)",
+                        borderRadius: 8,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        flexShrink: 0,
+                      }}
+                    >
+                      <svg width="28" height="28" viewBox="0 0 24 24" fill="#fff">
+                        <path d="M21 6h-2v9H6v2c0 .55.45 1 1 1h11l4 4V7c0-.55-.45-1-1-1zm-4 6V3c0-.55-.45-1-1-1H3c-.55 0-1 .45-1 1v14l4-4h10c.55 0 1-.45 1-1z" />
+                      </svg>
+                    </div>
+                    <div className="mb-mebook-item-body">
+                      <div className="mb-mebook-item-title">Visit Community</div>
+                      <div className="mb-mebook-item-desc">
+                        See what other movie lovers are talking about.
+                      </div>
+                      <div className="mb-mebook-item-meta">Explore →</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* ============ COMMUNITY ============ */}
           {currentView === "community" && (
             <div className="mb-view active">
@@ -3576,7 +4223,7 @@ export default function MeBookPage() {
                 <p>Official posts, announcements and featured reviews from the MeBook team.</p>
               </div>
               <div>
-                {communityFeed.length === 0 ? (
+                {communityFeed.filter((p) => p.isOfficial === true).length === 0 ? (
                   renderPost({
                     id: "comm-1",
                     authorId: "admin",
@@ -3594,7 +4241,9 @@ export default function MeBookPage() {
                     timeText: "just now",
                   })
                 ) : (
-                  communityFeed.map((p) => renderPost(p))
+                  communityFeed
+                    .filter((p) => p.isOfficial === true)
+                    .map((p) => renderPost(p))
                 )}
               </div>
             </div>
@@ -3662,12 +4311,14 @@ function SideItem({
   active,
   onClick,
   icon,
+  badge,
 }: {
   id: string
   label: string
   active: boolean
   onClick: (id: string) => void
   icon?: React.ReactNode
+  badge?: number
 }) {
   return (
     <button
@@ -3682,6 +4333,7 @@ function SideItem({
         )}
       </span>
       {label}
+      {badge && badge > 0 ? <span className="mb-side-badge">{badge}</span> : null}
     </button>
   )
-      }
+    }

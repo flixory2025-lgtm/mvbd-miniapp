@@ -81,9 +81,7 @@ CONSTANTS
 const CLOUD_NAME = "xtbkyhrl"
 const UPLOAD_PRESET = "MeBook"
 
-// ✅ New official logo (used everywhere in the app)
 const LOGO_URL = "https://i.postimg.cc/g0pGNkxc/file-000000000bf482118c249820a099f2d4.png"
-// ✅ Header brand logo (used next to "MeBook" text in header)
 const HEADER_LOGO = "https://i.postimg.cc/rsBBsQWF/17832-removebg-preview.png"
 
 /* ============================================================
@@ -173,16 +171,79 @@ transition:background .3s ease,color .3s ease;
 font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
 -webkit-font-smoothing:antialiased;
 }
+
+/* ============ DARK MODE — LIQUID BLACK ============ */
 .mebook-root.dark-mode{
 --green:#22c55e;--green-dark:#4ade80;--green-light:#86efac;
---bg:#0a0f1a;--card:#111827;--text:#f3f4f6;--text-muted:#9ca3af;
---border:#2d3748;--hover:#1f2937;
---shadow:0 1px 2px rgba(0,0,0,.4),0 2px 8px rgba(0,0,0,.3);
---shadow-lg:0 12px 32px rgba(0,0,0,.5);
---input-bg:#1f2937;
---header-bg:linear-gradient(135deg,#000000 0%,#020617 100%);
---chat-body-bg:#0f172a;--bubble-them-bg:#1f2937;
+--bg:#000000;--card:#0a0a0a;--text:#f5f5f5;--text-muted:#8a8a8a;
+--border:#1a1a1a;--hover:#141414;
+--shadow:0 1px 2px rgba(0,0,0,.8),0 2px 8px rgba(0,0,0,.6);
+--shadow-lg:0 12px 32px rgba(0,0,0,.9);
+--input-bg:#141414;
+--header-bg:linear-gradient(135deg,#000000 0%,#000000 100%);
+--chat-body-bg:#000000;--bubble-them-bg:#141414;
+background:#000000;
 }
+.mebook-root.dark-mode .mb-card{background:#0a0a0a;border:1px solid #151515;}
+.mebook-root.dark-mode .mb-post{background:#0a0a0a;border:1px solid #151515;}
+.mebook-root.dark-mode .mb-composer{background:#0a0a0a;border:1px solid #151515;}
+.mebook-root.dark-mode .mb-profile-head{background:#0a0a0a;border:1px solid #151515;}
+.mebook-root.dark-mode .fr-page{background:#0a0a0a;border:1px solid #151515;}
+.mebook-root.dark-mode .fr-card{background:#141414;}
+.mebook-root.dark-mode .notif-page-wrap{background:#0a0a0a;border:1px solid #151515;}
+.mebook-root.dark-mode .cmt-page-wrap{background:#0a0a0a;border:1px solid #151515;}
+.mebook-root.dark-mode .share-page-wrap{background:#0a0a0a;border:1px solid #151515;}
+.mebook-root.dark-mode .msgr-wrap{background:#0a0a0a;border:1px solid #151515;}
+.mebook-root.dark-mode .msgr-list{border-color:#151515;}
+.mebook-root.dark-mode .msgr-window{background:#0a0a0a;}
+.mebook-root.dark-mode .msgr-head{background:#0a0a0a;border-color:#151515;}
+.mebook-root.dark-mode .msgr-input{background:#0a0a0a;border-color:#151515;}
+.mebook-root.dark-mode .mb-right .mb-card{background:#0a0a0a;}
+.mebook-root.dark-mode .cp-card{background:#0a0a0a;border:1px solid #151515;}
+.mebook-root.dark-mode .cp-movie-tag{background:rgba(34,197,94,.08);border-color:rgba(34,197,94,.2);}
+.mebook-root.dark-mode .cmt-bubble{background:#141414;}
+.mebook-root.dark-mode .share-preview{background:#141414;}
+.mebook-root.dark-mode .share-caption{background:#141414;}
+.mebook-root.dark-mode .share-option{background:#141414;}
+.mebook-root.dark-mode .share-option:hover{background:#1e1e1e;}
+.mebook-root.dark-mode .mb-menu{background:#0a0a0a;border:1px solid #1a1a1a;}
+.mebook-root.dark-mode .mb-menu-ico{background:#141414;}
+.mebook-root.dark-mode .mb-menu-item:hover{background:#141414;}
+.mebook-root.dark-mode .mb-toast{background:#0a0a0a;border:1px solid #1a1a1a;}
+.mebook-root.dark-mode .mb-empty{background:#0a0a0a;border:1px solid #151515;}
+.mebook-root.dark-mode .mb-setting-ico{background:#141414;}
+.mebook-root.dark-mode .notif-item.unread{background:#0d150d;}
+.mebook-root.dark-mode .notif-item:hover{background:#141414;}
+.mebook-root.dark-mode .mb-contact:hover{background:#141414;}
+.mebook-root.dark-mode .mb-side-item:hover{background:#141414;}
+.mebook-root.dark-mode .mb-action:hover{background:#141414;}
+.mebook-root.dark-mode .mb-comp-action:hover{background:#141414;}
+.mebook-root.dark-mode .mb-post-more:hover{background:#141414;}
+.mebook-root.dark-mode .fr-tab:hover{background:#141414;}
+.mebook-root.dark-mode .fr-request-row:hover{background:#141414;}
+.mebook-root.dark-mode .mb-menu-head:hover{background:#141414;}
+.mebook-root.dark-mode .msgr-item:hover{background:#141414;}
+.mebook-root.dark-mode .cmt-bubble{background:#141414;}
+.mebook-root.dark-mode .mb-composer-input{background:#141414;}
+.mebook-root.dark-mode .mb-composer-input:hover{background:#1a1a1a;}
+.mebook-root.dark-mode .cp-upload-box:hover{background:rgba(34,197,94,.05);}
+.mebook-root.dark-mode .mb-back-btn{background:#0a0a0a;border:1px solid #1a1a1a;}
+.mebook-root.dark-mode .mb-back-btn:hover{background:#141414;}
+.mebook-root.dark-mode .mb-search-box{background:#0a0a0a;border:1px solid #151515;}
+.mebook-root.dark-mode .msgr-input-field{background:#141414;}
+.mebook-root.dark-mode .cmt-input{background:#141414;}
+.mebook-root.dark-mode .mb-btn-secondary{background:#141414;}
+.mebook-root.dark-mode .mb-btn-secondary:hover{background:#1e1e1e;}
+.mebook-root.dark-mode .mb-btn-outline{border-color:#1a1a1a;}
+.mebook-root.dark-mode .mb-btn-outline:hover{background:#141414;}
+.mebook-root.dark-mode .mb-slider{background:#1a1a1a;}
+.mebook-root.dark-mode .mb-privacy-toggle{border-color:#1a1a1a;}
+.mebook-root.dark-mode .mb-setting-row{border-color:#1a1a1a;}
+.mebook-root.dark-mode .mb-info-row{color:#e5e5e5;}
+.mebook-root.dark-mode .notif-page-head{border-color:#1a1a1a;}
+.mebook-root.dark-mode .notif-mark-all{background:#141414;}
+.mebook-root.dark-mode .notif-mark-all:hover{background:#1e1e1e;}
+
 .mebook-root *{margin:0;padding:0;box-sizing:border-box;}
 .mebook-root button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit;}
 .mebook-root input,.mebook-root textarea{font-family:inherit;color:var(--text);}
@@ -244,7 +305,7 @@ animation:cardFloat .7s cubic-bezier(.2,.8,.3,1);color:#f3f4f6;
 .mebook-root .auth-err.show{display:block;}
 @keyframes shake{0%,100%{transform:translateX(0);}25%{transform:translateX(-4px);}75%{transform:translateX(4px);}}
 
-/* ============ HEADER (fixed — always visible) ============ */
+/* ============ HEADER ============ */
 .mebook-root .mb-header{
 position:fixed;top:0;left:0;right:0;height:60px;z-index:1000;
 background:var(--header-bg);
@@ -253,13 +314,18 @@ padding:0 16px;
 box-shadow:0 2px 12px rgba(0,0,0,.25);
 }
 .mebook-root.dark-mode .mb-header{
-background:linear-gradient(135deg,#000000 0%,#050a12 100%);
-box-shadow:0 2px 16px rgba(0,0,0,.6);
+background:#000000;
+box-shadow:0 2px 16px rgba(0,0,0,.9);
+border-bottom:1px solid #151515;
 }
 .mebook-root .mb-header-left{display:flex;align-items:center;gap:6px;cursor:pointer;}
 .mebook-root .mb-header-logo{
 height:42px;width:auto;object-fit:contain;
 filter:drop-shadow(0 2px 8px rgba(34,197,94,.35));
+}
+.mebook-root .mb-logo-stack{
+display:flex;flex-direction:column;align-items:flex-start;
+gap:1px;line-height:1;
 }
 .mebook-root .mb-logo-text{font-size:24px;font-weight:800;letter-spacing:-.6px;user-select:none;line-height:1;margin-left:-2px;}
 .mebook-root .mb-logo-text .me{
@@ -268,6 +334,31 @@ background:linear-gradient(135deg,#22c55e,#4ade80 60%,#86efac);
 -webkit-text-fill-color:transparent;
 }
 .mebook-root .mb-logo-text .book{color:#ffffff;}
+.mebook-root .mb-beta-badge{
+display:inline-flex;align-items:center;gap:4px;
+font-size:9px;font-weight:800;letter-spacing:1.5px;
+color:#22c55e;
+background:linear-gradient(135deg,rgba(34,197,94,.15),rgba(134,239,172,.10));
+border:1px solid rgba(34,197,94,.35);
+padding:1px 6px;border-radius:6px;
+text-transform:uppercase;margin-left:2px;
+box-shadow:0 0 8px rgba(34,197,94,.15);
+}
+.mebook-root.dark-mode .mb-beta-badge{
+color:#4ade80;
+background:linear-gradient(135deg,rgba(34,197,94,.20),rgba(134,239,172,.12));
+border-color:rgba(74,222,128,.45);
+box-shadow:0 0 10px rgba(34,197,94,.25);
+}
+.mebook-root .mb-beta-dot{
+width:4px;height:4px;border-radius:50%;
+background:#22c55e;
+animation:betaPulse 1.6s ease-in-out infinite;
+}
+@keyframes betaPulse{
+0%,100%{opacity:1;transform:scale(1);}
+50%{opacity:.4;transform:scale(1.3);}
+}
 .mebook-root .mb-header-right{display:flex;align-items:center;gap:8px;}
 .mebook-root .mb-icon-btn{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.1);transition:background .2s,transform .15s;color:#e4e6eb;position:relative;}
 .mebook-root .mb-icon-btn:hover{background:rgba(255,255,255,.2);}
@@ -275,7 +366,7 @@ background:linear-gradient(135deg,#22c55e,#4ade80 60%,#86efac);
 .mebook-root .mb-icon-btn svg{width:20px;height:20px;fill:currentColor;}
 .mebook-root .mb-icon-btn.active{background:rgba(255,255,255,.25);}
 .mebook-root .mb-badge-dot{position:absolute;top:6px;right:6px;min-width:16px;height:16px;background:#ef4444;color:#fff;font-size:10px;font-weight:700;border-radius:8px;display:flex;align-items:center;justify-content:center;padding:0 4px;border:2px solid #1e293b;}
-.mebook-root.dark-mode .mb-badge-dot{border-color:#050a12;}
+.mebook-root.dark-mode .mb-badge-dot{border-color:#000000;}
 .mebook-root .mb-avatar-btn{width:40px;height:40px;border-radius:50%;overflow:hidden;border:2px solid rgba(255,255,255,.3);transition:border-color .2s,transform .15s;padding:0;background:#334155;}
 .mebook-root .mb-avatar-btn:hover{border-color:var(--green-light);}
 .mebook-root .mb-avatar-btn:active{transform:scale(.93);}
@@ -305,15 +396,13 @@ overflow-y:auto;
 overscroll-behavior:contain;
 }
 .mebook-root .mb-menu.open{transform:scale(1) translateY(0);opacity:1;visibility:visible;}
-.mebook-root.dark-mode .mb-menu{box-shadow:0 16px 48px rgba(0,0,0,.7), 0 0 0 1px rgba(255,255,255,.06);}
+.mebook-root.dark-mode .mb-menu{box-shadow:0 16px 48px rgba(0,0,0,.9), 0 0 0 1px rgba(255,255,255,.04);}
 .mebook-root .mb-menu-head{display:flex;align-items:center;gap:10px;padding:10px 10px 12px;border-bottom:1px solid var(--border);margin-bottom:6px;cursor:pointer;transition:background .15s;border-radius:8px;}
-.mebook-root .mb-menu-head:hover{background:var(--hover);}
 .mebook-root .mb-menu-head img{width:42px;height:42px;border-radius:50%;object-fit:cover;background:#cbd5e1;flex-shrink:0;}
 .mebook-root .mb-menu-head-info{flex:1;min-width:0;}
 .mebook-root .mb-menu-head-name{font-size:14.5px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .mebook-root .mb-menu-head-email{font-size:12px;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px;}
 .mebook-root .mb-menu-item{display:flex;align-items:center;gap:12px;width:100%;padding:10px 12px;border-radius:10px;font-size:14.5px;font-weight:500;color:var(--text);text-align:left;transition:background .15s ease, transform .12s ease;}
-.mebook-root .mb-menu-item:hover{background:var(--hover);}
 .mebook-root .mb-menu-item:active{transform:scale(.98);}
 .mebook-root .mb-menu-item.danger{color:#dc2626;}
 .mebook-root .mb-menu-item.danger .mb-menu-ico{background:rgba(220,38,38,.12);}
@@ -354,7 +443,6 @@ scrollbar-width:none;
 }
 .mebook-root .mb-sidebar::-webkit-scrollbar{width:0;}
 .mebook-root .mb-side-item{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:10px;font-size:15px;font-weight:600;color:var(--text);transition:background .18s;width:100%;text-align:left;margin-bottom:2px;position:relative;}
-.mebook-root .mb-side-item:hover{background:var(--hover);}
 .mebook-root .mb-side-item.active{background:var(--green);color:#fff;}
 .mebook-root .mb-side-ico{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--border);flex-shrink:0;}
 .mebook-root .mb-side-item.active .mb-side-ico{background:rgba(255,255,255,.2);}
@@ -366,19 +454,17 @@ scrollbar-width:none;
 .mebook-root .mb-main{min-width:0;padding-bottom:24px;}
 
 /* ============ COMPOSER ============ */
-.mebook-root .mb-composer{background:var(--card);border-radius:12px;box-shadow:var(--shadow);padding:12px 16px 10px;margin-bottom:16px;transition:background .3s;}
+.mebook-root .mb-composer{border-radius:12px;box-shadow:var(--shadow);padding:12px 16px 10px;margin-bottom:16px;transition:background .3s;}
 .mebook-root .mb-composer-top{display:flex;gap:10px;align-items:center;}
 .mebook-root .mb-composer-avatar{width:40px;height:40px;border-radius:50%;object-fit:cover;background:#cbd5e1;flex-shrink:0;}
-.mebook-root .mb-composer-input{flex:1;background:var(--input-bg);border:none;border-radius:24px;padding:11px 16px;font-size:15px;color:var(--text);outline:none;cursor:pointer;transition:background .2s;text-align:left;}
-.mebook-root .mb-composer-input:hover{background:var(--border);}
+.mebook-root .mb-composer-input{flex:1;border:none;border-radius:24px;padding:11px 16px;font-size:15px;color:var(--text);outline:none;cursor:pointer;transition:background .2s;text-align:left;background:var(--input-bg);}
 .mebook-root .mb-composer-input::placeholder{color:var(--text-muted);}
 .mebook-root .mb-composer-actions{display:flex;gap:6px;margin-top:10px;padding-top:10px;border-top:1px solid var(--border);}
 .mebook-root .mb-comp-action{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;padding:8px;border-radius:8px;font-size:14px;font-weight:600;color:var(--text-muted);transition:background .18s;}
-.mebook-root .mb-comp-action:hover{background:var(--hover);}
 .mebook-root .mb-comp-action svg{width:20px;height:20px;}
 
 /* ============ POST ============ */
-.mebook-root .mb-post{background:var(--card);border-radius:12px;box-shadow:var(--shadow);margin-bottom:16px;overflow:hidden;animation:postIn .35s cubic-bezier(.2,.8,.3,1);transition:background .3s;}
+.mebook-root .mb-post{border-radius:12px;box-shadow:var(--shadow);margin-bottom:16px;overflow:hidden;animation:postIn .35s cubic-bezier(.2,.8,.3,1);transition:background .3s;}
 @keyframes postIn{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:none;}}
 .mebook-root .mb-post.official{border:1.5px solid rgba(34,197,94,.35);}
 .mebook-root.dark-mode .mb-post.official{border-color:rgba(34,197,94,.4);}
@@ -391,7 +477,6 @@ scrollbar-width:none;
 .mebook-root .mb-post-meta{font-size:12.5px;color:var(--text-muted);display:flex;align-items:center;gap:5px;margin-top:1px;}
 .mebook-root .mb-post-meta .globe{width:12px;height:12px;fill:currentColor;}
 .mebook-root .mb-post-more{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--text-muted);transition:background .18s;}
-.mebook-root .mb-post-more:hover{background:var(--hover);}
 .mebook-root .mb-post-more svg{width:20px;height:20px;fill:currentColor;}
 .mebook-root .mb-post-caption{padding:2px 16px 10px;font-size:15px;line-height:1.45;color:var(--text);white-space:pre-wrap;word-wrap:break-word;}
 .mebook-root .mb-post-media{background:#000;position:relative;max-height:560px;overflow:hidden;}
@@ -404,7 +489,6 @@ scrollbar-width:none;
 .mebook-root .mb-react-pill svg{width:13px;height:13px;fill:#fff;}
 .mebook-root .mb-post-actions{display:flex;border-top:1px solid var(--border);margin:0 4px;padding:4px 0;}
 .mebook-root .mb-action{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;padding:9px;border-radius:8px;font-size:14.5px;font-weight:600;color:var(--text-muted);transition:background .18s,color .18s;}
-.mebook-root .mb-action:hover{background:var(--hover);}
 .mebook-root .mb-action.liked{color:#ef4444;}
 .mebook-root .mb-action svg{width:19px;height:19px;fill:currentColor;transition:transform .2s;}
 .mebook-root .mb-action.liked svg{animation:likePop .4s ease;}
@@ -416,23 +500,19 @@ scrollbar-width:none;
 .mebook-root .mb-btn-primary{background:var(--green);color:#fff;}
 .mebook-root .mb-btn-primary:hover{filter:brightness(1.08);}
 .mebook-root .mb-btn-secondary{background:var(--input-bg);color:var(--text);}
-.mebook-root .mb-btn-secondary:hover{background:var(--border);}
 .mebook-root .mb-btn-outline{background:transparent;color:var(--text);border:1px solid var(--border);}
-.mebook-root .mb-btn-outline:hover{background:var(--hover);}
 .mebook-root .mb-btn:disabled{opacity:.65;cursor:not-allowed;}
 .mebook-root .mb-friend-btn{position:relative;overflow:hidden;transition:all .3s cubic-bezier(.2,.8,.3,1);}
 .mebook-root .mb-friend-btn.sending{background:var(--border)!important;color:var(--text-muted)!important;pointer-events:none;}
-.mebook-root .mb-friend-btn.sending::after{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.4),transparent);animation:shimmer 1.2s infinite;}
-@keyframes shimmer{0%{left:-100%;}100%{left:100%;}}
 .mebook-root .mb-friend-btn-row{display:flex;gap:8px;margin-top:12px;}
 .mebook-root .mb-friend-btn-row .mb-btn{flex:1;}
 
 /* ============ MESSAGES ============ */
-.mebook-root .msgr-wrap{background:var(--card);border-radius:12px;box-shadow:var(--shadow);height:calc(100vh - 160px);min-height:420px;display:flex;overflow:hidden;position:relative;}
+.mebook-root .msgr-wrap{border-radius:12px;box-shadow:var(--shadow);height:calc(100vh - 160px);min-height:420px;display:flex;overflow:hidden;position:relative;}
 .mebook-root .msgr-list{width:320px;border-right:1px solid var(--border);overflow-y:auto;flex-shrink:0;}
 .mebook-root .msgr-list-head{padding:14px 16px 8px;font-size:20px;font-weight:800;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--card);z-index:2;}
 .mebook-root .msgr-section{font-size:12px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.6px;padding:10px 16px 6px;}
-.mebook-root .msgr-online-row{display:flex;gap:10px;overflow-x:auto;overflow-y:hidden;padding:4px 14px 12px;border-bottom:1px solid var(--border);scroll-behavior:smooth;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;touch-action:pan-x;scrollbar-width:none;}
+.mebook-root .msgr-online-row{display:flex;gap:10px;overflow-x:auto;overflow-y:hidden;padding:4px 14px 12px;border-bottom:1px solid var(--border);scroll-behavior:smooth;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
 .mebook-root .msgr-online-row::-webkit-scrollbar{height:0;display:none;}
 .mebook-root .msgr-online-item{flex-shrink:0;text-align:center;width:62px;cursor:pointer;}
 .mebook-root .msgr-online-avatar-wrap{position:relative;width:52px;height:52px;margin:0 auto;}
@@ -441,7 +521,6 @@ scrollbar-width:none;
 .mebook-root .msgr-online-dot{position:absolute;right:2px;bottom:2px;width:13px;height:13px;border-radius:50%;background:#22c55e;border:2.5px solid var(--card);}
 .mebook-root .msgr-online-name{font-size:11.5px;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text-muted);}
 .mebook-root .msgr-item{display:flex;gap:10px;padding:10px 14px;cursor:pointer;transition:background .15s;position:relative;}
-.mebook-root .msgr-item:hover{background:var(--hover);}
 .mebook-root .msgr-item.active{background:rgba(22,163,74,.12);}
 .mebook-root .msgr-item-avatar-wrap{position:relative;width:48px;height:48px;flex-shrink:0;}
 .mebook-root .msgr-item-avatar-wrap img{width:48px;height:48px;border-radius:50%;object-fit:cover;background:#cbd5e1;}
@@ -451,10 +530,9 @@ scrollbar-width:none;
 .mebook-root .msgr-item-last{font-size:13px;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .mebook-root .msgr-item-last.unread{color:var(--text);font-weight:600;}
 .mebook-root .msgr-item-time{font-size:11px;color:var(--text-muted);flex-shrink:0;}
-.mebook-root .msgr-window{flex:1;display:flex;flex-direction:column;min-width:0;background:var(--card);}
-.mebook-root .msgr-head{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--border);flex-shrink:0;background:var(--card);}
+.mebook-root .msgr-window{flex:1;display:flex;flex-direction:column;min-width:0;}
+.mebook-root .msgr-head{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--border);flex-shrink:0;}
 .mebook-root .msgr-head-back{width:36px;height:36px;border-radius:50%;display:none;align-items:center;justify-content:center;color:var(--text);}
-.mebook-root .msgr-head-back:hover{background:var(--hover);}
 .mebook-root .msgr-head-back svg{width:22px;height:22px;fill:currentColor;}
 .mebook-root .msgr-head img{width:40px;height:40px;border-radius:50%;object-fit:cover;background:#cbd5e1;}
 .mebook-root .msgr-head-info{flex:1;min-width:0;}
@@ -462,7 +540,6 @@ scrollbar-width:none;
 .mebook-root .msgr-head-status{font-size:12.5px;color:#22c55e;display:flex;align-items:center;gap:5px;}
 .mebook-root .msgr-head-status .dot{width:8px;height:8px;border-radius:50%;background:#22c55e;}
 .mebook-root .msgr-head-btn{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--text-muted);}
-.mebook-root .msgr-head-btn:hover{background:var(--hover);}
 .mebook-root .msgr-head-btn svg{width:20px;height:20px;fill:currentColor;}
 .mebook-root .msgr-body{flex:1;overflow-y:auto;padding:14px 12px;background:var(--chat-body-bg);display:flex;flex-direction:column;gap:4px;}
 .mebook-root .msgr-body::-webkit-scrollbar{width:6px;}
@@ -475,12 +552,12 @@ scrollbar-width:none;
 .mebook-root .msgr-bubble{max-width:72%;padding:9px 14px;border-radius:20px;font-size:14.5px;line-height:1.4;word-wrap:break-word;white-space:pre-wrap;animation:bubbleIn .22s ease;}
 @keyframes bubbleIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
 .mebook-root .msgr-bubble.me{background:linear-gradient(135deg,#16a34a,#22c55e);color:#fff;border-bottom-right-radius:6px;}
-.mebook-root .msgr-bubble.them{background:var(--bubble-them-bg);color:var(--text);border-bottom-left-radius:6px;box-shadow:0 1px 2px rgba(0,0,0,.08);}
+.mebook-root .msgr-bubble.them{color:var(--text);border-bottom-left-radius:6px;box-shadow:0 1px 2px rgba(0,0,0,.08);background:var(--bubble-them-bg);}
 .mebook-root .msgr-empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--text-muted);gap:10px;padding:24px;text-align:center;}
 .mebook-root .msgr-empty svg{width:64px;height:64px;fill:var(--border);}
 .mebook-root .msgr-empty b{font-size:16px;}
-.mebook-root .msgr-input{display:flex;gap:8px;align-items:flex-end;padding:10px 12px 12px;background:var(--card);border-top:1px solid var(--border);flex-shrink:0;}
-.mebook-root .msgr-input-field{flex:1;background:var(--input-bg);border:none;border-radius:20px;padding:10px 14px;font-size:14.5px;outline:none;color:var(--text);resize:none;max-height:100px;font-family:inherit;line-height:1.4;}
+.mebook-root .msgr-input{display:flex;gap:8px;align-items:flex-end;padding:10px 12px 12px;border-top:1px solid var(--border);flex-shrink:0;}
+.mebook-root .msgr-input-field{flex:1;border:none;border-radius:20px;padding:10px 14px;font-size:14.5px;outline:none;color:var(--text);resize:none;max-height:100px;font-family:inherit;line-height:1.4;background:var(--input-bg);}
 .mebook-root .msgr-input-send{width:38px;height:38px;border-radius:50%;background:var(--green);color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:transform .12s;}
 .mebook-root .msgr-input-send:active{transform:scale(.9);}
 .mebook-root .msgr-input-send:disabled{opacity:.5;}
@@ -495,27 +572,25 @@ scrollbar-width:none;
 }
 
 /* ============ COMMENTS PAGE ============ */
-.mebook-root .cmt-page-wrap{background:var(--card);border-radius:12px;box-shadow:var(--shadow);overflow:hidden;margin-bottom:16px;}
+.mebook-root .cmt-page-wrap{border-radius:12px;box-shadow:var(--shadow);overflow:hidden;margin-bottom:16px;}
 .mebook-root .cmt-page-head{padding:14px 16px;border-bottom:1px solid var(--border);font-size:16px;font-weight:700;}
 .mebook-root .cmt-page-list{padding:14px 16px;max-height:480px;overflow-y:auto;}
 .mebook-root .cmt-row{display:flex;gap:8px;margin-bottom:12px;animation:cmtIn .3s ease;}
 @keyframes cmtIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
 .mebook-root .cmt-row-avatar{width:34px;height:34px;border-radius:50%;object-fit:cover;flex-shrink:0;background:#cbd5e1;}
-.mebook-root .cmt-bubble{background:var(--input-bg);border-radius:16px 16px 16px 4px;padding:8px 12px;font-size:14px;line-height:1.42;color:var(--text);max-width:78%;word-wrap:break-word;white-space:pre-wrap;}
+.mebook-root .cmt-bubble{border-radius:16px 16px 16px 4px;padding:8px 12px;font-size:14px;line-height:1.42;color:var(--text);max-width:78%;word-wrap:break-word;white-space:pre-wrap;background:var(--input-bg);}
 .mebook-root .cmt-bubble b{display:block;font-size:13px;font-weight:700;margin-bottom:2px;color:var(--text);}
 .mebook-root .cmt-bubble .cmt-time{display:block;font-size:11px;color:var(--text-muted);margin-top:3px;font-weight:500;}
 .mebook-root .cmt-empty{text-align:center;padding:40px 20px;color:var(--text-muted);font-size:14px;}
-.mebook-root .cmt-input-wrap{display:flex;gap:8px;align-items:flex-end;padding:10px 14px 14px;border-top:1px solid var(--border);background:var(--card);}
+.mebook-root .cmt-input-wrap{display:flex;gap:8px;align-items:flex-end;padding:10px 14px 14px;border-top:1px solid var(--border);}
 .mebook-root .cmt-input-avatar{width:34px;height:34px;border-radius:50%;object-fit:cover;flex-shrink:0;background:#cbd5e1;}
-.mebook-root .cmt-input{flex:1;background:var(--input-bg);border:none;border-radius:20px;padding:10px 14px;font-size:14.5px;outline:none;color:var(--text);resize:none;max-height:120px;font-family:inherit;line-height:1.4;}
-.mebook-root .cmt-send{width:38px;height:38px;border-radius:50%;background:var(--green);color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:transform .15s,filter .15s;}
-.mebook-root .cmt-send:hover{filter:brightness(1.08);}
-.mebook-root .cmt-send:active{transform:scale(.92);}
+.mebook-root .cmt-input{flex:1;border:none;border-radius:20px;padding:10px 14px;font-size:14.5px;outline:none;color:var(--text);resize:none;max-height:120px;font-family:inherit;line-height:1.4;background:var(--input-bg);}
+.mebook-root .cmt-send{width:38px;height:38px;border-radius:50%;background:var(--green);color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
 .mebook-root .cmt-send:disabled{opacity:.5;cursor:not-allowed;}
 .mebook-root .cmt-send svg{width:18px;height:18px;fill:#fff;}
 
 /* ============ SHARE PAGE ============ */
-.mebook-root .share-page-wrap{background:var(--card);border-radius:12px;box-shadow:var(--shadow);padding:16px;margin-bottom:16px;}
+.mebook-root .share-page-wrap{border-radius:12px;box-shadow:var(--shadow);padding:16px;margin-bottom:16px;}
 .mebook-root .share-preview{display:flex;gap:10px;align-items:center;padding:10px;border-radius:12px;background:var(--input-bg);margin-bottom:14px;}
 .mebook-root .share-preview img{width:52px;height:52px;border-radius:8px;object-fit:cover;background:#cbd5e1;flex-shrink:0;}
 .mebook-root .share-preview-info{flex:1;min-width:0;}
@@ -525,7 +600,6 @@ scrollbar-width:none;
 .mebook-root .share-caption:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(22,163,74,.12);}
 .mebook-root .share-options{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
 .mebook-root .share-option{display:flex;align-items:center;gap:10px;padding:12px;border-radius:12px;background:var(--input-bg);transition:background .18s,transform .12s;text-align:left;}
-.mebook-root .share-option:hover{background:var(--border);}
 .mebook-root .share-option:active{transform:scale(.98);}
 .mebook-root .share-option-icon{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
 .mebook-root .share-option-icon svg{width:20px;height:20px;}
@@ -538,16 +612,13 @@ scrollbar-width:none;
 .mebook-root .share-option-text small{display:block;font-size:11.5px;color:var(--text-muted);font-weight:500;margin-top:2px;}
 
 /* ============ NOTIFICATIONS PAGE ============ */
-.mebook-root .notif-page-wrap{background:var(--card);border-radius:12px;box-shadow:var(--shadow);overflow:hidden;margin-bottom:16px;}
+.mebook-root .notif-page-wrap{border-radius:12px;box-shadow:var(--shadow);overflow:hidden;margin-bottom:16px;}
 .mebook-root .notif-page-head{padding:16px;border-bottom:1px solid var(--border);font-size:18px;font-weight:800;display:flex;align-items:center;justify-content:space-between;}
 .mebook-root .notif-mark-all{padding:6px 12px;border-radius:8px;font-size:12.5px;font-weight:600;background:var(--input-bg);color:var(--text-muted);transition:background .18s;}
-.mebook-root .notif-mark-all:hover{background:var(--border);color:var(--text);}
 .mebook-root .notif-list{padding:0;}
 .mebook-root .notif-item{display:flex;gap:12px;padding:14px 16px;border-bottom:1px solid var(--border);transition:background .18s;cursor:pointer;position:relative;}
 .mebook-root .notif-item:last-child{border-bottom:none;}
-.mebook-root .notif-item:hover{background:var(--hover);}
 .mebook-root .notif-item.unread{background:rgba(22,163,74,.05);}
-.mebook-root.dark-mode .notif-item.unread{background:rgba(34,197,94,.08);}
 .mebook-root .notif-icon{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;position:relative;}
 .mebook-root .notif-icon svg{width:22px;height:22px;fill:#fff;}
 .mebook-root .notif-icon.like{background:linear-gradient(135deg,#ef4444,#f97316);}
@@ -574,28 +645,24 @@ scrollbar-width:none;
 .mebook-root .notif-action-btn.accept{background:var(--green);color:#fff;}
 .mebook-root .notif-action-btn.accept:hover{filter:brightness(1.08);}
 .mebook-root .notif-action-btn.decline{background:var(--input-bg);color:var(--text);}
-.mebook-root .notif-action-btn.decline:hover{background:var(--border);}
 
 /* ============ FRIENDS PAGE ============ */
-.mebook-root .fr-page{background:var(--card);border-radius:12px;box-shadow:var(--shadow);overflow:hidden;margin-bottom:16px;}
+.mebook-root .fr-page{border-radius:12px;box-shadow:var(--shadow);overflow:hidden;margin-bottom:16px;}
 .mebook-root .fr-tabs{display:flex;border-bottom:1px solid var(--border);padding:0 8px;overflow-x:auto;scrollbar-width:none;}
 .mebook-root .fr-tabs::-webkit-scrollbar{height:0;}
 .mebook-root .fr-tab{padding:14px 16px;font-size:14.5px;font-weight:600;color:var(--text-muted);border-bottom:3px solid transparent;transition:all .2s;position:relative;white-space:nowrap;}
-.mebook-root .fr-tab:hover{color:var(--text);background:var(--hover);}
 .mebook-root .fr-tab.active{color:var(--green);border-bottom-color:var(--green);}
 .mebook-root .fr-tab-badge{display:inline-flex;align-items:center;justify-content:center;background:#ef4444;color:#fff;font-size:11px;font-weight:700;border-radius:10px;padding:1px 7px;margin-left:6px;min-width:18px;}
 .mebook-root .fr-body{padding:16px;}
 .mebook-root .fr-request-row{display:flex;gap:12px;padding:12px;border-radius:12px;transition:background .18s;align-items:center;}
-.mebook-root .fr-request-row:hover{background:var(--hover);}
 .mebook-root .fr-request-row img{width:72px;height:72px;border-radius:50%;object-fit:cover;background:#cbd5e1;flex-shrink:0;cursor:pointer;}
 .mebook-root .fr-request-info{flex:1;min-width:0;}
 .mebook-root .fr-request-name{font-size:15.5px;font-weight:700;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:5px;}
-.mebook-root .fr-request-name:hover{text-decoration:underline;}
 .mebook-root .fr-request-mutual{font-size:12.5px;color:var(--text-muted);margin-top:3px;}
 .mebook-root .fr-request-actions{display:flex;flex-direction:column;gap:6px;flex-shrink:0;}
 .mebook-root .fr-request-actions .mb-btn{width:auto;padding:8px 18px;font-size:13.5px;white-space:nowrap;}
 .mebook-root .fr-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px;}
-.mebook-root .fr-card{background:var(--input-bg);border-radius:12px;overflow:hidden;transition:transform .2s,box-shadow .2s;cursor:pointer;}
+.mebook-root .fr-card{border-radius:12px;overflow:hidden;transition:transform .2s,box-shadow .2s;cursor:pointer;background:var(--input-bg);}
 .mebook-root .fr-card:hover{transform:translateY(-3px);box-shadow:var(--shadow-lg);}
 .mebook-root .fr-card-img{width:100%;aspect-ratio:1;object-fit:cover;background:#cbd5e1;}
 .mebook-root .fr-card-info{padding:10px 12px 12px;}
@@ -604,10 +671,18 @@ scrollbar-width:none;
 .mebook-root .fr-card-actions{display:flex;gap:6px;margin-top:8px;}
 .mebook-root .fr-card-actions .mb-btn{font-size:12.5px;padding:7px;}
 
-/* ============ PROFILE HEADER (Facebook-style) ============ */
-.mebook-root .mb-profile-head{background:var(--card);border-radius:12px;box-shadow:var(--shadow);margin-bottom:16px;overflow:hidden;position:relative;}
+/* ============================================================
+   PROFILE PAGE — Facebook Style (matches screenshot)
+   ============================================================ */
+.mebook-root .mb-profile-head{
+border-radius:12px;
+box-shadow:var(--shadow);
+margin-bottom:16px;
+overflow:hidden;
+position:relative;
+}
 
-/* Full-width cover photo with bottom fade to black */
+/* Cover photo — full width, sharp, no border */
 .mebook-root .mb-profile-cover{
 position:relative;
 width:100%;
@@ -623,19 +698,18 @@ object-fit:cover;
 object-position:center;
 display:block;
 }
-/* Bottom gradient overlay - fades to dark toward bottom */
 .mebook-root .mb-profile-cover::after{
 content:'';
 position:absolute;left:0;right:0;bottom:0;
-height:60%;
+height:55%;
 pointer-events:none;
 background:linear-gradient(
 to bottom,
 rgba(0,0,0,0) 0%,
-rgba(0,0,0,0.15) 25%,
-rgba(0,0,0,0.45) 55%,
-rgba(0,0,0,0.75) 80%,
-rgba(0,0,0,0.92) 100%
+rgba(0,0,0,0.10) 25%,
+rgba(0,0,0,0.35) 55%,
+rgba(0,0,0,0.65) 80%,
+rgba(0,0,0,0.88) 100%
 );
 }
 .mebook-root .mb-profile-cover-add{
@@ -647,93 +721,241 @@ opacity:0;transition:opacity .25s;
 .mebook-root .mb-profile-cover:hover .mb-profile-cover-add{opacity:1;}
 .mebook-root .mb-profile-cover-add svg{width:22px;height:22px;fill:#fff;}
 
-/* Profile info bar sits ON TOP of cover bottom */
-.mebook-root .mb-profile-info{
+/* Avatar centered overlapping the cover bottom (Facebook style) */
+.mebook-root .mb-profile-avatar-center{
 position:relative;
-padding:0 20px 20px;
 display:flex;
-align-items:flex-end;
-gap:18px;
+justify-content:center;
 margin-top:-90px;
 z-index:3;
-flex-wrap:wrap;
+padding:0 20px;
 }
 .mebook-root .mb-profile-avatar-wrap{
-position:relative;cursor:pointer;
-flex-shrink:0;
+position:relative;cursor:pointer;flex-shrink:0;
 }
 .mebook-root .mb-profile-avatar-wrap img{
-width:168px;height:168px;
+width:180px;height:180px;
 border-radius:50%;
 object-fit:cover;
 border:5px solid var(--card);
 background:#cbd5e1;
-box-shadow:0 4px 20px rgba(0,0,0,.35);
+box-shadow:0 6px 24px rgba(0,0,0,.45);
+}
+.mebook-root.dark-mode .mb-profile-avatar-wrap img{
+border-color:#0a0a0a;
+box-shadow:0 6px 28px rgba(0,0,0,.9);
 }
 .mebook-root .mb-profile-avatar-add{
 position:absolute;inset:0;border-radius:50%;
 display:flex;align-items:center;justify-content:center;
-background:rgba(0,0,0,.4);
+background:rgba(0,0,0,.45);
 opacity:0;transition:opacity .25s;
-border:5px solid transparent;
 }
 .mebook-root .mb-profile-avatar-wrap:hover .mb-profile-avatar-add{opacity:1;}
-.mebook-root .mb-profile-avatar-add svg{width:30px;height:30px;fill:#fff;}
+.mebook-root .mb-profile-avatar-add svg{width:32px;height:32px;fill:#fff;}
 
-/* Name + bio area sits to the right of avatar, aligned to bottom */
-.mebook-root .mb-profile-text{
-flex:1;
-min-width:220px;
-padding-bottom:8px;
+/* Name + subtitle centered */
+.mebook-root .mb-profile-name-center{
+text-align:center;
+padding:16px 20px 4px;
 }
 .mebook-root .mb-profile-name{
 font-size:32px;
 font-weight:800;
-line-height:1.15;
+line-height:1.2;
 color:var(--text);
-display:flex;
+display:inline-flex;
 align-items:center;
 gap:8px;
 flex-wrap:wrap;
+justify-content:center;
 }
 .mebook-root .mb-profile-name svg{flex-shrink:0;}
-.mebook-root .mb-profile-bio{
+
+/* Friends / mutual / posts subtitle */
+.mebook-root .mb-profile-sub{
+text-align:center;
 font-size:15px;
 color:var(--text-muted);
 margin-top:6px;
+font-weight:500;
+letter-spacing:.2px;
+}
+.mebook-root .mb-profile-sub b{
+color:var(--text);
+font-weight:700;
+}
+
+/* Location + handle row */
+.mebook-root .mb-profile-meta-row{
+display:flex;
+justify-content:center;
+align-items:center;
+gap:18px;
+flex-wrap:wrap;
+padding:10px 20px 4px;
+font-size:14px;
+color:var(--text-muted);
+}
+.mebook-root .mb-profile-meta-row span{
+display:inline-flex;align-items:center;gap:5px;
+}
+.mebook-root .mb-profile-meta-row svg{
+width:16px;height:16px;fill:currentColor;flex-shrink:0;
+}
+
+/* Friends with avatars strip */
+.mebook-root .mb-profile-friends-strip{
+display:flex;
+justify-content:center;
+align-items:center;
+gap:12px;
+padding:14px 20px 6px;
+flex-wrap:wrap;
+}
+.mebook-root .mb-profile-friends-avatars{
+display:flex;
+flex-shrink:0;
+}
+.mebook-root .mb-profile-friends-avatars img{
+width:34px;height:34px;border-radius:50%;
+object-fit:cover;background:#cbd5e1;
+border:2px solid var(--card);
+margin-left:-10px;
+}
+.mebook-root.dark-mode .mb-profile-friends-avatars img{border-color:#0a0a0a;}
+.mebook-root .mb-profile-friends-avatars img:first-child{margin-left:0;}
+.mebook-root .mb-profile-friends-text{
+font-size:14px;
+color:var(--text-muted);
+text-align:left;
+max-width:340px;
 line-height:1.4;
 }
-.mebook-root .mb-profile-stats{
-display:flex;gap:20px;margin-top:12px;flex-wrap:wrap;
-}
-.mebook-root .mb-profile-stat{
-display:flex;align-items:baseline;gap:5px;
-font-size:14px;color:var(--text-muted);
-}
-.mebook-root .mb-profile-stat b{
-font-size:17px;font-weight:800;color:var(--text);
+.mebook-root .mb-profile-friends-text b{
+color:var(--text);font-weight:700;
 }
 
 /* Action buttons row */
 .mebook-root .mb-profile-actions{
-display:flex;gap:8px;padding:0 20px 18px;
+display:flex;
+justify-content:center;
+gap:10px;
+padding:16px 20px 18px;
 flex-wrap:wrap;
 }
-.mebook-root .mb-profile-actions .mb-btn{width:auto;padding:9px 20px;}
+.mebook-root .mb-profile-actions .mb-btn{
+width:auto;
+padding:11px 22px;
+font-size:14.5px;
+font-weight:700;
+border-radius:10px;
+display:inline-flex;
+align-items:center;
+gap:8px;
+}
+.mebook-root .mb-profile-actions .mb-btn svg{
+width:18px;height:18px;fill:currentColor;
+}
+.mebook-root .mb-profile-btn-message{
+background:#0084ff;color:#fff;
+}
+.mebook-root .mb-profile-btn-message:hover{filter:brightness(1.1);}
+.mebook-root .mb-profile-btn-icon{
+width:44px!important;padding:0!important;
+justify-content:center;
+background:var(--input-bg);
+}
 
-/* ============ CARD & SIDEBAR ============ */
+/* Things in common box */
+.mebook-root .mb-profile-things-common{
+margin:0 20px 16px;
+padding:14px 18px;
+border-radius:12px;
+background:var(--card);
+border:1px solid var(--border);
+}
+.mebook-root.dark-mode .mb-profile-things-common{
+background:#0a0a0a;
+border-color:#1a1a1a;
+}
+.mebook-root .mb-profile-things-common-title{
+font-size:15.5px;
+font-weight:700;
+color:var(--text);
+display:flex;
+align-items:center;
+gap:10px;
+margin-bottom:4px;
+}
+.mebook-root .mb-profile-things-common-title svg{
+width:22px;height:22px;fill:var(--text);flex-shrink:0;
+}
+.mebook-root .mb-profile-things-common-body{
+font-size:14px;color:var(--text-muted);margin-left:32px;
+}
+
+/* Tabs row (All / Photos / Reels) */
+.mebook-root .mb-profile-tabs{
+display:flex;
+gap:6px;
+padding:8px 20px 0;
+border-top:1px solid var(--border);
+}
+.mebook-root .mb-profile-tab{
+padding:12px 18px;
+font-size:14.5px;
+font-weight:600;
+color:var(--text-muted);
+border-radius:8px;
+transition:background .18s,color .18s;
+}
+.mebook-root .mb-profile-tab:hover{background:var(--hover);}
+.mebook-root .mb-profile-tab.active{
+color:var(--green);
+background:rgba(34,197,94,.10);
+}
+
+/* Personal details */
+.mebook-root .mb-profile-section{
+padding:16px 20px 8px;
+}
+.mebook-root .mb-profile-section h3{
+font-size:16px;
+font-weight:700;
+color:var(--text);
+margin-bottom:14px;
+}
+.mebook-root .mb-profile-detail{
+display:flex;
+align-items:center;
+gap:14px;
+padding:10px 0;
+font-size:15px;
+color:var(--text);
+}
+.mebook-root .mb-profile-detail svg{
+width:22px;height:22px;
+fill:var(--text-muted);
+flex-shrink:0;
+}
+.mebook-root .mb-profile-detail span{
+color:var(--text);
+font-weight:500;
+}
+
+/* ============ CARDS / SIDEBAR ============ */
 .mebook-root .mb-right{position:sticky;top:80px;align-self:start;display:flex;flex-direction:column;gap:16px;max-height:calc(100vh - 100px);overflow-y:auto;scrollbar-width:none;}
 .mebook-root .mb-right::-webkit-scrollbar{width:0;}
-.mebook-root .mb-card{background:var(--card);border-radius:12px;box-shadow:var(--shadow);padding:14px 16px;transition:background .3s;}
+.mebook-root .mb-card{border-radius:12px;box-shadow:var(--shadow);padding:14px 16px;transition:background .3s;}
 .mebook-root .mb-card-title{font-size:16px;font-weight:700;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;}
 .mebook-root .mb-contact{display:flex;align-items:center;gap:10px;padding:8px;border-radius:8px;transition:background .18s;cursor:pointer;position:relative;}
-.mebook-root .mb-contact:hover{background:var(--hover);}
 .mebook-root .mb-contact img{width:36px;height:36px;border-radius:50%;object-fit:cover;background:#cbd5e1;}
 .mebook-root .mb-contact-name{font-size:14.5px;font-weight:600;}
 .mebook-root .mb-online{position:absolute;bottom:7px;left:34px;width:11px;height:11px;border-radius:50%;background:var(--green-light);border:2px solid var(--card);}
 .mebook-root .mb-page-title{font-size:24px;font-weight:800;margin-bottom:16px;display:flex;align-items:center;gap:10px;color:var(--text);}
 .mebook-root .mb-page-title svg{width:26px;height:26px;fill:var(--green);}
-.mebook-root .mb-search-box{display:flex;align-items:center;gap:10px;background:var(--card);border-radius:24px;padding:10px 16px;box-shadow:var(--shadow);margin-bottom:18px;}
+.mebook-root .mb-search-box{display:flex;align-items:center;gap:10px;border-radius:24px;padding:10px 16px;box-shadow:var(--shadow);margin-bottom:18px;background:var(--card);}
 .mebook-root .mb-search-box svg{width:20px;height:20px;fill:var(--text-muted);flex-shrink:0;}
 .mebook-root .mb-search-box input{border:none;outline:none;flex:1;font-size:15px;background:transparent;color:var(--text);}
 .mebook-root .mb-info-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
@@ -744,13 +966,12 @@ flex-wrap:wrap;
 .mebook-root .mb-privacy-toggle:last-child{border-bottom:none;}
 .mebook-root .mb-switch{position:relative;width:44px;height:24px;flex-shrink:0;}
 .mebook-root .mb-switch input{opacity:0;width:0;height:0;}
-.mebook-root .mb-slider{position:absolute;inset:0;background:var(--border);border-radius:24px;transition:.25s;}
+.mebook-root .mb-slider{position:absolute;inset:0;border-radius:24px;transition:.25s;background:var(--border);}
 .mebook-root .mb-slider::before{content:"";position:absolute;width:18px;height:18px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.25s;box-shadow:0 1px 3px rgba(0,0,0,.3);}
 .mebook-root .mb-switch input:checked+.mb-slider{background:var(--green);}
 .mebook-root .mb-switch input:checked+.mb-slider::before{transform:translateX(20px);}
 .mebook-root .mb-settings-group{margin-bottom:16px;}
 .mebook-root .mb-setting-row{display:flex;align-items:center;gap:14px;padding:14px 4px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .18s;border-radius:8px;color:var(--text);}
-.mebook-root .mb-setting-row:hover{background:var(--hover);}
 .mebook-root .mb-setting-row:last-child{border-bottom:none;}
 .mebook-root .mb-setting-ico{width:40px;height:40px;border-radius:50%;background:var(--input-bg);flex-shrink:0;display:flex;align-items:center;justify-content:center;}
 .mebook-root .mb-setting-ico svg{width:20px;height:20px;fill:var(--text);}
@@ -763,27 +984,25 @@ flex-wrap:wrap;
 .mebook-root .mb-community-hero h2{font-size:23px;font-weight:800;}
 .mebook-root .mb-community-hero p{font-size:14px;opacity:.85;margin-top:5px;}
 .mebook-root .mb-mebook-hero{background:linear-gradient(135deg,#16a34a 0%,#0f172a 100%);border-radius:12px;padding:28px 22px;color:#fff;margin-bottom:18px;box-shadow:var(--shadow);position:relative;overflow:hidden;}
-.mebook-root .mb-mebook-hero::before{content:'';position:absolute;top:-50%;right:-20%;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.15) 0%,transparent 70%);animation:floatBubble 8s ease-in-out infinite;}
-@keyframes floatBubble{0%,100%{transform:translate(0,0) scale(1);}50%{transform:translate(-20px,20px) scale(1.15);}}
 .mebook-root .mb-mebook-hero h2{font-size:24px;font-weight:800;position:relative;z-index:1;}
 .mebook-root .mb-mebook-hero p{font-size:14px;opacity:.9;margin-top:6px;position:relative;z-index:1;}
 .mebook-root .mb-mebook-badge{display:inline-block;background:rgba(255,255,255,.2);color:#fff;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;margin-top:12px;position:relative;z-index:1;backdrop-filter:blur(6px);}
 .mebook-root .mb-mebook-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px;}
-.mebook-root .mb-mebook-stat{background:var(--card);border-radius:12px;box-shadow:var(--shadow);padding:16px;text-align:center;transition:transform .2s;}
+.mebook-root .mb-mebook-stat{border-radius:12px;box-shadow:var(--shadow);padding:16px;text-align:center;transition:transform .2s;}
 .mebook-root .mb-mebook-stat:hover{transform:translateY(-3px);}
 .mebook-root .mb-mebook-stat .num{font-size:26px;font-weight:800;color:var(--green);}
 .mebook-root .mb-mebook-stat .lbl{font-size:12.5px;color:var(--text-muted);margin-top:2px;}
 .mebook-root .mb-mebook-list{display:flex;flex-direction:column;gap:10px;}
-.mebook-root .mb-mebook-item{display:flex;gap:12px;padding:12px;background:var(--card);border-radius:12px;box-shadow:var(--shadow);align-items:center;transition:transform .18s,box-shadow .18s;cursor:pointer;}
+.mebook-root .mb-mebook-item{display:flex;gap:12px;padding:12px;border-radius:12px;box-shadow:var(--shadow);align-items:center;transition:transform .18s,box-shadow .18s;cursor:pointer;}
 .mebook-root .mb-mebook-item:hover{transform:translateX(4px);box-shadow:var(--shadow-lg);}
 .mebook-root .mb-mebook-item-body{flex:1;min-width:0;}
 .mebook-root .mb-mebook-item-title{font-size:15px;font-weight:700;color:var(--text);}
 .mebook-root .mb-mebook-item-desc{font-size:12.5px;color:var(--text-muted);margin-top:3px;line-height:1.4;}
 .mebook-root .mb-mebook-item-meta{font-size:11.5px;color:var(--green);font-weight:600;margin-top:5px;}
 
-/* ============ CREATE POST PAGE ============ */
+/* ============ CREATE POST ============ */
 .mebook-root .cp-page{max-width:600px;margin:0 auto;}
-.mebook-root .cp-card{background:var(--card);border-radius:12px;box-shadow:var(--shadow);padding:20px;margin-bottom:16px;}
+.mebook-root .cp-card{border-radius:12px;box-shadow:var(--shadow);padding:20px;margin-bottom:16px;}
 .mebook-root .cp-user{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
 .mebook-root .cp-user img{width:44px;height:44px;border-radius:50%;object-fit:cover;background:#cbd5e1;}
 .mebook-root .cp-user b{font-size:15px;color:var(--text);}
@@ -807,7 +1026,7 @@ flex-wrap:wrap;
 
 /* ============ TOAST ============ */
 .mebook-root .mb-toast-container{position:fixed;top:80px;right:20px;z-index:6000;display:flex;flex-direction:column;gap:10px;pointer-events:none;max-width:360px;}
-.mebook-root .mb-toast{background:var(--card);color:var(--text);padding:12px 16px;border-radius:12px;font-size:14px;font-weight:500;box-shadow:0 8px 32px rgba(0,0,0,.18),0 0 0 1px rgba(0,0,0,.04);display:flex;align-items:center;gap:10px;pointer-events:auto;animation:toastIn .4s cubic-bezier(.2,.8,.3,1);min-width:240px;position:relative;overflow:hidden;}
+.mebook-root .mb-toast{padding:12px 16px;border-radius:12px;font-size:14px;font-weight:500;box-shadow:0 8px 32px rgba(0,0,0,.18),0 0 0 1px rgba(0,0,0,.04);display:flex;align-items:center;gap:10px;pointer-events:auto;animation:toastIn .4s cubic-bezier(.2,.8,.3,1);min-width:240px;position:relative;overflow:hidden;background:var(--card);color:var(--text);}
 .mebook-root .mb-toast.removing{animation:toastOut .35s cubic-bezier(.4,0,1,1) forwards;}
 @keyframes toastIn{0%{opacity:0;transform:translateX(120%) scale(.9);}60%{opacity:1;transform:translateX(-6px) scale(1.02);}100%{opacity:1;transform:translateX(0) scale(1);}}
 @keyframes toastOut{0%{opacity:1;transform:translateX(0) scale(1);}100%{opacity:0;transform:translateX(120%) scale(.9);}}
@@ -822,12 +1041,10 @@ flex-wrap:wrap;
 .mebook-root .mb-toast-progress{position:absolute;bottom:0;left:0;height:3px;background:linear-gradient(90deg,#16a34a,#22c55e);border-radius:0 0 12px 12px;animation:toastProgress 3s linear forwards;}
 @keyframes toastProgress{from{width:100%;}to{width:0%;}}
 
-.mebook-root .mb-empty{text-align:center;padding:50px 20px;color:var(--text-muted);background:var(--card);border-radius:12px;box-shadow:var(--shadow);}
+.mebook-root .mb-empty{text-align:center;padding:50px 20px;color:var(--text-muted);border-radius:12px;box-shadow:var(--shadow);}
 .mebook-root .mb-empty svg{width:52px;height:52px;fill:var(--border);margin:0 auto 12px;}
 .mebook-root .mb-loading{text-align:center;padding:40px;color:var(--text-muted);}
-.mebook-root .mb-back-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:10px;background:var(--card);box-shadow:var(--shadow);font-size:14px;font-weight:600;color:var(--text);margin-bottom:14px;transition:background .18s,transform .12s;}
-.mebook-root .mb-back-btn:hover{background:var(--hover);}
-.mebook-root .mb-back-btn:active{transform:scale(.97);}
+.mebook-root .mb-back-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:10px;box-shadow:var(--shadow);font-size:14px;font-weight:600;color:var(--text);margin-bottom:14px;transition:background .18s;background:var(--card);}
 .mebook-root .mb-back-btn svg{width:18px;height:18px;fill:currentColor;}
 
 .mebook-theme-ripple{position:fixed;z-index:9999;width:32px;height:32px;border-radius:50%;transform:translate(-50%,-50%) scale(0);pointer-events:none;animation:mebookRippleGrow .65s cubic-bezier(.2,.8,.2,1) forwards;}
@@ -845,19 +1062,23 @@ flex-wrap:wrap;
 .mebook-root .mb-menu{top:66px;right:10px;left:10px;max-width:none;}
 .mebook-root .fr-grid{grid-template-columns:repeat(auto-fill,minmax(160px,1fr));}
 .mebook-root .fr-request-actions{flex-direction:row;}
-.mebook-root .mb-profile-cover{height:230px;}
-.mebook-root .mb-profile-info{margin-top:-70px;padding:0 14px 16px;gap:12px;}
-.mebook-root .mb-profile-avatar-wrap img{width:120px;height:120px;border-width:4px;}
+.mebook-root .mb-profile-cover{height:240px;}
+.mebook-root .mb-profile-avatar-center{margin-top:-70px;padding:0 14px;}
+.mebook-root .mb-profile-avatar-wrap img{width:140px;height:140px;border-width:4px;}
 .mebook-root .mb-profile-name{font-size:24px;}
-.mebook-root .mb-profile-actions{padding:0 14px 14px;}
+.mebook-root .mb-profile-friends-strip{flex-direction:column;text-align:center;}
+.mebook-root .mb-profile-friends-text{text-align:center;}
 }
 @media(max-width:600px){
 .mebook-root .mb-logo-text{font-size:21px;}
 .mebook-root .mb-header-logo{height:38px;}
 .mebook-root .mb-profile-cover{height:180px;}
-.mebook-root .mb-profile-info{margin-top:-56px;}
-.mebook-root .mb-profile-avatar-wrap img{width:96px;height:96px;border-width:3px;}
-.mebook-root .mb-profile-name{font-size:20px;}
+.mebook-root .mb-profile-avatar-center{margin-top:-56px;}
+.mebook-root .mb-profile-avatar-wrap img{width:112px;height:112px;border-width:4px;}
+.mebook-root .mb-profile-name{font-size:22px;}
+.mebook-root .mb-profile-sub{font-size:13.5px;}
+.mebook-root .mb-profile-actions .mb-btn{padding:10px 16px;font-size:13.5px;}
+.mebook-root .mb-profile-btn-icon{width:40px!important;}
 .mebook-root .auth-card{padding:28px 22px 24px;border-radius:20px;}
 .mebook-root .share-options{grid-template-columns:1fr;}
 .mebook-root .mb-info-grid{grid-template-columns:1fr;}
@@ -1000,6 +1221,7 @@ export default function MeBookPage() {
   const [unreadNotifCount, setUnreadNotifCount] = useState(0)
 
   const [friendsTab, setFriendsTab] = useState<"requests" | "sent" | "all" | "mutual">("requests")
+  const [profileTab, setProfileTab] = useState<"all" | "photos" | "reels">("all")
 
   const [postText, setPostText] = useState("")
   const [postMovie, setPostMovie] = useState("")
@@ -1012,6 +1234,8 @@ export default function MeBookPage() {
   const [editBio, setEditBio] = useState("")
   const [editLoc, setEditLoc] = useState("")
   const [editPhone, setEditPhone] = useState("")
+  const [editBirthday, setEditBirthday] = useState("")
+  const [editHandle, setEditHandle] = useState("")
   const [privacy, setPrivacy] = useState({ info: true, posts: true, requests: true })
   const [editBusy, setEditBusy] = useState(false)
 
@@ -1244,6 +1468,8 @@ export default function MeBookPage() {
                 bio: "Movie lover 🎬",
                 location: "",
                 phone: "",
+                birthday: "",
+                handle: "",
                 verified: false,
                 createdAt: fb.serverTimestamp(),
                 privacy: { info: true, posts: true, requests: true },
@@ -1326,6 +1552,8 @@ export default function MeBookPage() {
         bio: "Movie lover 🎬",
         location: "",
         phone: "",
+        birthday: "",
+        handle: "",
         verified: false,
         createdAt: fb.serverTimestamp(),
         privacy: { info: true, posts: true, requests: true },
@@ -1357,6 +1585,8 @@ export default function MeBookPage() {
           bio: "Movie lover 🎬",
           location: "",
           phone: "",
+          birthday: "",
+          handle: "",
           verified: false,
           createdAt: fb.serverTimestamp(),
           privacy: { info: true, posts: true, requests: true },
@@ -1781,6 +2011,8 @@ export default function MeBookPage() {
     setEditBio(profile.bio || "")
     setEditLoc(profile.location || "")
     setEditPhone(profile.phone || "")
+    setEditBirthday(profile.birthday || "")
+    setEditHandle(profile.handle || "")
     pushPage("edit-profile")
   }
 
@@ -1794,6 +2026,8 @@ export default function MeBookPage() {
         bio: editBio.trim(),
         location: editLoc.trim(),
         phone: editPhone.trim(),
+        birthday: editBirthday.trim(),
+        handle: editHandle.trim(),
       }
       await fb.updateDoc(fb.doc(fb.db, "users", user.uid), updates)
       setProfile({ ...profile, ...updates })
@@ -2003,9 +2237,15 @@ export default function MeBookPage() {
           <div className="auth-card">
             <div className="auth-logo">
               <img src={HEADER_LOGO} alt="MeBook" />
-              <div className="mb-logo-text">
-                <span className="me">Me</span>
-                <span className="book">Book</span>
+              <div className="mb-logo-stack">
+                <div className="mb-logo-text">
+                  <span className="me">Me</span>
+                  <span className="book">Book</span>
+                </div>
+                <span className="mb-beta-badge">
+                  <span className="mb-beta-dot" />
+                  BETA
+                </span>
               </div>
             </div>
             <p className="auth-sub">Movie lovers' social network 🎬</p>
@@ -2128,17 +2368,19 @@ export default function MeBookPage() {
     )
   }
 
+  /* ============================================================
+  RENDER POST
+  ============================================================ */
   const renderPost = (post: any, isMine = false) => {
     const liked = Array.isArray(post.likes) && post.likes.includes(user?.uid)
     const likesCount = Array.isArray(post.likes) ? post.likes.length : 0
     const commentsCount = Array.isArray(post.comments) ? post.comments.length : 0
     const sharesCount = post.shares || 0
     const isOfficial = post.isOfficial === true
-    const authorAvatar =
-      post.authorAvatar ||
-      (isOfficial
-        ? LOGO_URL
-        : `https://ui-avatars.com/api/?background=16a34a&color=fff&name=${encodeURIComponent(post.authorName || "User")}`)
+    const authorAvatar = isOfficial
+      ? LOGO_URL
+      : (post.authorAvatar ||
+         `https://ui-avatars.com/api/?background=16a34a&color=fff&name=${encodeURIComponent(post.authorName || "User")}`)
     const timeText = post.timeText || timeAgo(post.createdAt)
     const postVerified = isVerified(post)
 
@@ -2276,6 +2518,258 @@ export default function MeBookPage() {
     viewingUserPosts.find((p) => p.id === postId)
 
   /* ============================================================
+  RENDER PROFILE (Facebook-style, matches screenshot)
+  ============================================================ */
+  const renderProfilePage = (u: any, posts: any[], isOwn: boolean) => {
+    const photo = avatarUrl(u)
+    const friendsCount = isOwn ? myFriends.length : 0
+    const mutualCount = isOwn ? myFriends.length : 0
+
+    // Friend avatars strip (show up to 6)
+    const stripFriends = (isOwn ? myFriends : []).slice(0, 6)
+
+    // Calculate oldest post time ago
+    const firstPostTime = posts.length > 0 && posts[posts.length - 1].createdAt
+      ? timeAgo(posts[posts.length - 1].createdAt)
+      : null
+
+    return (
+      <div className="mb-profile-head">
+        {/* Cover photo */}
+        <div
+          className="mb-profile-cover"
+          onClick={isOwn ? handleChangeCover : undefined}
+        >
+          <img
+            src={
+              u.coverURL ||
+              "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=1600&q=80"
+            }
+            alt="Cover"
+          />
+          {isOwn && (
+            <div className="mb-profile-cover-add">
+              <svg viewBox="0 0 24 24">
+                <path d="M9 2L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-3.17L15 2H9zm3 15c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z" />
+              </svg>
+              Change Cover
+            </div>
+          )}
+        </div>
+
+        {/* Avatar overlapping cover */}
+        <div className="mb-profile-avatar-center">
+          <div
+            className="mb-profile-avatar-wrap"
+            onClick={isOwn ? handleChangeProfilePhoto : undefined}
+          >
+            <img src={photo} alt="Profile" />
+            {isOwn && (
+              <div className="mb-profile-avatar-add">
+                <svg viewBox="0 0 24 24">
+                  <path d="M9 2L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-3.17L15 2H9zm3 15c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z" />
+                </svg>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Name */}
+        <div className="mb-profile-name-center">
+          <div className="mb-profile-name">
+            {u.name}
+            {isVerified(u) && (
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="#22c55e">
+                <path d="M23 12l-2.44-2.79.34-3.69-3.61-.82-1.89-3.2L12 2.96 8.6 1.5 6.71 4.69l-3.61.82.34 3.69L1 12l2.44 2.79-.34 3.7 3.61.82L8.6 22.5l3.4-1.47 3.4 1.46 1.89-3.19 3.61-.82-.34-3.69L23 12zm-12.91 4.72l-3.8-3.81 1.48-1.48 2.32 2.33 5.85-5.87 1.48 1.48-7.33 7.35z" />
+              </svg>
+            )}
+          </div>
+
+          {/* Subtitle: friends · mutual · posts */}
+          <div className="mb-profile-sub">
+            <b>{friendsCount}</b> friends
+            {mutualCount > 0 && <> · <b>{mutualCount}</b> mutual</>}
+            {" · "}<b>{posts.length}</b> posts
+          </div>
+        </div>
+
+        {/* Location + handle */}
+        {(u.location || u.handle) && (
+          <div className="mb-profile-meta-row">
+            {u.location && (
+              <span>
+                <svg viewBox="0 0 24 24">
+                  <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
+                </svg>
+                {u.location}
+              </span>
+            )}
+            {u.handle && (
+              <span>
+                <svg viewBox="0 0 24 24">
+                  <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z" />
+                </svg>
+                {u.handle}
+              </span>
+            )}
+          </div>
+        )}
+
+        {/* Friends avatars strip */}
+        {stripFriends.length > 0 && (
+          <div className="mb-profile-friends-strip">
+            <div className="mb-profile-friends-avatars">
+              {stripFriends.map((f) => (
+                <img key={f.uid} src={avatarUrl(f)} alt={f.name} />
+              ))}
+            </div>
+            <div className="mb-profile-friends-text">
+              Friends with <b>{stripFriends.slice(0, 3).map((f) => f.name).join(", ")}</b>
+              {stripFriends.length > 3 && <> and {stripFriends.length - 3} others</>}
+            </div>
+          </div>
+        )}
+
+        {/* Action buttons */}
+        <div className="mb-profile-actions">
+          {isOwn ? (
+            <>
+              <button className="mb-btn mb-btn-primary" onClick={openCreatePost}>
+                <svg viewBox="0 0 24 24">
+                  <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
+                </svg>
+                Create Post
+              </button>
+              <button className="mb-btn mb-btn-secondary" onClick={openEditProfile}>
+                <svg viewBox="0 0 24 24">
+                  <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34a.9959.9959 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" />
+                </svg>
+                Edit Profile
+              </button>
+            </>
+          ) : (
+            <>
+              {myFriends.some((f) => f.uid === u.uid) ? (
+                <button className="mb-btn mb-btn-secondary" disabled>
+                  <svg viewBox="0 0 24 24">
+                    <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" />
+                  </svg>
+                  Friends
+                </button>
+              ) : sentRequests[u.uid] === "sending" ? (
+                <button className="mb-btn mb-friend-btn sending" disabled>
+                  Sending...
+                </button>
+              ) : sentFriendRequests.some(
+                  (r) => r.to === u.uid && r.status === "pending"
+                ) ? (
+                <button
+                  className="mb-btn mb-btn-secondary"
+                  onClick={() => handleCancelRequest(u.uid)}
+                >
+                  Cancel Request
+                </button>
+              ) : (
+                <button
+                  className="mb-btn mb-btn-primary"
+                  onClick={() => handleSendRequest(u.uid)}
+                >
+                  <svg viewBox="0 0 24 24">
+                    <path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                  </svg>
+                  Add Friend
+                </button>
+              )}
+              <button
+                className="mb-btn mb-profile-btn-message"
+                onClick={() => startChat(u.uid, u.name, photo)}
+              >
+                <svg viewBox="0 0 24 24">
+                  <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z" />
+                </svg>
+                Message
+              </button>
+              <button className="mb-btn mb-btn-secondary mb-profile-btn-icon" title="More">
+                <svg viewBox="0 0 24 24">
+                  <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
+                </svg>
+              </button>
+            </>
+          )}
+        </div>
+
+        {/* Things in common (only for other users) */}
+        {!isOwn && (
+          <div className="mb-profile-things-common">
+            <div className="mb-profile-things-common-title">
+              <svg viewBox="0 0 24 24">
+                <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" />
+              </svg>
+              Things in common
+            </div>
+            <div className="mb-profile-things-common-body">
+              You share a birthday.
+            </div>
+          </div>
+        )}
+
+        {/* Tabs */}
+        <div className="mb-profile-tabs">
+          <button
+            className={`mb-profile-tab${profileTab === "all" ? " active" : ""}`}
+            onClick={() => setProfileTab("all")}
+          >
+            All
+          </button>
+          <button
+            className={`mb-profile-tab${profileTab === "photos" ? " active" : ""}`}
+            onClick={() => setProfileTab("photos")}
+          >
+            Photos
+          </button>
+          <button
+            className={`mb-profile-tab${profileTab === "reels" ? " active" : ""}`}
+            onClick={() => setProfileTab("reels")}
+          >
+            Reels
+          </button>
+        </div>
+
+        {/* Personal details (only for own profile) */}
+        {isOwn && (u.location || u.birthday || u.handle) && (
+          <div className="mb-profile-section">
+            <h3>Personal details</h3>
+            {u.location && (
+              <div className="mb-profile-detail">
+                <svg viewBox="0 0 24 24">
+                  <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
+                </svg>
+                <span>{u.location}</span>
+              </div>
+            )}
+            {u.birthday && (
+              <div className="mb-profile-detail">
+                <svg viewBox="0 0 24 24">
+                  <path d="M12 6c1.11 0 2-.9 2-2 0-.38-.1-.73-.29-1.03L12 0l-1.71 2.97c-.19.3-.29.65-.29 1.03 0 1.1.9 2 2 2zm4.6 9.99l-1.07-1.07-1.08 1.07c-1.3 1.3-3.58 1.31-4.89 0l-1.07-1.07-1.09 1.07C6.75 16.64 5.88 17 4.96 17c-.73 0-1.4-.23-1.96-.61V21c0 .55.45 1 1 1h16c.55 0 1-.45 1-1v-4.61c-.56.38-1.23.61-1.96.61-.92 0-1.79-.36-2.44-1.01zM18 9h-5V7h-2v2H6c-1.66 0-3 1.34-3 3v1.54c0 1.08.88 1.96 1.96 1.96.52 0 1.02-.2 1.38-.57l2.14-2.13 2.13 2.13c.74.74 2.03.74 2.77 0l2.14-2.13 2.13 2.13c.37.37.86.57 1.38.57 1.08 0 1.96-.88 1.96-1.96V12c0-1.66-1.34-3-3-3z" />
+                </svg>
+                <span>{u.birthday}</span>
+              </div>
+            )}
+            {u.handle && (
+              <div className="mb-profile-detail">
+                <svg viewBox="0 0 24 24">
+                  <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z" />
+                </svg>
+                <span>{u.handle}</span>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    )
+  }
+
+  /* ============================================================
   MAIN RENDER
   ============================================================ */
   return (
@@ -2299,13 +2793,19 @@ export default function MeBookPage() {
 
       <ToastStack toasts={toasts} onDone={removeToast} />
 
-      {/* ============ HEADER (fixed, always visible) ============ */}
+      {/* ============ HEADER ============ */}
       <header className="mb-header">
         <div className="mb-header-left" onClick={() => goTo("home")}>
           <img className="mb-header-logo" src={HEADER_LOGO} alt="MeBook" />
-          <div className="mb-logo-text">
-            <span className="me">Me</span>
-            <span className="book">Book</span>
+          <div className="mb-logo-stack">
+            <div className="mb-logo-text">
+              <span className="me">Me</span>
+              <span className="book">Book</span>
+            </div>
+            <span className="mb-beta-badge">
+              <span className="mb-beta-dot" />
+              BETA
+            </span>
           </div>
         </div>
 
@@ -2386,51 +2886,29 @@ export default function MeBookPage() {
           </div>
         </div>
 
-        <button
-          className="mb-menu-item"
-          onClick={() => {
-            setMenuOpen(false)
-            goTo("friends")
-          }}
-        >
+        <button className="mb-menu-item" onClick={() => { setMenuOpen(false); goTo("friends") }}>
           <span className="mb-menu-ico blue">
             <svg viewBox="0 0 24 24">
               <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" />
             </svg>
           </span>
           Friends
-          {requests.length > 0 && (
-            <span className="mb-menu-badge">{requests.length}</span>
-          )}
+          {requests.length > 0 && <span className="mb-menu-badge">{requests.length}</span>}
         </button>
 
-        <button
-          className="mb-menu-item"
-          onClick={() => {
-            setMenuOpen(false)
-            goTo("notifications")
-          }}
-        >
+        <button className="mb-menu-item" onClick={() => { setMenuOpen(false); goTo("notifications") }}>
           <span className="mb-menu-ico green">
             <svg viewBox="0 0 24 24">
               <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z" />
             </svg>
           </span>
           Notifications
-          {unreadNotifCount > 0 && (
-            <span className="mb-menu-badge">{unreadNotifCount}</span>
-          )}
+          {unreadNotifCount > 0 && <span className="mb-menu-badge">{unreadNotifCount}</span>}
         </button>
 
         <div className="mb-menu-divider" />
 
-        <button
-          className="mb-menu-item"
-          onClick={() => {
-            setMenuOpen(false)
-            goTo("profile")
-          }}
-        >
+        <button className="mb-menu-item" onClick={() => { setMenuOpen(false); goTo("profile") }}>
           <span className="mb-menu-ico">
             <svg viewBox="0 0 24 24">
               <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
@@ -2439,13 +2917,7 @@ export default function MeBookPage() {
           View Profile
         </button>
 
-        <button
-          className="mb-menu-item"
-          onClick={() => {
-            setMenuOpen(false)
-            openEditProfile()
-          }}
-        >
+        <button className="mb-menu-item" onClick={() => { setMenuOpen(false); openEditProfile() }}>
           <span className="mb-menu-ico">
             <svg viewBox="0 0 24 24">
               <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34a.9959.9959 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" />
@@ -2454,13 +2926,7 @@ export default function MeBookPage() {
           Edit Profile
         </button>
 
-        <button
-          className="mb-menu-item"
-          onClick={() => {
-            setMenuOpen(false)
-            goTo("settings")
-          }}
-        >
+        <button className="mb-menu-item" onClick={() => { setMenuOpen(false); goTo("settings") }}>
           <span className="mb-menu-ico">
             <svg viewBox="0 0 24 24">
               <path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.49.49 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.48.48 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z" />
@@ -2490,13 +2956,7 @@ export default function MeBookPage() {
 
         <div className="mb-menu-divider" />
 
-        <button
-          className="mb-menu-item"
-          onClick={() => {
-            setMenuOpen(false)
-            goTo("mebook")
-          }}
-        >
+        <button className="mb-menu-item" onClick={() => { setMenuOpen(false); goTo("mebook") }}>
           <span className="mb-menu-ico green">
             <svg viewBox="0 0 24 24">
               <path d="M21 5c-1.11-.35-2.33-.5-3.5-.5-1.95 0-4.05.4-5.5 1.5-1.45-1.1-3.55-1.5-5.5-1.5S2.45 4.9 1 6v14.65c0 .25.25.5.5.5.1 0 .15-.05.25-.05C3.1 20.45 5.05 20 6.5 20c1.95 0 4.05.4 5.5 1.5 1.35-.85 3.8-1.5 5.5-1.5 1.65 0 3.35.3 4.75 1.05.1.05.15.05.25.05.25 0 .5-.25.5-.5V6c-.6-.45-1.25-.75-2-1z" />
@@ -2505,13 +2965,7 @@ export default function MeBookPage() {
           My MeBook
         </button>
 
-        <button
-          className="mb-menu-item"
-          onClick={() => {
-            setMenuOpen(false)
-            goTo("community")
-          }}
-        >
+        <button className="mb-menu-item" onClick={() => { setMenuOpen(false); goTo("community") }}>
           <span className="mb-menu-ico blue">
             <svg viewBox="0 0 24 24">
               <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" />
@@ -2522,13 +2976,7 @@ export default function MeBookPage() {
 
         <div className="mb-menu-divider" />
 
-        <button
-          className="mb-menu-item danger"
-          onClick={() => {
-            setMenuOpen(false)
-            handleSignOut()
-          }}
-        >
+        <button className="mb-menu-item danger" onClick={() => { setMenuOpen(false); handleSignOut() }}>
           <span className="mb-menu-ico red">
             <svg viewBox="0 0 24 24">
               <path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z" />
@@ -2553,7 +3001,7 @@ export default function MeBookPage() {
         </aside>
 
         <main className="mb-main">
-          {/* ============ HOME ============ */}
+          {/* HOME */}
           {currentView === "home" && (
             <div className="mb-view active">
               <div className="mb-composer">
@@ -2594,7 +3042,7 @@ export default function MeBookPage() {
             </div>
           )}
 
-          {/* ============ NOTIFICATIONS ============ */}
+          {/* NOTIFICATIONS */}
           {currentView === "notifications" && (
             <div className="mb-view active">
               <h1 className="mb-page-title">
@@ -2607,10 +3055,7 @@ export default function MeBookPage() {
                 <div className="notif-page-head">
                   <span>{notifications.length} total</span>
                   {unreadNotifCount > 0 && (
-                    <button
-                      className="notif-mark-all"
-                      onClick={markAllNotificationsRead}
-                    >
+                    <button className="notif-mark-all" onClick={markAllNotificationsRead}>
                       Mark all as read
                     </button>
                   )}
@@ -2637,10 +3082,7 @@ export default function MeBookPage() {
                         : type === "account" ? "account"
                         : type === "post" ? "post"
                         : "admin"
-
-                      const isFriendRequest =
-                        type === "friend" && n.requestId && !n.read
-
+                      const isFriendRequest = type === "friend" && n.requestId && !n.read
                       return (
                         <div
                           className={`notif-item${!n.read ? " unread" : ""}`}
@@ -2729,7 +3171,7 @@ export default function MeBookPage() {
             </div>
           )}
 
-          {/* ============ FRIENDS ============ */}
+          {/* FRIENDS */}
           {currentView === "friends" && (
             <div className="mb-view active">
               <h1 className="mb-page-title">
@@ -2741,36 +3183,17 @@ export default function MeBookPage() {
 
               <div className="fr-page">
                 <div className="fr-tabs">
-                  <button
-                    className={`fr-tab${friendsTab === "requests" ? " active" : ""}`}
-                    onClick={() => setFriendsTab("requests")}
-                  >
+                  <button className={`fr-tab${friendsTab === "requests" ? " active" : ""}`} onClick={() => setFriendsTab("requests")}>
                     Requests
-                    {requests.length > 0 && (
-                      <span className="fr-tab-badge">{requests.length}</span>
-                    )}
+                    {requests.length > 0 && <span className="fr-tab-badge">{requests.length}</span>}
                   </button>
-                  <button
-                    className={`fr-tab${friendsTab === "sent" ? " active" : ""}`}
-                    onClick={() => setFriendsTab("sent")}
-                  >
+                  <button className={`fr-tab${friendsTab === "sent" ? " active" : ""}`} onClick={() => setFriendsTab("sent")}>
                     Sent
-                    {sentFriendRequests.filter((r) => r.status === "pending").length > 0 && (
-                      <span className="fr-tab-badge">
-                        {sentFriendRequests.filter((r) => r.status === "pending").length}
-                      </span>
-                    )}
                   </button>
-                  <button
-                    className={`fr-tab${friendsTab === "all" ? " active" : ""}`}
-                    onClick={() => setFriendsTab("all")}
-                  >
+                  <button className={`fr-tab${friendsTab === "all" ? " active" : ""}`} onClick={() => setFriendsTab("all")}>
                     My Friends ({myFriends.length})
                   </button>
-                  <button
-                    className={`fr-tab${friendsTab === "mutual" ? " active" : ""}`}
-                    onClick={() => setFriendsTab("mutual")}
-                  >
+                  <button className={`fr-tab${friendsTab === "mutual" ? " active" : ""}`} onClick={() => setFriendsTab("mutual")}>
                     Find Friends
                   </button>
                 </div>
@@ -2799,18 +3222,8 @@ export default function MeBookPage() {
                                 <div className="fr-request-mutual">Wants to be your friend</div>
                               </div>
                               <div className="fr-request-actions">
-                                <button
-                                  className="mb-btn mb-btn-primary"
-                                  onClick={() => handleAcceptRequest(r.id, r.from)}
-                                >
-                                  Confirm
-                                </button>
-                                <button
-                                  className="mb-btn mb-btn-secondary"
-                                  onClick={() => handleDeclineRequest(r.id)}
-                                >
-                                  Delete
-                                </button>
+                                <button className="mb-btn mb-btn-primary" onClick={() => handleAcceptRequest(r.id, r.from)}>Confirm</button>
+                                <button className="mb-btn mb-btn-secondary" onClick={() => handleDeclineRequest(r.id)}>Delete</button>
                               </div>
                             </div>
                           )
@@ -2845,12 +3258,7 @@ export default function MeBookPage() {
                               </div>
                               <div className="fr-request-actions">
                                 {r.status === "pending" && (
-                                  <button
-                                    className="mb-btn mb-btn-secondary"
-                                    onClick={() => handleCancelRequest(r.to)}
-                                  >
-                                    Cancel
-                                  </button>
+                                  <button className="mb-btn mb-btn-secondary" onClick={() => handleCancelRequest(r.to)}>Cancel</button>
                                 )}
                               </div>
                             </div>
@@ -2875,49 +3283,34 @@ export default function MeBookPage() {
                       </div>
                       {myFriends.length === 0 ? (
                         <div className="mb-empty">
-                          <svg viewBox="0 0 24 24">
-                            <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" />
-                          </svg>
                           <b>No friends yet</b>
                           <p>Start sending friend requests to build your network!</p>
                         </div>
                       ) : (
                         <div className="fr-grid">
-                          {myFriends
-                            .filter((f) => {
-                              const q = friendSearch.trim().toLowerCase()
-                              if (!q) return true
-                              return (f.name || "").toLowerCase().includes(q)
-                            })
-                            .map((f) => {
-                              const photo = avatarUrl(f)
-                              return (
-                                <div
-                                  className="fr-card"
-                                  key={f.uid}
-                                  onClick={() => openUserProfile(f.uid)}
-                                >
-                                  <img className="fr-card-img" src={photo} alt="" />
-                                  <div className="fr-card-info">
-                                    <div className="fr-card-name">
-                                      {f.name}
-                                      {isVerified(f) && " ✓"}
-                                    </div>
-                                    <div className="fr-card-actions">
-                                      <button
-                                        className="mb-btn mb-btn-secondary"
-                                        onClick={(e) => {
-                                          e.stopPropagation()
-                                          startChat(f.uid, f.name, photo)
-                                        }}
-                                      >
-                                        Message
-                                      </button>
-                                    </div>
+                          {myFriends.filter((f) => {
+                            const q = friendSearch.trim().toLowerCase()
+                            if (!q) return true
+                            return (f.name || "").toLowerCase().includes(q)
+                          }).map((f) => {
+                            const photo = avatarUrl(f)
+                            return (
+                              <div className="fr-card" key={f.uid} onClick={() => openUserProfile(f.uid)}>
+                                <img className="fr-card-img" src={photo} alt="" />
+                                <div className="fr-card-info">
+                                  <div className="fr-card-name">{f.name}{isVerified(f) && " ✓"}</div>
+                                  <div className="fr-card-actions">
+                                    <button
+                                      className="mb-btn mb-btn-secondary"
+                                      onClick={(e) => { e.stopPropagation(); startChat(f.uid, f.name, photo) }}
+                                    >
+                                      Message
+                                    </button>
                                   </div>
                                 </div>
-                              )
-                            })}
+                              </div>
+                            )
+                          })}
                         </div>
                       )}
                     </>
@@ -2937,56 +3330,34 @@ export default function MeBookPage() {
                         />
                       </div>
                       {filteredFriends.length === 0 ? (
-                        <div className="mb-empty">
-                          <b>No users found</b>
-                          <p>Try a different search term.</p>
-                        </div>
+                        <div className="mb-empty"><b>No users found</b></div>
                       ) : (
                         <div className="fr-grid">
                           {filteredFriends.map((u) => {
                             const photo = avatarUrl(u)
                             const isFriend = myFriends.some((f) => f.uid === u.uid)
-                            const hasPendingSent = sentFriendRequests.some(
-                              (r) => r.to === u.uid && r.status === "pending"
-                            )
+                            const hasPendingSent = sentFriendRequests.some((r) => r.to === u.uid && r.status === "pending")
                             return (
-                              <div
-                                className="fr-card"
-                                key={u.uid}
-                                onClick={() => openUserProfile(u.uid)}
-                              >
+                              <div className="fr-card" key={u.uid} onClick={() => openUserProfile(u.uid)}>
                                 <img className="fr-card-img" src={photo} alt="" />
                                 <div className="fr-card-info">
-                                  <div className="fr-card-name">
-                                    {u.name}
-                                    {isVerified(u) && " ✓"}
-                                  </div>
+                                  <div className="fr-card-name">{u.name}{isVerified(u) && " ✓"}</div>
                                   <div className="fr-card-actions">
                                     {isFriend ? (
-                                      <button className="mb-btn mb-btn-primary" disabled>
-                                        ✓ Friends
-                                      </button>
+                                      <button className="mb-btn mb-btn-primary" disabled>✓ Friends</button>
                                     ) : hasPendingSent ? (
-                                      <button className="mb-btn mb-btn-secondary" disabled>
-                                        Sent ✓
-                                      </button>
+                                      <button className="mb-btn mb-btn-secondary" disabled>Sent ✓</button>
                                     ) : (
                                       <button
                                         className="mb-btn mb-btn-primary"
-                                        onClick={(e) => {
-                                          e.stopPropagation()
-                                          handleSendRequest(u.uid)
-                                        }}
+                                        onClick={(e) => { e.stopPropagation(); handleSendRequest(u.uid) }}
                                       >
                                         Add Friend
                                       </button>
                                     )}
                                     <button
                                       className="mb-btn mb-btn-secondary"
-                                      onClick={(e) => {
-                                        e.stopPropagation()
-                                        startChat(u.uid, u.name, photo)
-                                      }}
+                                      onClick={(e) => { e.stopPropagation(); startChat(u.uid, u.name, photo) }}
                                     >
                                       Message
                                     </button>
@@ -3004,7 +3375,7 @@ export default function MeBookPage() {
             </div>
           )}
 
-          {/* ============ USER PROFILE ============ */}
+          {/* USER PROFILE (other user — Facebook style) */}
           {currentView === "user-profile" && viewingUser && (
             <div className="mb-view active">
               <button className="mb-back-btn" onClick={goBack}>
@@ -3013,95 +3384,16 @@ export default function MeBookPage() {
                 </svg>
                 Back
               </button>
-              <div className="mb-profile-head">
-                <div className="mb-profile-cover">
-                  <img
-                    src={
-                      viewingUser.coverURL ||
-                      "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=1400&q=80"
-                    }
-                    alt="Cover"
-                  />
-                </div>
-                <div className="mb-profile-info">
-                  <div className="mb-profile-avatar-wrap">
-                    <img src={avatarUrl(viewingUser)} alt="Profile" />
-                  </div>
-                  <div className="mb-profile-text">
-                    <div className="mb-profile-name">
-                      {viewingUser.name}
-                      {isVerified(viewingUser) && (
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="#22c55e">
-                          <path d="M23 12l-2.44-2.79.34-3.69-3.61-.82-1.89-3.2L12 2.96 8.6 1.5 6.71 4.69l-3.61.82.34 3.69L1 12l2.44 2.79-.34 3.7 3.61.82L8.6 22.5l3.4-1.47 3.4 1.46 1.89-3.19 3.61-.82-.34-3.69L23 12zm-12.91 4.72l-3.8-3.81 1.48-1.48 2.32 2.33 5.85-5.87 1.48 1.48-7.33 7.35z" />
-                        </svg>
-                      )}
-                    </div>
-                    <div className="mb-profile-bio">
-                      {viewingUser.bio || "Movie lover 🎬"}
-                    </div>
-                    {viewingUser.location && (
-                      <div className="mb-profile-bio">📍 {viewingUser.location}</div>
-                    )}
-                    <div className="mb-profile-stats">
-                      <div className="mb-profile-stat">
-                        <b>{viewingUserPosts.length}</b> posts
-                      </div>
-                      <div className="mb-profile-stat">
-                        <b>{myFriends.length}</b> friends
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div className="mb-profile-actions">
-                  {myFriends.some((f) => f.uid === viewingUser.uid) ? (
-                    <button className="mb-btn mb-btn-primary" disabled>
-                      ✓ Friends
-                    </button>
-                  ) : sentRequests[viewingUser.uid] === "sending" ? (
-                    <button className="mb-btn mb-friend-btn sending" disabled>
-                      Sending...
-                    </button>
-                  ) : sentFriendRequests.some(
-                      (r) => r.to === viewingUser.uid && r.status === "pending"
-                    ) ? (
-                    <button
-                      className="mb-btn mb-btn-secondary"
-                      onClick={() => handleCancelRequest(viewingUser.uid)}
-                    >
-                      Cancel Request
-                    </button>
-                  ) : (
-                    <button
-                      className="mb-btn mb-btn-primary"
-                      onClick={() => handleSendRequest(viewingUser.uid)}
-                    >
-                      ＋ Add Friend
-                    </button>
-                  )}
-                  <button
-                    className="mb-btn mb-btn-secondary"
-                    onClick={() =>
-                      startChat(viewingUser.uid, viewingUser.name, avatarUrl(viewingUser))
-                    }
-                  >
-                    💬 Message
-                  </button>
-                </div>
-              </div>
+              {renderProfilePage(viewingUser, viewingUserPosts, false)}
 
-              <div className="mb-card-title" style={{ fontSize: 18, marginBottom: 10 }}>
+              <div className="mb-card-title" style={{ fontSize: 18, marginBottom: 10, padding: "0 4px" }}>
                 Posts ({viewingUserPosts.length})
               </div>
               <div>
                 {viewingUserPosts.length === 0 ? (
                   <div className="mb-empty">
-                    <svg viewBox="0 0 24 24">
-                      <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z" />
-                    </svg>
                     <b>No posts yet</b>
-                    <p style={{ fontSize: 14, marginTop: 4 }}>
-                      This user hasn't posted anything
-                    </p>
+                    <p style={{ fontSize: 14, marginTop: 4 }}>This user hasn't posted anything</p>
                   </div>
                 ) : (
                   viewingUserPosts.map((p) => renderPost(p))
@@ -3110,7 +3402,7 @@ export default function MeBookPage() {
             </div>
           )}
 
-          {/* ============ MESSAGES ============ */}
+          {/* MESSAGES */}
           {currentView === "messages" && (
             <div className="mb-view active">
               <h1 className="mb-page-title" style={{ marginBottom: 12 }}>
@@ -3119,14 +3411,9 @@ export default function MeBookPage() {
                 </svg>
                 Messages
               </h1>
-              <div
-                className={`msgr-wrap ${
-                  mobileChatWindow && chatPartner ? "mobile-on-window" : "mobile-on-list"
-                }`}
-              >
+              <div className={`msgr-wrap ${mobileChatWindow && chatPartner ? "mobile-on-window" : "mobile-on-list"}`}>
                 <div className="msgr-list">
                   <div className="msgr-list-head"><span>Chats</span></div>
-
                   {onlineList.length > 0 && (
                     <>
                       <div className="msgr-section">Online now</div>
@@ -3134,11 +3421,7 @@ export default function MeBookPage() {
                         {onlineList.map((u) => {
                           const photo = avatarUrl(u)
                           return (
-                            <div
-                              key={u.uid}
-                              className="msgr-online-item"
-                              onClick={() => startChat(u.uid, u.name, photo)}
-                            >
+                            <div key={u.uid} className="msgr-online-item" onClick={() => startChat(u.uid, u.name, photo)}>
                               <div className="msgr-online-avatar-wrap">
                                 <img src={photo} alt="" />
                                 <span className="msgr-online-dot" />
@@ -3150,7 +3433,6 @@ export default function MeBookPage() {
                       </div>
                     </>
                   )}
-
                   <div className="msgr-section">Recent</div>
                   {chats.length === 0 ? (
                     <div style={{ padding: 20, color: "var(--text-muted)", fontSize: 14, textAlign: "center" }}>
@@ -3161,11 +3443,7 @@ export default function MeBookPage() {
                       const photo = avatarUrl(c.other)
                       const isActive = activeChat === c.id
                       return (
-                        <div
-                          className={`msgr-item ${isActive ? "active" : ""}`}
-                          key={c.id}
-                          onClick={() => openChat(c.id, c.otherId, c.other)}
-                        >
+                        <div className={`msgr-item ${isActive ? "active" : ""}`} key={c.id} onClick={() => openChat(c.id, c.otherId, c.other)}>
                           <div className="msgr-item-avatar-wrap">
                             <img src={photo} alt="" />
                             <span className="msgr-item-dot" />
@@ -3176,15 +3454,12 @@ export default function MeBookPage() {
                               {(c.last as any)?.text || "Say hi 👋"}
                             </div>
                           </div>
-                          <div className="msgr-item-time">
-                            {c.lastAt ? timeShort(c.lastAt) : ""}
-                          </div>
+                          <div className="msgr-item-time">{c.lastAt ? timeShort(c.lastAt) : ""}</div>
                         </div>
                       )
                     })
                   )}
                 </div>
-
                 <div className="msgr-window">
                   {!activeChat || !chatPartner ? (
                     <div className="msgr-empty">
@@ -3225,16 +3500,9 @@ export default function MeBookPage() {
                             const prevMsg = idx > 0 ? chatMessages[idx - 1] : null
                             const showAvatar = !mine && (!prevMsg || prevMsg.from !== m.from)
                             return (
-                              <div
-                                key={m.id}
-                                className={`msgr-bubble-wrap ${mine ? "me" : "them"} ${showAvatar ? "show-avatar" : ""}`}
-                              >
-                                {!mine && (
-                                  <img className="msgr-bubble-avatar" src={avatarUrl(chatPartner)} alt="" />
-                                )}
-                                <div className={`msgr-bubble ${mine ? "me" : "them"}`}>
-                                  {m.text}
-                                </div>
+                              <div key={m.id} className={`msgr-bubble-wrap ${mine ? "me" : "them"} ${showAvatar ? "show-avatar" : ""}`}>
+                                {!mine && <img className="msgr-bubble-avatar" src={avatarUrl(chatPartner)} alt="" />}
+                                <div className={`msgr-bubble ${mine ? "me" : "them"}`}>{m.text}</div>
                               </div>
                             )
                           })
@@ -3254,11 +3522,7 @@ export default function MeBookPage() {
                             }
                           }}
                         />
-                        <button
-                          className="msgr-input-send"
-                          onClick={handleSendMessage}
-                          disabled={!chatInput.trim()}
-                        >
+                        <button className="msgr-input-send" onClick={handleSendMessage} disabled={!chatInput.trim()}>
                           <svg viewBox="0 0 24 24">
                             <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
                           </svg>
@@ -3271,7 +3535,7 @@ export default function MeBookPage() {
             </div>
           )}
 
-          {/* ============ CREATE POST ============ */}
+          {/* CREATE POST */}
           {currentView === "create-post" && (
             <div className="mb-view active">
               <button className="mb-back-btn" onClick={goBack}>
@@ -3310,10 +3574,7 @@ export default function MeBookPage() {
                   </div>
                   {!previewUrl ? (
                     <div>
-                      <div
-                        className="cp-upload-box"
-                        onClick={() => document.getElementById("mebook-file-input")?.click()}
-                      >
+                      <div className="cp-upload-box" onClick={() => document.getElementById("mebook-file-input")?.click()}>
                         <svg viewBox="0 0 24 24">
                           <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z" />
                         </svg>
@@ -3343,9 +3604,7 @@ export default function MeBookPage() {
                       <div style={{ height: 6, background: "var(--border)", borderRadius: 3, overflow: "hidden" }}>
                         <div style={{ height: "100%", width: `${uploadProgress}%`, background: "var(--green)", transition: "width .3s ease" }} />
                       </div>
-                      <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 4 }}>
-                        Uploading... {uploadProgress}%
-                      </div>
+                      <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 4 }}>Uploading... {uploadProgress}%</div>
                     </div>
                   )}
                   <div className="cp-actions">
@@ -3359,18 +3618,13 @@ export default function MeBookPage() {
             </div>
           )}
 
-          {/* ============ COMMENTS ============ */}
+          {/* COMMENTS */}
           {currentView === "comments" && (() => {
             const post = findPost(currentParams.postId)
             if (!post) {
               return (
                 <div className="mb-view active">
-                  <button className="mb-back-btn" onClick={goBack}>
-                    <svg viewBox="0 0 24 24">
-                      <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" />
-                    </svg>
-                    Back
-                  </button>
+                  <button className="mb-back-btn" onClick={goBack}>Back</button>
                   <div className="mb-empty">Post not found</div>
                 </div>
               )
@@ -3395,9 +3649,7 @@ export default function MeBookPage() {
                       </div>
                     ) : (
                       post.comments.map((c: any, i: number) => {
-                        const avatar =
-                          c.avatar ||
-                          `https://ui-avatars.com/api/?background=16a34a&color=fff&name=${encodeURIComponent(c.name || "U")}`
+                        const avatar = c.avatar || `https://ui-avatars.com/api/?background=16a34a&color=fff&name=${encodeURIComponent(c.name || "U")}`
                         return (
                           <div className="cmt-row" key={i}>
                             <img className="cmt-row-avatar" src={avatar} alt="" />
@@ -3426,11 +3678,7 @@ export default function MeBookPage() {
                         }
                       }}
                     />
-                    <button
-                      className="cmt-send"
-                      onClick={() => handleAddComment(post.id)}
-                      disabled={!commentText.trim() || commentBusy}
-                    >
+                    <button className="cmt-send" onClick={() => handleAddComment(post.id)} disabled={!commentText.trim() || commentBusy}>
                       <svg viewBox="0 0 24 24">
                         <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
                       </svg>
@@ -3441,18 +3689,13 @@ export default function MeBookPage() {
             )
           })()}
 
-          {/* ============ SHARE ============ */}
+          {/* SHARE */}
           {currentView === "share" && (() => {
             const post = findPost(currentParams.postId)
             if (!post) {
               return (
                 <div className="mb-view active">
-                  <button className="mb-back-btn" onClick={goBack}>
-                    <svg viewBox="0 0 24 24">
-                      <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" />
-                    </svg>
-                    Back
-                  </button>
+                  <button className="mb-back-btn" onClick={goBack}>Back</button>
                   <div className="mb-empty">Post not found</div>
                 </div>
               )
@@ -3498,10 +3741,7 @@ export default function MeBookPage() {
                           <path d="M24 12.07C24 5.4 18.63 0 12 0S0 5.4 0 12.07C0 18.1 4.39 23.1 10.13 24v-8.44H7.08v-3.49h3.05V9.41c0-3.02 1.79-4.69 4.53-4.69 1.31 0 2.68.24 2.68.24v2.96h-1.51c-1.49 0-1.95.93-1.95 1.88v2.27h3.32l-.53 3.49h-2.79V24C19.61 23.1 24 18.1 24 12.07z" />
                         </svg>
                       </span>
-                      <div className="share-option-text">
-                        Facebook
-                        <small>Share to feed</small>
-                      </div>
+                      <div className="share-option-text">Facebook<small>Share to feed</small></div>
                     </button>
                     <button className="share-option" onClick={() => shareToWhatsApp(post)}>
                       <span className="share-option-icon wa">
@@ -3509,10 +3749,7 @@ export default function MeBookPage() {
                           <path d="M17.47 14.38c-.3-.15-1.75-.86-2.02-.96-.27-.1-.47-.15-.67.15-.2.3-.77.96-.94 1.16-.17.2-.35.22-.64.07-.3-.15-1.25-.46-2.38-1.47-.88-.79-1.48-1.75-1.65-2.05-.17-.3-.02-.46.13-.6.13-.13.3-.35.44-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.07-.15-.65-1.58-.9-2.16-.24-.57-.48-.5-.66-.5-.17 0-.37-.02-.56-.02-.2 0-.5.07-.77.37-.27.3-1.02 1-1.02 2.42 0 1.43 1.04 2.81 1.19 3 .15.2 2.05 3.13 4.97 4.38.7.3 1.24.48 1.66.62.7.22 1.33.19 1.83.11.56-.08 1.75-.72 2-1.41.25-.7.25-1.29.17-1.41-.07-.13-.27-.2-.56-.35zM12 0C5.4 0 0 5.4 0 12c0 2.11.55 4.11 1.51 5.84L0 24l6.32-1.66C8.02 23.15 9.96 24 12 24c6.6 0 12-5.4 12-12S18.6 0 12 0z" />
                         </svg>
                       </span>
-                      <div className="share-option-text">
-                        WhatsApp
-                        <small>Send to chat</small>
-                      </div>
+                      <div className="share-option-text">WhatsApp<small>Send to chat</small></div>
                     </button>
                     <button className="share-option" onClick={() => shareToTelegram(post)}>
                       <span className="share-option-icon tg">
@@ -3520,10 +3757,7 @@ export default function MeBookPage() {
                           <path d="M9.78 18.65l.28-4.23 7.68-6.92c.34-.31-.07-.46-.52-.19L7.74 13.3 3.64 12c-.88-.25-.89-.86.2-1.3l15.97-6.16c.73-.33 1.43.18 1.15 1.3l-2.72 12.81c-.19.91-.74 1.13-1.5.71L12.6 16.3l-1.99 1.93c-.23.23-.42.42-.83.42z" />
                         </svg>
                       </span>
-                      <div className="share-option-text">
-                        Telegram
-                        <small>Share to chat</small>
-                      </div>
+                      <div className="share-option-text">Telegram<small>Share to chat</small></div>
                     </button>
                     <button className="share-option" onClick={() => copyLink(post)}>
                       <span className="share-option-icon link">
@@ -3531,10 +3765,7 @@ export default function MeBookPage() {
                           <path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z" />
                         </svg>
                       </span>
-                      <div className="share-option-text">
-                        Copy Link
-                        <small>Share anywhere</small>
-                      </div>
+                      <div className="share-option-text">Copy Link<small>Share anywhere</small></div>
                     </button>
                   </div>
                 </div>
@@ -3542,98 +3773,12 @@ export default function MeBookPage() {
             )
           })()}
 
-          {/* ============ PROFILE ============ */}
+          {/* PROFILE (own — Facebook style) */}
           {currentView === "profile" && (
             <div className="mb-view active">
-              <div className="mb-profile-head">
-                <div className="mb-profile-cover" onClick={handleChangeCover}>
-                  <img
-                    src={
-                      profile.coverURL ||
-                      "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=1400&q=80"
-                    }
-                    alt="Cover"
-                  />
-                  <div className="mb-profile-cover-add">
-                    <svg viewBox="0 0 24 24">
-                      <path d="M9 2L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-3.17L15 2H9zm3 15c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z" />
-                    </svg>
-                    Change Cover
-                  </div>
-                </div>
-                <div className="mb-profile-info">
-                  <div className="mb-profile-avatar-wrap" onClick={handleChangeProfilePhoto}>
-                    <img src={avatarUrl(profile)} alt="Profile" />
-                    <div className="mb-profile-avatar-add">
-                      <svg viewBox="0 0 24 24">
-                        <path d="M9 2L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-3.17L15 2H9zm3 15c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z" />
-                      </svg>
-                    </div>
-                  </div>
-                  <div className="mb-profile-text">
-                    <div className="mb-profile-name">
-                      {profile.name}
-                      {isVerified(profile) && (
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="#22c55e">
-                          <path d="M23 12l-2.44-2.79.34-3.69-3.61-.82-1.89-3.2L12 2.96 8.6 1.5 6.71 4.69l-3.61.82.34 3.69L1 12l2.44 2.79-.34 3.7 3.61.82L8.6 22.5l3.4-1.47 3.4 1.46 1.89-3.19 3.61-.82-.34-3.69L23 12zm-12.91 4.72l-3.8-3.81 1.48-1.48 2.32 2.33 5.85-5.87 1.48 1.48-7.33 7.35z" />
-                        </svg>
-                      )}
-                    </div>
-                    <div className="mb-profile-bio">{profile.bio || "Movie lover 🎬"}</div>
-                    <div className="mb-profile-stats">
-                      <div className="mb-profile-stat"><b>{myPosts.length}</b> posts</div>
-                      <div className="mb-profile-stat"><b>{myFriends.length}</b> friends</div>
-                    </div>
-                  </div>
-                </div>
-                <div className="mb-profile-actions">
-                  <button className="mb-btn mb-btn-primary" onClick={openCreatePost}>
-                    ＋ Create Post
-                  </button>
-                  <button className="mb-btn mb-btn-secondary" onClick={openEditProfile}>
-                    Edit Profile
-                  </button>
-                  <button className="mb-btn mb-btn-secondary" onClick={() => goTo("friends")}>
-                    View Friends
-                  </button>
-                </div>
-              </div>
+              {renderProfilePage(profile, myPosts, true)}
 
-              <div className="mb-card" style={{ marginBottom: 16 }}>
-                <div className="mb-card-title">Personal Information</div>
-                <div className="mb-info-grid">
-                  <div className="mb-info-row">
-                    <svg viewBox="0 0 24 24">
-                      <path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2z" />
-                    </svg>
-                    <span><b>Email:</b> {profile.email || ""}</span>
-                  </div>
-                  <div className="mb-info-row">
-                    <svg viewBox="0 0 24 24">
-                      <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z" />
-                    </svg>
-                    <span><b>Phone:</b> {profile.phone || "Not set"}</span>
-                  </div>
-                  <div className="mb-info-row">
-                    <svg viewBox="0 0 24 24">
-                      <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" />
-                    </svg>
-                    <span><b>Location:</b> {profile.location || "Not set"}</span>
-                  </div>
-                  <div className="mb-info-row">
-                    <svg viewBox="0 0 24 24">
-                      <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z" />
-                    </svg>
-                    <span>
-                      <b>Joined:</b>{" "}
-                      {profile.createdAt
-                        ? new Date(profile.createdAt.seconds * 1000).toLocaleDateString()
-                        : "Just now"}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
+              {/* Privacy settings card */}
               <div className="mb-card" style={{ marginBottom: 16 }}>
                 <div className="mb-card-title">Privacy</div>
                 <div className="mb-privacy-toggle">
@@ -3680,7 +3825,7 @@ export default function MeBookPage() {
                 </div>
               </div>
 
-              <div className="mb-card-title" style={{ fontSize: 18, marginBottom: 10 }}>
+              <div className="mb-card-title" style={{ fontSize: 18, marginBottom: 10, padding: "0 4px" }}>
                 My Posts
               </div>
               <div>
@@ -3699,7 +3844,7 @@ export default function MeBookPage() {
             </div>
           )}
 
-          {/* ============ EDIT PROFILE ============ */}
+          {/* EDIT PROFILE */}
           {currentView === "edit-profile" && (
             <div className="mb-view active">
               <button className="mb-back-btn" onClick={goBack}>
@@ -3727,9 +3872,27 @@ export default function MeBookPage() {
                   <label>Location</label>
                   <input
                     type="text"
-                    placeholder="Dhaka, Bangladesh"
+                    placeholder="Chaumuhani, Chittagong, Bangladesh"
                     value={editLoc}
                     onChange={(e) => setEditLoc(e.target.value)}
+                  />
+                </div>
+                <div className="auth-field">
+                  <label>Birthday</label>
+                  <input
+                    type="text"
+                    placeholder="5 December 2004"
+                    value={editBirthday}
+                    onChange={(e) => setEditBirthday(e.target.value)}
+                  />
+                </div>
+                <div className="auth-field">
+                  <label>Instagram / Handle</label>
+                  <input
+                    type="text"
+                    placeholder="mvbdstudio"
+                    value={editHandle}
+                    onChange={(e) => setEditHandle(e.target.value)}
                   />
                 </div>
                 <div className="auth-field">
@@ -3751,7 +3914,7 @@ export default function MeBookPage() {
             </div>
           )}
 
-          {/* ============ SETTINGS ============ */}
+          {/* SETTINGS */}
           {currentView === "settings" && (
             <div className="mb-view active">
               <h1 className="mb-page-title">
@@ -3828,7 +3991,7 @@ export default function MeBookPage() {
             </div>
           )}
 
-          {/* ============ MEBOOK ============ */}
+          {/* MEBOOK */}
           {currentView === "mebook" && (
             <div className="mb-view active">
               <div className="mb-mebook-hero">
@@ -3906,7 +4069,7 @@ export default function MeBookPage() {
             </div>
           )}
 
-          {/* ============ COMMUNITY ============ */}
+          {/* COMMUNITY */}
           {currentView === "community" && (
             <div className="mb-view active">
               <div className="mb-community-hero">
@@ -3971,11 +4134,7 @@ export default function MeBookPage() {
               onlineList.map((u) => {
                 const photo = avatarUrl(u)
                 return (
-                  <div
-                    className="mb-contact"
-                    key={u.uid}
-                    onClick={() => startChat(u.uid, u.name, photo)}
-                  >
+                  <div className="mb-contact" key={u.uid} onClick={() => startChat(u.uid, u.name, photo)}>
                     <img src={photo} alt="" />
                     <span className="mb-online" />
                     <div className="mb-contact-name">{u.name}</div>
@@ -4025,4 +4184,4 @@ function SideItem({
       {badge && badge > 0 ? <span className="mb-side-badge">{badge}</span> : null}
     </button>
   )
-      }
+}

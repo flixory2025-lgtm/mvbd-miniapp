@@ -1,7 +1,6 @@
 "use client"
 
 import Link from "next/link"
-import { useEffect, useState } from "react"
 
 type SocialPlatform =
   | "facebook"
@@ -115,6 +114,14 @@ function ThreadsIcon() {
         strokeLinejoin="round"
         d="M17.9 11.35c-.25-3.13-2.08-5.1-5.25-5.1-2.92 0-4.94 1.56-4.94 4.03 0 2.25 1.72 3.61 4.31 3.61 2.44 0 4.06-1.22 4.06-3.05 0-1.55-1.2-2.5-3.17-2.5-2.19 0-3.8 1.17-3.8 3.09 0 2.22 1.88 3.73 4.66 3.73 3.3 0 5.42-2.02 5.42-5.31 0-4.58-3.02-7.31-7.3-7.31-4.22 0-6.95 2.45-6.95 6.34"
       />
+    </svg>
+  )
+}
+
+function MailIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 inline-block mr-1" fill="currentColor">
+      <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
     </svg>
   )
 }
@@ -437,7 +444,16 @@ export default function UniversalFooter() {
           <div className="flex flex-wrap items-center justify-center gap-3 text-xs text-slate-500">
 
             <a
-              href="#privacy"
+              href="mailto:support@mvbds.xyz"
+              className="mvbd-bottom-link text-emerald-400 hover:text-emerald-300 font-medium flex items-center"
+            >
+              <MailIcon /> support@mvbds.xyz
+            </a>
+
+            <span className="text-slate-700">•</span>
+
+            <a
+              href="https://mvbds.xyz/privacy-policy.html"
               className="mvbd-bottom-link"
             >
               Privacy Policy
@@ -446,7 +462,7 @@ export default function UniversalFooter() {
             <span className="text-slate-700">•</span>
 
             <a
-              href="#terms"
+              href="https://mvbds.xyz/terms.html"
               className="mvbd-bottom-link"
             >
               Terms & Conditions
@@ -468,7 +484,7 @@ export default function UniversalFooter() {
       </div>
 
       {/* =====================================================
-          ALL FOOTER CSS
+          ALL FOOTER CSS (PERFORMANCE OPTIMIZED)
           ===================================================== */}
 
       <style jsx>{`
@@ -487,6 +503,7 @@ export default function UniversalFooter() {
             ),
             #020504;
           border-top: 1px solid rgba(255,255,255,.08);
+          contain: content;
         }
 
         .mvbd-footer-bg {
@@ -497,17 +514,19 @@ export default function UniversalFooter() {
         }
 
         /* =========================
-           AURORA
+           AURORA (OPTIMIZED BLUR)
            ========================= */
 
         .mvbd-aurora {
           position: absolute;
-          width: 420px;
-          height: 220px;
+          width: 320px;
+          height: 180px;
           border-radius: 50%;
-          filter: blur(80px);
+          filter: blur(40px);
           opacity: .13;
           mix-blend-mode: screen;
+          will-change: transform;
+          transform: translateZ(0);
         }
 
         .mvbd-aurora-1 {
@@ -559,12 +578,12 @@ export default function UniversalFooter() {
         }
 
         /* =========================
-           MOVING GRID
+           MOVING GRID (GPU ACCELERATED)
            ========================= */
 
         .mvbd-grid {
           position: absolute;
-          inset: -100px;
+          inset: -50px;
           opacity: .035;
           background-image:
             linear-gradient(
@@ -577,8 +596,8 @@ export default function UniversalFooter() {
               transparent 1px
             );
           background-size: 45px 45px;
-          transform: perspective(500px) rotateX(58deg) scale(1.5);
-          transform-origin: center bottom;
+          transform: translateZ(0);
+          will-change: background-position;
           animation: mvbdGridMove 12s linear infinite;
         }
 
@@ -601,46 +620,17 @@ export default function UniversalFooter() {
           height: 3px;
           border-radius: 50%;
           background: rgba(110,255,180,.8);
-          box-shadow:
-            0 0 12px rgba(52,211,153,.8);
+          box-shadow: 0 0 8px rgba(52,211,153,.8);
+          will-change: transform;
           animation: mvbdParticleFloat 7s ease-in-out infinite;
         }
 
-        .p1 {
-          left: 8%;
-          top: 25%;
-          animation-delay: -1s;
-        }
-
-        .p2 {
-          left: 25%;
-          top: 70%;
-          animation-delay: -4s;
-        }
-
-        .p3 {
-          left: 48%;
-          top: 18%;
-          animation-delay: -2s;
-        }
-
-        .p4 {
-          right: 18%;
-          top: 35%;
-          animation-delay: -5s;
-        }
-
-        .p5 {
-          right: 8%;
-          top: 75%;
-          animation-delay: -3s;
-        }
-
-        .p6 {
-          left: 68%;
-          bottom: 10%;
-          animation-delay: -6s;
-        }
+        .p1 { left: 8%; top: 25%; animation-delay: -1s; }
+        .p2 { left: 25%; top: 70%; animation-delay: -4s; }
+        .p3 { left: 48%; top: 18%; animation-delay: -2s; }
+        .p4 { right: 18%; top: 35%; animation-delay: -5s; }
+        .p5 { right: 8%; top: 75%; animation-delay: -3s; }
+        .p6 { left: 68%; bottom: 10%; animation-delay: -6s; }
 
         @keyframes mvbdParticleFloat {
           0%, 100% {
@@ -663,9 +653,10 @@ export default function UniversalFooter() {
           left: 50%;
           width: 70%;
           height: 180px;
-          transform: translateX(-50%);
+          transform: translateX(-50%) translateZ(0);
           background: rgba(16,185,129,.18);
-          filter: blur(80px);
+          filter: blur(40px);
+          will-change: transform, opacity;
           animation: mvbdBottomGlow 5s ease-in-out infinite alternate;
         }
 
@@ -712,6 +703,7 @@ export default function UniversalFooter() {
           height: 20px;
           background: rgba(255,255,255,.12);
           transform: rotate(-35deg) translateX(-60px);
+          will-change: transform;
           animation: mvbdBrandShine 3.5s ease-in-out infinite;
         }
 
@@ -771,6 +763,7 @@ export default function UniversalFooter() {
           border-radius: 99px;
           background: #34d399;
           box-shadow: 0 0 12px rgba(52,211,153,.65);
+          will-change: transform, opacity;
           animation: mvbdTitlePulse 2s ease-in-out infinite;
         }
 
@@ -808,6 +801,7 @@ export default function UniversalFooter() {
           border-radius: 50%;
           background: #4ade80;
           box-shadow: 0 0 10px #4ade80;
+          will-change: transform, opacity;
           animation: mvbdLivePulse 1.5s ease-in-out infinite;
         }
 
@@ -829,16 +823,16 @@ export default function UniversalFooter() {
         .mvbd-quick-link {
           position: relative;
           padding: 8px 10px;
-          border-radius: 9px;
+          border-radius: 99px;
           color: rgba(255,255,255,.42);
           font-size: 12px;
           background: rgba(255,255,255,.025);
           border: 1px solid transparent;
           transition:
-            color .25s ease,
-            background .25s ease,
-            border-color .25s ease,
-            transform .25s ease;
+            color .2s ease,
+            background .2s ease,
+            border-color .2s ease,
+            transform .2s ease;
         }
 
         .mvbd-quick-link:hover {
@@ -887,14 +881,14 @@ export default function UniversalFooter() {
           overflow: visible;
 
           transition:
-            transform .35s cubic-bezier(.22,1,.36,1),
-            color .3s ease,
-            border-color .3s ease,
-            box-shadow .3s ease;
+            transform .25s ease,
+            color .2s ease,
+            border-color .2s ease,
+            box-shadow .2s ease;
         }
 
         .mvbd-social:hover {
-          transform: translateY(-7px) scale(1.08);
+          transform: translateY(-5px) scale(1.05);
           color: var(--platform);
           border-color: color-mix(
             in srgb,
@@ -904,7 +898,7 @@ export default function UniversalFooter() {
 
           box-shadow:
             0 12px 35px rgba(0,0,0,.3),
-            0 0 25px color-mix(
+            0 0 15px color-mix(
               in srgb,
               var(--platform) 20%,
               transparent
@@ -916,33 +910,13 @@ export default function UniversalFooter() {
            PLATFORM COLORS
            ========================= */
 
-        .mvbd-social.facebook {
-          --platform: #1877f2;
-        }
-
-        .mvbd-social.instagram {
-          --platform: #f472b6;
-        }
-
-        .mvbd-social.telegram {
-          --platform: #38bdf8;
-        }
-
-        .mvbd-social.whatsapp {
-          --platform: #25d366;
-        }
-
-        .mvbd-social.youtube {
-          --platform: #ff3333;
-        }
-
-        .mvbd-social.tiktok {
-          --platform: #ffffff;
-        }
-
-        .mvbd-social.threads {
-          --platform: #ffffff;
-        }
+        .mvbd-social.facebook { --platform: #1877f2; }
+        .mvbd-social.instagram { --platform: #f472b6; }
+        .mvbd-social.telegram { --platform: #38bdf8; }
+        .mvbd-social.whatsapp { --platform: #25d366; }
+        .mvbd-social.youtube { --platform: #ff3333; }
+        .mvbd-social.tiktok { --platform: #ffffff; }
+        .mvbd-social.threads { --platform: #ffffff; }
 
         /* =========================
            ICON
@@ -956,23 +930,11 @@ export default function UniversalFooter() {
           justify-content: center;
           width: 22px;
           height: 22px;
-
-          transition:
-            transform .35s cubic-bezier(.22,1,.36,1),
-            filter .35s ease;
+          transition: transform .2s ease;
         }
 
         .mvbd-social:hover .mvbd-social-icon {
-          transform: scale(1.13) rotate(-3deg);
-          filter:
-            drop-shadow(
-              0 0 8px
-              color-mix(
-                in srgb,
-                var(--platform) 70%,
-                transparent
-              )
-            );
+          transform: scale(1.1);
         }
 
         .mvbd-social-svg {
@@ -996,7 +958,7 @@ export default function UniversalFooter() {
 
         .mvbd-social:hover .mvbd-social-ring {
           border-color: var(--platform);
-          animation: mvbdSocialRing 1.5s ease-out infinite;
+          animation: mvbdSocialRing 1.2s ease-out infinite;
         }
 
         @keyframes mvbdSocialRing {
@@ -1005,7 +967,7 @@ export default function UniversalFooter() {
             opacity: .65;
           }
           100% {
-            inset: -9px;
+            inset: -7px;
             opacity: 0;
           }
         }
@@ -1031,13 +993,13 @@ export default function UniversalFooter() {
           transform: translateX(-50%);
           border-radius: 50%;
           background: var(--platform);
-          box-shadow:
-            0 0 8px var(--platform);
+          box-shadow: 0 0 6px var(--platform);
         }
 
         .mvbd-social:hover .mvbd-orbit {
           opacity: 1;
-          animation: mvbdOrbit 2.2s linear infinite;
+          will-change: transform;
+          animation: mvbdOrbit 2s linear infinite;
         }
 
         @keyframes mvbdOrbit {
@@ -1068,16 +1030,12 @@ export default function UniversalFooter() {
         }
 
         .mvbd-social:hover .mvbd-social-shine {
-          animation: mvbdSocialShine .65s ease;
+          animation: mvbdSocialShine .6s ease;
         }
 
         @keyframes mvbdSocialShine {
-          from {
-            left: -80%;
-          }
-          to {
-            left: 140%;
-          }
+          from { left: -80%; }
+          to { left: 140%; }
         }
 
         /* =========================
@@ -1143,17 +1101,14 @@ export default function UniversalFooter() {
           width: 20%;
           height: 100%;
           background: #6ee7b7;
-          box-shadow: 0 0 12px #34d399;
+          box-shadow: 0 0 10px #34d399;
+          will-change: left;
           animation: mvbdDividerFlow 4s linear infinite;
         }
 
         @keyframes mvbdDividerFlow {
-          from {
-            left: -20%;
-          }
-          to {
-            left: 120%;
-          }
+          from { left: -20%; }
+          to { left: 120%; }
         }
 
         /* =========================
@@ -1167,7 +1122,6 @@ export default function UniversalFooter() {
           font-family: cursive;
           letter-spacing: .5px;
           font-weight: 700;
-
           background:
             linear-gradient(
               90deg,
@@ -1175,19 +1129,14 @@ export default function UniversalFooter() {
               #f472b6,
               #fb7185
             );
-
           -webkit-background-clip: text;
           background-clip: text;
           color: transparent;
-
-          transition:
-            opacity .25s ease,
-            filter .25s ease;
+          transition: opacity .2s ease;
         }
 
         .mvbd-maker:hover {
           opacity: .8;
-          filter: drop-shadow(0 0 7px rgba(244,114,182,.3));
         }
 
         /* =========================
@@ -1195,18 +1144,15 @@ export default function UniversalFooter() {
            ========================= */
 
         .mvbd-bottom-link {
-          transition:
-            color .25s ease,
-            text-shadow .25s ease;
+          transition: color .2s ease;
         }
 
         .mvbd-bottom-link:hover {
           color: white;
-          text-shadow: 0 0 10px rgba(255,255,255,.18);
         }
 
         /* =========================
-           MOBILE
+           MOBILE OPTIMIZATIONS
            ========================= */
 
         @media (max-width: 640px) {
@@ -1216,13 +1162,14 @@ export default function UniversalFooter() {
           }
 
           .mvbd-aurora {
-            width: 280px;
-            height: 160px;
-            filter: blur(65px);
+            width: 220px;
+            height: 120px;
+            filter: blur(30px);
           }
 
           .mvbd-grid {
             background-size: 35px 35px;
+            transform: none; /* Mobile rendering fast rakhar jonyo 3D rotate bondho */
           }
 
           .mvbd-social {
@@ -1242,7 +1189,7 @@ export default function UniversalFooter() {
         }
 
         /* =========================
-           REDUCED MOTION
+           REDUCED MOTION & LOW END DEVICES
            ========================= */
 
         @media (prefers-reduced-motion: reduce) {

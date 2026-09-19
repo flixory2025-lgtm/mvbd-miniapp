@@ -1,0 +1,17 @@
+{
+  "name": "MoviesVerseBD",
+  "short_name": "MVBD",
+  "description": "MoviesVerseBD Official",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#000000",
+  "icons": [
+    {
+      "src": "/favicon26.png",
+      "type": "image/png",
+      "sizes": "any",
+      "purpose": "any"
+    }
+  ]
+}

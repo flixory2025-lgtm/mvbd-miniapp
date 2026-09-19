@@ -14,7 +14,7 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://mvbds.xyz"),
 
   title: {
-    default: "MoviesVerseBD Official | mvbds.xyz",
+    default: "MoviesVerseBD",
     template: "%s | MoviesVerseBD",
   },
 
@@ -37,10 +37,10 @@ export const metadata: Metadata = {
   applicationName: "MoviesVerseBD",
 
   openGraph: {
-    title: "MoviesVerseBD Official | mvbds.xyz",
+    title: "MoviesVerseBD",
     description:
       "Download Bangla, Hindi, English, Korean & South Indian HD Movies in 480p, 720p, 1080p. Fast Download Links Only on MoviesVerseBD.",
-    url: "https://mvbds.xyz",
+    url: "https://mvbds.xyz/",
     siteName: "MoviesVerseBD",
     type: "website",
   },
@@ -66,7 +66,7 @@ export default function RootLayout({
           strategy="beforeInteractive"
         />
 
-        {/* Structured Data for Google Site Name */}
+        {/* Google Site Name Structured Data */}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
@@ -74,18 +74,23 @@ export default function RootLayout({
               "@context": "https://schema.org",
               "@type": "WebSite",
               name: "MoviesVerseBD",
-              alternateName: "MVBD",
-              url: "https://mvbds.xyz",
+              alternateName: ["MVBD", "mvbds.xyz"],
+              url: "https://mvbds.xyz/",
             }),
           }}
         />
       </head>
 
       <body className={`${geist.className} antialiased`}>
-        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="dark"
+          enableSystem
+        >
           <AuthProvider>
             {children}
           </AuthProvider>
+
           <Analytics />
         </ThemeProvider>
       </body>

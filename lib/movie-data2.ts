@@ -8597,7 +8597,7 @@ export const movies2 = [
     title: "45 (2025)",
     poster: "/1664id.jpg",
     trailer: "https://www.youtube.com/embed/tnEULj-QE_c?si",
-    telegramLink: "https://t.me/mvbdstore_bot?start=f_Njc0OSw2NzUw",
+    telegramLink: "https://t.me/mvbdstore_bot?start=f_MTUyOTAsMTUyOTE",
     genre: "Thriller | Drama",
     year: "2025",
     rating: "6.5",

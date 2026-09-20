@@ -456,19 +456,20 @@ scrollbar-width:none;
 .mebook-root .mb-main{min-width:0;padding-bottom:24px;}
 .mebook-root .mb-mobile-nav{display:none;}
 @media(max-width:800px){
-  .mebook-root .mb-layout{display:block;padding:72px 8px 84px;}
+  .mebook-root .mb-layout{display:block;padding:132px 8px 24px;}
   .mebook-root .mb-sidebar{display:none;}
   .mebook-root .mb-header{height:64px;padding:0 10px;}
   .mebook-root .mb-header-left{gap:4px;}
   .mebook-root .mb-header-logo{height:38px;}
-  .mebook-root .mb-logo-stack{display:none;}
+  .mebook-root .mb-logo-stack{display:flex;}
+  .mebook-root .mb-logo-text{font-size:21px;}
   .mebook-root .mb-header-right{gap:4px;}
   .mebook-root .mb-header-right .mb-icon-btn[title="Notifications"],
   .mebook-root .mb-header-right .mb-icon-btn[title="Messages"],
   .mebook-root .mb-header-right .mb-icon-btn[title="Friends"],
   .mebook-root .mb-header-right .mb-avatar-btn{display:none;}
-  .mebook-root .mb-mobile-nav{position:fixed;display:flex;align-items:center;justify-content:space-around;bottom:0;left:0;right:0;height:66px;z-index:1000;background:rgba(10,10,10,.96);border-top:1px solid var(--border);backdrop-filter:blur(18px);padding-bottom:env(safe-area-inset-bottom);}
-  .mebook-root .mb-mobile-nav button{position:relative;display:flex;align-items:center;justify-content:center;min-width:54px;height:54px;color:var(--text-muted);border-radius:14px;transition:color .18s,background .18s,transform .15s;}
+  .mebook-root .mb-mobile-nav{position:fixed;display:flex;align-items:center;justify-content:space-around;top:64px;bottom:auto;left:0;right:0;height:58px;z-index:999;background:rgba(10,10,10,.97);border-top:1px solid var(--border);border-bottom:1px solid var(--border);backdrop-filter:blur(18px);}
+  .mebook-root .mb-mobile-nav button{position:relative;display:flex;align-items:center;justify-content:center;min-width:54px;height:48px;color:var(--text-muted);border-radius:10px;transition:color .18s,background .18s,transform .15s;}
   .mebook-root .mb-mobile-nav button:active{transform:scale(.92);}
   .mebook-root .mb-mobile-nav button.active{color:var(--green);background:rgba(34,197,94,.12);}
   .mebook-root .mb-mobile-nav svg{width:24px;height:24px;fill:currentColor;}

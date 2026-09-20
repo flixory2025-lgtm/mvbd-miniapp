@@ -46,7 +46,7 @@ export default function ExclusivePage() {
   }
 
   return (
-    <div className="min-h-screen bg-black">
+    <div className="bg-black">
       <Header />
       <PlatformsSection />
       <GenreCategories

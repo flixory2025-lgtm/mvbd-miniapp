@@ -844,20 +844,12 @@ export default function Home() {
   return (
     <div className="w-full bg-black">
       <div
-        ref={swipeShellRef}
         className="relative w-full"
         style={{
           touchAction: "pan-y pinch-zoom",
           overflowX: "clip",
           overflowY: "visible",
-          overscrollBehaviorX: "none",
-          WebkitUserSelect: isSwiping ? "none" : "auto",
-          userSelect: isSwiping ? "none" : "auto",
         }}
-        onPointerDownCapture={handlePointerDown}
-        onPointerMoveCapture={handlePointerMove}
-        onPointerUpCapture={handlePointerUp}
-        onPointerCancelCapture={handlePointerCancel}
       >
         {/* CURRENT PAGE */}
         <div
@@ -874,46 +866,6 @@ export default function Home() {
         >
           {renderPage(activeTab)}
         </div>
-
-        {/* PREVIOUS PAGE */}
-        {previousTab && (
-          <div
-            ref={previousPageRef}
-            className="absolute left-0 top-0 w-full"
-            style={{
-              transform: `translate3d(-${viewportWidth}px, 0, 0)`,
-              transition: "none",
-              visibility: "hidden",
-              willChange: "transform",
-              backfaceVisibility: "hidden",
-              WebkitBackfaceVisibility: "hidden",
-              pointerEvents: "none",
-              zIndex: 1,
-            }}
-          >
-            {renderPage(previousTab)}
-          </div>
-        )}
-
-        {/* NEXT PAGE */}
-        {nextTab && (
-          <div
-            ref={nextPageRef}
-            className="absolute left-0 top-0 w-full"
-            style={{
-              transform: `translate3d(${viewportWidth}px, 0, 0)`,
-              transition: "none",
-              visibility: "hidden",
-              willChange: "transform",
-              backfaceVisibility: "hidden",
-              WebkitBackfaceVisibility: "hidden",
-              pointerEvents: "none",
-              zIndex: 1,
-            }}
-          >
-            {renderPage(nextTab)}
-          </div>
-        )}
 
         {/* BOTTOM NAVIGATION */}
         <div

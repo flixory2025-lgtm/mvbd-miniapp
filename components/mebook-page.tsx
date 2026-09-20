@@ -310,9 +310,11 @@ animation:cardFloat .7s cubic-bezier(.2,.8,.3,1);color:#f3f4f6;
 position:fixed;top:0;left:0;right:0;height:60px;z-index:1000;
 background:var(--header-bg);
 display:flex;align-items:center;justify-content:space-between;
-padding:0 16px;
+padding:0 16px;transform:translateY(0);opacity:1;
 box-shadow:0 2px 12px rgba(0,0,0,.25);
+transition:transform .28s ease,opacity .22s ease;
 }
+.mebook-root .mb-header.is-hidden{transform:translateY(-105%);opacity:0;pointer-events:none;}
 .mebook-root.dark-mode .mb-header{
 background:#000000;
 box-shadow:0 2px 16px rgba(0,0,0,.9);
@@ -452,6 +454,26 @@ scrollbar-width:none;
 .mebook-root .mb-side-item.active .mb-side-badge{background:rgba(255,255,255,.3);}
 .mebook-root .mb-side-divider{height:1px;background:var(--border);margin:8px 4px;}
 .mebook-root .mb-main{min-width:0;padding-bottom:24px;}
+.mebook-root .mb-mobile-nav{display:none;}
+@media(max-width:800px){
+  .mebook-root .mb-layout{display:block;padding:72px 8px 84px;}
+  .mebook-root .mb-sidebar{display:none;}
+  .mebook-root .mb-header{height:64px;padding:0 10px;}
+  .mebook-root .mb-header-left{gap:4px;}
+  .mebook-root .mb-header-logo{height:38px;}
+  .mebook-root .mb-logo-stack{display:none;}
+  .mebook-root .mb-header-right{gap:4px;}
+  .mebook-root .mb-header-right .mb-icon-btn[title="Notifications"],
+  .mebook-root .mb-header-right .mb-icon-btn[title="Messages"],
+  .mebook-root .mb-header-right .mb-icon-btn[title="Friends"],
+  .mebook-root .mb-header-right .mb-avatar-btn{display:none;}
+  .mebook-root .mb-mobile-nav{position:fixed;display:flex;align-items:center;justify-content:space-around;bottom:0;left:0;right:0;height:66px;z-index:1000;background:rgba(10,10,10,.96);border-top:1px solid var(--border);backdrop-filter:blur(18px);padding-bottom:env(safe-area-inset-bottom);}
+  .mebook-root .mb-mobile-nav button{position:relative;display:flex;align-items:center;justify-content:center;min-width:54px;height:54px;color:var(--text-muted);border-radius:14px;transition:color .18s,background .18s,transform .15s;}
+  .mebook-root .mb-mobile-nav button:active{transform:scale(.92);}
+  .mebook-root .mb-mobile-nav button.active{color:var(--green);background:rgba(34,197,94,.12);}
+  .mebook-root .mb-mobile-nav svg{width:24px;height:24px;fill:currentColor;}
+  .mebook-root .mb-mobile-nav .mb-mobile-badge{position:absolute;top:4px;right:7px;background:#ef4444;color:#fff;border-radius:10px;min-width:16px;padding:1px 4px;font-size:10px;font-weight:700;line-height:14px;}
+}
 
 /* ============ COMPOSER ============ */
 .mebook-root .mb-composer{border-radius:12px;box-shadow:var(--shadow);padding:12px 16px 10px;margin-bottom:16px;transition:background .3s;}
@@ -1165,7 +1187,8 @@ export default function MeBookPage() {
   const rootRef = useRef<HTMLDivElement>(null)
   const [ready, setReady] = useState(false)
 
-  const [theme, setTheme] = useState<"light" | "dark">("light")
+  const [theme, setTheme] = useState<"light" | "dark">("dark")
+  const [headerHidden, setHeaderHidden] = useState(false)
   const [authMode, setAuthMode] = useState<"signin" | "signup">("signin")
   const [authErr, setAuthErr] = useState<{ si: string; su: string }>({ si: "", su: "" })
   const [authBusy, setAuthBusy] = useState(false)
@@ -1272,9 +1295,26 @@ export default function MeBookPage() {
 
   useEffect(() => {
     const saved = localStorage.getItem("mebook-theme")
-    const isDark = saved ? saved === "dark" : false
+    const isDark = saved ? saved === "dark" : true
     setTheme(isDark ? "dark" : "light")
   }, [])
+
+  useEffect(() => {
+    let lastScrollY = window.scrollY
+    const onScroll = () => {
+      const currentScrollY = window.scrollY
+      if (menuOpen) {
+        setHeaderHidden(false)
+      } else if (currentScrollY > 72 && currentScrollY > lastScrollY) {
+        setHeaderHidden(true)
+      } else if (currentScrollY < lastScrollY) {
+        setHeaderHidden(false)
+      }
+      lastScrollY = currentScrollY
+    }
+    window.addEventListener("scroll", onScroll, { passive: true })
+    return () => window.removeEventListener("scroll", onScroll)
+  }, [menuOpen])
 
   const toggleTheme = (isDark: boolean) => {
     const pos = popupPointRef.current
@@ -2794,7 +2834,7 @@ export default function MeBookPage() {
       <ToastStack toasts={toasts} onDone={removeToast} />
 
       {/* ============ HEADER ============ */}
-      <header className="mb-header">
+      <header className={`mb-header${headerHidden ? " is-hidden" : ""}`}>
         <div className="mb-header-left" onClick={() => goTo("home")}>
           <img className="mb-header-logo" src={HEADER_LOGO} alt="MeBook" />
           <div className="mb-logo-stack">
@@ -2985,6 +3025,28 @@ export default function MeBookPage() {
           Log Out
         </button>
       </div>
+
+      {/* ============ MOBILE NAVIGATION ============ */}
+      <nav className="mb-mobile-nav" aria-label="MeBook navigation">
+        <button className={currentView === "home" ? "active" : ""} aria-label="Home" onClick={() => handleNavClick("home")}>
+          <svg viewBox="0 0 24 24"><path d="M12 3 3 10v10a1 1 0 0 0 1 1h5v-6h6v6h5a1 1 0 0 0 1-1V10l-9-7z" /></svg>
+        </button>
+        <button className={currentView === "friends" ? "active" : ""} aria-label="Friends" onClick={() => handleNavClick("friends")}>
+          <svg viewBox="0 0 24 24"><path d="M16 11a3 3 0 1 0-3-3 3 3 0 0 0 3 3ZM8 11a3 3 0 1 0-3-3 3 3 0 0 0 3 3Zm8 2c-2.2 0-4 1.1-4 3.2V19h8v-2.8c0-2.1-1.8-3.2-4-3.2ZM8 13c-2.2 0-4 1.1-4 3.2V19h8v-2.8C12 14.1 10.2 13 8 13Z" /></svg>
+          {requests.length > 0 && <span className="mb-mobile-badge">{requests.length}</span>}
+        </button>
+        <button className={currentView === "messages" ? "active" : ""} aria-label="Messages" onClick={() => handleNavClick("messages")}>
+          <svg viewBox="0 0 24 24"><path d="M4 4h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H8l-4 3v-3a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Zm2 5v2h12V9H6Zm0 4v2h8v-2H6Z" /></svg>
+          {unreadCount > 0 && <span className="mb-mobile-badge">{unreadCount}</span>}
+        </button>
+        <button className={currentView === "notifications" ? "active" : ""} aria-label="Notifications" onClick={() => handleNavClick("notifications")}>
+          <svg viewBox="0 0 24 24"><path d="M12 22a2.5 2.5 0 0 0 2.45-2h-4.9A2.5 2.5 0 0 0 12 22Zm7-5-1.6-1.8V10a5.4 5.4 0 0 0-4.4-5.3V4a1 1 0 0 0-2 0v.7A5.4 5.4 0 0 0 6.6 10v5L5 17v1h14v-1Z" /></svg>
+          {unreadNotifCount > 0 && <span className="mb-mobile-badge">{unreadNotifCount}</span>}
+        </button>
+        <button className={currentView === "profile" ? "active" : ""} aria-label="Profile" onClick={() => handleNavClick("profile")}>
+          <svg viewBox="0 0 24 24"><path d="M12 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4Zm0 2c-3.3 0-6 1.7-6 4v2h12v-2c0-2.3-2.7-4-6-4Z" /></svg>
+        </button>
+      </nav>
 
       {/* ============ LAYOUT ============ */}
       <div className="mb-layout">

@@ -172,7 +172,7 @@ font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-seri
 -webkit-font-smoothing:antialiased;
 }
 
-/* ============ DARK MODE — LIQUID BLACK ============ */
+/* ============ DARK MODE ============ */
 .mebook-root.dark-mode{
 --green:#22c55e;--green-dark:#4ade80;--green-light:#86efac;
 --bg:#000000;--card:#0a0a0a;--text:#f5f5f5;--text-muted:#8a8a8a;
@@ -223,7 +223,6 @@ background:#000000;
 .mebook-root.dark-mode .fr-request-row:hover{background:#141414;}
 .mebook-root.dark-mode .mb-menu-head:hover{background:#141414;}
 .mebook-root.dark-mode .msgr-item:hover{background:#141414;}
-.mebook-root.dark-mode .cmt-bubble{background:#141414;}
 .mebook-root.dark-mode .mb-composer-input{background:#141414;}
 .mebook-root.dark-mode .mb-composer-input:hover{background:#1a1a1a;}
 .mebook-root.dark-mode .cp-upload-box:hover{background:rgba(34,197,94,.05);}
@@ -312,7 +311,7 @@ background:var(--header-bg);
 display:flex;align-items:center;justify-content:space-between;
 padding:0 16px;
 box-shadow:0 2px 12px rgba(0,0,0,.25);
-transition:transform .35s cubic-bezier(.2,.8,.3,1), box-shadow .35s ease;
+transition:transform .4s cubic-bezier(.16,1,.3,1), box-shadow .4s ease;
 will-change:transform;
 }
 .mebook-root.dark-mode .mb-header{
@@ -321,7 +320,7 @@ box-shadow:0 2px 16px rgba(0,0,0,.9);
 border-bottom:1px solid #151515;
 }
 .mebook-root .mb-header.hidden{
-transform:translateY(-100%);
+transform:translateY(-105%);
 box-shadow:none;
 }
 .mebook-root .mb-header-left{display:flex;align-items:center;gap:4px;cursor:pointer;flex-shrink:0;min-width:0;}
@@ -410,19 +409,7 @@ transition:background .2s,transform .15s;color:#e4e6eb;position:relative;
 .mebook-root .mb-icon-btn:active{transform:scale(.93);}
 .mebook-root .mb-icon-btn svg{width:20px;height:20px;fill:currentColor;}
 .mebook-root .mb-icon-btn.active{background:rgba(255,255,255,.25);}
-.mebook-root .mb-badge-dot{position:absolute;top:6px;right:6px;min-width:16px;height:16px;background:#ef4444;color:#fff;font-size:10px;font-weight:700;border-radius:8px;display:flex;align-items:center;justify-content:center;padding:0 4px;border:2px solid #1e293b;}
-.mebook-root.dark-mode .mb-badge-dot{border-color:#000000;}
-.mebook-root .mb-avatar-btn{
-width:36px;height:36px;border-radius:50%;overflow:hidden;
-border:2px solid rgba(255,255,255,.3);
-transition:border-color .2s,transform .15s;padding:0;background:#334155;
-flex-shrink:0;
-}
-.mebook-root .mb-avatar-btn:hover{border-color:var(--green-light);}
-.mebook-root .mb-avatar-btn:active{transform:scale(.93);}
-.mebook-root .mb-avatar-btn img{width:100%;height:100%;object-fit:cover;}
 
-/* Mobile header adjustments */
 @media(max-width:820px){
 .mebook-root .mb-header{height:52px;padding:0 8px;}
 .mebook-root .mb-header-logo{height:32px;}
@@ -432,7 +419,6 @@ flex-shrink:0;
 .mebook-root .mb-nav-btn svg{width:20px;height:20px;}
 .mebook-root .mb-header-right{gap:4px;}
 .mebook-root .mb-icon-btn{width:36px;height:36px;}
-.mebook-root .mb-avatar-btn{width:32px;height:32px;}
 .mebook-root .mb-nav-btn.active::after{display:none;}
 }
 
@@ -743,7 +729,6 @@ margin-bottom:16px;
 overflow:hidden;
 position:relative;
 }
-
 .mebook-root .mb-profile-cover{
 position:relative;
 width:100%;
@@ -781,7 +766,6 @@ opacity:0;transition:opacity .25s;
 }
 .mebook-root .mb-profile-cover:hover .mb-profile-cover-add{opacity:1;}
 .mebook-root .mb-profile-cover-add svg{width:22px;height:22px;fill:#fff;}
-
 .mebook-root .mb-profile-avatar-center{
 position:relative;
 display:flex;
@@ -813,7 +797,6 @@ opacity:0;transition:opacity .25s;
 }
 .mebook-root .mb-profile-avatar-wrap:hover .mb-profile-avatar-add{opacity:1;}
 .mebook-root .mb-profile-avatar-add svg{width:32px;height:32px;fill:#fff;}
-
 .mebook-root .mb-profile-name-center{
 text-align:center;
 padding:16px 20px 4px;
@@ -830,7 +813,6 @@ flex-wrap:wrap;
 justify-content:center;
 }
 .mebook-root .mb-profile-name svg{flex-shrink:0;}
-
 .mebook-root .mb-profile-sub{
 text-align:center;
 font-size:15px;
@@ -843,7 +825,6 @@ letter-spacing:.2px;
 color:var(--text);
 font-weight:700;
 }
-
 .mebook-root .mb-profile-meta-row{
 display:flex;
 justify-content:center;
@@ -860,7 +841,6 @@ display:inline-flex;align-items:center;gap:5px;
 .mebook-root .mb-profile-meta-row svg{
 width:16px;height:16px;fill:currentColor;flex-shrink:0;
 }
-
 .mebook-root .mb-profile-friends-strip{
 display:flex;
 justify-content:center;
@@ -891,7 +871,6 @@ line-height:1.4;
 .mebook-root .mb-profile-friends-text b{
 color:var(--text);font-weight:700;
 }
-
 .mebook-root .mb-profile-actions{
 display:flex;
 justify-content:center;
@@ -921,7 +900,6 @@ width:44px!important;padding:0!important;
 justify-content:center;
 background:var(--input-bg);
 }
-
 .mebook-root .mb-profile-things-common{
 margin:0 20px 16px;
 padding:14px 18px;
@@ -948,7 +926,6 @@ width:22px;height:22px;fill:var(--text);flex-shrink:0;
 .mebook-root .mb-profile-things-common-body{
 font-size:14px;color:var(--text-muted);margin-left:32px;
 }
-
 .mebook-root .mb-profile-tabs{
 display:flex;
 gap:6px;
@@ -968,7 +945,6 @@ transition:background .18s,color .18s;
 color:var(--green);
 background:rgba(34,197,94,.10);
 }
-
 .mebook-root .mb-profile-section{
 padding:16px 20px 8px;
 }
@@ -1236,6 +1212,7 @@ export default function MeBookPage() {
   const [themeRipple, setThemeRipple] = useState<{ x: number; y: number; color: string } | null>(null)
 
   const [menuOpen, setMenuOpen] = useState(false)
+
   const [headerHidden, setHeaderHidden] = useState(false)
   const lastScrollY = useRef(0)
   const scrollTicking = useRef(false)
@@ -1331,25 +1308,50 @@ export default function MeBookPage() {
     setTheme(isDark ? "dark" : "light")
   }, [])
 
-  // Header hide on scroll down, show on scroll up
+  /* ==========================================================
+     IMPROVED SCROLL ANIMATION
+     - Hide on ANY scroll down (threshold > 4px)
+     - Show on ANY scroll up (threshold > 1px)
+     - Always show at top (y <= 60)
+     - Smooth via requestAnimationFrame
+     ========================================================== */
   useEffect(() => {
+    lastScrollY.current = window.scrollY || document.documentElement.scrollTop || 0
+
     const onScroll = () => {
       if (scrollTicking.current) return
       scrollTicking.current = true
       requestAnimationFrame(() => {
-        const y = window.scrollY || document.documentElement.scrollTop
+        const y = window.scrollY || document.documentElement.scrollTop || 0
         const last = lastScrollY.current
-        if (y > last && y > 80) {
+        const diff = y - last
+
+        if (y <= 60) {
+          // Always show at very top
+          setHeaderHidden(false)
+        } else if (diff > 4) {
+          // Scrolling DOWN → hide
           setHeaderHidden(true)
-        } else if (y < last - 10 || y <= 80) {
+        } else if (diff < -1) {
+          // Scrolling UP → show immediately
           setHeaderHidden(false)
         }
+
         lastScrollY.current = y
         scrollTicking.current = false
       })
     }
+
     window.addEventListener("scroll", onScroll, { passive: true })
-    return () => window.removeEventListener("scroll", onScroll)
+    // Also listen on window for any scroll container
+    window.addEventListener("wheel", onScroll, { passive: true })
+    window.addEventListener("touchmove", onScroll, { passive: true })
+
+    return () => {
+      window.removeEventListener("scroll", onScroll)
+      window.removeEventListener("wheel", onScroll)
+      window.removeEventListener("touchmove", onScroll)
+    }
   }, [])
 
   const toggleTheme = (isDark: boolean) => {
@@ -1705,6 +1707,8 @@ export default function MeBookPage() {
     setMenuOpen(false)
     if (view !== "messages") setMobileChatWindow(false)
     window.scrollTo({ top: 0, behavior: "auto" })
+    setHeaderHidden(false)
+    lastScrollY.current = 0
   }
 
   const pushPage = (view: string, params: any = {}) => {
@@ -1712,11 +1716,15 @@ export default function MeBookPage() {
     setDrawerOpen(false)
     setMenuOpen(false)
     window.scrollTo({ top: 0, behavior: "auto" })
+    setHeaderHidden(false)
+    lastScrollY.current = 0
   }
 
   const goBack = () => {
     setPageStack((s) => (s.length > 1 ? s.slice(0, -1) : [{ view: "home" }]))
     window.scrollTo({ top: 0, behavior: "auto" })
+    setHeaderHidden(false)
+    lastScrollY.current = 0
   }
 
   const handleNavClick = (view: string) => {
@@ -2853,9 +2861,8 @@ export default function MeBookPage() {
 
       <ToastStack toasts={toasts} onDone={removeToast} />
 
-      {/* ============ HEADER (Facebook-style) ============ */}
+      {/* ============ HEADER ============ */}
       <header className={`mb-header${headerHidden ? " hidden" : ""}`}>
-        {/* Left: Logo */}
         <div className="mb-header-left" onClick={() => goTo("home")}>
           <img className="mb-header-logo" src={HEADER_LOGO} alt="MeBook" />
           <div className="mb-logo-stack">
@@ -2870,7 +2877,6 @@ export default function MeBookPage() {
           </div>
         </div>
 
-        {/* Center: Navigation icons */}
         <nav className="mb-header-center">
           <button
             className={`mb-nav-btn${currentView === "home" ? " active" : ""}`}
@@ -2928,7 +2934,6 @@ export default function MeBookPage() {
           </button>
         </nav>
 
-        {/* Right: Menu + Avatar */}
         <div className="mb-header-right">
           <button
             className={`mb-icon-btn${menuOpen ? " active" : ""}`}
@@ -2939,13 +2944,6 @@ export default function MeBookPage() {
             <svg viewBox="0 0 24 24">
               <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
             </svg>
-          </button>
-          <button
-            className="mb-avatar-btn"
-            title="Profile"
-            onClick={() => goTo("profile")}
-          >
-            <img src={avatarUrl(profile)} alt="Profile" />
           </button>
         </div>
       </header>

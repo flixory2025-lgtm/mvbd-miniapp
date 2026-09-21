@@ -544,7 +544,7 @@ scrollbar-width:none;
 .mebook-root .mb-action.liked svg{animation:likePop .4s ease;}
 @keyframes likePop{0%{transform:scale(1);}50%{transform:scale(1.35);}100%{transform:scale(1);}}
 
-/* Facebook-style reaction picker on posts */
+/* ============ Facebook-style reaction picker on posts ============ */
 .mebook-root .post-reaction-picker{
 position:fixed;z-index:3000;
 background:var(--card);
@@ -569,33 +569,24 @@ width:42px;height:42px;border-radius:50%;
 display:flex;align-items:center;justify-content:center;
 font-size:26px;line-height:1;
 transition:transform .18s ease, background .15s;
+cursor:pointer;
 }
 .mebook-root .post-reaction-picker button:hover,
 .mebook-root .post-reaction-picker button.swipe-active{
-transform:scale(1.4) translateY(-8px);
+transform:scale(1.45) translateY(-8px);
 background:var(--hover);
 }
 
-/* Fast like animation */
+/* Fast like flyer animation */
 @keyframes fastLikeFly{
 0%{transform:scale(0.5);opacity:1;}
 50%{transform:scale(1.6);opacity:1;}
-100%{transform:scale(2.5) translateY(-30px);opacity:0;}
+100%{transform:scale(2.5) translateY(-40px);opacity:0;}
 }
 .mebook-root .fast-like-flyer{
 position:fixed;z-index:3500;font-size:28px;
 pointer-events:none;
 animation:fastLikeFly .6s cubic-bezier(.2,.8,.3,1) forwards;
-}
-
-/* Reaction picker swipe hint */
-@keyframes pickerPulse{
-0%{transform:scale(1);}
-50%{transform:scale(1.05);}
-100%{transform:scale(1);}
-}
-.mebook-root .post-reaction-picker.open{
-animation:pickerPulse .3s ease;
 }
 
 /* ============ BUTTONS ============ */
@@ -612,7 +603,7 @@ animation:pickerPulse .3s ease;
 .mebook-root .mb-friend-btn-row .mb-btn{flex:1;}
 
 /* ============================================================
-   MESSENGER — MeChat (with Liquid Glass)
+   MESSENGER — MeChat
    ============================================================ */
 .mebook-root .msgr-wrap{
 border-radius:12px;box-shadow:var(--shadow);
@@ -722,7 +713,7 @@ display:flex;flex-direction:column;gap:2px;
 }
 @keyframes bubbleIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
 
-/* MY BUBBLE - green liquid glass gradient */
+/* ===== MY BUBBLE — GREEN LIQUID GLASS GRADIENT ===== */
 .mebook-root .mechat-bubble.me{
 background:linear-gradient(135deg,#16a34a 0%,#22c55e 40%,#4ade80 100%);
 color:#fff;
@@ -869,7 +860,7 @@ color:var(--text-muted);gap:10px;padding:24px;text-align:center;
 .mebook-root .mechat-empty svg{width:64px;height:64px;fill:var(--border);}
 .mebook-root .mechat-empty b{font-size:16px;}
 
-/* Reply banner above input - LIQUID GLASS */
+/* Reply banner above input — LIQUID GLASS */
 .mebook-root .mechat-reply-banner{
 display:flex;align-items:center;gap:10px;
 padding:8px 12px;
@@ -944,7 +935,7 @@ background:#0084ff;color:#fff;
 .mebook-root .mechat-recording-cancel:active,
 .mebook-root .mechat-recording-send:active{transform:scale(.9);}
 
-/* Input bar - LIQUID GLASS */
+/* Input bar — LIQUID GLASS */
 .mebook-root .mechat-input-bar{
 display:flex;gap:8px;align-items:flex-end;
 padding:10px 12px 12px;
@@ -1003,7 +994,7 @@ box-shadow:0 0 0 3px rgba(34,197,94,.1);
 }
 .mebook-root .mechat-input-field::placeholder{color:var(--text-muted);}
 
-/* Send button - LIQUID GLASS */
+/* Send button — LIQUID GLASS */
 .mebook-root .mechat-send-btn{
 width:40px;height:40px;border-radius:50%;
 background:linear-gradient(135deg,#16a34a,#22c55e);
@@ -1222,7 +1213,7 @@ padding:2px 8px;border-radius:6px;
 .mebook-root .cmt-empty svg{width:60px;height:60px;fill:var(--border);margin:0 auto 12px;}
 .mebook-root .cmt-empty b{font-size:16px;display:block;margin-bottom:6px;color:var(--text);}
 
-/* Comment input - LIQUID GLASS */
+/* Comment input — LIQUID GLASS */
 .mebook-root .cmt-input-wrap{
 display:flex;gap:8px;align-items:flex-end;
 padding:10px 14px 14px;border-top:1px solid rgba(255,255,255,.08);
@@ -1843,7 +1834,7 @@ function ReactionPicker({
 }
 
 /* ============================================================
-POST REACTION PICKER (Facebook-style swipe)
+POST REACTION PICKER — Facebook screenshot style with swipe-select
 ============================================================ */
 
 function PostReactionPicker({
@@ -1855,50 +1846,65 @@ function PostReactionPicker({
   open: boolean
   onReact: (reactionKey: string, emoji: string) => void
 }) {
-  const [hoveredKey, setHoveredKey] = useState<string | null>(null)
-  const [touchActive, setTouchActive] = useState(false)
+  const [activeKey, setActiveKey] = useState<string | null>(null)
+  const pickerRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!open) {
+      setActiveKey(null)
+      return
+    }
+
+    const handleMove = (clientX: number, clientY: number) => {
+      if (!pickerRef.current) return
+      const buttons = pickerRef.current.querySelectorAll("button[data-rkey]")
+      buttons.forEach((btn) => {
+        const rect = btn.getBoundingClientRect()
+        if (
+          clientX >= rect.left - 4 &&
+          clientX <= rect.right + 4 &&
+          clientY >= rect.top - 24 &&
+          clientY <= rect.bottom + 24
+        ) {
+          const key = btn.getAttribute("data-rkey")
+          setActiveKey(key)
+        }
+      })
+    }
+
+    const onMouseMove = (e: MouseEvent) => handleMove(e.clientX, e.clientY)
+    const onTouchMove = (e: TouchEvent) => {
+      if (e.touches[0]) handleMove(e.touches[0].clientX, e.touches[0].clientY)
+    }
+
+    window.addEventListener("mousemove", onMouseMove)
+    window.addEventListener("touchmove", onTouchMove)
+    return () => {
+      window.removeEventListener("mousemove", onMouseMove)
+      window.removeEventListener("touchmove", onTouchMove)
+    }
+  }, [open])
 
   if (!anchorRect) return null
 
   return (
     <div
+      ref={pickerRef}
       className={`post-reaction-picker${open ? " open" : ""}`}
       style={{
         left: Math.max(8, Math.min(anchorRect.x, window.innerWidth - 340)),
-        top: Math.max(70, anchorRect.y - 60),
+        top: Math.max(70, anchorRect.y - 68),
       }}
       onClick={(e) => e.stopPropagation()}
-      onMouseLeave={() => setHoveredKey(null)}
     >
       {REACTIONS.map((r) => (
         <button
           key={r.key}
           type="button"
+          data-rkey={r.key}
           title={r.label}
-          className={hoveredKey === r.key || touchActive ? "swipe-active" : ""}
-          onMouseEnter={() => setHoveredKey(r.key)}
-          onTouchStart={() => {
-            setTouchActive(true)
-            setHoveredKey(r.key)
-          }}
-          onTouchMove={(e) => {
-            const touch = e.touches[0]
-            const el = document.elementFromPoint(touch.clientX, touch.clientY)
-            if (el && el.closest(".post-reaction-picker button")) {
-              const btns = document.querySelectorAll(".post-reaction-picker button")
-              btns.forEach((btn, idx) => {
-                const rect = btn.getBoundingClientRect()
-                if (touch.clientX >= rect.left && touch.clientX <= rect.right) {
-                  setHoveredKey(REACTIONS[idx]?.key || null)
-                }
-              })
-            }
-          }}
-          onTouchEnd={() => {
-            setTouchActive(false)
-            if (hoveredKey) onReact(hoveredKey, REACTIONS.find((rr) => rr.key === hoveredKey)?.emoji || "👍")
-            setHoveredKey(null)
-          }}
+          className={activeKey === r.key ? "swipe-active" : ""}
+          onMouseEnter={() => setActiveKey(r.key)}
           onClick={() => onReact(r.key, r.emoji)}
         >
           {r.emoji}
@@ -2463,7 +2469,6 @@ export default function MeBookPage() {
         likes: newLikes,
       })
 
-      // Update local state
       setPostReactions((prev) => ({
         ...prev,
         [postId]: newReactions,
@@ -2511,7 +2516,7 @@ export default function MeBookPage() {
   }
 
   /* ============================================================
-     FAST LIKE (single tap with fast animation)
+     FAST LIKE (single tap)
      ============================================================ */
 
   const handleFastLike = async (
@@ -2529,21 +2534,18 @@ export default function MeBookPage() {
       const has = likes.includes(user.uid)
 
       if (has && reactions[user.uid] === "like") {
-        // Unlike
         delete reactions[user.uid]
         await fb.updateDoc(ref, {
           likes: fb.arrayRemove(user.uid),
           reactions,
         })
       } else {
-        // Like instantly
         reactions[user.uid] = "like"
         await fb.updateDoc(ref, {
           likes: fb.arrayUnion(user.uid),
           reactions,
         })
 
-        // Fast fly animation
         if (evt) {
           const id = ++fastLikeIdRef.current
           setFastLikeFlyers((prev) => [
@@ -3965,9 +3967,12 @@ export default function MeBookPage() {
 
     // Long press timer for reaction picker
     let pressTimer: any = null
+    let longPressTriggered = false
 
     const startPress = (e: React.MouseEvent | React.TouchEvent) => {
+      longPressTriggered = false
       pressTimer = setTimeout(() => {
+        longPressTriggered = true
         openPostReactionPicker(e, post.id)
       }, 400)
     }
@@ -3977,6 +3982,28 @@ export default function MeBookPage() {
         clearTimeout(pressTimer)
         pressTimer = null
       }
+    }
+
+    const onLikeBtnRelease = (e: React.MouseEvent | React.TouchEvent) => {
+      const wasLongPress = longPressTriggered
+      cancelPress()
+      if (wasLongPress) {
+        // picker already opened by long press — do nothing
+        longPressTriggered = false
+        return
+      }
+      // Short tap → fast like
+      let cx = window.innerWidth / 2
+      let cy = window.innerHeight / 2
+      if ("clientX" in e) {
+        cx = (e as React.MouseEvent).clientX
+        cy = (e as React.MouseEvent).clientY
+      } else if ("changedTouches" in e && (e as React.TouchEvent).changedTouches[0]) {
+        const t = (e as React.TouchEvent).changedTouches[0]
+        cx = t.clientX
+        cy = t.clientY
+      }
+      handleFastLike(post.id, { clientX: cx, clientY: cy })
     }
 
     return (
@@ -4066,12 +4093,11 @@ export default function MeBookPage() {
         <div className="mb-post-actions">
           <button
             className={`mb-action${liked || myReaction ? " liked" : ""}`}
-            onClick={(e) => handleFastLike(post.id, { clientX: e.clientX, clientY: e.clientY })}
             onMouseDown={startPress}
-            onMouseUp={cancelPress}
+            onMouseUp={onLikeBtnRelease}
             onMouseLeave={cancelPress}
             onTouchStart={startPress}
-            onTouchEnd={cancelPress}
+            onTouchEnd={onLikeBtnRelease}
             onTouchCancel={cancelPress}
             onContextMenu={(e) => {
               e.preventDefault()
@@ -4432,7 +4458,7 @@ export default function MeBookPage() {
 
       <ToastStack toasts={toasts} onDone={removeToast} />
 
-      {/* Flying reactions (long-press selected) */}
+      {/* Flying reactions */}
       {flyingReactions.map((r) => (
         <div
           key={r.id}
@@ -4492,7 +4518,6 @@ export default function MeBookPage() {
         onReact={(key, emoji) => {
           if (!chatReactionPicker.msgId) return
           if (chatReactionPicker.msgId === "__send_reaction__") {
-            // send reaction via like button path
             setChatLikeActive(true)
             setTimeout(() => setChatLikeActive(false), 600)
             handleSendLike()
@@ -5362,7 +5387,7 @@ export default function MeBookPage() {
           )}
 
           {/* ============================================================
-              MESSAGES — MeChat (Messenger style)
+              MESSAGES — MeChat (screenshot 2 style: own right, other left)
               ============================================================ */}
           {currentView === "messages" && (
             <div className="mb-view active">
@@ -5460,9 +5485,8 @@ export default function MeBookPage() {
                   </div>
                 </>
               ) : (
-                /* MeChat fullpage window (screenshot style) */
+                /* MeChat fullpage window */
                 <div className="mechat-page">
-                  {/* HEADER */}
                   <div className="mechat-head">
                     <button className="mechat-head-back" onClick={closeChat}>
                       <svg viewBox="0 0 24 24">
@@ -5503,7 +5527,6 @@ export default function MeBookPage() {
                     </div>
                   </div>
 
-                  {/* BODY */}
                   <div className="mechat-body" ref={chatBodyRef}>
                     {chatMessages.length === 0 ? (
                       <div className="mechat-empty">
@@ -5529,7 +5552,6 @@ export default function MeBookPage() {
                         const isImageMsg = m.type === "image"
                         const isVoiceMsg = m.type === "voice"
 
-                        // Swipe to reply
                         let touchStartX = 0
                         let touchCurrentX = 0
                         const onTouchStart = (e: React.TouchEvent) => {
@@ -5650,7 +5672,6 @@ export default function MeBookPage() {
                     )}
                   </div>
 
-                  {/* RECORDING BAR */}
                   {recording && (
                     <div className="mechat-recording-bar">
                       <span className="mechat-recording-dot" />
@@ -5669,7 +5690,6 @@ export default function MeBookPage() {
                     </div>
                   )}
 
-                  {/* REPLY BANNER */}
                   {chatReplyTo && !recording && (
                     <div className="mechat-reply-banner">
                       <div className="bar" />
@@ -5687,7 +5707,6 @@ export default function MeBookPage() {
                     </div>
                   )}
 
-                  {/* INPUT BAR */}
                   {!recording && (
                     <div className={`mechat-input-bar${kbUp ? " kb-up" : ""}`}>
                       <div className="mechat-input-actions">
@@ -5764,7 +5783,6 @@ export default function MeBookPage() {
                     </div>
                   )}
 
-                  {/* Hidden file inputs */}
                   <input
                     ref={chatFileInputRef}
                     type="file"

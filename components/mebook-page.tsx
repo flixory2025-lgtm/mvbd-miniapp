@@ -84,10 +84,6 @@ const UPLOAD_PRESET = "MeBook"
 const LOGO_URL = "https://i.postimg.cc/g0pGNkxc/file-000000000bf482118c249820a099f2d4.png"
 const HEADER_LOGO = "https://i.postimg.cc/rsBBsQWF/17832-removebg-preview.png"
 
-/* ============================================================
-REACTION CONFIG
-============================================================ */
-
 const REACTIONS = [
   { key: "like", emoji: "👍", label: "Like", color: "#1877f2" },
   { key: "love", emoji: "❤️", label: "Love", color: "#f33e58" },
@@ -95,6 +91,14 @@ const REACTIONS = [
   { key: "wow", emoji: "😮", label: "Wow", color: "#f7b125" },
   { key: "sad", emoji: "😢", label: "Sad", color: "#f7b125" },
   { key: "angry", emoji: "😡", label: "Angry", color: "#e9710f" },
+]
+
+const CHAT_REACTIONS = [
+  { key: "like", emoji: "👍", label: "Like" },
+  { key: "love", emoji: "❤️", label: "Love" },
+  { key: "haha", emoji: "😂", label: "Haha" },
+  { key: "wow", emoji: "😮", label: "Wow" },
+  { key: "sad", emoji: "😢", label: "Sad" },
 ]
 
 /* ============================================================
@@ -121,6 +125,12 @@ function timeShort(ts: any) {
   if (diff < day) return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
   if (diff < day * 7) return d.toLocaleDateString([], { weekday: "short" })
   return d.toLocaleDateString([], { month: "short", day: "numeric" })
+}
+
+function chatTime(ts: any) {
+  if (!ts) return ""
+  const d = ts.toDate ? ts.toDate() : new Date(ts)
+  return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
 }
 
 function monthYear(ts: any) {
@@ -151,8 +161,12 @@ function friendDocIdFor(a: string, b: string) {
   return [a, b].sort().join("_")
 }
 
-async function cloudinaryUpload(file: File, onProgress?: (pct: number) => void): Promise<string> {
-  const url = `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`
+async function cloudinaryUpload(
+  file: File | Blob,
+  onProgress?: (pct: number) => void,
+  resourceType: "image" | "video" | "auto" = "image"
+): Promise<string> {
+  const url = `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/${resourceType === "video" ? "video" : "image"}/upload`
   const fd = new FormData()
   fd.append("file", file)
   fd.append("upload_preset", UPLOAD_PRESET)
@@ -172,6 +186,13 @@ async function cloudinaryUpload(file: File, onProgress?: (pct: number) => void):
     xhr.onerror = () => reject(new Error("Network error"))
     xhr.send(fd)
   })
+}
+
+function formatVoiceDuration(seconds: number) {
+  const s = Math.max(0, Math.floor(seconds))
+  const m = Math.floor(s / 60)
+  const r = s % 60
+  return `${m}:${r < 10 ? "0" : ""}${r}`
 }
 
 /* ============================================================
@@ -513,15 +534,46 @@ scrollbar-width:none;
 .mebook-root .mb-movie-badge{position:absolute;top:12px;left:12px;display:flex;align-items:center;gap:6px;background:rgba(0,0,0,.68);backdrop-filter:blur(6px);color:#fff;font-size:12px;font-weight:600;padding:5px 10px;border-radius:20px;}
 .mebook-root .mb-movie-badge svg{width:14px;height:14px;fill:#fbbf24;}
 .mebook-root .mb-post-stats{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;font-size:13.5px;color:var(--text-muted);}
-.mebook-root .mb-reacts{display:flex;align-items:center;gap:6px;}
-.mebook-root .mb-react-pill{display:flex;align-items:center;gap:4px;background:linear-gradient(135deg,#ef4444,#f97316);color:#fff;font-size:11px;font-weight:700;padding:2px 8px 2px 4px;border-radius:12px;}
-.mebook-root .mb-react-pill svg{width:13px;height:13px;fill:#fff;}
-.mebook-root .mb-post-actions{display:flex;border-top:1px solid var(--border);margin:0 4px;padding:4px 0;}
-.mebook-root .mb-action{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;padding:9px;border-radius:8px;font-size:14.5px;font-weight:600;color:var(--text-muted);transition:background .18s,color .18s;}
+.mebook-root .mb-reacts{display:flex;align-items:center;gap:6px;cursor:pointer;}
+.mebook-root .mb-react-pill{display:flex;align-items:center;gap:2px;background:transparent;font-size:14px;}
+.mebook-root .mb-react-pill span{font-size:13px;color:var(--text-muted);font-weight:600;margin-left:2px;}
+.mebook-root .mb-post-actions{display:flex;border-top:1px solid var(--border);margin:0 4px;padding:4px 0;position:relative;}
+.mebook-root .mb-action{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;padding:9px;border-radius:8px;font-size:14.5px;font-weight:600;color:var(--text-muted);transition:background .18s,color .18s;position:relative;}
 .mebook-root .mb-action.liked{color:#ef4444;}
 .mebook-root .mb-action svg{width:19px;height:19px;fill:currentColor;transition:transform .2s;}
 .mebook-root .mb-action.liked svg{animation:likePop .4s ease;}
 @keyframes likePop{0%{transform:scale(1);}50%{transform:scale(1.35);}100%{transform:scale(1);}}
+
+/* Reaction picker for posts */
+.mebook-root .post-reaction-picker{
+position:fixed;z-index:3000;
+background:var(--card);
+border-radius:30px;
+padding:6px 8px;
+display:flex;gap:2px;
+box-shadow:0 6px 24px rgba(0,0,0,.25), 0 0 0 1px rgba(0,0,0,.05);
+transform:scale(.7) translateY(8px);
+opacity:0;pointer-events:none;
+transform-origin:bottom left;
+transition:transform .22s cubic-bezier(.2,1.4,.4,1), opacity .18s ease;
+}
+.mebook-root.dark-mode .post-reaction-picker{
+box-shadow:0 6px 28px rgba(0,0,0,.9), 0 0 0 1px rgba(255,255,255,.06);
+}
+.mebook-root .post-reaction-picker.open{
+opacity:1;pointer-events:auto;
+transform:scale(1) translateY(0);
+}
+.mebook-root .post-reaction-picker button{
+width:42px;height:42px;border-radius:50%;
+display:flex;align-items:center;justify-content:center;
+font-size:26px;line-height:1;
+transition:transform .18s ease, background .15s;
+}
+.mebook-root .post-reaction-picker button:hover{
+transform:scale(1.35) translateY(-6px);
+background:var(--hover);
+}
 
 /* ============ BUTTONS ============ */
 .mebook-root .mb-btn{width:100%;padding:9px;border-radius:9px;font-size:14.5px;font-weight:600;transition:filter .18s,transform .12s,background .2s;}
@@ -536,12 +588,29 @@ scrollbar-width:none;
 .mebook-root .mb-friend-btn-row{display:flex;gap:8px;margin-top:12px;}
 .mebook-root .mb-friend-btn-row .mb-btn{flex:1;}
 
-/* ============ MESSAGES ============ */
-.mebook-root .msgr-wrap{border-radius:12px;box-shadow:var(--shadow);height:calc(100vh - 160px);min-height:420px;display:flex;overflow:hidden;position:relative;}
-.mebook-root .msgr-list{width:320px;border-right:1px solid var(--border);overflow-y:auto;flex-shrink:0;}
-.mebook-root .msgr-list-head{padding:14px 16px 8px;font-size:20px;font-weight:800;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--card);z-index:2;}
+/* ============================================================
+   MESSENGER — MeChat
+   ============================================================ */
+.mebook-root .msgr-wrap{
+border-radius:12px;box-shadow:var(--shadow);
+height:calc(100vh - 100px);min-height:460px;
+display:flex;overflow:hidden;position:relative;
+}
+.mebook-root .msgr-list{
+width:340px;border-right:1px solid var(--border);
+overflow-y:auto;flex-shrink:0;
+}
+.mebook-root .msgr-list-head{
+padding:14px 16px 8px;font-size:22px;font-weight:800;
+display:flex;align-items:center;justify-content:space-between;
+position:sticky;top:0;background:var(--card);z-index:2;
+}
 .mebook-root .msgr-section{font-size:12px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.6px;padding:10px 16px 6px;}
-.mebook-root .msgr-online-row{display:flex;gap:10px;overflow-x:auto;overflow-y:hidden;padding:4px 14px 12px;border-bottom:1px solid var(--border);scroll-behavior:smooth;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+.mebook-root .msgr-online-row{
+display:flex;gap:10px;overflow-x:auto;overflow-y:hidden;
+padding:4px 14px 12px;border-bottom:1px solid var(--border);
+scroll-behavior:smooth;-webkit-overflow-scrolling:touch;scrollbar-width:none;
+}
 .mebook-root .msgr-online-row::-webkit-scrollbar{height:0;display:none;}
 .mebook-root .msgr-online-item{flex-shrink:0;text-align:center;width:62px;cursor:pointer;}
 .mebook-root .msgr-online-avatar-wrap{position:relative;width:52px;height:52px;margin:0 auto;}
@@ -560,49 +629,387 @@ scrollbar-width:none;
 .mebook-root .msgr-item-last.unread{color:var(--text);font-weight:600;}
 .mebook-root .msgr-item-time{font-size:11px;color:var(--text-muted);flex-shrink:0;}
 .mebook-root .msgr-window{flex:1;display:flex;flex-direction:column;min-width:0;}
-.mebook-root .msgr-head{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--border);flex-shrink:0;}
-.mebook-root .msgr-head-back{width:36px;height:36px;border-radius:50%;display:none;align-items:center;justify-content:center;color:var(--text);}
-.mebook-root .msgr-head-back svg{width:22px;height:22px;fill:currentColor;}
-.mebook-root .msgr-head img{width:40px;height:40px;border-radius:50%;object-fit:cover;background:#cbd5e1;}
-.mebook-root .msgr-head-info{flex:1;min-width:0;}
-.mebook-root .msgr-head-name{font-size:15px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.mebook-root .msgr-head-status{font-size:12.5px;color:#22c55e;display:flex;align-items:center;gap:5px;}
-.mebook-root .msgr-head-status .dot{width:8px;height:8px;border-radius:50%;background:#22c55e;}
-.mebook-root .msgr-head-btn{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--text-muted);}
-.mebook-root .msgr-head-btn svg{width:20px;height:20px;fill:currentColor;}
-.mebook-root .msgr-body{flex:1;overflow-y:auto;padding:14px 12px;background:var(--chat-body-bg);display:flex;flex-direction:column;gap:4px;}
-.mebook-root .msgr-body::-webkit-scrollbar{width:6px;}
-.mebook-root .msgr-body::-webkit-scrollbar-thumb{background:var(--border);border-radius:10px;}
-.mebook-root .msgr-bubble-wrap{display:flex;align-items:flex-end;gap:6px;margin-top:2px;}
-.mebook-root .msgr-bubble-wrap.me{justify-content:flex-end;}
-.mebook-root .msgr-bubble-wrap.them{justify-content:flex-start;}
-.mebook-root .msgr-bubble-avatar{width:28px;height:28px;border-radius:50%;object-fit:cover;flex-shrink:0;background:#cbd5e1;opacity:0;transition:opacity .2s;}
-.mebook-root .msgr-bubble-wrap.show-avatar .msgr-bubble-avatar{opacity:1;}
-.mebook-root .msgr-bubble{max-width:72%;padding:9px 14px;border-radius:20px;font-size:14.5px;line-height:1.4;word-wrap:break-word;white-space:pre-wrap;animation:bubbleIn .22s ease;}
+
+/* MeChat fullpage header (screenshot style) */
+.mebook-root .mechat-page{
+display:flex;flex-direction:column;
+height:calc(100vh - 60px);
+background:var(--card);
+overflow:hidden;
+}
+.mebook-root .mechat-head{
+display:flex;align-items:center;gap:10px;
+padding:10px 12px;
+border-bottom:1px solid var(--border);
+flex-shrink:0;background:var(--card);
+z-index:5;
+}
+.mebook-root .mechat-head-back{
+width:36px;height:36px;border-radius:50%;
+display:flex;align-items:center;justify-content:center;
+color:var(--text);flex-shrink:0;
+}
+.mebook-root .mechat-head-back svg{width:22px;height:22px;fill:currentColor;}
+.mebook-root .mechat-head-avatar-wrap{position:relative;flex-shrink:0;cursor:pointer;}
+.mebook-root .mechat-head-avatar-wrap img{width:42px;height:42px;border-radius:50%;object-fit:cover;background:#cbd5e1;}
+.mebook-root .mechat-head-online{position:absolute;right:0;bottom:0;width:12px;height:12px;border-radius:50%;background:#22c55e;border:2px solid var(--card);}
+.mebook-root .mechat-head-info{flex:1;min-width:0;}
+.mebook-root .mechat-head-name{font-size:16px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:flex;align-items:center;gap:6px;}
+.mebook-root .mechat-head-status{font-size:12px;color:var(--text-muted);margin-top:1px;}
+.mebook-root .mechat-head-actions{display:flex;gap:4px;flex-shrink:0;}
+.mebook-root .mechat-head-btn{
+width:38px;height:38px;border-radius:50%;
+display:flex;align-items:center;justify-content:center;
+color:#0084ff;transition:background .15s;
+}
+.mebook-root .mechat-head-btn:hover{background:rgba(0,132,255,.08);}
+.mebook-root .mechat-head-btn svg{width:22px;height:22px;fill:#0084ff;}
+.mebook-root.dark-mode .mechat-head-btn,
+.mebook-root.dark-mode .mechat-head-btn svg{color:#4ade80;fill:#4ade80;}
+
+.mebook-root .mechat-body{
+flex:1;overflow-y:auto;padding:12px 12px 8px;
+background:var(--chat-body-bg);
+display:flex;flex-direction:column;gap:2px;
+scroll-behavior:smooth;
+}
+.mebook-root .mechat-body::-webkit-scrollbar{width:6px;}
+.mebook-root .mechat-body::-webkit-scrollbar-thumb{background:var(--border);border-radius:10px;}
+
+.mebook-root .mechat-bubble-wrap{
+display:flex;align-items:flex-end;gap:6px;
+margin-top:2px;position:relative;
+user-select:none;
+}
+.mebook-root .mechat-bubble-wrap.me{justify-content:flex-end;flex-direction:row-reverse;}
+.mebook-root .mechat-bubble-wrap.them{justify-content:flex-start;}
+.mebook-root .mechat-bubble-avatar{
+width:28px;height:28px;border-radius:50%;
+object-fit:cover;flex-shrink:0;background:#cbd5e1;
+opacity:0;transition:opacity .2s;
+}
+.mebook-root .mechat-bubble-wrap.show-avatar .mechat-bubble-avatar{opacity:1;}
+.mebook-root .mechat-bubble{
+max-width:72%;padding:8px 12px 6px;
+border-radius:18px;font-size:14.5px;line-height:1.4;
+word-wrap:break-word;white-space:pre-wrap;
+animation:bubbleIn .22s ease;
+position:relative;
+display:flex;flex-direction:column;gap:2px;
+}
 @keyframes bubbleIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
-.mebook-root .msgr-bubble.me{background:linear-gradient(135deg,#16a34a,#22c55e);color:#fff;border-bottom-right-radius:6px;}
-.mebook-root .msgr-bubble.them{color:var(--text);border-bottom-left-radius:6px;box-shadow:0 1px 2px rgba(0,0,0,.08);background:var(--bubble-them-bg);}
-.mebook-root .msgr-empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--text-muted);gap:10px;padding:24px;text-align:center;}
-.mebook-root .msgr-empty svg{width:64px;height:64px;fill:var(--border);}
-.mebook-root .msgr-empty b{font-size:16px;}
-.mebook-root .msgr-input{display:flex;gap:8px;align-items:flex-end;padding:10px 12px 12px;border-top:1px solid var(--border);flex-shrink:0;}
-.mebook-root .msgr-input-field{flex:1;border:none;border-radius:20px;padding:10px 14px;font-size:14.5px;outline:none;color:var(--text);resize:none;max-height:100px;font-family:inherit;line-height:1.4;background:var(--input-bg);}
-.mebook-root .msgr-input-send{width:38px;height:38px;border-radius:50%;background:var(--green);color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:transform .12s;}
-.mebook-root .msgr-input-send:active{transform:scale(.9);}
-.mebook-root .msgr-input-send:disabled{opacity:.5;}
-.mebook-root .msgr-input-send svg{width:18px;height:18px;fill:#fff;}
-.mebook-root .msgr-wrap.mobile-on-window .msgr-list{display:none;}
-.mebook-root .msgr-wrap.mobile-on-list .msgr-window{display:none;}
-@media(max-width:820px){
-.mebook-root .msgr-head-back{display:flex;}
-.mebook-root .msgr-list{width:100%;border-right:none;}
-.mebook-root .msgr-wrap{height:calc(100vh - 120px);border-radius:0;}
-.mebook-root .msgr-wrap.mobile-on-window .msgr-window{display:flex;}
+.mebook-root .mechat-bubble.me{
+background:linear-gradient(135deg,#0084ff,#4da3ff);color:#fff;
+border-bottom-right-radius:4px;
+}
+.mebook-root .mechat-bubble.them{
+color:var(--text);border-bottom-left-radius:4px;
+box-shadow:0 1px 2px rgba(0,0,0,.08);
+background:var(--bubble-them-bg);
+}
+.mebook-root .mechat-bubble-time{
+font-size:10.5px;opacity:.75;align-self:flex-end;margin-top:1px;
+font-weight:500;
+}
+.mebook-root .mechat-bubble-time.them{color:var(--text-muted);}
+
+/* reply quote inside bubble */
+.mebook-root .mechat-reply-quote{
+border-left:3px solid rgba(255,255,255,.6);
+padding:4px 8px;border-radius:6px;
+background:rgba(255,255,255,.15);
+margin-bottom:4px;font-size:12.5px;
+max-width:100%;overflow:hidden;
+}
+.mebook-root .mechat-bubble.them .mechat-reply-quote{
+border-left-color:#0084ff;
+background:rgba(0,132,255,.08);
+}
+.mebook-root .mechat-reply-quote b{
+display:block;font-weight:700;font-size:11.5px;
+margin-bottom:1px;opacity:.95;
+}
+.mebook-root .mechat-reply-quote span{
+display:block;opacity:.85;
+white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
 }
 
-/* ============================================================
-   ENHANCED COMMENTS PAGE
-   ============================================================ */
+/* Image bubble */
+.mebook-root .mechat-bubble-image{
+padding:3px;background:transparent;
+max-width:72%;
+}
+.mebook-root .mechat-bubble-image img{
+max-width:260px;max-height:340px;
+border-radius:16px;display:block;
+object-fit:cover;background:#000;
+}
+.mebook-root .mechat-bubble-image.me img{border-bottom-right-radius:6px;}
+.mebook-root .mechat-bubble-image.them img{border-bottom-left-radius:6px;}
+.mebook-root .mechat-image-time{
+position:absolute;right:8px;bottom:6px;
+background:rgba(0,0,0,.55);color:#fff;
+font-size:10px;padding:1px 6px;border-radius:8px;
+font-weight:600;
+}
+
+/* Voice bubble */
+.mebook-root .mechat-voice{
+display:flex;align-items:center;gap:10px;
+padding:6px 4px;min-width:180px;max-width:240px;
+}
+.mebook-root .mechat-voice-play{
+width:32px;height:32px;border-radius:50%;
+background:rgba(255,255,255,.25);
+display:flex;align-items:center;justify-content:center;
+flex-shrink:0;transition:transform .12s;
+}
+.mebook-root .mechat-bubble.them .mechat-voice-play{background:rgba(0,132,255,.15);}
+.mebook-root .mechat-voice-play:active{transform:scale(.9);}
+.mebook-root .mechat-voice-play svg{
+width:14px;height:14px;fill:#fff;
+}
+.mebook-root .mechat-bubble.them .mechat-voice-play svg{fill:#0084ff;}
+.mebook-root .mechat-voice-wave{
+display:flex;align-items:center;gap:2px;flex:1;height:24px;
+}
+.mebook-root .mechat-voice-wave span{
+display:block;width:2px;border-radius:1px;
+background:rgba(255,255,255,.7);
+}
+.mebook-root .mechat-bubble.them .mechat-voice-wave span{background:rgba(0,132,255,.5);}
+.mebook-root .mechat-voice-duration{
+font-size:11.5px;font-weight:600;opacity:.9;flex-shrink:0;
+}
+
+/* Reaction badge */
+.mebook-root .mechat-reaction-badge{
+position:absolute;bottom:-6px;
+background:var(--card);border-radius:12px;
+padding:1px 5px;font-size:13px;
+box-shadow:0 1px 4px rgba(0,0,0,.15);
+border:1px solid var(--border);
+pointer-events:none;
+z-index:3;
+}
+.mebook-root .mechat-bubble-wrap.me .mechat-reaction-badge{right:6px;}
+.mebook-root .mechat-bubble-wrap.them .mechat-reaction-badge{left:6px;}
+
+/* Swipe-to-reply indicator */
+.mebook-root .mechat-reply-indicator-inline{
+position:absolute;left:-42px;top:50%;
+transform:translateY(-50%);
+width:32px;height:32px;border-radius:50%;
+background:rgba(0,132,255,.15);
+display:flex;align-items:center;justify-content:center;
+color:#0084ff;
+opacity:0;transition:opacity .15s;
+}
+.mebook-root .mechat-bubble-wrap.me .mechat-reply-indicator-inline{
+left:auto;right:-42px;
+}
+
+/* Empty state */
+.mebook-root .mechat-empty{
+flex:1;display:flex;flex-direction:column;
+align-items:center;justify-content:center;
+color:var(--text-muted);gap:10px;padding:24px;text-align:center;
+}
+.mebook-root .mechat-empty svg{width:64px;height:64px;fill:var(--border);}
+.mebook-root .mechat-empty b{font-size:16px;}
+
+/* Reply banner above input */
+.mebook-root .mechat-reply-banner{
+display:flex;align-items:center;gap:10px;
+padding:8px 12px;
+background:var(--input-bg);
+border-top:1px solid var(--border);
+border-bottom:1px solid var(--border);
+flex-shrink:0;
+animation:slideDown .2s ease;
+}
+@keyframes slideDown{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+.mebook-root .mechat-reply-banner .bar{
+width:3px;height:34px;border-radius:2px;background:#0084ff;flex-shrink:0;
+}
+.mebook-root .mechat-reply-banner-info{flex:1;min-width:0;}
+.mebook-root .mechat-reply-banner-title{
+font-size:12.5px;font-weight:700;color:#0084ff;margin-bottom:1px;
+}
+.mebook-root .mechat-reply-banner-text{
+font-size:13px;color:var(--text-muted);
+white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.mebook-root .mechat-reply-banner-close{
+width:30px;height:30px;border-radius:50%;
+display:flex;align-items:center;justify-content:center;
+color:var(--text-muted);flex-shrink:0;
+}
+.mebook-root .mechat-reply-banner-close:hover{background:var(--hover);}
+.mebook-root .mechat-reply-banner-close svg{width:18px;height:18px;fill:currentColor;}
+
+/* Voice recording bar */
+.mebook-root .mechat-recording-bar{
+display:flex;align-items:center;gap:12px;
+padding:10px 14px;
+border-top:1px solid var(--border);
+background:var(--card);
+flex-shrink:0;
+}
+.mebook-root .mechat-recording-dot{
+width:10px;height:10px;border-radius:50%;
+background:#ef4444;flex-shrink:0;
+animation:recPulse 1s ease-in-out infinite;
+}
+@keyframes recPulse{
+0%,100%{opacity:1;transform:scale(1);}
+50%{opacity:.4;transform:scale(1.3);}
+}
+.mebook-root .mechat-recording-time{
+font-size:15px;font-weight:700;color:#ef4444;
+font-variant-numeric:tabular-nums;
+min-width:48px;
+}
+.mebook-root .mechat-recording-hint{
+font-size:13px;color:var(--text-muted);flex:1;
+}
+.mebook-root .mechat-recording-cancel,
+.mebook-root .mechat-recording-send{
+width:40px;height:40px;border-radius:50%;
+display:flex;align-items:center;justify-content:center;
+flex-shrink:0;transition:transform .12s;
+}
+.mebook-root .mechat-recording-cancel{
+background:rgba(239,68,68,.12);color:#ef4444;
+}
+.mebook-root .mechat-recording-cancel svg{width:18px;height:18px;fill:#ef4444;}
+.mebook-root .mechat-recording-send{
+background:#0084ff;color:#fff;
+}
+.mebook-root .mechat-recording-send svg{width:18px;height:18px;fill:#fff;}
+.mebook-root .mechat-recording-cancel:active,
+.mebook-root .mechat-recording-send:active{transform:scale(.9);}
+
+/* Input bar */
+.mebook-root .mechat-input-bar{
+display:flex;gap:8px;align-items:flex-end;
+padding:10px 12px 12px;
+border-top:1px solid var(--border);
+flex-shrink:0;background:var(--card);
+transition:padding-bottom .2s;
+}
+.mebook-root .mechat-input-bar.kb-up{
+padding-bottom:max(12px, env(safe-area-inset-bottom));
+}
+.mebook-root .mechat-input-actions{
+display:flex;gap:4px;align-items:center;
+flex-shrink:0;
+}
+.mebook-root .mechat-input-icon{
+width:38px;height:38px;border-radius:50%;
+display:flex;align-items:center;justify-content:center;
+color:#0084ff;transition:transform .12s,background .15s;
+flex-shrink:0;
+}
+.mebook-root .mechat-input-icon:hover{background:rgba(0,132,255,.08);}
+.mebook-root .mechat-input-icon:active{transform:scale(.9);}
+.mebook-root .mechat-input-icon svg{width:22px;height:22px;fill:#0084ff;}
+.mebook-root.dark-mode .mechat-input-icon svg{fill:#4ade80;}
+.mebook-root.dark-mode .mechat-input-icon{color:#4ade80;}
+
+.mebook-root .mechat-input-field{
+flex:1;border:none;border-radius:20px;
+padding:10px 16px;font-size:15px;
+outline:none;color:var(--text);
+resize:none;max-height:120px;
+font-family:inherit;line-height:1.4;
+background:var(--input-bg);
+min-height:40px;
+}
+.mebook-root .mechat-input-field::placeholder{color:var(--text-muted);}
+
+.mebook-root .mechat-send-btn{
+width:40px;height:40px;border-radius:50%;
+background:#0084ff;color:#fff;
+display:flex;align-items:center;justify-content:center;
+flex-shrink:0;transition:transform .12s, background .15s;
+}
+.mebook-root .mechat-send-btn:active{transform:scale(.9);}
+.mebook-root .mechat-send-btn svg{width:20px;height:20px;fill:#fff;}
+
+.mebook-root .mechat-like-btn{
+width:40px;height:40px;border-radius:50%;
+display:flex;align-items:center;justify-content:center;
+flex-shrink:0;transition:transform .12s;
+position:relative;
+}
+.mebook-root .mechat-like-btn:active{transform:scale(.9);}
+.mebook-root .mechat-like-btn svg{
+width:26px;height:26px;fill:#0084ff;
+}
+.mebook-root.dark-mode .mechat-like-btn svg{fill:#4ade80;}
+.mebook-root .mechat-like-btn.my-liked svg{
+fill:#f33e58;
+animation:likePop .4s ease;
+}
+.mebook-root .mechat-like-btn .emoji-icon{
+font-size:22px;line-height:1;
+}
+
+/* Chat reaction picker */
+.mebook-root .chat-reaction-picker{
+position:fixed;z-index:3100;
+background:var(--card);
+border-radius:30px;
+padding:6px 8px;
+display:flex;gap:2px;
+box-shadow:0 6px 24px rgba(0,0,0,.25), 0 0 0 1px rgba(0,0,0,.05);
+transform:scale(.7) translateY(8px);
+opacity:0;pointer-events:none;
+transform-origin:bottom center;
+transition:transform .22s cubic-bezier(.2,1.4,.4,1), opacity .18s ease;
+}
+.mebook-root.dark-mode .chat-reaction-picker{
+box-shadow:0 6px 28px rgba(0,0,0,.9), 0 0 0 1px rgba(255,255,255,.06);
+}
+.mebook-root .chat-reaction-picker.open{
+opacity:1;pointer-events:auto;
+transform:scale(1) translateY(0);
+}
+.mebook-root .chat-reaction-picker button{
+width:40px;height:40px;border-radius:50%;
+display:flex;align-items:center;justify-content:center;
+font-size:24px;line-height:1;
+transition:transform .18s ease, background .15s;
+}
+.mebook-root .chat-reaction-picker button:hover{
+transform:scale(1.35) translateY(-6px);
+background:var(--hover);
+}
+
+/* Flying animation */
+@keyframes reactionFly{
+0%{transform:scale(1) translateY(0);opacity:1;}
+50%{transform:scale(1.8) translateY(-30px);opacity:1;}
+100%{transform:scale(.3) translateY(-70px);opacity:0;}
+}
+.mebook-root .cmt-flying-reaction{
+position:fixed;z-index:3500;font-size:26px;
+pointer-events:none;
+animation:reactionFly .7s cubic-bezier(.2,.8,.3,1) forwards;
+}
+
+@media(max-width:820px){
+.mebook-root .msgr-wrap{height:calc(100vh - 60px);border-radius:0;flex-direction:column;}
+.mebook-root .msgr-list{width:100%;border-right:none;border-bottom:1px solid var(--border);}
+.mebook-root .msgr-list.hidden{display:none;}
+.mebook-root .msgr-window.hidden{display:none;}
+.mebook-root .msgr-list.full{flex:1;}
+.mebook-root .msgr-window.full{flex:1;}
+.mebook-root .mechat-page{height:calc(100vh - 60px);}
+}
+
+/* ============ COMMENTS PAGE ============ */
 .mebook-root .cmt-page-wrap{
 border-radius:12px;box-shadow:var(--shadow);overflow:hidden;margin-bottom:16px;
 display:flex;flex-direction:column;
@@ -655,7 +1062,6 @@ position:relative;
 .mebook-root .cmt-action-btn:hover{color:var(--green);}
 .mebook-root .cmt-action-btn.my-reaction{color:var(--green);}
 
-/* Reply indent */
 .mebook-root .cmt-replies{
 margin-left:44px;margin-top:6px;
 padding-left:10px;
@@ -678,7 +1084,6 @@ border-radius:6px;transition:background .15s;
 }
 .mebook-root .cmt-view-more-replies:hover{background:rgba(59,130,246,.08);text-decoration:underline;}
 
-/* Reply indicator */
 .mebook-root .cmt-reply-indicator{
 display:flex;align-items:center;gap:6px;
 padding:8px 12px;background:var(--input-bg);
@@ -701,10 +1106,6 @@ padding:2px 8px;border-radius:6px;
 display:flex;gap:8px;align-items:flex-end;
 padding:10px 14px 14px;border-top:1px solid var(--border);
 flex-shrink:0;background:var(--card);
-transition:transform .25s ease;
-}
-.mebook-root .cmt-input-wrap.keyboard-up{
-transform:translateY(0);
 }
 .mebook-root .cmt-input-avatar{width:36px;height:36px;border-radius:50%;object-fit:cover;flex-shrink:0;background:#cbd5e1;}
 .mebook-root .cmt-input{flex:1;border:none;border-radius:20px;padding:10px 14px;font-size:14.5px;outline:none;color:var(--text);resize:none;max-height:120px;font-family:inherit;line-height:1.4;background:var(--input-bg);}
@@ -713,7 +1114,6 @@ transform:translateY(0);
 .mebook-root .cmt-send:disabled{opacity:.5;cursor:not-allowed;}
 .mebook-root .cmt-send svg{width:18px;height:18px;fill:#fff;}
 
-/* Reaction picker */
 .mebook-root .cmt-reaction-picker{
 position:fixed;z-index:3000;
 background:var(--card);
@@ -742,21 +1142,6 @@ transition:transform .18s ease, background .15s;
 .mebook-root .cmt-reaction-picker button:hover{
 transform:scale(1.35) translateY(-4px);
 background:var(--hover);
-}
-.mebook-root .cmt-reaction-picker button:active{
-transform:scale(1.1);
-}
-
-/* Reaction flying animation */
-@keyframes reactionFly{
-0%{transform:scale(1) translateY(0);opacity:1;}
-50%{transform:scale(1.8) translateY(-30px);opacity:1;}
-100%{transform:scale(.3) translateY(-70px);opacity:0;}
-}
-.mebook-root .cmt-flying-reaction{
-position:fixed;z-index:3500;font-size:26px;
-pointer-events:none;
-animation:reactionFly .7s cubic-bezier(.2,.8,.3,1) forwards;
 }
 
 /* ============ SHARE PAGE ============ */
@@ -841,527 +1226,125 @@ animation:reactionFly .7s cubic-bezier(.2,.8,.3,1) forwards;
 .mebook-root .fr-card-actions{display:flex;gap:6px;margin-top:8px;}
 .mebook-root .fr-card-actions .mb-btn{font-size:12.5px;padding:7px;}
 
-/* ============ FRIENDS LIST (screenshot style) ============ */
+/* ============ FRIENDS LIST ============ */
 .mebook-root .fl-page{padding:4px 0 24px;}
-.mebook-root .fl-head{
-display:flex;align-items:center;gap:12px;
-padding:10px 4px 14px;
-position:relative;
-}
-.mebook-root .fl-head-back{
-width:38px;height:38px;border-radius:50%;
-display:flex;align-items:center;justify-content:center;
-background:transparent;color:var(--text);
-flex-shrink:0;transition:background .15s;
-}
+.mebook-root .fl-head{display:flex;align-items:center;gap:12px;padding:10px 4px 14px;position:relative;}
+.mebook-root .fl-head-back{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:transparent;color:var(--text);flex-shrink:0;transition:background .15s;}
 .mebook-root .fl-head-back:hover{background:var(--hover);}
 .mebook-root .fl-head-back svg{width:24px;height:24px;fill:currentColor;}
-.mebook-root .fl-head-title{
-font-size:22px;font-weight:800;color:var(--text);
-flex:1;letter-spacing:-.4px;
-}
-.mebook-root .fl-head-icon{
-width:38px;height:38px;border-radius:50%;
-display:flex;align-items:center;justify-content:center;
-color:var(--text);flex-shrink:0;
-}
+.mebook-root .fl-head-title{font-size:22px;font-weight:800;color:var(--text);flex:1;letter-spacing:-.4px;}
+.mebook-root .fl-head-icon{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--text);flex-shrink:0;}
 .mebook-root .fl-head-icon svg{width:22px;height:22px;fill:currentColor;}
-.mebook-root .fl-search{
-display:flex;align-items:center;gap:10px;
-background:var(--input-bg);
-border-radius:22px;
-padding:11px 16px;
-margin-bottom:16px;
-}
-.mebook-root .fl-search svg{
-width:20px;height:20px;fill:var(--text-muted);flex-shrink:0;
-}
-.mebook-root .fl-search input{
-border:none;outline:none;background:transparent;flex:1;
-font-size:15px;color:var(--text);
-}
+.mebook-root .fl-search{display:flex;align-items:center;gap:10px;background:var(--input-bg);border-radius:22px;padding:11px 16px;margin-bottom:16px;}
+.mebook-root .fl-search svg{width:20px;height:20px;fill:var(--text-muted);flex-shrink:0;}
+.mebook-root .fl-search input{border:none;outline:none;background:transparent;flex:1;font-size:15px;color:var(--text);}
 .mebook-root .fl-search input::placeholder{color:var(--text-muted);}
-.mebook-root .fl-stats-row{
-display:flex;align-items:flex-start;justify-content:space-between;
-margin-bottom:8px;padding:0 4px;
-}
-.mebook-root .fl-stats-left{}
-.mebook-root .fl-stats-title{
-font-size:20px;font-weight:800;color:var(--text);
-letter-spacing:-.3px;
-}
-.mebook-root .fl-stats-sub{
-font-size:14px;color:var(--text-muted);margin-top:2px;
-font-weight:500;
-}
-.mebook-root .fl-sort{
-font-size:14.5px;font-weight:700;color:#3b82f6;
-padding:6px 4px;flex-shrink:0;
-}
+.mebook-root .fl-stats-row{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px;padding:0 4px;}
+.mebook-root .fl-stats-title{font-size:20px;font-weight:800;color:var(--text);letter-spacing:-.3px;}
+.mebook-root .fl-stats-sub{font-size:14px;color:var(--text-muted);margin-top:2px;font-weight:500;}
+.mebook-root .fl-sort{font-size:14.5px;font-weight:700;color:#3b82f6;padding:6px 4px;flex-shrink:0;}
 .mebook-root.dark-mode .fl-sort{color:#60a5fa;}
-.mebook-root .fl-list{
-display:flex;flex-direction:column;
-}
-.mebook-root .fl-item{
-display:flex;align-items:center;gap:14px;
-padding:10px 4px;
-cursor:pointer;
-transition:background .15s;
-border-radius:10px;
-}
-.mebook-root .fl-avatar-wrap{
-position:relative;width:62px;height:62px;flex-shrink:0;
-}
-.mebook-root .fl-avatar-wrap img{
-width:62px;height:62px;border-radius:50%;
-object-fit:cover;background:#cbd5e1;
-}
-.mebook-root .fl-avatar-ring{
-position:absolute;inset:-3px;border-radius:50%;
-border:2.5px solid #3b82f6;pointer-events:none;
-}
-.mebook-root .fl-online-dot{
-position:absolute;right:2px;bottom:2px;
-width:14px;height:14px;border-radius:50%;
-background:#22c55e;border:2.5px solid var(--card);
-}
-.mebook-root .fl-time-badge{
-position:absolute;left:2px;bottom:2px;
-background:rgba(0,0,0,.75);
-color:#fff;font-size:10px;font-weight:700;
-padding:1px 5px;border-radius:8px;
-}
+.mebook-root .fl-list{display:flex;flex-direction:column;}
+.mebook-root .fl-item{display:flex;align-items:center;gap:14px;padding:10px 4px;cursor:pointer;transition:background .15s;border-radius:10px;}
+.mebook-root .fl-avatar-wrap{position:relative;width:62px;height:62px;flex-shrink:0;}
+.mebook-root .fl-avatar-wrap img{width:62px;height:62px;border-radius:50%;object-fit:cover;background:#cbd5e1;}
+.mebook-root .fl-avatar-ring{position:absolute;inset:-3px;border-radius:50%;border:2.5px solid #3b82f6;pointer-events:none;}
+.mebook-root .fl-online-dot{position:absolute;right:2px;bottom:2px;width:14px;height:14px;border-radius:50%;background:#22c55e;border:2.5px solid var(--card);}
 .mebook-root .fl-info{flex:1;min-width:0;}
-.mebook-root .fl-name{
-font-size:16.5px;font-weight:700;color:var(--text);
-line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-}
-.mebook-root .fl-mutual{
-font-size:13.5px;color:var(--text-muted);margin-top:3px;
-font-weight:500;
-}
-.mebook-root .fl-more{
-width:36px;height:36px;border-radius:50%;
-display:flex;align-items:center;justify-content:center;
-color:var(--text-muted);flex-shrink:0;
-transition:background .15s;
-}
+.mebook-root .fl-name{font-size:16.5px;font-weight:700;color:var(--text);line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.mebook-root .fl-mutual{font-size:13.5px;color:var(--text-muted);margin-top:3px;font-weight:500;}
+.mebook-root .fl-more{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--text-muted);flex-shrink:0;transition:background .15s;}
 .mebook-root .fl-more:hover{background:var(--hover);}
 .mebook-root .fl-more svg{width:22px;height:22px;fill:currentColor;}
-.mebook-root .fl-empty{
-text-align:center;padding:60px 20px;color:var(--text-muted);
-font-size:14px;
-}
+.mebook-root .fl-empty{text-align:center;padding:60px 20px;color:var(--text-muted);font-size:14px;}
 
-/* ============ FRIEND ACTION SHEET (3-dots menu) ============ */
-.mebook-root .fl-sheet-backdrop{
-position:fixed;inset:0;z-index:2000;
-background:rgba(0,0,0,.5);
-opacity:0;visibility:hidden;
-transition:opacity .25s ease, visibility .25s ease;
-display:flex;align-items:flex-end;justify-content:center;
-}
+/* ============ FRIEND ACTION SHEET ============ */
+.mebook-root .fl-sheet-backdrop{position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,.5);opacity:0;visibility:hidden;transition:opacity .25s ease, visibility .25s ease;display:flex;align-items:flex-end;justify-content:center;}
 .mebook-root .fl-sheet-backdrop.open{opacity:1;visibility:visible;}
-.mebook-root .fl-action-sheet{
-width:100%;max-width:520px;
-background:var(--card);
-border-radius:20px 20px 0 0;
-transform:translateY(100%);
-transition:transform .3s cubic-bezier(.2,.8,.3,1);
-max-height:85vh;
-overflow-y:auto;
-padding-bottom:env(safe-area-inset-bottom);
-}
-.mebook-root .fl-sheet-backdrop.open .fl-action-sheet{
-transform:translateY(0);
-}
-.mebook-root .fl-sheet-handle{
-width:40px;height:4px;border-radius:2px;
-background:var(--border);
-margin:8px auto 4px;
-}
-.mebook-root .fl-sheet-header{
-display:flex;align-items:center;gap:12px;
-padding:14px 18px;
-border-bottom:1px solid var(--border);
-}
-.mebook-root .fl-sheet-header img{
-width:48px;height:48px;border-radius:50%;
-object-fit:cover;background:#cbd5e1;flex-shrink:0;
-}
+.mebook-root .fl-action-sheet{width:100%;max-width:520px;background:var(--card);border-radius:20px 20px 0 0;transform:translateY(100%);transition:transform .3s cubic-bezier(.2,.8,.3,1);max-height:85vh;overflow-y:auto;padding-bottom:env(safe-area-inset-bottom);}
+.mebook-root .fl-sheet-backdrop.open .fl-action-sheet{transform:translateY(0);}
+.mebook-root .fl-sheet-handle{width:40px;height:4px;border-radius:2px;background:var(--border);margin:8px auto 4px;}
+.mebook-root .fl-sheet-header{display:flex;align-items:center;gap:12px;padding:14px 18px;border-bottom:1px solid var(--border);}
+.mebook-root .fl-sheet-header img{width:48px;height:48px;border-radius:50%;object-fit:cover;background:#cbd5e1;flex-shrink:0;}
 .mebook-root .fl-sheet-header-info{flex:1;min-width:0;}
-.mebook-root .fl-sheet-header-name{
-font-size:16px;font-weight:800;color:var(--text);
-white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-}
-.mebook-root .fl-sheet-header-sub{
-font-size:13px;color:var(--text-muted);margin-top:2px;
-}
-.mebook-root .fl-sheet-options{
-display:flex;flex-direction:column;
-padding:4px 0;
-}
-.mebook-root .fl-sheet-option{
-display:flex;align-items:flex-start;gap:14px;
-padding:14px 18px;
-text-align:left;
-transition:background .15s;
-cursor:pointer;
-}
+.mebook-root .fl-sheet-header-name{font-size:16px;font-weight:800;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.mebook-root .fl-sheet-header-sub{font-size:13px;color:var(--text-muted);margin-top:2px;}
+.mebook-root .fl-sheet-options{display:flex;flex-direction:column;padding:4px 0;}
+.mebook-root .fl-sheet-option{display:flex;align-items:flex-start;gap:14px;padding:14px 18px;text-align:left;transition:background .15s;cursor:pointer;}
 .mebook-root .fl-sheet-option:hover{background:var(--hover);}
-.mebook-root .fl-sheet-option:active{background:var(--border);}
-.mebook-root .fl-sheet-ico{
-width:32px;height:32px;
-display:flex;align-items:center;justify-content:center;
-flex-shrink:0;margin-top:2px;
-}
-.mebook-root .fl-sheet-ico svg{
-width:22px;height:22px;fill:var(--text);
-}
+.mebook-root .fl-sheet-ico{width:32px;height:32px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;}
+.mebook-root .fl-sheet-ico svg{width:22px;height:22px;fill:var(--text);}
 .mebook-root .fl-sheet-option.danger{color:#dc2626;}
 .mebook-root .fl-sheet-option.danger .fl-sheet-ico svg{fill:#dc2626;}
 .mebook-root .fl-sheet-text{flex:1;min-width:0;}
-.mebook-root .fl-sheet-title{
-font-size:15px;font-weight:700;color:inherit;line-height:1.3;
-}
-.mebook-root .fl-sheet-desc{
-font-size:12.5px;color:var(--text-muted);margin-top:3px;
-line-height:1.4;
-}
+.mebook-root .fl-sheet-title{font-size:15px;font-weight:700;color:inherit;line-height:1.3;}
+.mebook-root .fl-sheet-desc{font-size:12.5px;color:var(--text-muted);margin-top:3px;line-height:1.4;}
 
-/* ============ PROFILE — FRIENDS PREVIEW ============ */
-.mebook-root .mb-profile-friends-section{
-padding:16px 20px 20px;
-border-top:1px solid var(--border);
-}
-.mebook-root .mb-profile-friends-section-head{
-display:flex;align-items:center;justify-content:space-between;
-margin-bottom:14px;
-}
-.mebook-root .mb-profile-friends-section-head h3{
-font-size:18px;font-weight:800;color:var(--text);
-display:flex;align-items:center;gap:8px;
-}
-.mebook-root .mb-profile-friends-section-head .count{
-font-size:13.5px;font-weight:600;color:var(--text-muted);
-}
-.mebook-root .mb-profile-friends-section-head .count-link{
-font-size:14px;font-weight:700;color:var(--green);
-cursor:pointer;
-}
-.mebook-root .mb-profile-friends-section-head .count-link:hover{text-decoration:underline;}
-.mebook-root .mb-profile-friends-preview{
-display:grid;
-grid-template-columns:repeat(6,1fr);
-gap:10px;
-}
-.mebook-root .mb-profile-friend-preview-card{
-cursor:pointer;
-text-align:center;
-transition:transform .2s;
-}
-.mebook-root .mb-profile-friend-preview-card:hover{transform:translateY(-2px);}
-.mebook-root .mb-profile-friend-preview-card img,
-.mebook-root .mb-profile-friend-preview-card .view-all-avatar{
-width:100%;aspect-ratio:1;
-border-radius:12px;
-object-fit:cover;
-background:#cbd5e1;
-}
-.mebook-root .mb-profile-friend-preview-card .view-all-avatar{
-display:flex;align-items:center;justify-content:center;
-background:var(--input-bg);
-color:var(--text-muted);
-font-size:13px;font-weight:700;
-border:1px solid var(--border);
-}
-.mebook-root .mb-profile-friend-preview-card .view-all-avatar svg{
-width:26px;height:26px;fill:var(--text-muted);
-}
-.mebook-root .mb-profile-friend-preview-name{
-font-size:12px;font-weight:600;color:var(--text);
-margin-top:6px;
-white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-}
-.mebook-root .mb-profile-friends-empty{
-text-align:center;padding:30px 20px;
-color:var(--text-muted);font-size:14px;
-}
-
-@media(max-width:820px){
-.mebook-root .mb-profile-friends-preview{
-grid-template-columns:repeat(3,1fr);
-}
-.mebook-root .fl-avatar-wrap{width:56px;height:56px;}
-.mebook-root .fl-avatar-wrap img{width:56px;height:56px;}
-.mebook-root .fl-action-sheet{
-border-radius:20px 20px 0 0;
-}
-}
-
-/* ============================================================
-   PROFILE PAGE — Facebook Style
-   ============================================================ */
-.mebook-root .mb-profile-head{
-border-radius:12px;
-box-shadow:var(--shadow);
-margin-bottom:16px;
-overflow:hidden;
-position:relative;
-}
-
-.mebook-root .mb-profile-cover{
-position:relative;
-width:100%;
-height:340px;
-background:#0f172a;
-cursor:pointer;
-overflow:hidden;
-}
-.mebook-root .mb-profile-cover img{
-width:100%;
-height:100%;
-object-fit:cover;
-object-position:center;
-display:block;
-}
-.mebook-root .mb-profile-cover::after{
-content:'';
-position:absolute;left:0;right:0;bottom:0;
-height:55%;
-pointer-events:none;
-background:linear-gradient(
-to bottom,
-rgba(0,0,0,0) 0%,
-rgba(0,0,0,0.10) 25%,
-rgba(0,0,0,0.35) 55%,
-rgba(0,0,0,0.65) 80%,
-rgba(0,0,0,0.88) 100%
-);
-}
-.mebook-root .mb-profile-cover-add{
-position:absolute;inset:0;z-index:2;
-display:flex;align-items:center;justify-content:center;
-background:rgba(0,0,0,.35);color:#fff;font-weight:600;gap:8px;
-opacity:0;transition:opacity .25s;
-}
+/* ============ PROFILE ============ */
+.mebook-root .mb-profile-head{border-radius:12px;box-shadow:var(--shadow);margin-bottom:16px;overflow:hidden;position:relative;}
+.mebook-root .mb-profile-cover{position:relative;width:100%;height:340px;background:#0f172a;cursor:pointer;overflow:hidden;}
+.mebook-root .mb-profile-cover img{width:100%;height:100%;object-fit:cover;object-position:center;display:block;}
+.mebook-root .mb-profile-cover::after{content:'';position:absolute;left:0;right:0;bottom:0;height:55%;pointer-events:none;background:linear-gradient(to bottom,rgba(0,0,0,0) 0%,rgba(0,0,0,0.10) 25%,rgba(0,0,0,0.35) 55%,rgba(0,0,0,0.65) 80%,rgba(0,0,0,0.88) 100%);}
+.mebook-root .mb-profile-cover-add{position:absolute;inset:0;z-index:2;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.35);color:#fff;font-weight:600;gap:8px;opacity:0;transition:opacity .25s;}
 .mebook-root .mb-profile-cover:hover .mb-profile-cover-add{opacity:1;}
 .mebook-root .mb-profile-cover-add svg{width:22px;height:22px;fill:#fff;}
-
-.mebook-root .mb-profile-avatar-center{
-position:relative;
-display:flex;
-justify-content:center;
-margin-top:-90px;
-z-index:3;
-padding:0 20px;
-}
-.mebook-root .mb-profile-avatar-wrap{
-position:relative;cursor:pointer;flex-shrink:0;
-}
-.mebook-root .mb-profile-avatar-wrap img{
-width:180px;height:180px;
-border-radius:50%;
-object-fit:cover;
-border:5px solid var(--card);
-background:#cbd5e1;
-box-shadow:0 6px 24px rgba(0,0,0,.45);
-}
-.mebook-root.dark-mode .mb-profile-avatar-wrap img{
-border-color:#0a0a0a;
-box-shadow:0 6px 28px rgba(0,0,0,.9);
-}
-.mebook-root .mb-profile-avatar-add{
-position:absolute;inset:0;border-radius:50%;
-display:flex;align-items:center;justify-content:center;
-background:rgba(0,0,0,.45);
-opacity:0;transition:opacity .25s;
-}
+.mebook-root .mb-profile-avatar-center{position:relative;display:flex;justify-content:center;margin-top:-90px;z-index:3;padding:0 20px;}
+.mebook-root .mb-profile-avatar-wrap{position:relative;cursor:pointer;flex-shrink:0;}
+.mebook-root .mb-profile-avatar-wrap img{width:180px;height:180px;border-radius:50%;object-fit:cover;border:5px solid var(--card);background:#cbd5e1;box-shadow:0 6px 24px rgba(0,0,0,.45);}
+.mebook-root.dark-mode .mb-profile-avatar-wrap img{border-color:#0a0a0a;box-shadow:0 6px 28px rgba(0,0,0,.9);}
+.mebook-root .mb-profile-avatar-add{position:absolute;inset:0;border-radius:50%;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.45);opacity:0;transition:opacity .25s;}
 .mebook-root .mb-profile-avatar-wrap:hover .mb-profile-avatar-add{opacity:1;}
 .mebook-root .mb-profile-avatar-add svg{width:32px;height:32px;fill:#fff;}
-
-.mebook-root .mb-profile-name-center{
-text-align:center;
-padding:16px 20px 4px;
-}
-.mebook-root .mb-profile-name{
-font-size:32px;
-font-weight:800;
-line-height:1.2;
-color:var(--text);
-display:inline-flex;
-align-items:center;
-gap:8px;
-flex-wrap:wrap;
-justify-content:center;
-}
-.mebook-root .mb-profile-name svg{flex-shrink:0;}
-
-.mebook-root .mb-profile-sub{
-text-align:center;
-font-size:15px;
-color:var(--text-muted);
-margin-top:6px;
-font-weight:500;
-letter-spacing:.2px;
-}
-.mebook-root .mb-profile-sub b{
-color:var(--text);
-font-weight:700;
-}
-
-.mebook-root .mb-profile-meta-row{
-display:flex;
-justify-content:center;
-align-items:center;
-gap:18px;
-flex-wrap:wrap;
-padding:10px 20px 4px;
-font-size:14px;
-color:var(--text-muted);
-}
-.mebook-root .mb-profile-meta-row span{
-display:inline-flex;align-items:center;gap:5px;
-}
-.mebook-root .mb-profile-meta-row svg{
-width:16px;height:16px;fill:currentColor;flex-shrink:0;
-}
-
-.mebook-root .mb-profile-friends-strip{
-display:flex;
-justify-content:center;
-align-items:center;
-gap:12px;
-padding:14px 20px 6px;
-flex-wrap:wrap;
-}
-.mebook-root .mb-profile-friends-avatars{
-display:flex;flex-shrink:0;
-}
-.mebook-root .mb-profile-friends-avatars img{
-width:34px;height:34px;border-radius:50%;
-object-fit:cover;background:#cbd5e1;
-border:2px solid var(--card);
-margin-left:-10px;
-}
+.mebook-root .mb-profile-name-center{text-align:center;padding:16px 20px 4px;}
+.mebook-root .mb-profile-name{font-size:32px;font-weight:800;line-height:1.2;color:var(--text);display:inline-flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:center;}
+.mebook-root .mb-profile-sub{text-align:center;font-size:15px;color:var(--text-muted);margin-top:6px;font-weight:500;letter-spacing:.2px;}
+.mebook-root .mb-profile-sub b{color:var(--text);font-weight:700;}
+.mebook-root .mb-profile-meta-row{display:flex;justify-content:center;align-items:center;gap:18px;flex-wrap:wrap;padding:10px 20px 4px;font-size:14px;color:var(--text-muted);}
+.mebook-root .mb-profile-meta-row span{display:inline-flex;align-items:center;gap:5px;}
+.mebook-root .mb-profile-meta-row svg{width:16px;height:16px;fill:currentColor;flex-shrink:0;}
+.mebook-root .mb-profile-friends-strip{display:flex;justify-content:center;align-items:center;gap:12px;padding:14px 20px 6px;flex-wrap:wrap;}
+.mebook-root .mb-profile-friends-avatars{display:flex;flex-shrink:0;}
+.mebook-root .mb-profile-friends-avatars img{width:34px;height:34px;border-radius:50%;object-fit:cover;background:#cbd5e1;border:2px solid var(--card);margin-left:-10px;}
 .mebook-root.dark-mode .mb-profile-friends-avatars img{border-color:#0a0a0a;}
 .mebook-root .mb-profile-friends-avatars img:first-child{margin-left:0;}
-.mebook-root .mb-profile-friends-text{
-font-size:14px;
-color:var(--text-muted);
-text-align:left;
-max-width:340px;
-line-height:1.4;
-}
-.mebook-root .mb-profile-friends-text b{
-color:var(--text);font-weight:700;
-}
-
-.mebook-root .mb-profile-actions{
-display:flex;
-justify-content:center;
-gap:10px;
-padding:16px 20px 18px;
-flex-wrap:wrap;
-}
-.mebook-root .mb-profile-actions .mb-btn{
-width:auto;
-padding:11px 22px;
-font-size:14.5px;
-font-weight:700;
-border-radius:10px;
-display:inline-flex;
-align-items:center;
-gap:8px;
-}
-.mebook-root .mb-profile-actions .mb-btn svg{
-width:18px;height:18px;fill:currentColor;
-}
-.mebook-root .mb-profile-btn-message{
-background:#0084ff;color:#fff;
-}
+.mebook-root .mb-profile-friends-text{font-size:14px;color:var(--text-muted);text-align:left;max-width:340px;line-height:1.4;}
+.mebook-root .mb-profile-friends-text b{color:var(--text);font-weight:700;}
+.mebook-root .mb-profile-actions{display:flex;justify-content:center;gap:10px;padding:16px 20px 18px;flex-wrap:wrap;}
+.mebook-root .mb-profile-actions .mb-btn{width:auto;padding:11px 22px;font-size:14.5px;font-weight:700;border-radius:10px;display:inline-flex;align-items:center;gap:8px;}
+.mebook-root .mb-profile-actions .mb-btn svg{width:18px;height:18px;fill:currentColor;}
+.mebook-root .mb-profile-btn-message{background:#0084ff;color:#fff;}
 .mebook-root .mb-profile-btn-message:hover{filter:brightness(1.1);}
-.mebook-root .mb-profile-btn-icon{
-width:44px!important;padding:0!important;
-justify-content:center;
-background:var(--input-bg);
-}
-
-.mebook-root .mb-profile-things-common{
-margin:0 20px 16px;
-padding:14px 18px;
-border-radius:12px;
-background:var(--card);
-border:1px solid var(--border);
-}
-.mebook-root.dark-mode .mb-profile-things-common{
-background:#0a0a0a;
-border-color:#1a1a1a;
-}
-.mebook-root .mb-profile-things-common-title{
-font-size:15.5px;
-font-weight:700;
-color:var(--text);
-display:flex;
-align-items:center;
-gap:10px;
-margin-bottom:4px;
-}
-.mebook-root .mb-profile-things-common-title svg{
-width:22px;height:22px;fill:var(--text);flex-shrink:0;
-}
-.mebook-root .mb-profile-things-common-body{
-font-size:14px;color:var(--text-muted);margin-left:32px;
-}
-
-.mebook-root .mb-profile-tabs{
-display:flex;
-gap:6px;
-padding:8px 20px 0;
-border-top:1px solid var(--border);
-}
-.mebook-root .mb-profile-tab{
-padding:12px 18px;
-font-size:14.5px;
-font-weight:600;
-color:var(--text-muted);
-border-radius:8px;
-transition:background .18s,color .18s;
-}
+.mebook-root .mb-profile-btn-icon{width:44px!important;padding:0!important;justify-content:center;background:var(--input-bg);}
+.mebook-root .mb-profile-things-common{margin:0 20px 16px;padding:14px 18px;border-radius:12px;background:var(--card);border:1px solid var(--border);}
+.mebook-root.dark-mode .mb-profile-things-common{background:#0a0a0a;border-color:#1a1a1a;}
+.mebook-root .mb-profile-things-common-title{font-size:15.5px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:10px;margin-bottom:4px;}
+.mebook-root .mb-profile-things-common-title svg{width:22px;height:22px;fill:var(--text);flex-shrink:0;}
+.mebook-root .mb-profile-things-common-body{font-size:14px;color:var(--text-muted);margin-left:32px;}
+.mebook-root .mb-profile-tabs{display:flex;gap:6px;padding:8px 20px 0;border-top:1px solid var(--border);}
+.mebook-root .mb-profile-tab{padding:12px 18px;font-size:14.5px;font-weight:600;color:var(--text-muted);border-radius:8px;transition:background .18s,color .18s;}
 .mebook-root .mb-profile-tab:hover{background:var(--hover);}
-.mebook-root .mb-profile-tab.active{
-color:var(--green);
-background:rgba(34,197,94,.10);
+.mebook-root .mb-profile-tab.active{color:var(--green);background:rgba(34,197,94,.10);}
+.mebook-root .mb-profile-friends-section{padding:16px 20px 20px;border-top:1px solid var(--border);}
+.mebook-root .mb-profile-friends-section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.mebook-root .mb-profile-friends-section-head h3{font-size:18px;font-weight:800;color:var(--text);display:flex;align-items:center;gap:8px;}
+.mebook-root .mb-profile-friends-section-head .count-link{font-size:14px;font-weight:700;color:var(--green);cursor:pointer;}
+.mebook-root .mb-profile-friends-section-head .count-link:hover{text-decoration:underline;}
+.mebook-root .mb-profile-friends-preview{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;}
+.mebook-root .mb-profile-friend-preview-card{cursor:pointer;text-align:center;transition:transform .2s;}
+.mebook-root .mb-profile-friend-preview-card:hover{transform:translateY(-2px);}
+.mebook-root .mb-profile-friend-preview-card img,.mebook-root .mb-profile-friend-preview-card .view-all-avatar{width:100%;aspect-ratio:1;border-radius:12px;object-fit:cover;background:#cbd5e1;}
+.mebook-root .mb-profile-friend-preview-card .view-all-avatar{display:flex;align-items:center;justify-content:center;background:var(--input-bg);color:var(--text-muted);font-size:13px;font-weight:700;border:1px solid var(--border);}
+.mebook-root .mb-profile-friend-preview-card .view-all-avatar svg{width:26px;height:26px;fill:var(--text-muted);}
+.mebook-root .mb-profile-friend-preview-name{font-size:12px;font-weight:600;color:var(--text);margin-top:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.mebook-root .mb-profile-friends-empty{text-align:center;padding:30px 20px;color:var(--text-muted);font-size:14px;}
+
+@media(max-width:820px){
+.mebook-root .mb-profile-friends-preview{grid-template-columns:repeat(3,1fr);}
+.mebook-root .fl-avatar-wrap{width:56px;height:56px;}
+.mebook-root .fl-avatar-wrap img{width:56px;height:56px;}
 }
 
-.mebook-root .mb-profile-section{
-padding:16px 20px 8px;
-}
-.mebook-root .mb-profile-section h3{
-font-size:16px;
-font-weight:700;
-color:var(--text);
-margin-bottom:14px;
-}
-.mebook-root .mb-profile-detail{
-display:flex;
-align-items:center;
-gap:14px;
-padding:10px 0;
-font-size:15px;
-color:var(--text);
-}
-.mebook-root .mb-profile-detail svg{
-width:22px;height:22px;
-fill:var(--text-muted);
-flex-shrink:0;
-}
-.mebook-root .mb-profile-detail span{
-color:var(--text);
-font-weight:500;
-}
-
-/* ============ CARDS / SIDEBAR ============ */
+/* ============ CARDS ============ */
 .mebook-root .mb-right{position:sticky;top:80px;align-self:start;display:flex;flex-direction:column;gap:16px;max-height:calc(100vh - 100px);overflow-y:auto;scrollbar-width:none;}
 .mebook-root .mb-right::-webkit-scrollbar{width:0;}
 .mebook-root .mb-card{border-radius:12px;box-shadow:var(--shadow);padding:14px 16px;transition:background .3s;}
@@ -1509,6 +1492,7 @@ font-weight:500;
 .mebook-root .fl-sheet-desc{font-size:12px;}
 .mebook-root .cmt-replies{margin-left:36px;}
 .mebook-root .cmt-row-avatar{width:32px;height:32px;}
+.mebook-root .msgr-list{width:100%;}
 }
 `
 
@@ -1584,7 +1568,7 @@ function ToastRow({
 }
 
 /* ============================================================
-FRIEND ACTION SHEET COMPONENT (3-dots menu)
+FRIEND ACTION SHEET
 ============================================================ */
 
 function FriendActionSheet({
@@ -1615,14 +1599,8 @@ function FriendActionSheet({
     : "Friends"
 
   return (
-    <div
-      className={`fl-sheet-backdrop open`}
-      onClick={onClose}
-    >
-      <div
-        className="fl-action-sheet"
-        onClick={(e) => e.stopPropagation()}
-      >
+    <div className={`fl-sheet-backdrop open`} onClick={onClose}>
+      <div className="fl-action-sheet" onClick={(e) => e.stopPropagation()}>
         <div className="fl-sheet-handle" />
 
         <div className="fl-sheet-header">
@@ -1634,34 +1612,18 @@ function FriendActionSheet({
         </div>
 
         <div className="fl-sheet-options">
-          <button
-            className="fl-sheet-option"
-            onClick={() => {
-              onClose()
-              onMessage()
-            }}
-          >
+          <button className="fl-sheet-option" onClick={() => { onClose(); onMessage() }}>
             <span className="fl-sheet-ico">
-              <svg viewBox="0 0 24 24">
-                <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z" />
-              </svg>
+              <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z" /></svg>
             </span>
             <div className="fl-sheet-text">
               <div className="fl-sheet-title">Message {friend.name?.split(" ")[0]}</div>
             </div>
           </button>
 
-          <button
-            className="fl-sheet-option"
-            onClick={() => {
-              onClose()
-              onUnfollow()
-            }}
-          >
+          <button className="fl-sheet-option" onClick={() => { onClose(); onUnfollow() }}>
             <span className="fl-sheet-ico">
-              <svg viewBox="0 0 24 24">
-                <path d="M14 8c0-2.21-1.79-4-4-4S6 5.79 6 8s1.79 4 4 4 4-1.79 4-4zm-2 0c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2zM2 18v2h16v-2c0-2.66-5.33-4-8-4s-8 1.34-8 4zm2 0c.22-.72 3.31-2 6-2 2.7 0 5.8 1.29 6 2H4zm15-9v3h-2V9h-3V7h3V4h2v3h3v2h-3z" />
-              </svg>
+              <svg viewBox="0 0 24 24"><path d="M14 8c0-2.21-1.79-4-4-4S6 5.79 6 8s1.79 4 4 4 4-1.79 4-4zm-2 0c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2zM2 18v2h16v-2c0-2.66-5.33-4-8-4s-8 1.34-8 4zm2 0c.22-.72 3.31-2 6-2 2.7 0 5.8 1.29 6 2H4zm15-9v3h-2V9h-3V7h3V4h2v3h3v2h-3z" /></svg>
             </span>
             <div className="fl-sheet-text">
               <div className="fl-sheet-title">
@@ -1669,43 +1631,25 @@ function FriendActionSheet({
               </div>
               <div className="fl-sheet-desc">
                 {isUnfollowed
-                  ? `Start seeing ${friend.name?.split(" ")[0]}'s posts again. They won't be notified.`
-                  : `Stop seeing posts but stay friends. They won't be notified that you unfollowed.`}
+                  ? `Start seeing ${friend.name?.split(" ")[0]}'s posts again.`
+                  : `Stop seeing posts but stay friends.`}
               </div>
             </div>
           </button>
 
-          <button
-            className="fl-sheet-option danger"
-            onClick={() => {
-              onClose()
-              onBlock()
-            }}
-          >
+          <button className="fl-sheet-option danger" onClick={() => { onClose(); onBlock() }}>
             <span className="fl-sheet-ico">
-              <svg viewBox="0 0 24 24">
-                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8 0-1.85.63-3.55 1.69-4.9L16.9 18.31C15.55 19.37 13.85 20 12 20zm6.31-3.1L7.1 5.69C8.45 4.63 10.15 4 12 4c4.42 0 8 3.58 8 8 0 1.85-.63 3.55-1.69 4.9z" />
-              </svg>
+              <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8 0-1.85.63-3.55 1.69-4.9L16.9 18.31C15.55 19.37 13.85 20 12 20zm6.31-3.1L7.1 5.69C8.45 4.63 10.15 4 12 4c4.42 0 8 3.58 8 8 0 1.85-.63 3.55-1.69 4.9z" /></svg>
             </span>
             <div className="fl-sheet-text">
               <div className="fl-sheet-title">Block {friend.name?.split(" ")[0]}'s profile</div>
-              <div className="fl-sheet-desc">
-                {friend.name?.split(" ")[0]} won't be able to see you or contact you on MeBook.
-              </div>
+              <div className="fl-sheet-desc">They won't be able to see you or contact you.</div>
             </div>
           </button>
 
-          <button
-            className="fl-sheet-option danger"
-            onClick={() => {
-              onClose()
-              onUnfriend()
-            }}
-          >
+          <button className="fl-sheet-option danger" onClick={() => { onClose(); onUnfriend() }}>
             <span className="fl-sheet-ico">
-              <svg viewBox="0 0 24 24">
-                <path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
-              </svg>
+              <svg viewBox="0 0 24 24"><path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" /></svg>
             </span>
             <div className="fl-sheet-text">
               <div className="fl-sheet-title">Unfriend {friend.name?.split(" ")[0]}</div>
@@ -1719,37 +1663,91 @@ function FriendActionSheet({
 }
 
 /* ============================================================
-REACTION PICKER COMPONENT
+REACTION PICKER (Comments)
 ============================================================ */
 
 function ReactionPicker({
   anchorRect,
   open,
   onReact,
-  onClose,
 }: {
   anchorRect: { x: number; y: number; width: number } | null
   open: boolean
   onReact: (reactionKey: string, emoji: string) => void
-  onClose: () => void
 }) {
   if (!anchorRect) return null
   return (
     <div
       className={`cmt-reaction-picker${open ? " open" : ""}`}
+      style={{ left: anchorRect.x, top: anchorRect.y - 52 }}
+      onClick={(e) => e.stopPropagation()}
+    >
+      {REACTIONS.map((r) => (
+        <button key={r.key} type="button" title={r.label} onClick={() => onReact(r.key, r.emoji)}>
+          {r.emoji}
+        </button>
+      ))}
+    </div>
+  )
+}
+
+/* ============================================================
+POST REACTION PICKER
+============================================================ */
+
+function PostReactionPicker({
+  anchorRect,
+  open,
+  onReact,
+}: {
+  anchorRect: { x: number; y: number; width: number } | null
+  open: boolean
+  onReact: (reactionKey: string, emoji: string) => void
+}) {
+  if (!anchorRect) return null
+  return (
+    <div
+      className={`post-reaction-picker${open ? " open" : ""}`}
       style={{
-        left: anchorRect.x,
-        top: anchorRect.y - 52,
+        left: Math.max(8, Math.min(anchorRect.x, window.innerWidth - 320)),
+        top: Math.max(70, anchorRect.y - 60),
       }}
       onClick={(e) => e.stopPropagation()}
     >
       {REACTIONS.map((r) => (
-        <button
-          key={r.key}
-          type="button"
-          title={r.label}
-          onClick={() => onReact(r.key, r.emoji)}
-        >
+        <button key={r.key} type="button" title={r.label} onClick={() => onReact(r.key, r.emoji)}>
+          {r.emoji}
+        </button>
+      ))}
+    </div>
+  )
+}
+
+/* ============================================================
+CHAT REACTION PICKER
+============================================================ */
+
+function ChatReactionPicker({
+  anchorRect,
+  open,
+  onReact,
+}: {
+  anchorRect: { x: number; y: number; width: number } | null
+  open: boolean
+  onReact: (reactionKey: string, emoji: string) => void
+}) {
+  if (!anchorRect) return null
+  return (
+    <div
+      className={`chat-reaction-picker${open ? " open" : ""}`}
+      style={{
+        left: Math.max(8, Math.min(anchorRect.x - 100, window.innerWidth - 260)),
+        top: Math.max(70, anchorRect.y - 56),
+      }}
+      onClick={(e) => e.stopPropagation()}
+    >
+      {CHAT_REACTIONS.map((r) => (
+        <button key={r.key} type="button" title={r.label} onClick={() => onReact(r.key, r.emoji)}>
           {r.emoji}
         </button>
       ))}
@@ -1811,6 +1809,8 @@ export default function MeBookPage() {
   const [chatMessages, setChatMessages] = useState<any[]>([])
   const [chatPartner, setChatPartner] = useState<any>(null)
   const [mobileChatWindow, setMobileChatWindow] = useState(false)
+  const [chatView, setChatView] = useState<"list" | "window">("list")
+  const [allUsers, setAllUsers] = useState<any[]>([])
 
   const [sentRequests, setSentRequests] = useState<Record<string, "sending" | "sent">>({})
 
@@ -1848,30 +1848,59 @@ export default function MeBookPage() {
   const [suPass, setSuPass] = useState("")
 
   const [friendSearch, setFriendSearch] = useState("")
+  const [chatSearch, setChatSearch] = useState("")
   const [chatInput, setChatInput] = useState("")
 
+  // Post reactions
+  const [postReactionPicker, setPostReactionPicker] = useState<{
+    open: boolean
+    postId: string | null
+    anchorRect: { x: number; y: number; width: number } | null
+  }>({ open: false, postId: null, anchorRect: null })
+  const [postReactions, setPostReactions] = useState<Record<string, Record<string, string>>>({})
+
+  // Comment reactions
   const [commentText, setCommentText] = useState("")
   const [commentBusy, setCommentBusy] = useState(false)
-  const [replyTo, setReplyTo] = useState<any>(null) // the comment being replied to
+  const [replyTo, setReplyTo] = useState<any>(null)
   const [expandedReplies, setExpandedReplies] = useState<Set<string>>(new Set())
   const commentListRef = useRef<HTMLDivElement>(null)
   const commentInputRef = useRef<HTMLTextAreaElement>(null)
-  const commentWrapRef = useRef<HTMLDivElement>(null)
 
-  // Reaction picker state
   const [reactionPicker, setReactionPicker] = useState<{
     open: boolean
     commentKey: string | null
     anchorRect: { x: number; y: number; width: number } | null
   }>({ open: false, commentKey: null, anchorRect: null })
 
-  // Flying reactions (for animation)
+  // Chat reactions & reply
+  const [chatReactionPicker, setChatReactionPicker] = useState<{
+    open: boolean
+    msgId: string | null
+    anchorRect: { x: number; y: number; width: number } | null
+  }>({ open: false, msgId: null, anchorRect: null })
+  const [chatReplyTo, setChatReplyTo] = useState<any>(null)
+  const [chatLikeActive, setChatLikeActive] = useState(false)
   const [flyingReactions, setFlyingReactions] = useState<
     Array<{ id: number; x: number; y: number; emoji: string }>
   >([])
   const flyingIdRef = useRef(0)
+  const chatBodyRef = useRef<HTMLDivElement>(null)
+  const chatInputRef = useRef<HTMLTextAreaElement>(null)
 
-  // Keyboard handling for mobile — push the input above keyboard
+  // Image upload for chat
+  const chatFileInputRef = useRef<HTMLInputElement>(null)
+  const chatCameraInputRef = useRef<HTMLInputElement>(null)
+
+  // Voice recording
+  const [recording, setRecording] = useState(false)
+  const [recordSeconds, setRecordSeconds] = useState(0)
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null)
+  const recordChunksRef = useRef<Blob[]>([])
+  const recordTimerRef = useRef<any>(null)
+  const recordStartRef = useRef(0)
+
+  // Keyboard handling for mobile
   const [kbUp, setKbUp] = useState(false)
   useEffect(() => {
     if (typeof window === "undefined") return
@@ -1880,6 +1909,11 @@ export default function MeBookPage() {
     const handleResize = () => {
       const isKbOpen = window.innerHeight - vv.height > 120
       setKbUp(isKbOpen)
+      setTimeout(() => {
+        if (chatBodyRef.current) {
+          chatBodyRef.current.scrollTop = chatBodyRef.current.scrollHeight
+        }
+      }, 50)
     }
     vv.addEventListener("resize", handleResize)
     vv.addEventListener("scroll", handleResize)
@@ -1990,6 +2024,7 @@ export default function MeBookPage() {
             if (d.id !== uid) arr.push({ uid: d.id, ...d.data() })
           })
           setFriends(arr)
+          setAllUsers(arr)
           setOnlineList(arr.slice(0, 12))
         })
       )
@@ -2064,59 +2099,6 @@ export default function MeBookPage() {
           setMyFriends(arr)
         })
       )
-
-      ;(async () => {
-        try {
-          const [s1, s2] = await Promise.all([
-            fb.getDocs(fb.query(fb.collection(fb.db, "friends"), fb.where("a", "==", uid))),
-            fb.getDocs(fb.query(fb.collection(fb.db, "friends"), fb.where("b", "==", uid))),
-          ])
-
-          const legacyDocs: any[] = []
-          const legacyOtherIds = new Set<string>()
-
-          const collect = (snap: any, otherField: "b" | "a") => {
-            snap.forEach((d: any) => {
-              const data = d.data()
-              if (Array.isArray(data.members) && data.members.length > 0) return
-              const otherId = data[otherField]
-              if (!otherId) return
-              legacyDocs.push({ id: d.id, a: data.a, b: data.b })
-              legacyOtherIds.add(otherId)
-            })
-          }
-          collect(s1, "b")
-          collect(s2, "a")
-
-          await Promise.all(
-            legacyDocs.map((doc) =>
-              fb.updateDoc(fb.doc(fb.db, "friends", doc.id), {
-                members: [doc.a, doc.b].filter(Boolean),
-              })
-            )
-          )
-
-          if (legacyOtherIds.size > 0) {
-            const arr: any[] = []
-            for (const otherId of legacyOtherIds) {
-              try {
-                const s = await fb.getDoc(fb.doc(fb.db, "users", otherId))
-                if (s.exists()) arr.push({ uid: s.id, ...s.data() })
-              } catch {}
-            }
-            if (arr.length > 0) {
-              setMyFriends((prev) => {
-                const merged = new Map<string, any>()
-                prev.forEach((f) => merged.set(f.uid, f))
-                arr.forEach((f) => merged.set(f.uid, f))
-                return Array.from(merged.values())
-              })
-            }
-          }
-        } catch (e) {
-          console.warn("legacy friends migration skipped:", e)
-        }
-      })()
 
       const chatsQ = fb.query(fb.collection(fb.db, "chats"), fb.where("members", "array-contains", uid))
       unsubscribersRef.current.push(
@@ -2231,31 +2213,116 @@ export default function MeBookPage() {
         setMenuOpen(false)
         setActionSheetFriend(null)
         setReactionPicker({ open: false, commentKey: null, anchorRect: null })
+        setPostReactionPicker({ open: false, postId: null, anchorRect: null })
+        setChatReactionPicker({ open: false, msgId: null, anchorRect: null })
       }
     }
     document.addEventListener("keydown", onKey)
     return () => document.removeEventListener("keydown", onKey)
   }, [])
 
-  // Close reaction picker on outside click
   useEffect(() => {
-    if (!reactionPicker.open) return
+    if (!reactionPicker.open && !postReactionPicker.open && !chatReactionPicker.open) return
     const handler = () => {
       setReactionPicker({ open: false, commentKey: null, anchorRect: null })
+      setPostReactionPicker({ open: false, postId: null, anchorRect: null })
+      setChatReactionPicker({ open: false, msgId: null, anchorRect: null })
     }
-    // delay to avoid same-click close
     setTimeout(() => {
       document.addEventListener("click", handler)
     }, 10)
     return () => document.removeEventListener("click", handler)
-  }, [reactionPicker.open])
+  }, [reactionPicker.open, postReactionPicker.open, chatReactionPicker.open])
+
+  /* ============================================================
+     POST REACTIONS
+     ============================================================ */
+
+  const handlePostReact = async (
+    postId: string,
+    reactionKey: string,
+    emoji: string,
+    evt?: { clientX: number; clientY: number }
+  ) => {
+    try {
+      const fb = await getFirebase()
+      const ref = fb.doc(fb.db, "posts", postId)
+      const snap = await fb.getDoc(ref)
+      if (!snap.exists()) return
+      const post = snap.data()
+      const likes: string[] = post.likes || []
+      const reactions: Record<string, string> = post.reactions || {}
+
+      const myCurrent = reactions[user.uid]
+      const has = likes.includes(user.uid)
+
+      let newReactions = { ...reactions }
+      let newLikes = [...likes]
+
+      if (myCurrent === reactionKey) {
+        delete newReactions[user.uid]
+        newLikes = newLikes.filter((id) => id !== user.uid)
+      } else {
+        newReactions[user.uid] = reactionKey
+        if (!has) newLikes.push(user.uid)
+      }
+
+      await fb.updateDoc(ref, {
+        reactions: newReactions,
+        likes: newLikes,
+      })
+
+      // Update local state
+      setPostReactions((prev) => ({
+        ...prev,
+        [postId]: newReactions,
+      }))
+
+      if (evt) {
+        const id = ++flyingIdRef.current
+        setFlyingReactions((prev) => [
+          ...prev,
+          { id, x: evt.clientX, y: evt.clientY, emoji },
+        ])
+        setTimeout(() => {
+          setFlyingReactions((prev) => prev.filter((r) => r.id !== id))
+        }, 750)
+      }
+
+      if (!myCurrent && post.authorId && post.authorId !== user.uid && post.authorId !== "admin") {
+        await fb.addDoc(fb.collection(fb.db, "notifications"), {
+          uid: post.authorId,
+          title: "New Reaction",
+          message: `${profile.name} reacted ${emoji} to your post.`,
+          type: "like",
+          read: false,
+          createdAt: fb.serverTimestamp(),
+        })
+      }
+    } catch (e: any) {
+      showToast("Error", e.message, "error")
+    } finally {
+      setPostReactionPicker({ open: false, postId: null, anchorRect: null })
+    }
+  }
+
+  const openPostReactionPicker = (
+    evt: React.MouseEvent | React.TouchEvent,
+    postId: string
+  ) => {
+    const target = evt.currentTarget as HTMLElement
+    const rect = target.getBoundingClientRect()
+    setPostReactionPicker({
+      open: true,
+      postId,
+      anchorRect: { x: rect.left, y: rect.top, width: rect.width },
+    })
+  }
 
   /* ============================================================
      COMMENT / REACTION HELPERS
      ============================================================ */
 
-  // Comments are stored on the post as an array of objects:
-  // { id, uid, name, avatar, text, at, parentId?, reactions?: { uid: reactionKey } }
   const buildCommentId = () => `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
 
   const handleAddComment = async (postId: string) => {
@@ -2286,7 +2353,6 @@ export default function MeBookPage() {
       const updated = [...existing, newComment]
       await fb.updateDoc(ref, { comments: updated })
 
-      // Notification
       const post = snap.data()
       if (post.authorId && post.authorId !== user.uid && post.authorId !== "admin") {
         await fb.addDoc(fb.collection(fb.db, "notifications"), {
@@ -2299,7 +2365,6 @@ export default function MeBookPage() {
         })
       }
 
-      // If replying, also notify the parent comment author
       if (replyTo && replyTo.uid && replyTo.uid !== user.uid && replyTo.uid !== post.authorId) {
         await fb.addDoc(fb.collection(fb.db, "notifications"), {
           uid: replyTo.uid,
@@ -2315,7 +2380,6 @@ export default function MeBookPage() {
       setReplyTo(null)
       showToast(replyTo ? "Reply added!" : "Comment added!", "", "success")
 
-      // Auto-expand replies if we were replying
       if (replyTo && replyTo.id) {
         setExpandedReplies((s) => {
           const c = new Set(s)
@@ -2357,7 +2421,6 @@ export default function MeBookPage() {
       })
       await fb.updateDoc(ref, { comments: updated })
 
-      // Flying animation
       if (evt) {
         const id = ++flyingIdRef.current
         setFlyingReactions((prev) => [
@@ -2369,7 +2432,6 @@ export default function MeBookPage() {
         }, 750)
       }
 
-      // Notification
       const targetComment = comments.find((c: any) => c.id === commentId)
       if (targetComment && targetComment.uid && targetComment.uid !== user.uid) {
         await fb.addDoc(fb.collection(fb.db, "notifications"), {
@@ -2397,15 +2459,10 @@ export default function MeBookPage() {
     setReactionPicker({
       open: true,
       commentKey,
-      anchorRect: {
-        x: rect.left,
-        y: rect.top,
-        width: rect.width,
-      },
+      anchorRect: { x: rect.left, y: rect.top, width: rect.width },
     })
   }
 
-  // Build tree: top-level comments + replies
   const buildCommentTree = (comments: any[]) => {
     const tops: any[] = []
     const repliesMap: Record<string, any[]> = {}
@@ -2418,6 +2475,72 @@ export default function MeBookPage() {
       }
     }
     return { tops, repliesMap }
+  }
+
+  /* ============================================================
+     CHAT REACTIONS
+     ============================================================ */
+
+  const handleReactToMessage = async (
+    msgId: string,
+    reactionKey: string,
+    emoji: string,
+    evt?: { clientX: number; clientY: number }
+  ) => {
+    if (!activeChat) return
+    try {
+      const fb = await getFirebase()
+      const ref = fb.doc(fb.db, "chats", activeChat, "messages", msgId)
+      const snap = await fb.getDoc(ref)
+      if (!snap.exists()) return
+      const data = snap.data()
+      const reactions = { ...(data.reactions || {}) }
+      if (reactions[user.uid] === reactionKey) {
+        delete reactions[user.uid]
+      } else {
+        reactions[user.uid] = reactionKey
+      }
+      await fb.updateDoc(ref, { reactions })
+
+      if (evt) {
+        const id = ++flyingIdRef.current
+        setFlyingReactions((prev) => [
+          ...prev,
+          { id, x: evt.clientX, y: evt.clientY, emoji },
+        ])
+        setTimeout(() => {
+          setFlyingReactions((prev) => prev.filter((r) => r.id !== id))
+        }, 750)
+      }
+
+      if (data.from && data.from !== user.uid) {
+        await fb.addDoc(fb.collection(fb.db, "notifications"), {
+          uid: data.from,
+          title: "New Reaction",
+          message: `${profile.name} reacted ${emoji} to your message.`,
+          type: "like",
+          read: false,
+          createdAt: fb.serverTimestamp(),
+        })
+      }
+    } catch (e: any) {
+      showToast("Error", e.message, "error")
+    } finally {
+      setChatReactionPicker({ open: false, msgId: null, anchorRect: null })
+    }
+  }
+
+  const openChatReactionPicker = (
+    evt: React.MouseEvent | React.TouchEvent,
+    msgId: string
+  ) => {
+    const target = evt.currentTarget as HTMLElement
+    const rect = target.getBoundingClientRect()
+    setChatReactionPicker({
+      open: true,
+      msgId,
+      anchorRect: { x: rect.left + rect.width / 2, y: rect.top, width: rect.width },
+    })
   }
 
   /* ============================================================
@@ -2594,6 +2717,12 @@ export default function MeBookPage() {
       setReplyTo(null)
       setCommentText("")
     }
+    if (view !== "messages") {
+      setChatView("list")
+      setActiveChat(null)
+      setChatPartner(null)
+      setChatMessages([])
+    }
     window.scrollTo({ top: 0, behavior: "auto" })
   }
 
@@ -2608,6 +2737,11 @@ export default function MeBookPage() {
     setPageStack((s) => (s.length > 1 ? s.slice(0, -1) : [{ view: "home" }]))
     setReplyTo(null)
     setCommentText("")
+    if (currentView === "messages") {
+      setChatView("list")
+      setActiveChat(null)
+      setChatPartner(null)
+    }
     window.scrollTo({ top: 0, behavior: "auto" })
   }
 
@@ -2626,13 +2760,22 @@ export default function MeBookPage() {
       const ref = fb.doc(fb.db, "posts", postId)
       const snap = await fb.getDoc(ref)
       if (!snap.exists()) return
-      const likes = snap.data().likes || []
+      const post = snap.data()
+      const likes = post.likes || []
+      const reactions = { ...(post.reactions || {}) }
       const has = likes.includes(user.uid)
-      await fb.updateDoc(ref, {
-        likes: has ? fb.arrayRemove(user.uid) : fb.arrayUnion(user.uid),
-      })
-      if (!has) {
-        const post = snap.data()
+      if (has) {
+        delete reactions[user.uid]
+        await fb.updateDoc(ref, {
+          likes: fb.arrayRemove(user.uid),
+          reactions,
+        })
+      } else {
+        reactions[user.uid] = "like"
+        await fb.updateDoc(ref, {
+          likes: fb.arrayUnion(user.uid),
+          reactions,
+        })
         if (post.authorId && post.authorId !== user.uid && post.authorId !== "admin") {
           await fb.addDoc(fb.collection(fb.db, "notifications"), {
             uid: post.authorId,
@@ -2653,7 +2796,6 @@ export default function MeBookPage() {
     setReplyTo(null)
     setCommentText("")
     pushPage("comments", { postId: post.id })
-    // Auto focus + scroll after render
     setTimeout(() => {
       try {
         commentInputRef.current?.focus()
@@ -2799,6 +2941,7 @@ export default function MeBookPage() {
         movie,
         image: imageUrl,
         likes: [],
+        reactions: {},
         comments: [],
         shares: 0,
         createdAt: fb.serverTimestamp(),
@@ -3016,6 +3159,7 @@ export default function MeBookPage() {
     setActiveChat(chatId)
     setChatPartner({ ...other, uid: otherId })
     setMobileChatWindow(true)
+    setChatView("window")
     if (chatUnsubRef.current) {
       try { chatUnsubRef.current() } catch {}
       chatUnsubRef.current = null
@@ -3030,29 +3174,199 @@ export default function MeBookPage() {
       snap.forEach((d: any) => arr.push({ id: d.id, ...d.data() }))
       setChatMessages(arr)
       setTimeout(() => {
-        const body = document.getElementById("mebook-chat-body")
-        if (body) body.scrollTop = body.scrollHeight
+        if (chatBodyRef.current) {
+          chatBodyRef.current.scrollTop = chatBodyRef.current.scrollHeight
+        }
       }, 80)
     })
+  }
+
+  const closeChat = () => {
+    setChatView("list")
+    setActiveChat(null)
+    setChatPartner(null)
+    setChatMessages([])
+    setChatReplyTo(null)
+    if (chatUnsubRef.current) {
+      try { chatUnsubRef.current() } catch {}
+      chatUnsubRef.current = null
+    }
   }
 
   const handleSendMessage = async () => {
     const text = chatInput.trim()
     if (!text || !activeChat) return
+    const reply = chatReplyTo
     setChatInput("")
+    setChatReplyTo(null)
     try {
       const fb = await getFirebase()
-      await fb.addDoc(fb.collection(fb.db, "chats", activeChat, "messages"), {
+      const payload: any = {
         from: user.uid,
         text,
         at: fb.serverTimestamp(),
-      })
+      }
+      if (reply) {
+        payload.replyTo = {
+          id: reply.id,
+          from: reply.from,
+          name: reply.from === user.uid ? profile.name : (chatPartner?.name || ""),
+          text: reply.text || "",
+        }
+      }
+      await fb.addDoc(fb.collection(fb.db, "chats", activeChat, "messages"), payload)
       await fb.updateDoc(fb.doc(fb.db, "chats", activeChat), {
         lastMessage: { text, from: user.uid },
         lastAt: fb.serverTimestamp(),
       })
     } catch (e: any) {
       showToast("Error", e.message, "error")
+    }
+  }
+
+  const handleSendLike = async () => {
+    if (!activeChat) return
+    try {
+      const fb = await getFirebase()
+      await fb.addDoc(fb.collection(fb.db, "chats", activeChat, "messages"), {
+        from: user.uid,
+        text: "",
+        type: "like",
+        at: fb.serverTimestamp(),
+      })
+      await fb.updateDoc(fb.doc(fb.db, "chats", activeChat), {
+        lastMessage: { text: "👍", from: user.uid },
+        lastAt: fb.serverTimestamp(),
+      })
+    } catch (e: any) {
+      showToast("Error", e.message, "error")
+    }
+  }
+
+  /* ============================================================
+     CHAT MEDIA (Photos / Camera / Voice)
+     ============================================================ */
+
+  const handleChatImageUpload = async (file: File) => {
+    if (!activeChat) return
+    try {
+      showToast("Uploading...", "Sending photo", "info")
+      const url = await cloudinaryUpload(file)
+      const fb = await getFirebase()
+      await fb.addDoc(fb.collection(fb.db, "chats", activeChat, "messages"), {
+        from: user.uid,
+        text: "",
+        type: "image",
+        imageUrl: url,
+        at: fb.serverTimestamp(),
+      })
+      await fb.updateDoc(fb.doc(fb.db, "chats", activeChat), {
+        lastMessage: { text: "📷 Photo", from: user.uid },
+        lastAt: fb.serverTimestamp(),
+      })
+      showToast("Sent!", "Photo sent", "success")
+    } catch (e: any) {
+      showToast("Failed", e.message, "error")
+    }
+  }
+
+  const startVoiceRecording = async () => {
+    try {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        showToast("Not supported", "Voice recording not supported", "error")
+        return
+      }
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      const mr = new MediaRecorder(stream)
+      mediaRecorderRef.current = mr
+      recordChunksRef.current = []
+
+      mr.ondataavailable = (e) => {
+        if (e.data.size > 0) recordChunksRef.current.push(e.data)
+      }
+
+      mr.onstop = async () => {
+        stream.getTracks().forEach((t) => t.stop())
+      }
+
+      mr.start()
+      recordStartRef.current = Date.now()
+      setRecording(true)
+      setRecordSeconds(0)
+      recordTimerRef.current = setInterval(() => {
+        setRecordSeconds(Math.floor((Date.now() - recordStartRef.current) / 1000))
+      }, 200)
+    } catch (e: any) {
+      showToast("Permission denied", "Please allow microphone access", "error")
+    }
+  }
+
+  const cancelVoiceRecording = () => {
+    if (recordTimerRef.current) clearInterval(recordTimerRef.current)
+    recordTimerRef.current = null
+    const mr = mediaRecorderRef.current
+    if (mr && mr.state !== "inactive") {
+      try { mr.stop() } catch {}
+    }
+    mediaRecorderRef.current = null
+    recordChunksRef.current = []
+    setRecording(false)
+    setRecordSeconds(0)
+  }
+
+  const sendVoiceRecording = async () => {
+    if (!activeChat) return
+    if (recordTimerRef.current) clearInterval(recordTimerRef.current)
+    recordTimerRef.current = null
+
+    const mr = mediaRecorderRef.current
+    const duration = Math.max(1, Math.floor((Date.now() - recordStartRef.current) / 1000))
+
+    if (!mr) return
+    const chunks = recordChunksRef.current
+
+    const finished = new Promise<Blob>((resolve) => {
+      mr.onstop = () => {
+        try {
+          mr.stream.getTracks().forEach((t) => t.stop())
+        } catch {}
+        resolve(new Blob(chunks, { type: "audio/webm" }))
+      }
+    })
+
+    try { mr.stop() } catch {}
+
+    const blob = await finished
+    mediaRecorderRef.current = null
+    recordChunksRef.current = []
+    setRecording(false)
+    setRecordSeconds(0)
+
+    if (blob.size < 500) {
+      showToast("Too short", "Please record a longer message", "error")
+      return
+    }
+
+    try {
+      showToast("Uploading voice...", "Please wait", "info")
+      const file = new File([blob], `voice-${Date.now()}.webm`, { type: "audio/webm" })
+      const url = await cloudinaryUpload(file, undefined, "video")
+      const fb = await getFirebase()
+      await fb.addDoc(fb.collection(fb.db, "chats", activeChat, "messages"), {
+        from: user.uid,
+        text: "",
+        type: "voice",
+        voiceUrl: url,
+        duration,
+        at: fb.serverTimestamp(),
+      })
+      await fb.updateDoc(fb.doc(fb.db, "chats", activeChat), {
+        lastMessage: { text: "🎤 Voice message", from: user.uid },
+        lastAt: fb.serverTimestamp(),
+      })
+      showToast("Sent!", "Voice message sent", "success")
+    } catch (e: any) {
+      showToast("Failed", e.message, "error")
     }
   }
 
@@ -3164,6 +3478,7 @@ export default function MeBookPage() {
         originalPostId: post.id,
         originalAuthor: post.authorName || "",
         likes: [],
+        reactions: {},
         comments: [],
         shares: 0,
         createdAt: fb.serverTimestamp(),
@@ -3378,8 +3693,18 @@ export default function MeBookPage() {
   RENDER POST
   ============================================================ */
   const renderPost = (post: any, isMine = false) => {
+    const postReacts = post.reactions || postReactions[post.id] || {}
+    const myReaction = postReacts[user.uid]
+    const reactionEntries = Object.entries(postReacts)
+    const uniqueReactions = Array.from(new Set(reactionEntries.map(([, k]) => k)))
+    const reactionEmojis = uniqueReactions
+      .map((k) => REACTIONS.find((r) => r.key === k)?.emoji)
+      .filter(Boolean)
+      .slice(0, 3) as string[]
+    const totalLikes = reactionEntries.length
+
     const liked = Array.isArray(post.likes) && post.likes.includes(user?.uid)
-    const likesCount = Array.isArray(post.likes) ? post.likes.length : 0
+    const likesCount = totalLikes || (Array.isArray(post.likes) ? post.likes.length : 0)
     const commentsCount = Array.isArray(post.comments) ? post.comments.length : 0
     const sharesCount = post.shares || 0
     const isOfficial = post.isOfficial === true
@@ -3389,6 +3714,10 @@ export default function MeBookPage() {
          `https://ui-avatars.com/api/?background=16a34a&color=fff&name=${encodeURIComponent(post.authorName || "User")}`)
     const timeText = post.timeText || timeAgo(post.createdAt)
     const postVerified = isVerified(post)
+
+    const myReactionEmoji = myReaction
+      ? REACTIONS.find((r) => r.key === myReaction)?.emoji
+      : null
 
     return (
       <article className={`mb-post${isOfficial ? " official" : ""}`} key={post.id}>
@@ -3459,12 +3788,13 @@ export default function MeBookPage() {
         ) : null}
 
         <div className="mb-post-stats">
-          <div className="mb-reacts">
+          <div className="mb-reacts" onClick={() => openPostReactionPicker(
+            { currentTarget: document.createElement("div") } as any,
+            post.id
+          )}>
             {likesCount ? (
               <span className="mb-react-pill">
-                <svg viewBox="0 0 24 24">
-                  <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
-                </svg>
+                {reactionEmojis.length > 0 ? reactionEmojis.join("") : "👍"}
                 <span>{likesCount}</span>
               </span>
             ) : (
@@ -3478,13 +3808,31 @@ export default function MeBookPage() {
 
         <div className="mb-post-actions">
           <button
-            className={`mb-action${liked ? " liked" : ""}`}
-            onClick={() => handleLikePost(post.id)}
+            className={`mb-action${liked || myReaction ? " liked" : ""}`}
+            onClick={(e) => {
+              if (myReaction || liked) {
+                handleLikePost(post.id)
+              } else {
+                openPostReactionPicker(e, post.id)
+              }
+            }}
+            onContextMenu={(e) => {
+              e.preventDefault()
+              openPostReactionPicker(e, post.id)
+            }}
+            onDoubleClick={(e) => openPostReactionPicker(e, post.id)}
+            title="Click for Like, hold for reactions"
           >
-            <svg viewBox="0 0 24 24">
-              <path d="M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-1.91z" />
-            </svg>
-            Like
+            {myReactionEmoji ? (
+              <span style={{ fontSize: 18, lineHeight: 1 }}>{myReactionEmoji}</span>
+            ) : (
+              <svg viewBox="0 0 24 24">
+                <path d="M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-1.91z" />
+              </svg>
+            )}
+            {myReaction
+              ? (REACTIONS.find((r) => r.key === myReaction)?.label || "Like")
+              : "Like"}
           </button>
           <button className="mb-action" onClick={() => openComments(post)}>
             <svg viewBox="0 0 24 24">
@@ -3515,6 +3863,18 @@ export default function MeBookPage() {
       (f.email || "").toLowerCase().includes(q)
     )
   })
+
+  const filteredChats = chats.filter((c) => {
+    const q = chatSearch.trim().toLowerCase()
+    if (!q) return true
+    return (c.other?.name || "").toLowerCase().includes(q)
+  })
+
+  const searchedUsersForChat = chatSearch.trim()
+    ? allUsers
+        .filter((u) => (u.name || "").toLowerCase().includes(chatSearch.trim().toLowerCase()))
+        .slice(0, 6)
+    : []
 
   const rootClass = `mebook-root ${theme === "dark" ? "dark-mode" : ""}`
 
@@ -3816,7 +4176,7 @@ export default function MeBookPage() {
 
       <ToastStack toasts={toasts} onDone={removeToast} />
 
-      {/* ===== Flying reactions animation layer ===== */}
+      {/* Flying reactions */}
       {flyingReactions.map((r) => (
         <div
           key={r.id}
@@ -3827,30 +4187,53 @@ export default function MeBookPage() {
         </div>
       ))}
 
-      {/* ===== Reaction picker ===== */}
+      {/* Post reaction picker */}
+      <PostReactionPicker
+        anchorRect={postReactionPicker.anchorRect}
+        open={postReactionPicker.open}
+        onReact={(key, emoji) => {
+          if (!postReactionPicker.postId) return
+          const pos = { clientX: window.innerWidth / 2, clientY: window.innerHeight / 2 }
+          if (postReactionPicker.anchorRect) {
+            pos.clientX = postReactionPicker.anchorRect.x + postReactionPicker.anchorRect.width / 2
+            pos.clientY = postReactionPicker.anchorRect.y
+          }
+          handlePostReact(postReactionPicker.postId, key, emoji, pos)
+        }}
+      />
+
+      {/* Comment reaction picker */}
       <ReactionPicker
         anchorRect={reactionPicker.anchorRect}
         open={reactionPicker.open}
         onReact={(key, emoji) => {
           const postId = currentParams.postId
           if (!postId || !reactionPicker.commentKey) return
-          // Find last pointer position for flying animation
           const pos = { clientX: window.innerWidth / 2, clientY: window.innerHeight / 2 }
-          const clickHandler = (ev: MouseEvent) => {
-            pos.clientX = ev.clientX
-            pos.clientY = ev.clientY
-          }
-          // We already have anchorRect → derive approximate position
           if (reactionPicker.anchorRect) {
             pos.clientX = reactionPicker.anchorRect.x + reactionPicker.anchorRect.width / 2
             pos.clientY = reactionPicker.anchorRect.y
           }
           handleReactToComment(postId, reactionPicker.commentKey, key, emoji, pos)
         }}
-        onClose={() => setReactionPicker({ open: false, commentKey: null, anchorRect: null })}
       />
 
-      {/* ===== Friend Action Sheet ===== */}
+      {/* Chat reaction picker */}
+      <ChatReactionPicker
+        anchorRect={chatReactionPicker.anchorRect}
+        open={chatReactionPicker.open}
+        onReact={(key, emoji) => {
+          if (!chatReactionPicker.msgId) return
+          const pos = { clientX: window.innerWidth / 2, clientY: window.innerHeight / 2 }
+          if (chatReactionPicker.anchorRect) {
+            pos.clientX = chatReactionPicker.anchorRect.x
+            pos.clientY = chatReactionPicker.anchorRect.y
+          }
+          handleReactToMessage(chatReactionPicker.msgId, key, emoji, pos)
+        }}
+      />
+
+      {/* Friend action sheet */}
       {actionSheetFriend && (
         <FriendActionSheet
           friend={actionSheetFriend}
@@ -3911,11 +4294,11 @@ export default function MeBookPage() {
           </button>
           <button
             className="mb-icon-btn"
-            title="Messages"
+            title="MeChat"
             onClick={() => goTo("messages")}
           >
             <svg viewBox="0 0 24 24">
-              <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z" />
+              <path d="M12 2C6.5 2 2 6.14 2 11.25c0 2.88 1.41 5.45 3.62 7.16.12 1.1-.28 2.62-1.05 3.59-.13.16-.02.4.18.38 2.34-.19 4.05-1.25 4.85-1.85.77.16 1.58.25 2.4.25 5.5 0 10-4.14 10-9.25S17.5 2 12 2z" />
             </svg>
             {unreadCount > 0 && <span className="mb-badge-dot">{unreadCount}</span>}
           </button>
@@ -3988,6 +4371,16 @@ export default function MeBookPage() {
           </span>
           Notifications
           {unreadNotifCount > 0 && <span className="mb-menu-badge">{unreadNotifCount}</span>}
+        </button>
+
+        <button className="mb-menu-item" onClick={() => { setMenuOpen(false); goTo("messages") }}>
+          <span className="mb-menu-ico green">
+            <svg viewBox="0 0 24 24">
+              <path d="M12 2C6.5 2 2 6.14 2 11.25c0 2.88 1.41 5.45 3.62 7.16.12 1.1-.28 2.62-1.05 3.59-.13.16-.02.4.18.38 2.34-.19 4.05-1.25 4.85-1.85.77.16 1.58.25 2.4.25 5.5 0 10-4.14 10-9.25S17.5 2 12 2z" />
+            </svg>
+          </span>
+          MeChat
+          {unreadCount > 0 && <span className="mb-menu-badge">{unreadCount}</span>}
         </button>
 
         <div className="mb-menu-divider" />
@@ -4074,7 +4467,7 @@ export default function MeBookPage() {
         <aside className="mb-sidebar">
           <SideItem id="home" label="Home" active={currentView === "home"} onClick={handleNavClick} />
           <SideItem id="friends" label="Friends" active={currentView === "friends"} onClick={handleNavClick} badge={requests.length} />
-          <SideItem id="messages" label="Messages" active={currentView === "messages"} onClick={handleNavClick} badge={unreadCount} />
+          <SideItem id="messages" label="MeChat" active={currentView === "messages"} onClick={handleNavClick} badge={unreadCount} />
           <SideItem id="notifications" label="Notifications" active={currentView === "notifications"} onClick={handleNavClick} badge={unreadNotifCount} />
           <div className="mb-side-divider" />
           <SideItem id="mebook" label="MeBook" active={currentView === "mebook"} onClick={handleNavClick} />
@@ -4693,135 +5086,434 @@ export default function MeBookPage() {
             </div>
           )}
 
+          {/* ============================================================
+              MESSAGES — MeChat (Messenger style)
+              ============================================================ */}
           {currentView === "messages" && (
             <div className="mb-view active">
-              <h1 className="mb-page-title" style={{ marginBottom: 12 }}>
-                <svg viewBox="0 0 24 24">
-                  <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z" />
-                </svg>
-                Messages
-              </h1>
-              <div className={`msgr-wrap ${mobileChatWindow && chatPartner ? "mobile-on-window" : "mobile-on-list"}`}>
-                <div className="msgr-list">
-                  <div className="msgr-list-head"><span>Chats</span></div>
-                  {onlineList.length > 0 && (
-                    <>
-                      <div className="msgr-section">Online now</div>
-                      <div className="msgr-online-row">
-                        {onlineList.map((u) => {
-                          const photo = avatarUrl(u)
+              {chatView === "list" || (!activeChat && chatView === "window") ? (
+                <>
+                  <h1 className="mb-page-title" style={{ marginBottom: 12 }}>
+                    <svg viewBox="0 0 24 24">
+                      <path d="M12 2C6.5 2 2 6.14 2 11.25c0 2.88 1.41 5.45 3.62 7.16.12 1.1-.28 2.62-1.05 3.59-.13.16-.02.4.18.38 2.34-.19 4.05-1.25 4.85-1.85.77.16 1.58.25 2.4.25 5.5 0 10-4.14 10-9.25S17.5 2 12 2z" />
+                    </svg>
+                    MeChat
+                  </h1>
+
+                  <div className="mb-search-box">
+                    <svg viewBox="0 0 24 24">
+                      <path d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
+                    </svg>
+                    <input
+                      type="text"
+                      placeholder="Search people or chats"
+                      value={chatSearch}
+                      onChange={(e) => setChatSearch(e.target.value)}
+                    />
+                  </div>
+
+                  {searchedUsersForChat.length > 0 && (
+                    <div className="msgr-wrap" style={{ height: "auto", marginBottom: 16 }}>
+                      <div style={{ padding: "14px 16px 8px", fontSize: 12, fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase" }}>
+                        People
+                      </div>
+                      {searchedUsersForChat.map((u) => {
+                        const photo = avatarUrl(u)
+                        return (
+                          <div className="msgr-item" key={u.uid} onClick={() => startChat(u.uid, u.name, photo)}>
+                            <div className="msgr-item-avatar-wrap">
+                              <img src={photo} alt="" />
+                              <span className="msgr-item-dot" />
+                            </div>
+                            <div className="msgr-item-body">
+                              <div className="msgr-item-name">{u.name}</div>
+                              <div className="msgr-item-last">Tap to start chatting</div>
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  )}
+
+                  <div className="msgr-wrap">
+                    <div className="msgr-list" style={{ width: "100%", borderRight: "none" }}>
+                      {onlineList.length > 0 && (
+                        <>
+                          <div className="msgr-section">Online now</div>
+                          <div className="msgr-online-row">
+                            {onlineList.map((u) => {
+                              const photo = avatarUrl(u)
+                              return (
+                                <div key={u.uid} className="msgr-online-item" onClick={() => startChat(u.uid, u.name, photo)}>
+                                  <div className="msgr-online-avatar-wrap">
+                                    <img src={photo} alt="" />
+                                    <span className="msgr-online-dot" />
+                                  </div>
+                                  <div className="msgr-online-name">{u.name?.split(" ")[0]}</div>
+                                </div>
+                              )
+                            })}
+                          </div>
+                        </>
+                      )}
+                      <div className="msgr-section">Recent</div>
+                      {filteredChats.length === 0 ? (
+                        <div style={{ padding: 20, color: "var(--text-muted)", fontSize: 14, textAlign: "center" }}>
+                          No conversations yet. Start one!
+                        </div>
+                      ) : (
+                        filteredChats.map((c) => {
+                          const photo = avatarUrl(c.other)
                           return (
-                            <div key={u.uid} className="msgr-online-item" onClick={() => startChat(u.uid, u.name, photo)}>
-                              <div className="msgr-online-avatar-wrap">
+                            <div className="msgr-item" key={c.id} onClick={() => openChat(c.id, c.otherId, c.other)}>
+                              <div className="msgr-item-avatar-wrap">
                                 <img src={photo} alt="" />
-                                <span className="msgr-online-dot" />
+                                <span className="msgr-item-dot" />
                               </div>
-                              <div className="msgr-online-name">{u.name?.split(" ")[0]}</div>
+                              <div className="msgr-item-body">
+                                <div className="msgr-item-name">{c.other.name}</div>
+                                <div className="msgr-item-last">
+                                  {(c.last as any)?.text || "Say hi 👋"}
+                                </div>
+                              </div>
+                              <div className="msgr-item-time">{c.lastAt ? timeShort(c.lastAt) : ""}</div>
                             </div>
                           )
-                        })}
-                      </div>
-                    </>
-                  )}
-                  <div className="msgr-section">Recent</div>
-                  {chats.length === 0 ? (
-                    <div style={{ padding: 20, color: "var(--text-muted)", fontSize: 14, textAlign: "center" }}>
-                      No conversations yet. Start one from Friends page!
+                        })
+                      )}
                     </div>
-                  ) : (
-                    chats.map((c) => {
-                      const photo = avatarUrl(c.other)
-                      const isActive = activeChat === c.id
-                      return (
-                        <div className={`msgr-item ${isActive ? "active" : ""}`} key={c.id} onClick={() => openChat(c.id, c.otherId, c.other)}>
-                          <div className="msgr-item-avatar-wrap">
-                            <img src={photo} alt="" />
-                            <span className="msgr-item-dot" />
-                          </div>
-                          <div className="msgr-item-body">
-                            <div className="msgr-item-name">{c.other.name}</div>
-                            <div className={`msgr-item-last ${unreadCount > 0 ? "unread" : ""}`}>
-                              {(c.last as any)?.text || "Say hi 👋"}
-                            </div>
-                          </div>
-                          <div className="msgr-item-time">{c.lastAt ? timeShort(c.lastAt) : ""}</div>
-                        </div>
-                      )
-                    })
-                  )}
-                </div>
-                <div className="msgr-window">
-                  {!activeChat || !chatPartner ? (
-                    <div className="msgr-empty">
+                  </div>
+                </>
+              ) : (
+                /* MeChat fullpage window (screenshot style) */
+                <div className="mechat-page">
+                  {/* HEADER */}
+                  <div className="mechat-head">
+                    <button className="mechat-head-back" onClick={closeChat}>
                       <svg viewBox="0 0 24 24">
-                        <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z" />
+                        <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" />
                       </svg>
-                      <b>Select a conversation</b>
-                      <p>Choose someone from the list to start chatting</p>
+                    </button>
+                    <div className="mechat-head-avatar-wrap" onClick={() => chatPartner && openUserProfile(chatPartner.uid)}>
+                      <img src={chatPartner ? avatarUrl(chatPartner) : ""} alt="" />
+                      <span className="mechat-head-online" />
                     </div>
-                  ) : (
-                    <>
-                      <div className="msgr-head">
-                        <button className="msgr-head-back" onClick={() => setMobileChatWindow(false)}>
-                          <svg viewBox="0 0 24 24">
-                            <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" />
+                    <div className="mechat-head-info">
+                      <div className="mechat-head-name">
+                        {chatPartner?.name}
+                        {isVerified(chatPartner) && (
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="#0084ff">
+                            <path d="M23 12l-2.44-2.79.34-3.69-3.61-.82-1.89-3.2L12 2.96 8.6 1.5 6.71 4.69l-3.61.82.34 3.69L1 12l2.44 2.79-.34 3.7 3.61.82L8.6 22.5l3.4-1.47 3.4 1.46 1.89-3.19 3.61-.82-.34-3.69L23 12zm-12.91 4.72l-3.8-3.81 1.48-1.48 2.32 2.33 5.85-5.87 1.48 1.48-7.33 7.35z" />
                           </svg>
-                        </button>
-                        <img src={avatarUrl(chatPartner)} alt="" />
-                        <div className="msgr-head-info">
-                          <div className="msgr-head-name">{chatPartner.name}</div>
-                          <div className="msgr-head-status"><span className="dot" /> Active now</div>
-                        </div>
-                        <button className="msgr-head-btn" onClick={() => openUserProfile(chatPartner.uid)}>
-                          <svg viewBox="0 0 24 24">
-                            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
-                          </svg>
-                        </button>
-                      </div>
-                      <div className="msgr-body" id="mebook-chat-body">
-                        {chatMessages.length === 0 ? (
-                          <div className="msgr-empty" style={{ padding: 40 }}>
-                            <b>No messages yet</b>
-                            <p>Say hi 👋</p>
-                          </div>
-                        ) : (
-                          chatMessages.map((m, idx) => {
-                            const mine = m.from === user.uid
-                            const prevMsg = idx > 0 ? chatMessages[idx - 1] : null
-                            const showAvatar = !mine && (!prevMsg || prevMsg.from !== m.from)
-                            return (
-                              <div key={m.id} className={`msgr-bubble-wrap ${mine ? "me" : "them"} ${showAvatar ? "show-avatar" : ""}`}>
-                                {!mine && <img className="msgr-bubble-avatar" src={avatarUrl(chatPartner)} alt="" />}
-                                <div className={`msgr-bubble ${mine ? "me" : "them"}`}>{m.text}</div>
-                              </div>
-                            )
-                          })
                         )}
                       </div>
-                      <div className="msgr-input">
-                        <textarea
-                          className="msgr-input-field"
-                          placeholder="Aa"
-                          rows={1}
-                          value={chatInput}
-                          onChange={(e) => setChatInput(e.target.value)}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter" && !e.shiftKey) {
+                      <div className="mechat-head-status">Active now</div>
+                    </div>
+                    <div className="mechat-head-actions">
+                      <button className="mechat-head-btn" title="Audio call">
+                        <svg viewBox="0 0 24 24">
+                          <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z" />
+                        </svg>
+                      </button>
+                      <button className="mechat-head-btn" title="Video call">
+                        <svg viewBox="0 0 24 24">
+                          <path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z" />
+                        </svg>
+                      </button>
+                      <button className="mechat-head-btn" title="Info" onClick={() => chatPartner && openUserProfile(chatPartner.uid)}>
+                        <svg viewBox="0 0 24 24">
+                          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* BODY */}
+                  <div className="mechat-body" ref={chatBodyRef}>
+                    {chatMessages.length === 0 ? (
+                      <div className="mechat-empty">
+                        <svg viewBox="0 0 24 24">
+                          <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z" />
+                        </svg>
+                        <b>No messages yet</b>
+                        <p>Say hi 👋</p>
+                      </div>
+                    ) : (
+                      chatMessages.map((m, idx) => {
+                        const mine = m.from === user.uid
+                        const prevMsg = idx > 0 ? chatMessages[idx - 1] : null
+                        const showAvatar = !mine && (!prevMsg || prevMsg.from !== m.from)
+                        const reactions = m.reactions || {}
+                        const reactionKeys = Object.values(reactions) as string[]
+                        const uniqueReactions = Array.from(new Set(reactionKeys))
+                        const reactionEmojis = uniqueReactions
+                          .map((k) => CHAT_REACTIONS.find((r) => r.key === k)?.emoji || REACTIONS.find((r) => r.key === k)?.emoji)
+                          .filter(Boolean) as string[]
+                        const myReaction = reactions[user.uid]
+                        const isLikeMsg = m.type === "like"
+                        const isImageMsg = m.type === "image"
+                        const isVoiceMsg = m.type === "voice"
+
+                        // Swipe to reply
+                        let touchStartX = 0
+                        let touchCurrentX = 0
+                        const onTouchStart = (e: React.TouchEvent) => {
+                          touchStartX = e.touches[0].clientX
+                          touchCurrentX = touchStartX
+                        }
+                        const onTouchMove = (e: React.TouchEvent) => {
+                          touchCurrentX = e.touches[0].clientX
+                          const diff = touchCurrentX - touchStartX
+                          const el = e.currentTarget as HTMLElement
+                          if (diff > 0 && diff < 100) {
+                            el.style.transform = `translateX(${diff}px)`
+                            el.style.transition = "none"
+                          }
+                        }
+                        const onTouchEnd = (e: React.TouchEvent) => {
+                          const el = e.currentTarget as HTMLElement
+                          const diff = touchCurrentX - touchStartX
+                          el.style.transition = "transform .2s ease"
+                          el.style.transform = "translateX(0)"
+                          if (diff > 60) {
+                            setChatReplyTo({
+                              id: m.id,
+                              from: m.from,
+                              text: isImageMsg ? "📷 Photo" : isVoiceMsg ? "🎤 Voice" : isLikeMsg ? "👍" : (m.text || ""),
+                            })
+                            setTimeout(() => chatInputRef.current?.focus(), 50)
+                          }
+                        }
+
+                        let bubbleContent: React.ReactNode = null
+                        if (isImageMsg && m.imageUrl) {
+                          bubbleContent = (
+                            <div className="mechat-bubble-image">
+                              <img src={m.imageUrl} alt="" />
+                              <span className="mechat-image-time">{chatTime(m.at)}</span>
+                            </div>
+                          )
+                        } else if (isVoiceMsg && m.voiceUrl) {
+                          bubbleContent = (
+                            <div className="mechat-voice">
+                              <button
+                                className="mechat-voice-play"
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  const audio = new Audio(m.voiceUrl)
+                                  audio.play()
+                                }}
+                              >
+                                <svg viewBox="0 0 24 24">
+                                  <path d="M8 5v14l11-7z" />
+                                </svg>
+                              </button>
+                              <div className="mechat-voice-wave">
+                                {Array.from({ length: 22 }).map((_, i) => (
+                                  <span
+                                    key={i}
+                                    style={{
+                                      height: `${8 + Math.abs(Math.sin(i * 0.7 + (m.id?.length || 0))) * 16}px`,
+                                      opacity: 0.5 + Math.abs(Math.sin(i * 0.5)) * 0.5,
+                                    }}
+                                  />
+                                ))}
+                              </div>
+                              <span className="mechat-voice-duration">{formatVoiceDuration(m.duration || 0)}</span>
+                            </div>
+                          )
+                        } else if (isLikeMsg) {
+                          bubbleContent = (
+                            <div style={{ fontSize: 40, lineHeight: 1, padding: "2px 4px" }}>👍</div>
+                          )
+                        } else {
+                          bubbleContent = (
+                            <>
+                              {m.replyTo && (
+                                <div className="mechat-reply-quote">
+                                  <b>{m.replyTo.from === user.uid ? "You" : m.replyTo.name}</b>
+                                  <span>{m.replyTo.text}</span>
+                                </div>
+                              )}
+                              <span>{m.text}</span>
+                              <span className={`mechat-bubble-time ${mine ? "me" : "them"}`}>
+                                {chatTime(m.at)}
+                              </span>
+                            </>
+                          )
+                        }
+
+                        return (
+                          <div                            key={m.id}
+                            className={`mechat-bubble-wrap ${mine ? "me" : "them"} ${showAvatar ? "show-avatar" : ""}`}
+                            onTouchStart={onTouchStart}
+                            onTouchMove={onTouchMove}
+                            onTouchEnd={onTouchEnd}
+                            onContextMenu={(e) => {
                               e.preventDefault()
-                              handleSendMessage()
-                            }
-                          }}
-                        />
-                        <button className="msgr-input-send" onClick={handleSendMessage} disabled={!chatInput.trim()}>
+                              openChatReactionPicker(e, m.id)
+                            }}
+                            onDoubleClick={(e) => openChatReactionPicker(e, m.id)}
+                          >
+                            {!mine && <img className="mechat-bubble-avatar" src={chatPartner ? avatarUrl(chatPartner) : ""} alt="" />}
+                            <div
+                              className={`mechat-bubble ${mine ? "me" : "them"} ${isImageMsg ? "mechat-bubble-image" : ""}`}
+                              style={isImageMsg ? { padding: 3, background: "transparent", maxWidth: "72%" } : undefined}
+                            >
+                              {bubbleContent}
+                            </div>
+                            {reactionEmojis.length > 0 && (
+                              <span className="mechat-reaction-badge">
+                                {reactionEmojis.slice(0, 3).join("")}
+                                {reactionKeys.length > 1 && ` ${reactionKeys.length}`}
+                              </span>
+                            )}
+                          </div>
+                        )
+                      })
+                    )}
+                  </div>
+
+                  {/* RECORDING BAR */}
+                  {recording && (
+                    <div className="mechat-recording-bar">
+                      <span className="mechat-recording-dot" />
+                      <span className="mechat-recording-time">{formatVoiceDuration(recordSeconds)}</span>
+                      <span className="mechat-recording-hint">Recording voice message...</span>
+                      <button className="mechat-recording-cancel" onClick={cancelVoiceRecording} title="Cancel">
+                        <svg viewBox="0 0 24 24">
+                          <path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
+                        </svg>
+                      </button>
+                      <button className="mechat-recording-send" onClick={sendVoiceRecording} title="Send">
+                        <svg viewBox="0 0 24 24">
+                          <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
+                        </svg>
+                      </button>
+                    </div>
+                  )}
+
+                  {/* REPLY BANNER */}
+                  {chatReplyTo && !recording && (
+                    <div className="mechat-reply-banner">
+                      <div className="bar" />
+                      <div className="mechat-reply-banner-info">
+                        <div className="mechat-reply-banner-title">
+                          Replying to {chatReplyTo.from === user.uid ? "yourself" : (chatPartner?.name || "")}
+                        </div>
+                        <div className="mechat-reply-banner-text">{chatReplyTo.text}</div>
+                      </div>
+                      <button className="mechat-reply-banner-close" onClick={() => setChatReplyTo(null)}>
+                        <svg viewBox="0 0 24 24">
+                          <path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
+                        </svg>
+                      </button>
+                    </div>
+                  )}
+
+                  {/* INPUT BAR */}
+                  {!recording && (
+                    <div className={`mechat-input-bar${kbUp ? " kb-up" : ""}`}>
+                      <div className="mechat-input-actions">
+                        <button
+                          className="mechat-input-icon"
+                          title="Add photo"
+                          onClick={() => chatFileInputRef.current?.click()}
+                        >
+                          <svg viewBox="0 0 24 24">
+                            <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z" />
+                          </svg>
+                        </button>
+                        <button
+                          className="mechat-input-icon"
+                          title="Camera"
+                          onClick={() => chatCameraInputRef.current?.click()}
+                        >
+                          <svg viewBox="0 0 24 24">
+                            <path d="M9 2L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-3.17L15 2H9zm3 15c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z" />
+                          </svg>
+                        </button>
+                        <button
+                          className="mechat-input-icon"
+                          title="Voice"
+                          onClick={startVoiceRecording}
+                        >
+                          <svg viewBox="0 0 24 24">
+                            <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5-3c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z" />
+                          </svg>
+                        </button>
+                      </div>
+
+                      <textarea
+                        ref={chatInputRef}
+                        className="mechat-input-field"
+                        placeholder="Aa"
+                        rows={1}
+                        value={chatInput}
+                        onChange={(e) => setChatInput(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" && !e.shiftKey) {
+                            e.preventDefault()
+                            handleSendMessage()
+                          }
+                        }}
+                      />
+
+                      {chatInput.trim() ? (
+                        <button className="mechat-send-btn" onClick={handleSendMessage} title="Send">
                           <svg viewBox="0 0 24 24">
                             <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
                           </svg>
                         </button>
-                      </div>
-                    </>
+                      ) : (
+                        <button
+                          className={`mechat-like-btn${chatLikeActive ? " my-liked" : ""}`}
+                          onClick={handleSendLike}
+                          onContextMenu={(e) => {
+                            e.preventDefault()
+                            const rect = (e.currentTarget as HTMLElement).getBoundingClientRect()
+                            setChatReactionPicker({
+                              open: true,
+                              msgId: "__send_reaction__",
+                              anchorRect: { x: rect.left + rect.width / 2, y: rect.top, width: rect.width },
+                            })
+                          }}
+                          title="Send like (hold for reactions)"
+                        >
+                          <svg viewBox="0 0 24 24">
+                            <path d="M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-1.91z" />
+                          </svg>
+                        </button>
+                      )}
+                    </div>
                   )}
+
+                  {/* Hidden file inputs */}
+                  <input
+                    ref={chatFileInputRef}
+                    type="file"
+                    accept="image/*"
+                    style={{ display: "none" }}
+                    onChange={async (e) => {
+                      const f = e.target.files?.[0]
+                      e.target.value = ""
+                      if (f) await handleChatImageUpload(f)
+                    }}
+                  />
+                  <input
+                    ref={chatCameraInputRef}
+                    type="file"
+                    accept="image/*"
+                    capture="environment"
+                    style={{ display: "none" }}
+                    onChange={async (e) => {
+                      const f = e.target.files?.[0]
+                      e.target.value = ""
+                      if (f) await handleChatImageUpload(f)
+                    }}
+                  />
                 </div>
-              </div>
+              )}
             </div>
           )}
 
@@ -4907,9 +5599,6 @@ export default function MeBookPage() {
             </div>
           )}
 
-          {/* ============================================================
-              COMMENTS PAGE — ONLY COMMENTS, NO POST
-              ============================================================ */}
           {currentView === "comments" && (() => {
             const post = findPost(currentParams.postId)
             if (!post) {
@@ -4923,13 +5612,11 @@ export default function MeBookPage() {
 
             const allComments = post.comments || []
             const { tops, repliesMap } = buildCommentTree(allComments)
-
             const totalCount = allComments.length
 
             const renderReactionBadge = (reactions: Record<string, string>) => {
               const entries = Object.entries(reactions || {})
               if (entries.length === 0) return null
-              // Count by reaction key
               const counts: Record<string, number> = {}
               for (const [, key] of entries) {
                 counts[key] = (counts[key] || 0) + 1
@@ -4959,10 +5646,7 @@ export default function MeBookPage() {
               const commentKey = c.id
 
               return (
-                <div
-                  className={isReply ? "cmt-reply-row" : "cmt-row"}
-                  key={c.id}
-                >
+                <div className={isReply ? "cmt-reply-row" : "cmt-row"} key={c.id}>
                   <img
                     className="cmt-row-avatar"
                     src={cAvatar}
@@ -5013,7 +5697,6 @@ export default function MeBookPage() {
                       </button>
                     </div>
 
-                    {/* Replies */}
                     {!isReply && repliesMap[c.id] && repliesMap[c.id].length > 0 && (
                       <div className="cmt-replies">
                         {(() => {
@@ -5071,10 +5754,7 @@ export default function MeBookPage() {
                   Back
                 </button>
 
-                <div
-                  className="cmt-page-wrap"
-                  style={kbUp ? { paddingBottom: 260 } : undefined}
-                >
+                <div className="cmt-page-wrap">
                   <div className="cmt-page-head">
                     <span>💬 Comments ({totalCount})</span>
                     <span style={{ fontSize: 12.5, color: "var(--text-muted)", fontWeight: 500 }}>
@@ -5096,7 +5776,6 @@ export default function MeBookPage() {
                     )}
                   </div>
 
-                  {/* Reply indicator */}
                   {replyTo && (
                     <div className="cmt-reply-indicator">
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
@@ -5107,10 +5786,7 @@ export default function MeBookPage() {
                     </div>
                   )}
 
-                  <div
-                    className={`cmt-input-wrap${kbUp ? " keyboard-up" : ""}`}
-                    ref={commentWrapRef}
-                  >
+                  <div className="cmt-input-wrap">
                     <img className="cmt-input-avatar" src={avatarUrl(profile)} alt="" />
                     <textarea
                       ref={commentInputRef}
@@ -5535,6 +6211,7 @@ export default function MeBookPage() {
                     movie: "Community Announcement",
                     image: "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=900&q=80",
                     likes: [],
+                    reactions: {},
                     comments: [],
                     shares: 0,
                     timeText: "just now",

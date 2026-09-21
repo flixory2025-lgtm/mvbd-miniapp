@@ -156,12 +156,6 @@ STYLES
 ============================================================ */
 
 const MEBOOK_CSS = `
-html, body {
-  overflow-x: hidden;
-  margin: 0;
-  padding: 0;
-}
-
 .mebook-root{
 --green:#16a34a; --green-dark:#15803d; --green-light:#22c55e;
 --bg:#f0f2f5; --card:#ffffff; --text:#1c1e21; --text-muted:#65676b;
@@ -311,21 +305,13 @@ animation:cardFloat .7s cubic-bezier(.2,.8,.3,1);color:#f3f4f6;
 .mebook-root .auth-err.show{display:block;}
 @keyframes shake{0%,100%{transform:translateX(0);}25%{transform:translateX(-4px);}75%{transform:translateX(4px);}}
 
-/* ============ HEADER — GLUED TO SCROLL ============ */
+/* ============ HEADER ============ */
 .mebook-root .mb-header{
 position:fixed;top:0;left:0;right:0;height:60px;z-index:1000;
 background:var(--header-bg);
 display:flex;align-items:center;justify-content:space-between;
 padding:0 16px;
 box-shadow:0 2px 12px rgba(0,0,0,.25);
-transform:translateY(0);
-transition:transform .2s ease-out;
-will-change:transform;
-backface-visibility:hidden;
--webkit-backface-visibility:hidden;
-}
-.mebook-root .mb-header.header-hidden{
-transform:translateY(-100%);
 }
 .mebook-root.dark-mode .mb-header{
 background:#000000;
@@ -404,7 +390,7 @@ padding:8px;
 transform-origin:top right;
 transform:scale(.9) translateY(-8px);
 opacity:0;visibility:hidden;
-transition:transform .22s cubic-bezier(.2,.8,.3,1), opacity .22s ease, visibility .22s ease, top .3s cubic-bezier(.2,.8,.3,1);
+transition:transform .22s cubic-bezier(.2,.8,.3,1), opacity .22s ease, visibility .22s ease;
 max-height:calc(100vh - 80px);
 overflow-y:auto;
 overscroll-behavior:contain;
@@ -686,7 +672,7 @@ scrollbar-width:none;
 .mebook-root .fr-card-actions .mb-btn{font-size:12.5px;padding:7px;}
 
 /* ============================================================
-   PROFILE PAGE — Facebook Style (matches screenshot)
+   PROFILE PAGE — Facebook Style
    ============================================================ */
 .mebook-root .mb-profile-head{
 border-radius:12px;
@@ -948,6 +934,82 @@ color:var(--text);
 font-weight:500;
 }
 
+/* ============ PROFILE FRIENDS SECTION (NEW) ============ */
+.mebook-root .mb-profile-friends-section{
+padding:16px 20px 20px;
+border-top:1px solid var(--border);
+}
+.mebook-root .mb-profile-friends-section-head{
+display:flex;
+align-items:center;
+justify-content:space-between;
+margin-bottom:14px;
+}
+.mebook-root .mb-profile-friends-section-head h3{
+font-size:18px;
+font-weight:800;
+color:var(--text);
+display:flex;
+align-items:center;
+gap:8px;
+}
+.mebook-root .mb-profile-friends-section-head .count{
+font-size:13.5px;
+font-weight:600;
+color:var(--text-muted);
+}
+.mebook-root .mb-profile-friends-grid{
+display:grid;
+grid-template-columns:repeat(auto-fill,minmax(120px,1fr));
+gap:12px;
+}
+.mebook-root .mb-profile-friend-card{
+border-radius:12px;
+overflow:hidden;
+cursor:pointer;
+transition:transform .2s,box-shadow .2s;
+background:var(--input-bg);
+}
+.mebook-root .mb-profile-friend-card:hover{
+transform:translateY(-3px);
+box-shadow:var(--shadow-lg);
+}
+.mebook-root .mb-profile-friend-card img{
+width:100%;
+aspect-ratio:1;
+object-fit:cover;
+background:#cbd5e1;
+display:block;
+}
+.mebook-root .mb-profile-friend-card-name{
+padding:8px 10px 10px;
+font-size:13.5px;
+font-weight:700;
+color:var(--text);
+white-space:nowrap;
+overflow:hidden;
+text-overflow:ellipsis;
+text-align:center;
+}
+.mebook-root .mb-profile-friends-empty{
+text-align:center;
+padding:30px 20px;
+color:var(--text-muted);
+font-size:14px;
+}
+.mebook-root .mb-profile-friends-loading{
+text-align:center;
+padding:30px 20px;
+color:var(--text-muted);
+font-size:14px;
+}
+@media(max-width:600px){
+.mebook-root .mb-profile-friends-grid{
+grid-template-columns:repeat(auto-fill,minmax(100px,1fr));
+gap:10px;
+}
+}
+
 /* ============ CARDS / SIDEBAR ============ */
 .mebook-root .mb-right{position:sticky;top:80px;align-self:start;display:flex;flex-direction:column;gap:16px;max-height:calc(100vh - 100px);overflow-y:auto;scrollbar-width:none;}
 .mebook-root .mb-right::-webkit-scrollbar{width:0;}
@@ -1029,7 +1091,7 @@ font-weight:500;
 .mebook-root .cp-actions .mb-btn{flex:1;padding:11px;}
 
 /* ============ TOAST ============ */
-.mebook-root .mb-toast-container{position:fixed;top:80px;right:20px;z-index:6000;display:flex;flex-direction:column;gap:10px;pointer-events:none;max-width:360px;transition:top .3s cubic-bezier(.2,.8,.3,1);}
+.mebook-root .mb-toast-container{position:fixed;top:80px;right:20px;z-index:6000;display:flex;flex-direction:column;gap:10px;pointer-events:none;max-width:360px;}
 .mebook-root .mb-toast{padding:12px 16px;border-radius:12px;font-size:14px;font-weight:500;box-shadow:0 8px 32px rgba(0,0,0,.18),0 0 0 1px rgba(0,0,0,.04);display:flex;align-items:center;gap:10px;pointer-events:auto;animation:toastIn .4s cubic-bezier(.2,.8,.3,1);min-width:240px;position:relative;overflow:hidden;background:var(--card);color:var(--text);}
 .mebook-root .mb-toast.removing{animation:toastOut .35s cubic-bezier(.4,0,1,1) forwards;}
 @keyframes toastIn{0%{opacity:0;transform:translateX(120%) scale(.9);}60%{opacity:1;transform:translateX(-6px) scale(1.02);}100%{opacity:1;transform:translateX(0) scale(1);}}
@@ -1189,38 +1251,6 @@ export default function MeBookPage() {
 
   const [menuOpen, setMenuOpen] = useState(false)
 
-  /* ============================================================
-     ✅ SIMPLE GLUED SCROLL HEADER
-     - Scroll down past 60px → header slides UP (hidden)
-     - Scroll back to top → header slides DOWN (visible)
-     - No complex diff tracking — just checks scroll position
-     - Works on ALL pages
-     ============================================================ */
-  const [headerHidden, setHeaderHidden] = useState(false)
-  const headerTickingRef = useRef(false)
-
-  useEffect(() => {
-    const onScroll = () => {
-      if (headerTickingRef.current) return
-      headerTickingRef.current = true
-
-      window.requestAnimationFrame(() => {
-        const y = window.scrollY
-
-        if (y > 60) {
-          setHeaderHidden(true)
-        } else {
-          setHeaderHidden(false)
-        }
-
-        headerTickingRef.current = false
-      })
-    }
-
-    window.addEventListener("scroll", onScroll, { passive: true })
-    return () => window.removeEventListener("scroll", onScroll)
-  }, [])
-
   const [toasts, setToasts] = useState<ToastItem[]>([])
   const toastIdRef = useRef(0)
   const showToast = useCallback(
@@ -1252,6 +1282,9 @@ export default function MeBookPage() {
 
   const [viewingUser, setViewingUser] = useState<any>(null)
   const [viewingUserPosts, setViewingUserPosts] = useState<any[]>([])
+  // NEW: friends of the user whose profile is being viewed
+  const [viewingUserFriends, setViewingUserFriends] = useState<any[]>([])
+  const [viewingUserFriendsLoading, setViewingUserFriendsLoading] = useState(false)
 
   const [notifications, setNotifications] = useState<any[]>([])
   const [unreadNotifCount, setUnreadNotifCount] = useState(0)
@@ -1294,6 +1327,7 @@ export default function MeBookPage() {
   const unsubscribersRef = useRef<Array<() => void>>([])
   const chatUnsubRef = useRef<(() => void) | null>(null)
   const viewingUserUnsubRef = useRef<(() => void) | null>(null)
+  const viewingUserFriendsUnsubRef = useRef<(() => void) | null>(null)
 
   useEffect(() => {
     const styleId = "mebook-styles"
@@ -1336,6 +1370,10 @@ export default function MeBookPage() {
     if (viewingUserUnsubRef.current) {
       try { viewingUserUnsubRef.current() } catch {}
       viewingUserUnsubRef.current = null
+    }
+    if (viewingUserFriendsUnsubRef.current) {
+      try { viewingUserFriendsUnsubRef.current() } catch {}
+      viewingUserFriendsUnsubRef.current = null
     }
   }, [])
 
@@ -1427,6 +1465,7 @@ export default function MeBookPage() {
         })
       )
 
+      /* myFriends live listener — array-contains symmetric query */
       const myFriendsQ = fb.query(
         fb.collection(fb.db, "friends"),
         fb.where("members", "array-contains", uid)
@@ -1450,15 +1489,12 @@ export default function MeBookPage() {
         })
       )
 
+      /* Legacy fallback — one-time migration */
       ;(async () => {
         try {
           const [s1, s2] = await Promise.all([
-            fb.getDocs(
-              fb.query(fb.collection(fb.db, "friends"), fb.where("a", "==", uid))
-            ),
-            fb.getDocs(
-              fb.query(fb.collection(fb.db, "friends"), fb.where("b", "==", uid))
-            ),
+            fb.getDocs(fb.query(fb.collection(fb.db, "friends"), fb.where("a", "==", uid))),
+            fb.getDocs(fb.query(fb.collection(fb.db, "friends"), fb.where("b", "==", uid))),
           ])
 
           const legacyDocs: any[] = []
@@ -1732,7 +1768,6 @@ export default function MeBookPage() {
     setDrawerOpen(false)
     setMenuOpen(false)
     if (view !== "messages") setMobileChatWindow(false)
-    setHeaderHidden(false)
     window.scrollTo({ top: 0, behavior: "auto" })
   }
 
@@ -1740,13 +1775,11 @@ export default function MeBookPage() {
     setPageStack((s) => [...s, { view, params }])
     setDrawerOpen(false)
     setMenuOpen(false)
-    setHeaderHidden(false)
     window.scrollTo({ top: 0, behavior: "auto" })
   }
 
   const goBack = () => {
     setPageStack((s) => (s.length > 1 ? s.slice(0, -1) : [{ view: "home" }]))
-    setHeaderHidden(false)
     window.scrollTo({ top: 0, behavior: "auto" })
   }
 
@@ -1791,6 +1824,10 @@ export default function MeBookPage() {
   const openComments = (post: any) => pushPage("comments", { postId: post.id })
   const openShare = (post: any) => pushPage("share", { postId: post.id })
 
+  /* ============================================================
+     UPDATED: openUserProfile
+     Now ALSO loads the viewed user's friends list in real-time
+     ============================================================ */
   const openUserProfile = async (uid: string) => {
     if (uid === user.uid) {
       goTo("profile")
@@ -1809,10 +1846,20 @@ export default function MeBookPage() {
       }
       const userData = { uid, ...snap.data() }
       setViewingUser(userData)
+      setViewingUserFriends([])
+      setViewingUserFriendsLoading(true)
 
+      // Reset old subs
       if (viewingUserUnsubRef.current) {
         try { viewingUserUnsubRef.current() } catch {}
+        viewingUserUnsubRef.current = null
       }
+      if (viewingUserFriendsUnsubRef.current) {
+        try { viewingUserFriendsUnsubRef.current() } catch {}
+        viewingUserFriendsUnsubRef.current = null
+      }
+
+      // Load their posts
       const postsQ = fb.query(
         fb.collection(fb.db, "posts"),
         fb.where("authorId", "==", uid)
@@ -1824,9 +1871,35 @@ export default function MeBookPage() {
         setViewingUserPosts(arr)
       })
 
+      // Load their friends (live)
+      const theirFriendsQ = fb.query(
+        fb.collection(fb.db, "friends"),
+        fb.where("members", "array-contains", uid)
+      )
+      viewingUserFriendsUnsubRef.current = fb.onSnapshot(
+        theirFriendsQ,
+        async (s: any) => {
+          const arr: any[] = []
+          const seen = new Set<string>()
+          for (const d of s.docs) {
+            const data = d.data()
+            const otherId = (data.members || []).find((m: string) => m !== uid)
+            if (!otherId || seen.has(otherId)) continue
+            seen.add(otherId)
+            try {
+              const us = await fb.getDoc(fb.doc(fb.db, "users", otherId))
+              if (us.exists()) arr.push({ uid: us.id, ...us.data() })
+            } catch {}
+          }
+          setViewingUserFriends(arr)
+          setViewingUserFriendsLoading(false)
+        }
+      )
+
       pushPage("user-profile", { uid })
     } catch (e: any) {
       showToast("Error", e.message, "error")
+      setViewingUserFriendsLoading(false)
     }
   }
 
@@ -2656,14 +2729,24 @@ export default function MeBookPage() {
     viewingUserPosts.find((p) => p.id === postId)
 
   /* ============================================================
-  RENDER PROFILE (Facebook-style, matches screenshot)
-  ============================================================ */
-  const renderProfilePage = (u: any, posts: any[], isOwn: boolean) => {
+     UPDATED: renderProfilePage
+     Now uses:
+     - isOwn ? myFriends : viewingUserFriends  for friend count
+     - Renders a "Friends" section at the bottom with a grid
+     ============================================================ */
+  const renderProfilePage = (
+    u: any,
+    posts: any[],
+    isOwn: boolean,
+    friendsList?: any[],
+    friendsLoading?: boolean
+  ) => {
     const photo = avatarUrl(u)
-    const friendsCount = isOwn ? myFriends.length : 0
-    const mutualCount = isOwn ? myFriends.length : 0
-
-    const stripFriends = (isOwn ? myFriends : []).slice(0, 6)
+    // Pick correct friend list depending on whose profile this is
+    const profileFriends = isOwn ? myFriends : (friendsList || [])
+    const friendsCount = profileFriends.length
+    const mutualCount = friendsCount
+    const stripFriends = profileFriends.slice(0, 6)
 
     return (
       <div className="mb-profile-head">
@@ -2858,35 +2941,45 @@ export default function MeBookPage() {
           </button>
         </div>
 
-        {isOwn && (u.location || u.birthday || u.handle) && (
-          <div className="mb-profile-section">
-            <h3>Personal details</h3>
-            {u.location && (
-              <div className="mb-profile-detail">
-                <svg viewBox="0 0 24 24">
-                  <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
-                </svg>
-                <span>{u.location}</span>
-              </div>
-            )}
-            {u.birthday && (
-              <div className="mb-profile-detail">
-                <svg viewBox="0 0 24 24">
-                  <path d="M12 6c1.11 0 2-.9 2-2 0-.38-.1-.73-.29-1.03L12 0l-1.71 2.97c-.19.3-.29.65-.29 1.03 0 1.1.9 2 2 2zm4.6 9.99l-1.07-1.07-1.08 1.07c-1.3 1.3-3.58 1.31-4.89 0l-1.07-1.07-1.09 1.07C6.75 16.64 5.88 17 4.96 17c-.73 0-1.4-.23-1.96-.61V21c0 .55.45 1 1 1h16c.55 0 1-.45 1-1v-4.61c-.56.38-1.23.61-1.96.61-.92 0-1.79-.36-2.44-1.01zM18 9h-5V7h-2v2H6c-1.66 0-3 1.34-3 3v1.54c0 1.08.88 1.96 1.96 1.96.52 0 1.02-.2 1.38-.57l2.14-2.13 2.13 2.13c.74.74 2.03.74 2.77 0l2.14-2.13 2.13 2.13c.37.37.86.57 1.38.57 1.08 0 1.96-.88 1.96-1.96V12c0-1.66-1.34-3-3-3z" />
-                </svg>
-                <span>{u.birthday}</span>
-              </div>
-            )}
-            {u.handle && (
-              <div className="mb-profile-detail">
-                <svg viewBox="0 0 24 24">
-                  <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z" />
-                </svg>
-                <span>{u.handle}</span>
-              </div>
-            )}
+        {/* ===== NEW: Friends section — visible to everyone ===== */}
+        <div className="mb-profile-friends-section">
+          <div className="mb-profile-friends-section-head">
+            <h3>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" />
+              </svg>
+              Friends
+            </h3>
+            <span className="count">{friendsCount} total</span>
           </div>
-        )}
+
+          {friendsLoading ? (
+            <div className="mb-profile-friends-loading">Loading friends...</div>
+          ) : profileFriends.length === 0 ? (
+            <div className="mb-profile-friends-empty">
+              {isOwn ? "You don't have any friends yet" : "No friends to show"}
+            </div>
+          ) : (
+            <div className="mb-profile-friends-grid">
+              {profileFriends.map((f) => {
+                const fPhoto = avatarUrl(f)
+                return (
+                  <div
+                    className="mb-profile-friend-card"
+                    key={f.uid}
+                    onClick={() => openUserProfile(f.uid)}
+                  >
+                    <img src={fPhoto} alt={f.name} />
+                    <div className="mb-profile-friend-card-name">
+                      {f.name}
+                      {isVerified(f) ? " ✓" : ""}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+        </div>
       </div>
     )
   }
@@ -2915,8 +3008,7 @@ export default function MeBookPage() {
 
       <ToastStack toasts={toasts} onDone={removeToast} />
 
-      {/* ✅ Header — hides instantly when scrolled past 60px */}
-      <header className={`mb-header${headerHidden ? " header-hidden" : ""}`}>
+      <header className="mb-header">
         <div className="mb-header-left" onClick={() => goTo("home")}>
           <img className="mb-header-logo" src={HEADER_LOGO} alt="MeBook" />
           <div className="mb-logo-stack">
@@ -3500,7 +3592,13 @@ export default function MeBookPage() {
                 </svg>
                 Back
               </button>
-              {renderProfilePage(viewingUser, viewingUserPosts, false)}
+              {renderProfilePage(
+                viewingUser,
+                viewingUserPosts,
+                false,
+                viewingUserFriends,
+                viewingUserFriendsLoading
+              )}
 
               <div className="mb-card-title" style={{ fontSize: 18, marginBottom: 10, padding: "0 4px" }}>
                 Posts ({viewingUserPosts.length})

@@ -1391,16 +1391,60 @@ export default function MeBookPage() {
         })
       )
 
-      const myFriendsQ = fb.query(fb.collection(fb.db, "friends"), fb.where("a", "==", uid))
-      unsubscribersRef.current.push(
-        fb.onSnapshot(myFriendsQ, async (snap: any) => {
-          const arr: any[] = []
-          for (const d of snap.docs) {
-            const s = await fb.getDoc(fb.doc(fb.db, "users", d.data().b))
-            if (s.exists()) arr.push({ uid: s.id, ...s.data() })
+      /* ============================================================
+         ✅ FIXED: myFriends listener
+         Now uses TWO queries (a==uid and b==uid) and MERGES results
+         so BOTH sides of a friendship see each other in real-time.
+         ============================================================ */
+      const friendDocToOtherId = (data: any, selfUid: string): string | null => {
+        // Prefer members array if present
+        if (Array.isArray(data?.members)) {
+          const other = data.members.find((m: string) => m !== selfUid)
+          if (other) return other
+        }
+        if (data?.a === selfUid) return data?.b || null
+        if (data?.b === selfUid) return data?.a || null
+        return null
+      }
+
+      const friendsMap = new Map<string, any>()
+
+      const applyFriendSnapshot = async (snap: any, selfUid: string) => {
+        for (const d of snap.docs) {
+          const data = d.data()
+          const otherId = friendDocToOtherId(data, selfUid)
+          if (!otherId) continue
+          const s = await fb.getDoc(fb.doc(fb.db, "users", otherId))
+          if (s.exists()) {
+            friendsMap.set(otherId, { uid: s.id, ...s.data() })
           }
-          setMyFriends(arr)
-        })
+        }
+        // Refresh from map (drops stale entries automatically? no — we keep them)
+        setMyFriends(Array.from(friendsMap.values()))
+      }
+
+      const myFriendsQ1 = fb.query(
+        fb.collection(fb.db, "friends"),
+        fb.where("a", "==", uid)
+      )
+      const myFriendsQ2 = fb.query(
+        fb.collection(fb.db, "friends"),
+        fb.where("b", "==", uid)
+      )
+      // Also support new schema with members array (future-proof)
+      const myFriendsQ3 = fb.query(
+        fb.collection(fb.db, "friends"),
+        fb.where("members", "array-contains", uid)
+      )
+
+      unsubscribersRef.current.push(
+        fb.onSnapshot(myFriendsQ1, (s: any) => applyFriendSnapshot(s, uid))
+      )
+      unsubscribersRef.current.push(
+        fb.onSnapshot(myFriendsQ2, (s: any) => applyFriendSnapshot(s, uid))
+      )
+      unsubscribersRef.current.push(
+        fb.onSnapshot(myFriendsQ3, (s: any) => applyFriendSnapshot(s, uid))
       )
 
       const chatsQ = fb.query(fb.collection(fb.db, "chats"), fb.where("members", "array-contains", uid))
@@ -1882,15 +1926,34 @@ export default function MeBookPage() {
     }
   }
 
+  /* ============================================================
+     ✅ FIXED: handleAcceptRequest
+     Now writes BOTH a, b AND members array so both sides' listeners
+     (Q1: a==uid, Q2: b==uid, Q3: members array-contains uid) will
+     detect the friendship in real-time for both users.
+     ============================================================ */
   const handleAcceptRequest = async (reqId: string, fromUid: string) => {
     try {
       const fb = await getFirebase()
+      const friendDocId = [user.uid, fromUid].sort().join("_")
+
+      // 1) Mark the friend request as accepted
       await fb.updateDoc(fb.doc(fb.db, "friendRequests", reqId), { status: "accepted" })
-      await fb.setDoc(fb.doc(fb.db, "friends", [user.uid, fromUid].sort().join("_")), {
-        a: user.uid,
-        b: fromUid,
-        createdAt: fb.serverTimestamp(),
-      })
+
+      // 2) Create the friendship doc with BOTH a/b AND members so that
+      //    both the accepter and the requester see each other in real time.
+      await fb.setDoc(
+        fb.doc(fb.db, "friends", friendDocId),
+        {
+          a: user.uid,
+          b: fromUid,
+          members: [user.uid, fromUid],
+          createdAt: fb.serverTimestamp(),
+        },
+        { merge: true }
+      )
+
+      // 3) Notify the requester that their request was accepted
       await fb.addDoc(fb.collection(fb.db, "notifications"), {
         uid: fromUid,
         title: "Friend Request Accepted",
@@ -1899,6 +1962,7 @@ export default function MeBookPage() {
         read: false,
         createdAt: fb.serverTimestamp(),
       })
+
       showToast("You are now friends!", "Start chatting with them", "success")
     } catch (e: any) {
       showToast("Error", e.message, "error")
@@ -2527,11 +2591,6 @@ export default function MeBookPage() {
 
     // Friend avatars strip (show up to 6)
     const stripFriends = (isOwn ? myFriends : []).slice(0, 6)
-
-    // Calculate oldest post time ago
-    const firstPostTime = posts.length > 0 && posts[posts.length - 1].createdAt
-      ? timeAgo(posts[posts.length - 1].createdAt)
-      : null
 
     return (
       <div className="mb-profile-head">

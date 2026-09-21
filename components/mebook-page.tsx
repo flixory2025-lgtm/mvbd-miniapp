@@ -670,6 +670,30 @@ color:var(--text);flex-shrink:0;
 .mebook-root .mechat-head-info{flex:1;min-width:0;}
 .mebook-root .mechat-head-name{font-size:16px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:flex;align-items:center;gap:6px;}
 .mebook-root .mechat-head-status{font-size:12px;color:var(--text-muted);margin-top:1px;}
+
+/* ============================================================
+   MECHAT — TYPING INDICATOR
+   ============================================================ */
+.mebook-root .mechat-typing-text{
+  color:#16a34a;
+  font-weight:600;
+  font-size:12px;
+}
+.mebook-root.dark-mode .mechat-typing-text{
+  color:#4ade80;
+}
+.mebook-root .mechat-typing-dots{
+  display:inline-block;
+  width:18px;
+  overflow:hidden;
+  vertical-align:bottom;
+  animation:mechatTypingDots 1.2s steps(4,end) infinite;
+}
+@keyframes mechatTypingDots{
+  0%{width:0;}
+  100%{width:18px;}
+}
+
 .mebook-root .mechat-head-actions{display:flex;gap:4px;flex-shrink:0;}
 .mebook-root .mechat-head-btn{
 width:38px;height:38px;border-radius:50%;
@@ -761,6 +785,28 @@ position:relative;
 display:flex;flex-direction:column;gap:2px;
 }
 @keyframes bubbleIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
+
+/* ============================================================
+   MECHAT — SEEN AVATAR
+   ============================================================ */
+.mebook-root .mechat-seen-avatar{
+  width:18px;
+  height:18px;
+  min-width:18px;
+  border-radius:50%;
+  object-fit:cover;
+  flex-shrink:0;
+  align-self:flex-end;
+  margin-bottom:2px;
+  border:2px solid var(--card);
+  box-sizing:border-box;
+  animation:mechatSeenIn .2s ease;
+}
+@keyframes mechatSeenIn{
+  from{opacity:0;transform:scale(.7);}
+  to{opacity:1;transform:scale(1);}
+}
+
 
 /* ===== MY BUBBLE — GREEN LIQUID GLASS GRADIENT ===== */
 .mebook-root .mechat-bubble.me{
@@ -2238,6 +2284,183 @@ const handleChatTyping = (value: string) => {
     }
   }, [])
 
+  // ============================================================
+  // MECHAT — LISTEN TO PARTNER TYPING
+  // Only the other user's typing document is listened to, so the
+  // person who is typing never sees their own typing indicator.
+  // ============================================================
+  useEffect(() => {
+    if (!activeChat || !chatPartner?.uid) {
+      setPartnerTyping(false)
+      return
+    }
+
+    let unsub: (() => void) | null = null
+    let cancelled = false
+
+    ;(async () => {
+      try {
+        const fb = await getFirebase()
+        if (cancelled) return
+
+        const typingRef = fb.doc(
+          fb.db,
+          "chats",
+          activeChat,
+          "typing",
+          chatPartner.uid
+        )
+
+        unsub = fb.onSnapshot(typingRef, (snap: any) => {
+          const data = snap.exists() ? snap.data() : null
+          setPartnerTyping(data?.typing === true)
+        })
+      } catch {
+        setPartnerTyping(false)
+      }
+    })()
+
+    return () => {
+      cancelled = true
+      if (unsub) {
+        try { unsub() } catch {}
+      }
+      setPartnerTyping(false)
+    }
+  }, [activeChat, chatPartner?.uid])
+
+  // ============================================================
+  // MECHAT — LISTEN TO PARTNER SEEN STATE
+  // ============================================================
+  useEffect(() => {
+    if (!activeChat || !chatPartner?.uid) {
+      setPartnerLastSeenMessageId(null)
+      return
+    }
+
+    let unsub: (() => void) | null = null
+    let cancelled = false
+
+    ;(async () => {
+      try {
+        const fb = await getFirebase()
+        if (cancelled) return
+
+        const readRef = fb.doc(
+          fb.db,
+          "chats",
+          activeChat,
+          "readState",
+          chatPartner.uid
+        )
+
+        unsub = fb.onSnapshot(readRef, (snap: any) => {
+          const data = snap.exists() ? snap.data() : null
+          setPartnerLastSeenMessageId(data?.lastSeenMessageId || null)
+        })
+      } catch {
+        setPartnerLastSeenMessageId(null)
+      }
+    })()
+
+    return () => {
+      cancelled = true
+      if (unsub) {
+        try { unsub() } catch {}
+      }
+      setPartnerLastSeenMessageId(null)
+    }
+  }, [activeChat, chatPartner?.uid])
+
+  // ============================================================
+  // MECHAT — MARK PARTNER MESSAGES AS SEEN
+  // The latest visible message from the other person is written
+  // to this user's own readState document.
+  // ============================================================
+  useEffect(() => {
+    const root = chatBodyRef.current
+
+    if (
+      !root ||
+      !activeChat ||
+      !user?.uid ||
+      chatMessages.length === 0
+    ) {
+      return
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visibleIds = new Set<string>()
+
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && entry.intersectionRatio >= 0.5) {
+            const id = entry.target.getAttribute("data-message-id")
+            if (id) visibleIds.add(id)
+          }
+        })
+
+        if (visibleIds.size === 0) return
+
+        const latestVisiblePartnerMessage = [...chatMessages]
+          .reverse()
+          .find((m) => m.id && visibleIds.has(String(m.id)) && m.from !== user.uid)
+
+        if (!latestVisiblePartnerMessage?.id) return
+
+        const messageId = String(latestVisiblePartnerMessage.id)
+
+        if (lastMarkedSeenRef.current === messageId) return
+        lastMarkedSeenRef.current = messageId
+
+        void (async () => {
+          try {
+            const fb = await getFirebase()
+            await fb.setDoc(
+              fb.doc(
+                fb.db,
+                "chats",
+                activeChat,
+                "readState",
+                user.uid
+              ),
+              {
+                lastSeenMessageId: messageId,
+                updatedAt: fb.serverTimestamp(),
+              },
+              { merge: true }
+            )
+          } catch {
+            // Seen update fail হলেও chat চলবে
+          }
+        })()
+      },
+      { root, threshold: [0.5] }
+    )
+
+    const messageElements = root.querySelectorAll(
+      "[data-mechat-message='true']"
+    )
+
+    messageElements.forEach((el) => observer.observe(el))
+
+    return () => observer.disconnect()
+  }, [chatMessages, activeChat, user?.uid])
+
+  // Turn my own typing state off when switching chats or leaving MeBook.
+  useEffect(() => {
+    return () => {
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current)
+        typingTimeoutRef.current = null
+      }
+
+      if (activeChat && user?.uid) {
+        void updateTypingState(activeChat, false)
+      }
+    }
+  }, [activeChat, user?.uid])
+
   const [shareCaption, setShareCaption] = useState("")
   const [shareBusy, setShareBusy] = useState(false)
 
@@ -3520,6 +3743,19 @@ const handleChatTyping = (value: string) => {
   }
 
   const openChat = async (chatId: string, otherId: string, other: any) => {
+    // If another chat was open, stop its typing state before switching.
+    if (activeChat && activeChat !== chatId) {
+      void updateTypingState(activeChat, false)
+    }
+
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current)
+      typingTimeoutRef.current = null
+    }
+
+    lastMarkedSeenRef.current = null
+    setPartnerTyping(false)
+    setPartnerLastSeenMessageId(null)
     setActiveChat(chatId)
     setChatPartner({ ...other, uid: otherId })
     setMobileChatWindow(true)
@@ -3557,6 +3793,8 @@ const handleChatTyping = (value: string) => {
   }
 
   setPartnerTyping(false)
+  setPartnerLastSeenMessageId(null)
+  lastMarkedSeenRef.current = null
 
   setChatView("list")
   setActiveChat(null)
@@ -5674,7 +5912,15 @@ const handleChatTyping = (value: string) => {
                           </svg>
                         )}
                       </div>
-                      <div className="mechat-head-status">Active now</div>
+                      <div className="mechat-head-status">
+                        {partnerTyping ? (
+                          <span className="mechat-typing-text">
+                            typing<span className="mechat-typing-dots">...</span>
+                          </span>
+                        ) : (
+                          "Active now"
+                        )}
+                      </div>
                     </div>
                     <div className="mechat-head-actions">
                       <button className="mechat-head-btn" title="Audio call">
@@ -5709,6 +5955,8 @@ const handleChatTyping = (value: string) => {
                         const mine = m.from === user.uid
                         const prevMsg = idx > 0 ? chatMessages[idx - 1] : null
                         const showAvatar = !mine && (!prevMsg || prevMsg.from !== m.from)
+                        const isSeenByPartner =
+                          mine && String(m.id) === String(partnerLastSeenMessageId || "")
                         const reactions = m.reactions || {}
                         const reactionKeys = Object.values(reactions) as string[]
                         const uniqueReactions = Array.from(new Set(reactionKeys))
@@ -5811,6 +6059,8 @@ const handleChatTyping = (value: string) => {
                         return (
                           <div
                             key={m.id}
+                            data-mechat-message="true"
+                            data-message-id={String(m.id)}
                             className={`mechat-bubble-wrap ${mine ? "me" : "them"} ${showAvatar ? "show-avatar" : ""}`}
                             onTouchStart={onTouchStart}
                             onTouchMove={onTouchMove}
@@ -5828,6 +6078,13 @@ const handleChatTyping = (value: string) => {
                             >
                               {bubbleContent}
                             </div>
+                            {isSeenByPartner && (
+                              <img
+                                className="mechat-seen-avatar"
+                                src={chatPartner ? avatarUrl(chatPartner) : ""}
+                                alt=""
+                              />
+                            )}
                             {reactionEmojis.length > 0 && (
                               <span className="mechat-reaction-badge">
                                 {reactionEmojis.slice(0, 3).join("")}
@@ -6806,4 +7063,4 @@ function SideItem({
       {badge && badge > 0 ? <span className="mb-side-badge">{badge}</span> : null}
     </button>
   )
-}
+    }

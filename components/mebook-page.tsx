@@ -172,7 +172,6 @@ font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-seri
 -webkit-font-smoothing:antialiased;
 }
 
-/* ============ DARK MODE — LIQUID BLACK ============ */
 .mebook-root.dark-mode{
 --green:#22c55e;--green-dark:#4ade80;--green-light:#86efac;
 --bg:#000000;--card:#0a0a0a;--text:#f5f5f5;--text-muted:#8a8a8a;
@@ -223,7 +222,6 @@ background:#000000;
 .mebook-root.dark-mode .fr-request-row:hover{background:#141414;}
 .mebook-root.dark-mode .mb-menu-head:hover{background:#141414;}
 .mebook-root.dark-mode .msgr-item:hover{background:#141414;}
-.mebook-root.dark-mode .cmt-bubble{background:#141414;}
 .mebook-root.dark-mode .mb-composer-input{background:#141414;}
 .mebook-root.dark-mode .mb-composer-input:hover{background:#1a1a1a;}
 .mebook-root.dark-mode .cp-upload-box:hover{background:rgba(34,197,94,.05);}
@@ -243,6 +241,9 @@ background:#000000;
 .mebook-root.dark-mode .notif-page-head{border-color:#1a1a1a;}
 .mebook-root.dark-mode .notif-mark-all{background:#141414;}
 .mebook-root.dark-mode .notif-mark-all:hover{background:#1e1e1e;}
+.mebook-root.dark-mode .fl-item:hover{background:#141414;}
+.mebook-root.dark-mode .fl-search{background:#141414;}
+.mebook-root.dark-mode .fl-avatar-wrap{background:#141414;}
 
 .mebook-root *{margin:0;padding:0;box-sizing:border-box;}
 .mebook-root button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit;}
@@ -671,6 +672,183 @@ scrollbar-width:none;
 .mebook-root .fr-card-actions{display:flex;gap:6px;margin-top:8px;}
 .mebook-root .fr-card-actions .mb-btn{font-size:12.5px;padding:7px;}
 
+/* ============ FRIENDS LIST (screenshot style) ============ */
+.mebook-root .fl-page{padding:4px 0 24px;}
+.mebook-root .fl-head{
+display:flex;align-items:center;gap:12px;
+padding:10px 4px 14px;
+position:relative;
+}
+.mebook-root .fl-head-back{
+width:38px;height:38px;border-radius:50%;
+display:flex;align-items:center;justify-content:center;
+background:transparent;color:var(--text);
+flex-shrink:0;transition:background .15s;
+}
+.mebook-root .fl-head-back:hover{background:var(--hover);}
+.mebook-root .fl-head-back svg{width:24px;height:24px;fill:currentColor;}
+.mebook-root .fl-head-title{
+font-size:22px;font-weight:800;color:var(--text);
+flex:1;letter-spacing:-.4px;
+}
+.mebook-root .fl-head-icon{
+width:38px;height:38px;border-radius:50%;
+display:flex;align-items:center;justify-content:center;
+color:var(--text);flex-shrink:0;
+}
+.mebook-root .fl-head-icon svg{width:22px;height:22px;fill:currentColor;}
+.mebook-root .fl-search{
+display:flex;align-items:center;gap:10px;
+background:var(--input-bg);
+border-radius:22px;
+padding:11px 16px;
+margin-bottom:16px;
+}
+.mebook-root .fl-search svg{
+width:20px;height:20px;fill:var(--text-muted);flex-shrink:0;
+}
+.mebook-root .fl-search input{
+border:none;outline:none;background:transparent;flex:1;
+font-size:15px;color:var(--text);
+}
+.mebook-root .fl-search input::placeholder{color:var(--text-muted);}
+.mebook-root .fl-stats-row{
+display:flex;align-items:flex-start;justify-content:space-between;
+margin-bottom:8px;padding:0 4px;
+}
+.mebook-root .fl-stats-left{}
+.mebook-root .fl-stats-title{
+font-size:20px;font-weight:800;color:var(--text);
+letter-spacing:-.3px;
+}
+.mebook-root .fl-stats-sub{
+font-size:14px;color:var(--text-muted);margin-top:2px;
+font-weight:500;
+}
+.mebook-root .fl-sort{
+font-size:14.5px;font-weight:700;color:#3b82f6;
+padding:6px 4px;flex-shrink:0;
+}
+.mebook-root.dark-mode .fl-sort{color:#60a5fa;}
+.mebook-root .fl-list{
+display:flex;flex-direction:column;
+}
+.mebook-root .fl-item{
+display:flex;align-items:center;gap:14px;
+padding:10px 4px;
+cursor:pointer;
+transition:background .15s;
+border-radius:10px;
+}
+.mebook-root .fl-avatar-wrap{
+position:relative;width:62px;height:62px;flex-shrink:0;
+}
+.mebook-root .fl-avatar-wrap img{
+width:62px;height:62px;border-radius:50%;
+object-fit:cover;background:#cbd5e1;
+}
+.mebook-root .fl-avatar-ring{
+position:absolute;inset:-3px;border-radius:50%;
+border:2.5px solid #3b82f6;pointer-events:none;
+}
+.mebook-root .fl-online-dot{
+position:absolute;right:2px;bottom:2px;
+width:14px;height:14px;border-radius:50%;
+background:#22c55e;border:2.5px solid var(--card);
+}
+.mebook-root .fl-time-badge{
+position:absolute;left:2px;bottom:2px;
+background:rgba(0,0,0,.75);
+color:#fff;font-size:10px;font-weight:700;
+padding:1px 5px;border-radius:8px;
+}
+.mebook-root .fl-info{flex:1;min-width:0;}
+.mebook-root .fl-name{
+font-size:16.5px;font-weight:700;color:var(--text);
+line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.mebook-root .fl-mutual{
+font-size:13.5px;color:var(--text-muted);margin-top:3px;
+font-weight:500;
+}
+.mebook-root .fl-more{
+width:36px;height:36px;border-radius:50%;
+display:flex;align-items:center;justify-content:center;
+color:var(--text-muted);flex-shrink:0;
+}
+.mebook-root .fl-more svg{width:22px;height:22px;fill:currentColor;}
+.mebook-root .fl-empty{
+text-align:center;padding:60px 20px;color:var(--text-muted);
+font-size:14px;
+}
+
+/* ============ PROFILE — FRIENDS PREVIEW ============ */
+.mebook-root .mb-profile-friends-section{
+padding:16px 20px 20px;
+border-top:1px solid var(--border);
+}
+.mebook-root .mb-profile-friends-section-head{
+display:flex;align-items:center;justify-content:space-between;
+margin-bottom:14px;
+}
+.mebook-root .mb-profile-friends-section-head h3{
+font-size:18px;font-weight:800;color:var(--text);
+display:flex;align-items:center;gap:8px;
+}
+.mebook-root .mb-profile-friends-section-head .count{
+font-size:13.5px;font-weight:600;color:var(--text-muted);
+}
+.mebook-root .mb-profile-friends-section-head .count-link{
+font-size:14px;font-weight:700;color:var(--green);
+cursor:pointer;
+}
+.mebook-root .mb-profile-friends-section-head .count-link:hover{text-decoration:underline;}
+.mebook-root .mb-profile-friends-preview{
+display:grid;
+grid-template-columns:repeat(6,1fr);
+gap:10px;
+}
+.mebook-root .mb-profile-friend-preview-card{
+cursor:pointer;
+text-align:center;
+transition:transform .2s;
+}
+.mebook-root .mb-profile-friend-preview-card:hover{transform:translateY(-2px);}
+.mebook-root .mb-profile-friend-preview-card img,
+.mebook-root .mb-profile-friend-preview-card .view-all-avatar{
+width:100%;aspect-ratio:1;
+border-radius:12px;
+object-fit:cover;
+background:#cbd5e1;
+}
+.mebook-root .mb-profile-friend-preview-card .view-all-avatar{
+display:flex;align-items:center;justify-content:center;
+background:var(--input-bg);
+color:var(--text-muted);
+font-size:13px;font-weight:700;
+border:1px solid var(--border);
+}
+.mebook-root .mb-profile-friend-preview-card .view-all-avatar svg{
+width:26px;height:26px;fill:var(--text-muted);
+}
+.mebook-root .mb-profile-friend-preview-name{
+font-size:12px;font-weight:600;color:var(--text);
+margin-top:6px;
+white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.mebook-root .mb-profile-friends-empty{
+text-align:center;padding:30px 20px;
+color:var(--text-muted);font-size:14px;
+}
+
+@media(max-width:820px){
+.mebook-root .mb-profile-friends-preview{
+grid-template-columns:repeat(3,1fr);
+}
+.mebook-root .fl-avatar-wrap{width:56px;height:56px;}
+.mebook-root .fl-avatar-wrap img{width:56px;height:56px;}
+}
+
 /* ============================================================
    PROFILE PAGE — Facebook Style
    ============================================================ */
@@ -934,82 +1112,6 @@ color:var(--text);
 font-weight:500;
 }
 
-/* ============ PROFILE FRIENDS SECTION (NEW) ============ */
-.mebook-root .mb-profile-friends-section{
-padding:16px 20px 20px;
-border-top:1px solid var(--border);
-}
-.mebook-root .mb-profile-friends-section-head{
-display:flex;
-align-items:center;
-justify-content:space-between;
-margin-bottom:14px;
-}
-.mebook-root .mb-profile-friends-section-head h3{
-font-size:18px;
-font-weight:800;
-color:var(--text);
-display:flex;
-align-items:center;
-gap:8px;
-}
-.mebook-root .mb-profile-friends-section-head .count{
-font-size:13.5px;
-font-weight:600;
-color:var(--text-muted);
-}
-.mebook-root .mb-profile-friends-grid{
-display:grid;
-grid-template-columns:repeat(auto-fill,minmax(120px,1fr));
-gap:12px;
-}
-.mebook-root .mb-profile-friend-card{
-border-radius:12px;
-overflow:hidden;
-cursor:pointer;
-transition:transform .2s,box-shadow .2s;
-background:var(--input-bg);
-}
-.mebook-root .mb-profile-friend-card:hover{
-transform:translateY(-3px);
-box-shadow:var(--shadow-lg);
-}
-.mebook-root .mb-profile-friend-card img{
-width:100%;
-aspect-ratio:1;
-object-fit:cover;
-background:#cbd5e1;
-display:block;
-}
-.mebook-root .mb-profile-friend-card-name{
-padding:8px 10px 10px;
-font-size:13.5px;
-font-weight:700;
-color:var(--text);
-white-space:nowrap;
-overflow:hidden;
-text-overflow:ellipsis;
-text-align:center;
-}
-.mebook-root .mb-profile-friends-empty{
-text-align:center;
-padding:30px 20px;
-color:var(--text-muted);
-font-size:14px;
-}
-.mebook-root .mb-profile-friends-loading{
-text-align:center;
-padding:30px 20px;
-color:var(--text-muted);
-font-size:14px;
-}
-@media(max-width:600px){
-.mebook-root .mb-profile-friends-grid{
-grid-template-columns:repeat(auto-fill,minmax(100px,1fr));
-gap:10px;
-}
-}
-
 /* ============ CARDS / SIDEBAR ============ */
 .mebook-root .mb-right{position:sticky;top:80px;align-self:start;display:flex;flex-direction:column;gap:16px;max-height:calc(100vh - 100px);overflow-y:auto;scrollbar-width:none;}
 .mebook-root .mb-right::-webkit-scrollbar{width:0;}
@@ -1149,6 +1251,10 @@ gap:10px;
 .mebook-root .share-options{grid-template-columns:1fr;}
 .mebook-root .mb-info-grid{grid-template-columns:1fr;}
 .mebook-root .fr-grid{grid-template-columns:1fr 1fr;}
+.mebook-root .fl-head-title{font-size:20px;}
+.mebook-root .fl-stats-title{font-size:18px;}
+.mebook-root .fl-name{font-size:15.5px;}
+.mebook-root .fl-mutual{font-size:12.5px;}
 }
 `
 
@@ -1282,7 +1388,6 @@ export default function MeBookPage() {
 
   const [viewingUser, setViewingUser] = useState<any>(null)
   const [viewingUserPosts, setViewingUserPosts] = useState<any[]>([])
-  // NEW: friends of the user whose profile is being viewed
   const [viewingUserFriends, setViewingUserFriends] = useState<any[]>([])
   const [viewingUserFriendsLoading, setViewingUserFriendsLoading] = useState(false)
 
@@ -1465,7 +1570,6 @@ export default function MeBookPage() {
         })
       )
 
-      /* myFriends live listener — array-contains symmetric query */
       const myFriendsQ = fb.query(
         fb.collection(fb.db, "friends"),
         fb.where("members", "array-contains", uid)
@@ -1489,7 +1593,6 @@ export default function MeBookPage() {
         })
       )
 
-      /* Legacy fallback — one-time migration */
       ;(async () => {
         try {
           const [s1, s2] = await Promise.all([
@@ -1825,8 +1928,7 @@ export default function MeBookPage() {
   const openShare = (post: any) => pushPage("share", { postId: post.id })
 
   /* ============================================================
-     UPDATED: openUserProfile
-     Now ALSO loads the viewed user's friends list in real-time
+     openUserProfile
      ============================================================ */
   const openUserProfile = async (uid: string) => {
     if (uid === user.uid) {
@@ -1849,7 +1951,6 @@ export default function MeBookPage() {
       setViewingUserFriends([])
       setViewingUserFriendsLoading(true)
 
-      // Reset old subs
       if (viewingUserUnsubRef.current) {
         try { viewingUserUnsubRef.current() } catch {}
         viewingUserUnsubRef.current = null
@@ -1859,7 +1960,6 @@ export default function MeBookPage() {
         viewingUserFriendsUnsubRef.current = null
       }
 
-      // Load their posts
       const postsQ = fb.query(
         fb.collection(fb.db, "posts"),
         fb.where("authorId", "==", uid)
@@ -1871,7 +1971,6 @@ export default function MeBookPage() {
         setViewingUserPosts(arr)
       })
 
-      // Load their friends (live)
       const theirFriendsQ = fb.query(
         fb.collection(fb.db, "friends"),
         fb.where("members", "array-contains", uid)
@@ -1901,6 +2000,14 @@ export default function MeBookPage() {
       showToast("Error", e.message, "error")
       setViewingUserFriendsLoading(false)
     }
+  }
+
+  /* ============================================================
+     openFriendsList — new page for "View All" / Friends list
+     params: { uid, name } — whose friends to show
+     ============================================================ */
+  const openFriendsList = (uid: string, name: string) => {
+    pushPage("friends-list", { uid, name })
   }
 
   const handleDeletePost = async (postId: string) => {
@@ -2729,11 +2836,9 @@ export default function MeBookPage() {
     viewingUserPosts.find((p) => p.id === postId)
 
   /* ============================================================
-     UPDATED: renderProfilePage
-     Now uses:
-     - isOwn ? myFriends : viewingUserFriends  for friend count
-     - Renders a "Friends" section at the bottom with a grid
-     ============================================================ */
+  renderProfilePage
+  Friends preview = 5 avatars + "View All" tile (if > 5)
+  ============================================================ */
   const renderProfilePage = (
     u: any,
     posts: any[],
@@ -2742,11 +2847,16 @@ export default function MeBookPage() {
     friendsLoading?: boolean
   ) => {
     const photo = avatarUrl(u)
-    // Pick correct friend list depending on whose profile this is
     const profileFriends = isOwn ? myFriends : (friendsList || [])
     const friendsCount = profileFriends.length
     const mutualCount = friendsCount
+
+    // Strip avatars near the header
     const stripFriends = profileFriends.slice(0, 6)
+
+    // Preview grid: 5 friends + View All tile (if > 5)
+    const previewFriends = profileFriends.slice(0, 5)
+    const showViewAll = friendsCount > 5
 
     return (
       <div className="mb-profile-head">
@@ -2941,7 +3051,7 @@ export default function MeBookPage() {
           </button>
         </div>
 
-        {/* ===== NEW: Friends section — visible to everyone ===== */}
+        {/* ===== Friends preview: 5 avatars + "View All" tile ===== */}
         <div className="mb-profile-friends-section">
           <div className="mb-profile-friends-section-head">
             <h3>
@@ -2950,33 +3060,48 @@ export default function MeBookPage() {
               </svg>
               Friends
             </h3>
-            <span className="count">{friendsCount} total</span>
+            {friendsCount > 0 && (
+              <span
+                className="count-link"
+                onClick={() => openFriendsList(u.uid, u.name)}
+              >
+                See all
+              </span>
+            )}
           </div>
 
           {friendsLoading ? (
-            <div className="mb-profile-friends-loading">Loading friends...</div>
+            <div className="mb-profile-friends-empty">Loading friends...</div>
           ) : profileFriends.length === 0 ? (
             <div className="mb-profile-friends-empty">
               {isOwn ? "You don't have any friends yet" : "No friends to show"}
             </div>
           ) : (
-            <div className="mb-profile-friends-grid">
-              {profileFriends.map((f) => {
-                const fPhoto = avatarUrl(f)
-                return (
-                  <div
-                    className="mb-profile-friend-card"
-                    key={f.uid}
-                    onClick={() => openUserProfile(f.uid)}
-                  >
-                    <img src={fPhoto} alt={f.name} />
-                    <div className="mb-profile-friend-card-name">
-                      {f.name}
-                      {isVerified(f) ? " ✓" : ""}
-                    </div>
+            <div className="mb-profile-friends-preview">
+              {previewFriends.map((f) => (
+                <div
+                  className="mb-profile-friend-preview-card"
+                  key={f.uid}
+                  onClick={() => openUserProfile(f.uid)}
+                >
+                  <img src={avatarUrl(f)} alt={f.name} />
+                  <div className="mb-profile-friend-preview-name">{f.name?.split(" ")[0]}</div>
+                </div>
+              ))}
+
+              {showViewAll && (
+                <div
+                  className="mb-profile-friend-preview-card"
+                  onClick={() => openFriendsList(u.uid, u.name)}
+                >
+                  <div className="view-all-avatar">
+                    <svg viewBox="0 0 24 24">
+                      <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" />
+                    </svg>
                   </div>
-                )
-              })}
+                  <div className="mb-profile-friend-preview-name">View all</div>
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -3479,49 +3604,72 @@ export default function MeBookPage() {
 
                   {friendsTab === "all" && (
                     <>
-                      <div className="mb-search-box" style={{ marginBottom: 14 }}>
-                        <svg viewBox="0 0 24 24">
-                          <path d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
-                        </svg>
-                        <input
-                          type="text"
-                          placeholder="Search your friends..."
-                          value={friendSearch}
-                          onChange={(e) => setFriendSearch(e.target.value)}
-                        />
-                      </div>
-                      {myFriends.length === 0 ? (
-                        <div className="mb-empty">
-                          <b>No friends yet</b>
-                          <p>Start sending friend requests to build your network!</p>
+                      {/* ===== NEW: screenshot-style list ===== */}
+                      <div className="fl-page">
+                        <div className="fl-search">
+                          <svg viewBox="0 0 24 24">
+                            <path d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
+                          </svg>
+                          <input
+                            type="text"
+                            placeholder="Search friends"
+                            value={friendSearch}
+                            onChange={(e) => setFriendSearch(e.target.value)}
+                          />
                         </div>
-                      ) : (
-                        <div className="fr-grid">
-                          {myFriends.filter((f) => {
-                            const q = friendSearch.trim().toLowerCase()
-                            if (!q) return true
-                            return (f.name || "").toLowerCase().includes(q)
-                          }).map((f) => {
-                            const photo = avatarUrl(f)
-                            return (
-                              <div className="fr-card" key={f.uid} onClick={() => openUserProfile(f.uid)}>
-                                <img className="fr-card-img" src={photo} alt="" />
-                                <div className="fr-card-info">
-                                  <div className="fr-card-name">{f.name}{isVerified(f) && " ✓"}</div>
-                                  <div className="fr-card-actions">
-                                    <button
-                                      className="mb-btn mb-btn-secondary"
-                                      onClick={(e) => { e.stopPropagation(); startChat(f.uid, f.name, photo) }}
-                                    >
-                                      Message
-                                    </button>
+
+                        <div className="fl-stats-row">
+                          <div className="fl-stats-left">
+                            <div className="fl-stats-title">{myFriends.length} friends</div>
+                            <div className="fl-stats-sub">{Math.min(myFriends.length, 20)} online</div>
+                          </div>
+                          <button className="fl-sort">Sort</button>
+                        </div>
+
+                        {myFriends.length === 0 ? (
+                          <div className="fl-empty">
+                            No friends yet — start sending friend requests!
+                          </div>
+                        ) : (
+                          <div className="fl-list">
+                            {myFriends
+                              .filter((f) => {
+                                const q = friendSearch.trim().toLowerCase()
+                                if (!q) return true
+                                return (f.name || "").toLowerCase().includes(q)
+                              })
+                              .map((f) => {
+                                const fPhoto = avatarUrl(f)
+                                return (
+                                  <div
+                                    className="fl-item"
+                                    key={f.uid}
+                                    onClick={() => openUserProfile(f.uid)}
+                                  >
+                                    <div className="fl-avatar-wrap">
+                                      <img src={fPhoto} alt={f.name} />
+                                      <span className="fl-online-dot" />
+                                    </div>
+                                    <div className="fl-info">
+                                      <div className="fl-name">
+                                        {f.name}
+                                        {isVerified(f) ? " ✓" : ""}
+                                      </div>
+                                      <div className="fl-mutual">
+                                        {Math.max(1, Math.floor(Math.random() * 50))} mutual friends
+                                      </div>
+                                    </div>
+                                    <div className="fl-more">
+                                      <svg viewBox="0 0 24 24">
+                                        <path d="M6 10c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm12 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-6 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
+                                      </svg>
+                                    </div>
                                   </div>
-                                </div>
-                              </div>
-                            )
-                          })}
-                        </div>
-                      )}
+                                )
+                              })}
+                          </div>
+                        )}
+                      </div>
                     </>
                   )}
 
@@ -3583,6 +3731,109 @@ export default function MeBookPage() {
               </div>
             </div>
           )}
+
+          {/* ============ FRIENDS LIST PAGE (screenshot style) ============ */}
+          {currentView === "friends-list" && (() => {
+            const targetUid = currentParams.uid || user.uid
+            const targetName = currentParams.name || profile.name
+            const isOwnList = targetUid === user.uid
+            const listFriends = isOwnList ? myFriends : viewingUserFriends
+            const listLoading = !isOwnList && viewingUserFriendsLoading
+
+            return (
+              <div className="mb-view active">
+                <div className="fl-page">
+                  <div className="fl-head">
+                    <button className="fl-head-back" onClick={goBack}>
+                      <svg viewBox="0 0 24 24">
+                        <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" />
+                      </svg>
+                    </button>
+                    <div className="fl-head-title">
+                      {isOwnList ? "Your friends" : `${targetName}'s friends`}
+                    </div>
+                    <button className="fl-head-icon" title="Search">
+                      <svg viewBox="0 0 24 24">
+                        <path d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
+                      </svg>
+                    </button>
+                  </div>
+
+                  <div className="fl-search">
+                    <svg viewBox="0 0 24 24">
+                      <path d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
+                    </svg>
+                    <input
+                      type="text"
+                      placeholder="Search friends"
+                      value={friendSearch}
+                      onChange={(e) => setFriendSearch(e.target.value)}
+                    />
+                  </div>
+
+                  <div className="fl-stats-row">
+                    <div className="fl-stats-left">
+                      <div className="fl-stats-title">{listFriends.length} friends</div>
+                      <div className="fl-stats-sub">
+                        {Math.min(listFriends.length, 20)} online
+                      </div>
+                    </div>
+                    <button className="fl-sort">Sort</button>
+                  </div>
+
+                  {listLoading ? (
+                    <div className="fl-empty">Loading friends...</div>
+                  ) : listFriends.length === 0 ? (
+                    <div className="fl-empty">No friends to show</div>
+                  ) : (
+                    <div className="fl-list">
+                      {listFriends
+                        .filter((f) => {
+                          const q = friendSearch.trim().toLowerCase()
+                          if (!q) return true
+                          return (f.name || "").toLowerCase().includes(q)
+                        })
+                        .map((f, idx) => {
+                          const fPhoto = avatarUrl(f)
+                          const isOnline = idx % 3 === 0
+                          const showRing = idx % 5 === 0
+                          return (
+                            <div
+                              className="fl-item"
+                              key={f.uid}
+                              onClick={() => openUserProfile(f.uid)}
+                            >
+                              <div className="fl-avatar-wrap">
+                                <img src={fPhoto} alt={f.name} />
+                                {showRing && <div className="fl-avatar-ring" />}
+                                {isOnline && <span className="fl-online-dot" />}
+                              </div>
+                              <div className="fl-info">
+                                <div className="fl-name">
+                                  {f.name}
+                                  {isVerified(f) ? " ✓" : ""}
+                                </div>
+                                <div className="fl-mutual">
+                                  {Math.max(1, ((idx * 7) % 50) + 1)} mutual friends
+                                </div>
+                              </div>
+                              <button
+                                className="fl-more"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                <svg viewBox="0 0 24 24">
+                                  <path d="M6 10c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm12 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-6 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
+                                </svg>
+                              </button>
+                            </div>
+                          )
+                        })}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )
+          })()}
 
           {currentView === "user-profile" && viewingUser && (
             <div className="mb-view active">

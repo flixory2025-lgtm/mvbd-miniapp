@@ -1950,7 +1950,11 @@ function ChatReactionPicker({
 MAIN COMPONENT
 ============================================================ */
 
-export default function MeBookPage() {
+interface MeBookPageProps {
+  onExit: () => void
+}
+
+export default function MeBookPage({ onExit }: MeBookPageProps) {
   const rootRef = useRef<HTMLDivElement>(null)
   const [ready, setReady] = useState(false)
 
@@ -4778,8 +4782,38 @@ export default function MeBookPage() {
 
         <main className="mb-main">
           {currentView === "home" && (
-            <div className="mb-view active">
-              <div className="mb-composer">
+  <div className="mb-view active">
+
+    {/* Exit MeBook */}
+    <button
+      onClick={onExit}
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        gap: "8px",
+        marginBottom: "14px",
+        padding: "10px 16px",
+        borderRadius: "14px",
+        border: "1px solid rgba(255,255,255,0.12)",
+        background: "rgba(255,255,255,0.06)",
+        color: "inherit",
+        cursor: "pointer",
+        fontSize: "14px",
+        fontWeight: 600,
+      }}
+    >
+      <svg
+        viewBox="0 0 24 24"
+        width="18"
+        height="18"
+        fill="currentColor"
+      >
+        <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" />
+      </svg>
+      Exit MeBook
+    </button>
+
+    <div className="mb-composer">
                 <div className="mb-composer-top">
                   <img className="mb-composer-avatar" src={avatarUrl(profile)} alt="You" />
                   <button className="mb-composer-input" onClick={openCreatePost}>

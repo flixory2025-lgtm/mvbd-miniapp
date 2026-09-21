@@ -311,22 +311,17 @@ animation:cardFloat .7s cubic-bezier(.2,.8,.3,1);color:#f3f4f6;
 .mebook-root .auth-err.show{display:block;}
 @keyframes shake{0%,100%{transform:translateX(0);}25%{transform:translateX(-4px);}75%{transform:translateX(4px);}}
 
-/* ============ HEADER — GLUED TO SCROLL ============ */
-.mebook-root .mb-header{
-position:fixed;top:0;left:0;right:0;height:60px;z-index:1000;
-background:var(--header-bg);
-display:flex;align-items:center;justify-content:space-between;
-padding:0 16px;
-box-shadow:0 2px 12px rgba(0,0,0,.25);
-transform:translateY(0);
-transition:transform .2s ease-out;
-will-change:transform;
-backface-visibility:hidden;
--webkit-backface-visibility:hidden;
-}
-.mebook-root .mb-header.header-hidden{
-transform:translateY(-100%);
-}
+  /* ============ HEADER — SCROLLS WITH PAGE ============ */
+  .mebook-root .mb-header{
+  position:relative;height:60px;z-index:40;
+  background:var(--header-bg);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 16px;
+  box-shadow:0 2px 12px rgba(0,0,0,.25);
+  }
+  .mebook-root .mb-header.header-hidden{
+  transform:none;
+  }
 .mebook-root.dark-mode .mb-header{
 background:#000000;
 box-shadow:0 2px 16px rgba(0,0,0,.9);
@@ -1060,7 +1055,7 @@ font-weight:500;
 .mebook-root .mb-right{display:none;}
 }
 @media(max-width:820px){
-.mebook-root .mb-layout{grid-template-columns:minmax(0,1fr);padding:74px 10px 24px;}
+  .mebook-root .mb-layout{grid-template-columns:minmax(0,1fr);padding:14px 10px 24px;}
 .mebook-root .mb-sidebar{display:none;}
 .mebook-root .mb-toast-container{left:10px;right:10px;max-width:none;top:70px;}
 .mebook-root .mb-menu{top:66px;right:10px;left:10px;max-width:none;}

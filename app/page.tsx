@@ -889,7 +889,7 @@ export default function Home() {
       {/* WELCOME POPUP */}
       {showWelcomePopup && <WelcomePopup onClose={handleClosePopup} />}
 
-      <MvbdAiAssistant />
+      {activeTab === "home" && <MvbdAiAssistant />}
     </div>
   )
 }

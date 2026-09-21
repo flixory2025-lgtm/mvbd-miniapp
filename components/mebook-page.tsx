@@ -1674,9 +1674,6 @@ export default function MeBookPage() {
   // Track which friends I've unfollowed (local only; you can persist if needed)
   const [unfollowedSet, setUnfollowedSet] = useState<Set<string>>(new Set())
 
-  // Notification deletion menu
-  const [notifMenuOpenId, setNotifMenuOpenId] = useState<string | null>(null)
-
   const unsubscribersRef = useRef<Array<() => void>>([])
   const chatUnsubRef = useRef<(() => void) | null>(null)
   const viewingUserUnsubRef = useRef<(() => void) | null>(null)
@@ -2012,7 +2009,6 @@ export default function MeBookPage() {
       if (e.key === "Escape") {
         setMenuOpen(false)
         setActionSheetFriend(null)
-        setNotifMenuOpenId(null)
       }
     }
     document.addEventListener("keydown", onKey)
@@ -2066,7 +2062,6 @@ export default function MeBookPage() {
     }
   }
 
-  // ⬇️ MODIFIED: Added notification when unfriending
   const handleUnfriend = async (friendUid: string, friendName: string) => {
     if (!confirm(`Remove ${friendName} as a friend?`)) return
     try {
@@ -2075,19 +2070,6 @@ export default function MeBookPage() {
 
       // Delete friendship doc
       await fb.deleteDoc(fb.doc(fb.db, "friends", fid))
-
-      // Send notification to the unfriended user
-      await fb.addDoc(fb.collection(fb.db, "notifications"), {
-        uid: friendUid,
-        title: "Friend Removed",
-        message: `${profile.name} removed you from their friends list.`,
-        type: "friend_removed",
-        fromUid: user.uid,
-        fromName: profile.name,
-        fromAvatar: profile.photoURL || "",
-        read: false,
-        createdAt: fb.serverTimestamp(),
-      })
 
       // Update local state immediately (real-time will also update)
       setMyFriends((prev) => prev.filter((f) => f.uid !== friendUid))
@@ -2259,7 +2241,6 @@ export default function MeBookPage() {
             title: "New Like",
             message: `${profile.name} liked your post.`,
             type: "like",
-            postId: postId,
             read: false,
             createdAt: fb.serverTimestamp(),
           })
@@ -2272,58 +2253,6 @@ export default function MeBookPage() {
 
   const openComments = (post: any) => pushPage("comments", { postId: post.id })
   const openShare = (post: any) => pushPage("share", { postId: post.id })
-
-  // ⬇️ MODIFIED: Added notification navigation handling
-  const openNotification = (n: any) => {
-    if (!n.read) markNotificationRead(n.id)
-
-    const type = n.type || "admin"
-
-    // Navigate based on notification type
-    if (type === "like" || type === "comment" || type === "share" || type === "post") {
-      if (n.postId) {
-        if (type === "comment") {
-          pushPage("comments", { postId: n.postId })
-        } else if (type === "share") {
-          pushPage("share", { postId: n.postId })
-        } else {
-          // For like and post, go to home and hopefully it's visible
-          goTo("home")
-          // Scroll to post after a small delay
-          setTimeout(() => {
-            const postElement = document.getElementById(`post-${n.postId}`)
-            if (postElement) {
-              postElement.scrollIntoView({ behavior: "smooth", block: "center" })
-            }
-          }, 500)
-        }
-      } else {
-        goTo("home")
-      }
-    } else if (type === "friend" || type === "friend_removed") {
-      if (n.fromUid) {
-        openUserProfile(n.fromUid)
-      } else {
-        goTo("notifications")
-      }
-    } else {
-      // Default: stay or go to notifications
-      goTo("notifications")
-    }
-  }
-
-  // ⬇️ NEW: Delete notification
-  const handleDeleteNotification = async (notifId: string) => {
-    try {
-      const fb = await getFirebase()
-      await fb.deleteDoc(fb.doc(fb.db, "notifications", notifId))
-      setNotifications((prev) => prev.filter((n) => n.id !== notifId))
-      setNotifMenuOpenId(null)
-      showToast("Deleted", "Notification removed", "success")
-    } catch (e: any) {
-      showToast("Error", e.message, "error")
-    }
-  }
 
   const openUserProfile = async (uid: string) => {
     if (uid === user.uid) {
@@ -2826,7 +2755,6 @@ export default function MeBookPage() {
             title: "New Comment",
             message: `${profile.name} commented on your post.`,
             type: "comment",
-            postId: postId,
             read: false,
             createdAt: fb.serverTimestamp(),
           })
@@ -2881,7 +2809,6 @@ export default function MeBookPage() {
           title: "Post Shared",
           message: `${profile.name} shared your post on their profile.`,
           type: "share",
-          postId: post.id,
           read: false,
           createdAt: fb.serverTimestamp(),
         })
@@ -3096,7 +3023,7 @@ export default function MeBookPage() {
     const postVerified = isVerified(post)
 
     return (
-      <article className={`mb-post${isOfficial ? " official" : ""}`} key={post.id} id={`post-${post.id}`}>
+      <article className={`mb-post${isOfficial ? " official" : ""}`} key={post.id}>
         <div className="mb-post-head">
           <img
             className="mb-post-head-avatar"
@@ -3396,11 +3323,7 @@ export default function MeBookPage() {
                 </svg>
                 Message
               </button>
-              <button
-                className="mb-btn mb-btn-secondary mb-profile-btn-icon"
-                title="More"
-                onClick={() => pushPage("profile-settings-other", { uid: u.uid })}
-              >
+              <button className="mb-btn mb-btn-secondary mb-profile-btn-icon" title="More">
                 <svg viewBox="0 0 24 24">
                   <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
                 </svg>
@@ -3834,7 +3757,6 @@ export default function MeBookPage() {
                         : type === "comment" ? "comment"
                         : type === "share" ? "share"
                         : type === "friend" ? "friend"
-                        : type === "friend_removed" ? "friend"
                         : type === "verification" ? "verification"
                         : type === "subscription" ? "subscription"
                         : type === "account" ? "account"
@@ -3845,7 +3767,7 @@ export default function MeBookPage() {
                         <div
                           className={`notif-item${!n.read ? " unread" : ""}`}
                           key={n.id}
-                          onClick={() => openNotification(n)}
+                          onClick={() => !n.read && markNotificationRead(n.id)}
                         >
                           {n.fromAvatar ? (
                             <img className="notif-avatar" src={n.fromAvatar} alt="" />
@@ -3866,7 +3788,7 @@ export default function MeBookPage() {
                                   <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z" />
                                 </svg>
                               )}
-                              {(type === "friend" || type === "friend_removed") && (
+                              {type === "friend" && (
                                 <svg viewBox="0 0 24 24">
                                   <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" />
                                 </svg>
@@ -3920,54 +3842,6 @@ export default function MeBookPage() {
                             )}
                           </div>
                           {!n.read && <span className="notif-dot" />}
-
-                          {/* 3-dots menu button for notification */}
-                          <div style={{ position: "relative" }}>
-                            <button
-                              className="fl-more"
-                              style={{
-                                position: "absolute",
-                                top: 0,
-                                right: 0,
-                                width: 28,
-                                height: 28,
-                              }}
-                              onClick={(e) => {
-                                e.stopPropagation()
-                                setNotifMenuOpenId(notifMenuOpenId === n.id ? null : n.id)
-                              }}
-                            >
-                              <svg viewBox="0 0 24 24">
-                                <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
-                              </svg>
-                            </button>
-                            {notifMenuOpenId === n.id && (
-                              <div
-                                style={{
-                                  position: "absolute",
-                                  top: 30,
-                                  right: 0,
-                                  background: "var(--card)",
-                                  borderRadius: 8,
-                                  boxShadow: "0 4px 12px rgba(0,0,0,.15)",
-                                  zIndex: 10,
-                                  minWidth: 120,
-                                  padding: 4,
-                                }}
-                              >
-                                <button
-                                  className="mb-menu-item danger"
-                                  style={{ padding: "8px 12px", fontSize: 13, borderRadius: 6 }}
-                                  onClick={(e) => {
-                                    e.stopPropagation()
-                                    handleDeleteNotification(n.id)
-                                  }}
-                                >
-                                  Delete
-                                </button>
-                              </div>
-                            )}
-                          </div>
                         </div>
                       )
                     })
@@ -3977,32 +3851,819 @@ export default function MeBookPage() {
             </div>
           )}
 
-          {/* ... other views ... */}
+          {currentView === "friends" && (
+            <div className="mb-view active">
+              <h1 className="mb-page-title">
+                <svg viewBox="0 0 24 24">
+                  <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" />
+                </svg>
+                Friends
+              </h1>
+
+              <div className="fr-page">
+                <div className="fr-tabs">
+                  <button className={`fr-tab${friendsTab === "requests" ? " active" : ""}`} onClick={() => setFriendsTab("requests")}>
+                    Requests
+                    {requests.length > 0 && <span className="fr-tab-badge">{requests.length}</span>}
+                  </button>
+                  <button className={`fr-tab${friendsTab === "sent" ? " active" : ""}`} onClick={() => setFriendsTab("sent")}>
+                    Sent
+                  </button>
+                  <button className={`fr-tab${friendsTab === "all" ? " active" : ""}`} onClick={() => setFriendsTab("all")}>
+                    My Friends ({myFriends.length})
+                  </button>
+                  <button className={`fr-tab${friendsTab === "mutual" ? " active" : ""}`} onClick={() => setFriendsTab("mutual")}>
+                    Find Friends
+                  </button>
+                </div>
+
+                <div className="fr-body">
+                  {friendsTab === "requests" && (
+                    <>
+                      {requests.length === 0 ? (
+                        <div className="mb-empty">
+                          <svg viewBox="0 0 24 24">
+                            <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" />
+                          </svg>
+                          <b>No pending friend requests</b>
+                          <p>When someone sends you a request, it'll show up here.</p>
+                        </div>
+                      ) : (
+                        requests.map((r) => {
+                          const photo = avatarUrl(r.fromUser)
+                          return (
+                            <div className="fr-request-row" key={r.id}>
+                              <img src={photo} alt="" onClick={() => openUserProfile(r.from)} />
+                              <div className="fr-request-info">
+                                <div className="fr-request-name" onClick={() => openUserProfile(r.from)}>
+                                  {r.fromUser.name}
+                                </div>
+                                <div className="fr-request-mutual">Wants to be your friend</div>
+                              </div>
+                              <div className="fr-request-actions">
+                                <button className="mb-btn mb-btn-primary" onClick={() => handleAcceptRequest(r.id, r.from)}>Confirm</button>
+                                <button className="mb-btn mb-btn-secondary" onClick={() => handleDeclineRequest(r.id)}>Delete</button>
+                              </div>
+                            </div>
+                          )
+                        })
+                      )}
+                    </>
+                  )}
+
+                  {friendsTab === "sent" && (
+                    <>
+                      {sentFriendRequests.length === 0 ? (
+                        <div className="mb-empty">
+                          <svg viewBox="0 0 24 24">
+                            <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
+                          </svg>
+                          <b>No sent requests</b>
+                          <p>Requests you send will appear here.</p>
+                        </div>
+                      ) : (
+                        sentFriendRequests.map((r) => {
+                          const photo = avatarUrl(r.toUser)
+                          return (
+                            <div className="fr-request-row" key={r.id}>
+                              <img src={photo} alt="" onClick={() => openUserProfile(r.to)} />
+                              <div className="fr-request-info">
+                                <div className="fr-request-name" onClick={() => openUserProfile(r.to)}>
+                                  {r.toUser.name}
+                                </div>
+                                <div className="fr-request-mutual">
+                                  Status: {r.status === "pending" ? "Pending" : r.status === "accepted" ? "Accepted ✓" : "Declined"}
+                                </div>
+                              </div>
+                              <div className="fr-request-actions">
+                                {r.status === "pending" && (
+                                  <button className="mb-btn mb-btn-secondary" onClick={() => handleCancelRequest(r.to)}>Cancel</button>
+                                )}
+                              </div>
+                            </div>
+                          )
+                        })
+                      )}
+                    </>
+                  )}
+
+                  {friendsTab === "all" && (
+                    <>
+                      <div className="fl-page">
+                        <div className="fl-search">
+                          <svg viewBox="0 0 24 24">
+                            <path d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
+                          </svg>
+                          <input
+                            type="text"
+                            placeholder="Search friends"
+                            value={friendSearch}
+                            onChange={(e) => setFriendSearch(e.target.value)}
+                          />
+                        </div>
+
+                        <div className="fl-stats-row">
+                          <div className="fl-stats-left">
+                            <div className="fl-stats-title">{myFriends.length} friends</div>
+                            <div className="fl-stats-sub">{Math.min(myFriends.length, 20)} online</div>
+                          </div>
+                          <button className="fl-sort">Sort</button>
+                        </div>
+
+                        {myFriends.length === 0 ? (
+                          <div className="fl-empty">
+                            No friends yet — start sending friend requests!
+                          </div>
+                        ) : (
+                          <div className="fl-list">
+                            {myFriends
+                              .filter((f) => {
+                                const q = friendSearch.trim().toLowerCase()
+                                if (!q) return true
+                                return (f.name || "").toLowerCase().includes(q)
+                              })
+                              .map((f, idx) => {
+                                const fPhoto = avatarUrl(f)
+                                return (
+                                  <div
+                                    className="fl-item"
+                                    key={f.uid}
+                                    onClick={() => openUserProfile(f.uid)}
+                                  >
+                                    <div className="fl-avatar-wrap">
+                                      <img src={fPhoto} alt={f.name} />
+                                      {idx % 5 === 0 && <div className="fl-avatar-ring" />}
+                                      {idx % 3 === 0 && <span className="fl-online-dot" />}
+                                    </div>
+                                    <div className="fl-info">
+                                      <div className="fl-name">
+                                        {f.name}
+                                        {isVerified(f) ? " ✓" : ""}
+                                      </div>
+                                      <div className="fl-mutual">
+                                        {Math.max(1, ((idx * 7) % 50) + 1)} mutual friends
+                                      </div>
+                                    </div>
+                                    <button
+                                      className="fl-more"
+                                      onClick={(e) => {
+                                        e.stopPropagation()
+                                        setActionSheetFriend(f)
+                                      }}
+                                      title="More options"
+                                    >
+                                      <svg viewBox="0 0 24 24">
+                                        <path d="M6 10c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm12 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-6 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
+                                      </svg>
+                                    </button>
+                                  </div>
+                                )
+                              })}
+                          </div>
+                        )}
+                      </div>
+                    </>
+                  )}
+
+                  {friendsTab === "mutual" && (
+                    <>
+                      {/* ===== Find Friends tab — NOW IN LIST VIEW ===== */}
+                      <div className="fl-page">
+                        <div className="fl-search">
+                          <svg viewBox="0 0 24 24">
+                            <path d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
+                          </svg>
+                          <input
+                            type="text"
+                            placeholder="Search all MeBook users"
+                            value={friendSearch}
+                            onChange={(e) => setFriendSearch(e.target.value)}
+                          />
+                        </div>
+
+                        <div className="fl-stats-row">
+                          <div className="fl-stats-left">
+                            <div className="fl-stats-title">{filteredFriends.length} people</div>
+                            <div className="fl-stats-sub">
+                              {filteredFriends.filter((_, i) => i % 3 === 0).length} online
+                            </div>
+                          </div>
+                          <button className="fl-sort">Sort</button>
+                        </div>
+
+                        {filteredFriends.length === 0 ? (
+                          <div className="fl-empty">No users found</div>
+                        ) : (
+                          <div className="fl-list">
+                            {filteredFriends.map((u, idx) => {
+                              const photo = avatarUrl(u)
+                              const isFriend = myFriends.some((f) => f.uid === u.uid)
+                              const hasPendingSent = sentFriendRequests.some(
+                                (r) => r.to === u.uid && r.status === "pending"
+                              )
+                              const isOnline = idx % 3 === 0
+                              const showRing = idx % 5 === 0
+
+                              return (
+                                <div
+                                  className="fl-item"
+                                  key={u.uid}
+                                  onClick={() => openUserProfile(u.uid)}
+                                >
+                                  <div className="fl-avatar-wrap">
+                                    <img src={photo} alt={u.name} />
+                                    {showRing && <div className="fl-avatar-ring" />}
+                                    {isOnline && <span className="fl-online-dot" />}
+                                  </div>
+                                  <div className="fl-info">
+                                    <div className="fl-name">
+                                      {u.name}
+                                      {isVerified(u) ? " ✓" : ""}
+                                    </div>
+                                    <div className="fl-mutual">
+                                      {isFriend
+                                        ? "Already friends"
+                                        : hasPendingSent
+                                        ? "Request pending"
+                                        : `${Math.max(1, ((idx * 7) % 50) + 1)} mutual friends`}
+                                    </div>
+                                  </div>
+
+                                  {/* Right-side action button */}
+                                  {isFriend ? (
+                                    <button
+                                      className="fl-more"
+                                      onClick={(e) => {
+                                        e.stopPropagation()
+                                        startChat(u.uid, u.name, photo)
+                                      }}
+                                      title="Message"
+                                    >
+                                      <svg viewBox="0 0 24 24">
+                                        <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z" />
+                                      </svg>
+                                    </button>
+                                  ) : hasPendingSent ? (
+                                    <button
+                                      className="fl-more"
+                                      onClick={(e) => {
+                                        e.stopPropagation()
+                                        handleCancelRequest(u.uid)
+                                      }}
+                                      title="Cancel request"
+                                    >
+                                      <svg viewBox="0 0 24 24">
+                                        <path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
+                                      </svg>
+                                    </button>
+                                  ) : (
+                                    <button
+                                      className="fl-more"
+                                      style={{ color: "#22c55e" }}
+                                      onClick={(e) => {
+                                        e.stopPropagation()
+                                        handleSendRequest(u.uid)
+                                      }}
+                                      title="Add friend"
+                                    >
+                                      <svg viewBox="0 0 24 24">
+                                        <path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                                      </svg>
+                                    </button>
+                                  )}
+                                </div>
+                              )
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ============ FRIENDS LIST PAGE ============ */}
+          {currentView === "friends-list" && (() => {
+            const targetUid = currentParams.uid || user.uid
+            const targetName = currentParams.name || profile.name
+            const isOwnList = targetUid === user.uid
+            const listFriends = isOwnList ? myFriends : viewingUserFriends
+            const listLoading = !isOwnList && viewingUserFriendsLoading
+
+            return (
+              <div className="mb-view active">
+                <div className="fl-page">
+                  <div className="fl-head">
+                    <button className="fl-head-back" onClick={goBack}>
+                      <svg viewBox="0 0 24 24">
+                        <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" />
+                      </svg>
+                    </button>
+                    <div className="fl-head-title">
+                      {isOwnList ? "Your friends" : `${targetName}'s friends`}
+                    </div>
+                    <button className="fl-head-icon" title="Search">
+                      <svg viewBox="0 0 24 24">
+                        <path d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
+                      </svg>
+                    </button>
+                  </div>
+
+                  <div className="fl-search">
+                    <svg viewBox="0 0 24 24">
+                      <path d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
+                    </svg>
+                    <input
+                      type="text"
+                      placeholder="Search friends"
+                      value={friendSearch}
+                      onChange={(e) => setFriendSearch(e.target.value)}
+                    />
+                  </div>
+
+                  <div className="fl-stats-row">
+                    <div className="fl-stats-left">
+                      <div className="fl-stats-title">{listFriends.length} friends</div>
+                      <div className="fl-stats-sub">
+                        {Math.min(listFriends.length, 20)} online
+                      </div>
+                    </div>
+                    <button className="fl-sort">Sort</button>
+                  </div>
+
+                  {listLoading ? (
+                    <div className="fl-empty">Loading friends...</div>
+                  ) : listFriends.length === 0 ? (
+                    <div className="fl-empty">No friends to show</div>
+                  ) : (
+                    <div className="fl-list">
+                      {listFriends
+                        .filter((f) => {
+                          const q = friendSearch.trim().toLowerCase()
+                          if (!q) return true
+                          return (f.name || "").toLowerCase().includes(q)
+                        })
+                        .map((f, idx) => {
+                          const fPhoto = avatarUrl(f)
+                          const isOnline = idx % 3 === 0
+                          const showRing = idx % 5 === 0
+                          const isOwnFriend = myFriends.some((mf) => mf.uid === f.uid)
+
+                          return (
+                            <div
+                              className="fl-item"
+                              key={f.uid}
+                              onClick={() => openUserProfile(f.uid)}
+                            >
+                              <div className="fl-avatar-wrap">
+                                <img src={fPhoto} alt={f.name} />
+                                {showRing && <div className="fl-avatar-ring" />}
+                                {isOnline && <span className="fl-online-dot" />}
+                              </div>
+                              <div className="fl-info">
+                                <div className="fl-name">
+                                  {f.name}
+                                  {isVerified(f) ? " ✓" : ""}
+                                </div>
+                                <div className="fl-mutual">
+                                  {Math.max(1, ((idx * 7) % 50) + 1)} mutual friends
+                                </div>
+                              </div>
+                              <button
+                                className="fl-more"
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  if (isOwnFriend) {
+                                    setActionSheetFriend(f)
+                                  } else {
+                                    startChat(f.uid, f.name, fPhoto)
+                                  }
+                                }}
+                                title={isOwnFriend ? "More options" : "Message"}
+                              >
+                                {isOwnFriend ? (
+                                  <svg viewBox="0 0 24 24">
+                                    <path d="M6 10c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm12 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-6 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
+                                  </svg>
+                                ) : (
+                                  <svg viewBox="0 0 24 24">
+                                    <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z" />
+                                  </svg>
+                                )}
+                              </button>
+                            </div>
+                          )
+                        })}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )
+          })()}
+
+          {currentView === "user-profile" && viewingUser && (
+            <div className="mb-view active">
+              <button className="mb-back-btn" onClick={goBack}>
+                <svg viewBox="0 0 24 24">
+                  <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" />
+                </svg>
+                Back
+              </button>
+              {renderProfilePage(
+                viewingUser,
+                viewingUserPosts,
+                false,
+                viewingUserFriends,
+                viewingUserFriendsLoading
+              )}
+
+              <div className="mb-card-title" style={{ fontSize: 18, marginBottom: 10, padding: "0 4px" }}>
+                Posts ({viewingUserPosts.length})
+              </div>
+              <div>
+                {viewingUserPosts.length === 0 ? (
+                  <div className="mb-empty">
+                    <b>No posts yet</b>
+                    <p style={{ fontSize: 14, marginTop: 4 }}>This user hasn't posted anything</p>
+                  </div>
+                ) : (
+                  viewingUserPosts.map((p) => renderPost(p))
+                )}
+              </div>
+            </div>
+          )}
+
+          {currentView === "messages" && (
+            <div className="mb-view active">
+              <h1 className="mb-page-title" style={{ marginBottom: 12 }}>
+                <svg viewBox="0 0 24 24">
+                  <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z" />
+                </svg>
+                Messages
+              </h1>
+              <div className={`msgr-wrap ${mobileChatWindow && chatPartner ? "mobile-on-window" : "mobile-on-list"}`}>
+                <div className="msgr-list">
+                  <div className="msgr-list-head"><span>Chats</span></div>
+                  {onlineList.length > 0 && (
+                    <>
+                      <div className="msgr-section">Online now</div>
+                      <div className="msgr-online-row">
+                        {onlineList.map((u) => {
+                          const photo = avatarUrl(u)
+                          return (
+                            <div key={u.uid} className="msgr-online-item" onClick={() => startChat(u.uid, u.name, photo)}>
+                              <div className="msgr-online-avatar-wrap">
+                                <img src={photo} alt="" />
+                                <span className="msgr-online-dot" />
+                              </div>
+                              <div className="msgr-online-name">{u.name?.split(" ")[0]}</div>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    </>
+                  )}
+                  <div className="msgr-section">Recent</div>
+                  {chats.length === 0 ? (
+                    <div style={{ padding: 20, color: "var(--text-muted)", fontSize: 14, textAlign: "center" }}>
+                      No conversations yet. Start one from Friends page!
+                    </div>
+                  ) : (
+                    chats.map((c) => {
+                      const photo = avatarUrl(c.other)
+                      const isActive = activeChat === c.id
+                      return (
+                        <div className={`msgr-item ${isActive ? "active" : ""}`} key={c.id} onClick={() => openChat(c.id, c.otherId, c.other)}>
+                          <div className="msgr-item-avatar-wrap">
+                            <img src={photo} alt="" />
+                            <span className="msgr-item-dot" />
+                          </div>
+                          <div className="msgr-item-body">
+                            <div className="msgr-item-name">{c.other.name}</div>
+                            <div className={`msgr-item-last ${unreadCount > 0 ? "unread" : ""}`}>
+                              {(c.last as any)?.text || "Say hi 👋"}
+                            </div>
+                          </div>
+                          <div className="msgr-item-time">{c.lastAt ? timeShort(c.lastAt) : ""}</div>
+                        </div>
+                      )
+                    })
+                  )}
+                </div>
+                <div className="msgr-window">
+                  {!activeChat || !chatPartner ? (
+                    <div className="msgr-empty">
+                      <svg viewBox="0 0 24 24">
+                        <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z" />
+                      </svg>
+                      <b>Select a conversation</b>
+                      <p>Choose someone from the list to start chatting</p>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="msgr-head">
+                        <button className="msgr-head-back" onClick={() => setMobileChatWindow(false)}>
+                          <svg viewBox="0 0 24 24">
+                            <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" />
+                          </svg>
+                        </button>
+                        <img src={avatarUrl(chatPartner)} alt="" />
+                        <div className="msgr-head-info">
+                          <div className="msgr-head-name">{chatPartner.name}</div>
+                          <div className="msgr-head-status"><span className="dot" /> Active now</div>
+                        </div>
+                        <button className="msgr-head-btn" onClick={() => openUserProfile(chatPartner.uid)}>
+                          <svg viewBox="0 0 24 24">
+                            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                          </svg>
+                        </button>
+                      </div>
+                      <div className="msgr-body" id="mebook-chat-body">
+                        {chatMessages.length === 0 ? (
+                          <div className="msgr-empty" style={{ padding: 40 }}>
+                            <b>No messages yet</b>
+                            <p>Say hi 👋</p>
+                          </div>
+                        ) : (
+                          chatMessages.map((m, idx) => {
+                            const mine = m.from === user.uid
+                            const prevMsg = idx > 0 ? chatMessages[idx - 1] : null
+                            const showAvatar = !mine && (!prevMsg || prevMsg.from !== m.from)
+                            return (
+                              <div key={m.id} className={`msgr-bubble-wrap ${mine ? "me" : "them"} ${showAvatar ? "show-avatar" : ""}`}>
+                                {!mine && <img className="msgr-bubble-avatar" src={avatarUrl(chatPartner)} alt="" />}
+                                <div className={`msgr-bubble ${mine ? "me" : "them"}`}>{m.text}</div>
+                              </div>
+                            )
+                          })
+                        )}
+                      </div>
+                      <div className="msgr-input">
+                        <textarea
+                          className="msgr-input-field"
+                          placeholder="Aa"
+                          rows={1}
+                          value={chatInput}
+                          onChange={(e) => setChatInput(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" && !e.shiftKey) {
+                              e.preventDefault()
+                              handleSendMessage()
+                            }
+                          }}
+                        />
+                        <button className="msgr-input-send" onClick={handleSendMessage} disabled={!chatInput.trim()}>
+                          <svg viewBox="0 0 24 24">
+                            <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
+                          </svg>
+                        </button>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {currentView === "create-post" && (
+            <div className="mb-view active">
+              <button className="mb-back-btn" onClick={goBack}>
+                <svg viewBox="0 0 24 24">
+                  <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" />
+                </svg>
+                Back
+              </button>
+              <div className="cp-page">
+                <h1 className="mb-page-title">Create Post</h1>
+                <div className="cp-card">
+                  <div className="cp-user">
+                    <img src={avatarUrl(profile)} alt="You" />
+                    <div>
+                      <b>{profile.name}</b>
+                      <small style={{ display: "block" }}>Public</small>
+                    </div>
+                  </div>
+                  <textarea
+                    className="cp-textarea"
+                    placeholder="What's your take on this movie? Share your review..."
+                    value={postText}
+                    onChange={(e) => setPostText(e.target.value)}
+                    autoFocus
+                  />
+                  <div className="cp-movie-tag">
+                    <svg viewBox="0 0 24 24">
+                      <path d="M18 4l2 4h-3l-2-4h-2l2 4h-3l-2-4H8l2 4H7L5 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4h-4z" />
+                    </svg>
+                    <input
+                      type="text"
+                      placeholder="Movie name (e.g. Interstellar)"
+                      value={postMovie}
+                      onChange={(e) => setPostMovie(e.target.value)}
+                    />
+                  </div>
+                  {!previewUrl ? (
+                    <div>
+                      <div className="cp-upload-box" onClick={() => document.getElementById("mebook-file-input")?.click()}>
+                        <svg viewBox="0 0 24 24">
+                          <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z" />
+                        </svg>
+                        <b>Add movie screenshot / photo</b>
+                        <small>PNG, JPG up to 10MB</small>
+                      </div>
+                      <input
+                        type="file"
+                        id="mebook-file-input"
+                        accept="image/*"
+                        style={{ display: "none" }}
+                        onChange={handlePreviewFile}
+                      />
+                    </div>
+                  ) : (
+                    <div className="cp-preview">
+                      <img src={previewUrl} alt="preview" />
+                      <button className="cp-preview-remove" onClick={removePreview}>
+                        <svg viewBox="0 0 24 24">
+                          <path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
+                        </svg>
+                      </button>
+                    </div>
+                  )}
+                  {uploadProgress !== null && (
+                    <div style={{ marginTop: 10 }}>
+                      <div style={{ height: 6, background: "var(--border)", borderRadius: 3, overflow: "hidden" }}>
+                        <div style={{ height: "100%", width: `${uploadProgress}%`, background: "var(--green)", transition: "width .3s ease" }} />
+                      </div>
+                      <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 4 }}>Uploading... {uploadProgress}%</div>
+                    </div>
+                  )}
+                  <div className="cp-actions">
+                    <button className="mb-btn mb-btn-secondary" onClick={goBack}>Cancel</button>
+                    <button className="mb-btn mb-btn-primary" onClick={handleSubmitPost} disabled={postBusy}>
+                      {postBusy ? "Posting..." : "Post"}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {currentView === "comments" && (() => {
+            const post = findPost(currentParams.postId)
+            if (!post) {
+              return (
+                <div className="mb-view active">
+                  <button className="mb-back-btn" onClick={goBack}>Back</button>
+                  <div className="mb-empty">Post not found</div>
+                </div>
+              )
+            }
+            return (
+              <div className="mb-view active">
+                <button className="mb-back-btn" onClick={goBack}>
+                  <svg viewBox="0 0 24 24">
+                    <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" />
+                  </svg>
+                  Back
+                </button>
+                <h1 className="mb-page-title">Comments</h1>
+                {renderPost(post)}
+                <div className="cmt-page-wrap">
+                  <div className="cmt-page-head">{post.comments?.length || 0} Comments</div>
+                  <div className="cmt-page-list" ref={commentListRef}>
+                    {!post.comments?.length ? (
+                      <div className="cmt-empty">
+                        <b>No comments yet</b>
+                        <p style={{ marginTop: 6 }}>Be the first to comment</p>
+                      </div>
+                    ) : (
+                      post.comments.map((c: any, i: number) => {
+                        const avatar = c.avatar || `https://ui-avatars.com/api/?background=16a34a&color=fff&name=${encodeURIComponent(c.name || "U")}`
+                        return (
+                          <div className="cmt-row" key={i}>
+                            <img className="cmt-row-avatar" src={avatar} alt="" />
+                            <div className="cmt-bubble">
+                              <b>{c.name || "User"}</b>
+                              {c.text || ""}
+                              <span className="cmt-time">{timeAgo(c.at)}</span>
+                            </div>
+                          </div>
+                        )
+                      })
+                    )}
+                  </div>
+                  <div className="cmt-input-wrap">
+                    <img className="cmt-input-avatar" src={avatarUrl(profile)} alt="" />
+                    <textarea
+                      className="cmt-input"
+                      rows={1}
+                      placeholder="Write a comment..."
+                      value={commentText}
+                      onChange={(e) => setCommentText(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && !e.shiftKey) {
+                          e.preventDefault()
+                          handleAddComment(post.id)
+                        }
+                      }}
+                    />
+                    <button className="cmt-send" onClick={() => handleAddComment(post.id)} disabled={!commentText.trim() || commentBusy}>
+                      <svg viewBox="0 0 24 24">
+                        <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )
+          })()}
+
+          {currentView === "share" && (() => {
+            const post = findPost(currentParams.postId)
+            if (!post) {
+              return (
+                <div className="mb-view active">
+                  <button className="mb-back-btn" onClick={goBack}>Back</button>
+                  <div className="mb-empty">Post not found</div>
+                </div>
+              )
+            }
+            return (
+              <div className="mb-view active">
+                <button className="mb-back-btn" onClick={goBack}>
+                  <svg viewBox="0 0 24 24">
+                    <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" />
+                  </svg>
+                  Back
+                </button>
+                <h1 className="mb-page-title">Share Post</h1>
+                <div className="share-page-wrap">
+                  <div className="share-preview">
+                    <img src={post.image || post.authorAvatar || LOGO_URL} alt="" />
+                    <div className="share-preview-info">
+                      <div className="share-preview-title">{post.movie || "Movie Review"}</div>
+                      <div className="share-preview-sub">by {post.authorName || "MeBook User"}</div>
+                    </div>
+                  </div>
+                  <textarea
+                    className="share-caption"
+                    placeholder="Say something about this..."
+                    value={shareCaption}
+                    onChange={(e) => setShareCaption(e.target.value)}
+                  />
+                  <div className="share-options">
+                    <button className="share-option" onClick={() => shareToProfile(post)} disabled={shareBusy}>
+                      <span className="share-option-icon profile">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                          <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                        </svg>
+                      </span>
+                      <div className="share-option-text">
+                        Your Profile
+                        <small>{shareBusy ? "Sharing..." : "Share to MeBook"}</small>
+                      </div>
+                    </button>
+                    <button className="share-option" onClick={() => shareToFacebook(post)}>
+                      <span className="share-option-icon fb">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                          <path d="M24 12.07C24 5.4 18.63 0 12 0S0 5.4 0 12.07C0 18.1 4.39 23.1 10.13 24v-8.44H7.08v-3.49h3.05V9.41c0-3.02 1.79-4.69 4.53-4.69 1.31 0 2.68.24 2.68.24v2.96h-1.51c-1.49 0-1.95.93-1.95 1.88v2.27h3.32l-.53 3.49h-2.79V24C19.61 23.1 24 18.1 24 12.07z" />
+                        </svg>
+                      </span>
+                      <div className="share-option-text">Facebook<small>Share to feed</small></div>
+                    </button>
+                    <button className="share-option" onClick={() => shareToWhatsApp(post)}>
+                      <span className="share-option-icon wa">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                          <path d="M17.47 14.38c-.3-.15-1.75-.86-2.02-.96-.27-.1-.47-.15-.67.15-.2.3-.77.96-.94 1.16-.17.2-.35.22-.64.07-.3-.15-1.25-.46-2.38-1.47-.88-.79-1.48-1.75-1.65-2.05-.17-.3-.02-.46.13-.6.13-.13.3-.35.44-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.07-.15-.65-1.58-.9-2.16-.24-.57-.48-.5-.66-.5-.17 0-.37-.02-.56-.02-.2 0-.5.07-.77.37-.27.3-1.02 1-1.02 2.42 0 1.43 1.04 2.81 1.19 3 .15.2 2.05 3.13 4.97 4.38.7.3 1.24.48 1.66.62.7.22 1.33.19 1.83.11.56-.08 1.75-.72 2-1.41.25-.7.25-1.29.17-1.41-.07-.13-.27-.2-.56-.35zM12 0C5.4 0 0 5.4 0 12c0 2.11.55 4.11 1.51 5.84L0 24l6.32-1.66C8.02 23.15 9.96 24 12 24c6.6 0 12-5.4 12-12S18.6 0 12 0z" />
+                        </svg>
+                      </span>
+                      <div className="share-option-text">WhatsApp<small>Send to chat</small></div>
+                    </button>
+                    <button className="share-option" onClick={() => shareToTelegram(post)}>
+                      <span className="share-option-icon tg">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                          <path d="M9.78 18.65l.28-4.23 7.68-6.92c.34-.31-.07-.46-.52-.19L7.74 13.3 3.64 12c-.88-.25-.89-.86.2-1.3l15.97-6.16c.73-.33 1.43.18 1.15 1.3l-2.72 12.81c-.19.91-.74 1.13-1.5.71L12.6 16.3l-1.99 1.93c-.23.23-.42.42-.83.42z" />
+                        </svg>
+                      </span>
+                      <div className="share-option-text">Telegram<small>Share to chat</small></div>
+                    </button>
+                    <button className="share-option" onClick={() => copyLink(post)}>
+                      <span className="share-option-icon link">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                          <path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z" />
+                        </svg>
+                      </span>
+                      <div className="share-option-text">Copy Link<small>Share anywhere</small></div>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )
+          })()}
 
           {currentView === "profile" && (
             <div className="mb-view active">
-              {/* Profile header with 3-dots */}
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
-                <h1 className="mb-page-title" style={{ marginBottom: 0 }}>Profile</h1>
-                <button
-                  className="mb-icon-btn"
-                  style={{
-                    background: "var(--input-bg)",
-                    color: "var(--text)",
-                    width: 40,
-                    height: 40,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                  onClick={() => pushPage("profile-settings-own")}
-                >
-                  <svg viewBox="0 0 24 24" style={{ width: 20, height: 20, fill: "currentColor" }}>
-                    <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
-                  </svg>
-                </button>
-              </div>
-
               {renderProfilePage(profile, myPosts, true)}
 
               <div className="mb-card" style={{ marginBottom: 16 }}>
@@ -4070,257 +4731,74 @@ export default function MeBookPage() {
             </div>
           )}
 
-          {/* ============ PROFILE SETTINGS PAGES ============ */}
-
-          {currentView === "profile-settings-own" && (
+          {currentView === "edit-profile" && (
             <div className="mb-view active">
-              <div className="fl-head">
-                <button className="fl-head-back" onClick={goBack}>
-                  <svg viewBox="0 0 24 24">
-                    <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" />
-                  </svg>
-                </button>
-                <div className="fl-head-title">Profile settings</div>
-              </div>
-
-              <div className="fr-page" style={{ marginTop: 0, boxShadow: "none", background: "transparent" }}>
-                <div className="fr-body" style={{ padding: 0 }}>
-                  <div className="mb-card" style={{ marginBottom: 16 }}>
-                    <div className="mb-menu-item" onClick={() => { goBack(); openEditProfile() }}>
-                      <span className="mb-menu-ico">
-                        <svg viewBox="0 0 24 24">
-                          <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34a.9959.9959 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" />
-                        </svg>
-                      </span>
-                      Edit
-                    </div>
-                    <div className="mb-menu-item">
-                      <span className="mb-menu-ico green">
-                        <svg viewBox="0 0 24 24">
-                          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
-                        </svg>
-                      </span>
-                      Show that your profile is verified
-                    </div>
-                    <div className="mb-menu-item">
-                      <span className="mb-menu-ico blue">
-                        <svg viewBox="0 0 24 24">
-                          <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z" />
-                        </svg>
-                      </span>
-                      Advertise
-                    </div>
-                    <div className="mb-menu-item">
-                      <span className="mb-menu-ico">
-                        <svg viewBox="0 0 24 24">
-                          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z" />
-                        </svg>
-                      </span>
-                      Add highlights
-                    </div>
-                    <div className="mb-menu-item">
-                      <span className="mb-menu-ico">
-                        <svg viewBox="0 0 24 24">
-                          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" />
-                        </svg>
-                      </span>
-                      Profile status
-                    </div>
-                    <div className="mb-menu-item">
-                      <span className="mb-menu-ico">
-                        <svg viewBox="0 0 24 24">
-                          <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 10h-4v4h-2v-4H7v-2h4V7h2v4h4v2z" />
-                        </svg>
-                      </span>
-                      Add action button
-                    </div>
-                    <div className="mb-menu-item">
-                      <span className="mb-menu-ico">
-                        <svg viewBox="0 0 24 24">
-                          <path d="M20.54 5.23l-1.39-1.68C18.88 3.21 18.47 3 18 3H6c-.47 0-.88.21-1.16.55L3.46 5.23C3.17 5.57 3 6.02 3 6.5V19c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6.5c0-.48-.17-.93-.46-1.27zM12 17.5L6.5 12H10v-2h4v2h3.5L12 17.5zM5.12 5l.81-1h12l.94 1H5.12z" />
-                        </svg>
-                      </span>
-                      Archive
-                    </div>
-                    <div className="mb-menu-item">
-                      <span className="mb-menu-ico">
-                        <svg viewBox="0 0 24 24">
-                          <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z" />
-                        </svg>
-                      </span>
-                      View as
-                    </div>
-                    <div className="mb-menu-item">
-                      <span className="mb-menu-ico">
-                        <svg viewBox="0 0 24 24">
-                          <path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z" />
-                        </svg>
-                      </span>
-                      Activity log
-                    </div>
-                    <div className="mb-menu-item">
-                      <span className="mb-menu-ico">
-                        <svg viewBox="0 0 24 24">
-                          <path d="M14 10H2v2h12v-2zm0-4H2v2h12V6zm4 8v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zM2 16h8v-2H2v2z" />
-                        </svg>
-                      </span>
-                      Review posts and tags
-                    </div>
-                    <div className="mb-menu-item">
-                      <span className="mb-menu-ico">
-                        <svg viewBox="0 0 24 24">
-                          <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zM9 8V6c0-1.66 1.34-3 3-3s3 1.34 3 3v2H9z" />
-                        </svg>
-                      </span>
-                      Privacy Centre
-                    </div>
-                    <div className="mb-menu-item">
-                      <span className="mb-menu-ico">
-                        <svg viewBox="0 0 24 24">
-                          <path d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
-                        </svg>
-                      </span>
-                      Search
-                    </div>
-                    <div className="mb-menu-item">
-                      <span className="mb-menu-ico">
-                        <svg viewBox="0 0 24 24">
-                          <path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z" />
-                        </svg>
-                      </span>
-                      Turn off pro mode
-                    </div>
-                    <div className="mb-menu-item" onClick={() => {
-                      const url = `https://www.facebook.com/profile.php?id=${user.uid}`
-                      navigator.clipboard.writeText(url)
-                      showToast("Link copied!", "Profile link copied to clipboard", "success")
-                    }}>
-                      <span className="mb-menu-ico">
-                        <svg viewBox="0 0 24 24">
-                          <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z" />
-                        </svg>
-                      </span>
-                      Share profile
-                    </div>
-                    <div className="mb-menu-item">
-                      <span className="mb-menu-ico">
-                        <svg viewBox="0 0 24 24">
-                          <path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
-                        </svg>
-                      </span>
-                      Invite people to connect
-                    </div>
-                  </div>
+              <button className="mb-back-btn" onClick={goBack}>
+                <svg viewBox="0 0 24 24">
+                  <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" />
+                </svg>
+                Back
+              </button>
+              <h1 className="mb-page-title">Edit Profile</h1>
+              <div className="cp-card">
+                <div className="auth-field">
+                  <label>Full Name</label>
+                  <input type="text" value={editName} onChange={(e) => setEditName(e.target.value)} />
+                </div>
+                <div className="auth-field">
+                  <label>Bio</label>
+                  <input
+                    type="text"
+                    placeholder="Movie lover..."
+                    value={editBio}
+                    onChange={(e) => setEditBio(e.target.value)}
+                  />
+                </div>
+                <div className="auth-field">
+                  <label>Location</label>
+                  <input
+                    type="text"
+                    placeholder="Chaumuhani, Chittagong, Bangladesh"
+                    value={editLoc}
+                    onChange={(e) => setEditLoc(e.target.value)}
+                  />
+                </div>
+                <div className="auth-field">
+                  <label>Birthday</label>
+                  <input
+                    type="text"
+                    placeholder="5 December 2004"
+                    value={editBirthday}
+                    onChange={(e) => setEditBirthday(e.target.value)}
+                  />
+                </div>
+                <div className="auth-field">
+                  <label>Instagram / Handle</label>
+                  <input
+                    type="text"
+                    placeholder="mvbdstudio"
+                    value={editHandle}
+                    onChange={(e) => setEditHandle(e.target.value)}
+                  />
+                </div>
+                <div className="auth-field">
+                  <label>Phone</label>
+                  <input
+                    type="text"
+                    placeholder="+880 ..."
+                    value={editPhone}
+                    onChange={(e) => setEditPhone(e.target.value)}
+                  />
+                </div>
+                <div className="cp-actions">
+                  <button className="mb-btn mb-btn-secondary" onClick={goBack}>Cancel</button>
+                  <button className="mb-btn mb-btn-primary" onClick={handleSaveProfile} disabled={editBusy}>
+                    {editBusy ? "Saving..." : "Save"}
+                  </button>
                 </div>
               </div>
             </div>
           )}
-
-          {currentView === "profile-settings-other" && viewingUser && (
-            <div className="mb-view active">
-              <div className="fl-head">
-                <button className="fl-head-back" onClick={goBack}>
-                  <svg viewBox="0 0 24 24">
-                    <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" />
-                  </svg>
-                </button>
-                <div className="fl-head-title">{viewingUser.name}</div>
-              </div>
-
-              <div className="fr-page" style={{ marginTop: 0, boxShadow: "none", background: "transparent" }}>
-                <div className="fr-body" style={{ padding: 0 }}>
-                  <div className="mb-card" style={{ marginBottom: 16 }}>
-                    <div className="mb-menu-item" onClick={() => {
-                      showToast("Reported", "Report submitted successfully", "success")
-                      goBack()
-                    }}>
-                      <span className="mb-menu-ico">
-                        <svg viewBox="0 0 24 24">
-                          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" />
-                        </svg>
-                      </span>
-                      Report profile
-                    </div>
-                    <div className="mb-menu-item" onClick={() => {
-                      startChat(viewingUser.uid, viewingUser.name, avatarUrl(viewingUser))
-                      goBack()
-                    }}>
-                      <span className="mb-menu-ico">
-                        <svg viewBox="0 0 24 24">
-                          <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
-                        </svg>
-                      </span>
-                      Help {viewingUser.name?.split(" ")[0]}
-                    </div>
-                    <div className="mb-menu-item danger" onClick={() => {
-                      handleBlockUser(viewingUser.uid)
-                      goBack()
-                    }}>
-                      <span className="mb-menu-ico red">
-                        <svg viewBox="0 0 24 24">
-                          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8 0-1.85.63-3.55 1.69-4.9L16.9 18.31C15.55 19.37 13.85 20 12 20zm6.31-3.1L7.1 5.69C8.45 4.63 10.15 4 12 4c4.42 0 8 3.58 8 8 0 1.85-.63 3.55-1.69 4.9z" />
-                        </svg>
-                      </span>
-                      Block
-                    </div>
-                    <div className="mb-menu-item">
-                      <span className="mb-menu-ico">
-                        <svg viewBox="0 0 24 24">
-                          <path d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
-                        </svg>
-                      </span>
-                      Search
-                    </div>
-                    <div className="mb-menu-item" onClick={() => {
-                      const url = `https://www.facebook.com/profile.php?id=${viewingUser.uid}`
-                      navigator.clipboard.writeText(url)
-                      showToast("Link copied!", "Profile link copied to clipboard", "success")
-                    }}>
-                      <span className="mb-menu-ico">
-                        <svg viewBox="0 0 24 24">
-                          <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z" />
-                        </svg>
-                      </span>
-                      Share profile
-                    </div>
-                  </div>
-
-                  <div className="mb-card" style={{ marginBottom: 16, padding: 16 }}>
-                    <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 10, color: "var(--text)" }}>
-                      {viewingUser.name}'s profile link
-                    </div>
-                    <div style={{ fontSize: 13, color: "var(--text-muted)", marginBottom: 10 }}>
-                      {viewingUser.name}'s personalised link on Facebook.
-                    </div>
-                    <div style={{
-                      background: "var(--input-bg)",
-                      padding: "10px 12px",
-                      borderRadius: 8,
-                      fontSize: 13,
-                      color: "var(--text)",
-                      wordBreak: "break-all",
-                      marginBottom: 12
-                    }}>
-                      https://www.facebook.com/profile.php?id={viewingUser.uid}
-                    </div>
-                    <button
-                      className="mb-btn mb-btn-secondary"
-                      style={{ width: "100%", padding: "10px" }}
-                      onClick={() => {
-                        const url = `https://www.facebook.com/profile.php?id=${viewingUser.uid}`
-                        navigator.clipboard.writeText(url)
-                        showToast("Link copied!", "Profile link copied to clipboard", "success")
-                      }}
-                    >
-                      Copy link
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* ... rest of the views ... */}
 
           {currentView === "settings" && (
             <div className="mb-view active">

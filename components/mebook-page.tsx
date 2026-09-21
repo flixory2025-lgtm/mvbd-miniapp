@@ -294,8 +294,18 @@ radial-gradient(circle at 25% 85%,rgba(168,85,247,.18) 0%,transparent 45%),
 radial-gradient(circle at 75% 75%,rgba(16,185,129,.22) 0%,transparent 45%);
 animation:authGlow 16s ease-in-out infinite;z-index:0;filter:blur(60px);
 }
-@keyframes authGlow{0%,100%{transform:translate(0,0) scale(1) rotate(0deg);}33%{transform:translate(-4%,4%) scale(1.12) rotate(120deg);}66%{transform:translate(4%,-4%) scale(.95) rotate(240deg);}}
-.mebook-root .auth-card{
+  @keyframes authGlow{0%,100%{transform:translate(0,0) scale(1) rotate(0deg);}33%{transform:translate(-4%,4%) scale(1.12) rotate(120deg);}66%{transform:translate(4%,-4%) scale(.95) rotate(240deg);}}
+  .mebook-root .mebook-auth-loading{position:fixed;inset:0;z-index:5000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;overflow:hidden;background:radial-gradient(circle at 50% 38%,rgba(34,197,94,.16),transparent 28%),linear-gradient(145deg,#020617,#050b12 55%,#052e16);color:#f8fafc;}
+  .mebook-root .mebook-auth-loading::before{content:'';position:absolute;width:520px;height:520px;border:1px solid rgba(74,222,128,.13);border-radius:50%;box-shadow:0 0 0 42px rgba(74,222,128,.025),0 0 0 84px rgba(74,222,128,.018);animation:loadingPulse 3.2s ease-in-out infinite;}
+  @keyframes loadingPulse{0%,100%{transform:scale(.86);opacity:.45;}50%{transform:scale(1.08);opacity:1;}}
+  .mebook-root .mebook-loading-orbit{position:relative;z-index:1;display:grid;place-items:center;width:88px;height:88px;border:1px solid rgba(134,239,172,.55);border-radius:28px;background:rgba(15,23,42,.82);box-shadow:0 0 38px rgba(34,197,94,.25),inset 0 1px rgba(255,255,255,.16);animation:logoFloat 2.8s ease-in-out infinite;}
+  .mebook-root .mebook-loading-orbit::after{content:'';position:absolute;inset:-9px;border:2px solid transparent;border-top-color:#4ade80;border-right-color:rgba(74,222,128,.25);border-radius:32px;animation:loaderSpin 1.3s linear infinite;}
+  .mebook-root .mebook-loading-orbit img{width:58px;height:58px;object-fit:contain;filter:drop-shadow(0 5px 14px rgba(34,197,94,.45));}
+  @keyframes loaderSpin{to{transform:rotate(360deg);}} @keyframes logoFloat{50%{transform:translateY(-5px);}}
+  .mebook-root .mebook-loading-name{position:relative;z-index:1;font-size:34px;font-weight:800;letter-spacing:-1.3px;}.mebook-root .mebook-loading-name span{background:linear-gradient(135deg,#4ade80,#bbf7d0);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;}
+  .mebook-root .mebook-loading-spinner{position:relative;z-index:1;display:flex;gap:6px;height:10px;align-items:center;}.mebook-root .mebook-loading-spinner i{width:6px;height:6px;border-radius:50%;background:#4ade80;animation:loadingDots 1.1s ease-in-out infinite;}.mebook-root .mebook-loading-spinner i:nth-child(2){animation-delay:.15s;}.mebook-root .mebook-loading-spinner i:nth-child(3){animation-delay:.3s;} @keyframes loadingDots{0%,80%,100%{transform:scale(.65);opacity:.35;}40%{transform:scale(1.2);opacity:1;}}
+  .mebook-root .mebook-auth-loading p,.mebook-root .mebook-auth-loading small{position:relative;z-index:1;margin:0;color:#94a3b8;}.mebook-root .mebook-auth-loading p{font-size:14px;letter-spacing:.2px;}.mebook-root .mebook-auth-loading small{margin-top:22px;color:#64748b;font-size:11px;letter-spacing:2px;text-transform:uppercase;}
+  .mebook-root .auth-card{
 position:relative;z-index:2;width:100%;max-width:440px;
 padding:36px 32px 32px;border-radius:24px;
 background:rgba(17,24,39,.72);
@@ -1769,6 +1779,7 @@ export default function MeBookPage() {
   const [authMode, setAuthMode] = useState<"signin" | "signup">("signin")
   const [authErr, setAuthErr] = useState<{ si: string; su: string }>({ si: "", su: "" })
   const [authBusy, setAuthBusy] = useState(false)
+  const [authResolved, setAuthResolved] = useState(false)
   const [user, setUser] = useState<any>(null)
   const [profile, setProfile] = useState<any>(null)
 
@@ -2196,6 +2207,7 @@ export default function MeBookPage() {
             setProfile(p)
             setPrivacy(p.privacy || { info: true, posts: true, requests: true })
             setAuthBusy(false)
+            setAuthResolved(true)
 
             const profileUnsub = fb.onSnapshot(userRef, (s: any) => {
               if (s.exists()) setProfile(s.data())
@@ -2208,6 +2220,7 @@ export default function MeBookPage() {
             setProfile(null)
             cleanupListeners()
             setAuthBusy(false)
+            setAuthResolved(true)
             setPageStack([{ view: "home" }])
           }
         })
@@ -3236,6 +3249,19 @@ export default function MeBookPage() {
   /* ============================================================
   AUTH SCREEN
   ============================================================ */
+  if (!authResolved) {
+    return (
+      <div className="mebook-root dark-mode" ref={rootRef}>
+        <div className="mebook-auth-loading" role="status" aria-live="polite">
+          <div className="mebook-loading-orbit"><img src={HEADER_LOGO} alt="" /></div>
+          <div className="mebook-loading-name"><span>Me</span>Book</div>
+          <div className="mebook-loading-spinner" aria-hidden="true"><i /><i /><i /></div>
+          <p>Preparing your MeBook</p>
+          <small>from MVBD</small>
+        </div>
+      </div>
+    )
+  }
   if (!user) {
     return (
       <div className="mebook-root dark-mode" ref={rootRef}>

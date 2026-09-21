@@ -63,11 +63,9 @@ export default function Header({ onSearch, pageType = "home", searchData }: Head
   const [displayedPlaceholder, setDisplayedPlaceholder] = useState("")
   const [currentSuggestionIndex, setCurrentSuggestionIndex] = useState(0)
   const [isTyping, setIsTyping] = useState(true)
-  const [isHeaderHidden, setIsHeaderHidden] = useState(false)
   const placeholderIndexRef = useRef(0)
   const placeholderTimeoutRef = useRef<NodeJS.Timeout>()
   const bubbleIdRef = useRef(0)
-  const lastScrollYRef = useRef(0)
 
   // Select typing suggestions based on page type
   const TYPING_SUGGESTIONS =
@@ -92,25 +90,6 @@ export default function Header({ onSearch, pageType = "home", searchData }: Head
   }, [searchInput, dataSource])
 
   const searchSuggestions = allSearchSuggestions.slice(0, 5)
-
-  useEffect(() => {
-    const handleScroll = () => {
-      const currentScrollY = window.scrollY
-      const scrollDelta = currentScrollY - lastScrollYRef.current
-
-      if (currentScrollY <= 8) {
-        setIsHeaderHidden(false)
-      } else if (Math.abs(scrollDelta) >= 4) {
-        setIsHeaderHidden(scrollDelta > 0)
-      }
-
-      lastScrollYRef.current = currentScrollY
-    }
-
-    lastScrollYRef.current = window.scrollY
-    window.addEventListener("scroll", handleScroll, { passive: true })
-    return () => window.removeEventListener("scroll", handleScroll)
-  }, [])
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
@@ -180,11 +159,7 @@ export default function Header({ onSearch, pageType = "home", searchData }: Head
   }
 
   return (
-    <header
-      className={`sticky top-0 z-40 bg-black/40 backdrop-blur-xl border-b border-white/10 shadow-lg transition-transform duration-300 ease-out motion-reduce:transition-none ${
-        isHeaderHidden ? "-translate-y-full" : "translate-y-0"
-      }`}
-    >
+    <header className="relative z-40 bg-black/40 backdrop-blur-xl border-b border-white/10 shadow-lg">
       <style>{`
         @keyframes liquidGlassZoom {
           0% {

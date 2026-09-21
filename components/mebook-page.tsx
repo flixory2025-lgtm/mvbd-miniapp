@@ -682,7 +682,6 @@ overflow:hidden;
 position:relative;
 }
 
-/* Cover photo — full width, sharp, no border */
 .mebook-root .mb-profile-cover{
 position:relative;
 width:100%;
@@ -721,7 +720,6 @@ opacity:0;transition:opacity .25s;
 .mebook-root .mb-profile-cover:hover .mb-profile-cover-add{opacity:1;}
 .mebook-root .mb-profile-cover-add svg{width:22px;height:22px;fill:#fff;}
 
-/* Avatar centered overlapping the cover bottom (Facebook style) */
 .mebook-root .mb-profile-avatar-center{
 position:relative;
 display:flex;
@@ -754,7 +752,6 @@ opacity:0;transition:opacity .25s;
 .mebook-root .mb-profile-avatar-wrap:hover .mb-profile-avatar-add{opacity:1;}
 .mebook-root .mb-profile-avatar-add svg{width:32px;height:32px;fill:#fff;}
 
-/* Name + subtitle centered */
 .mebook-root .mb-profile-name-center{
 text-align:center;
 padding:16px 20px 4px;
@@ -772,7 +769,6 @@ justify-content:center;
 }
 .mebook-root .mb-profile-name svg{flex-shrink:0;}
 
-/* Friends / mutual / posts subtitle */
 .mebook-root .mb-profile-sub{
 text-align:center;
 font-size:15px;
@@ -786,7 +782,6 @@ color:var(--text);
 font-weight:700;
 }
 
-/* Location + handle row */
 .mebook-root .mb-profile-meta-row{
 display:flex;
 justify-content:center;
@@ -804,7 +799,6 @@ display:inline-flex;align-items:center;gap:5px;
 width:16px;height:16px;fill:currentColor;flex-shrink:0;
 }
 
-/* Friends with avatars strip */
 .mebook-root .mb-profile-friends-strip{
 display:flex;
 justify-content:center;
@@ -836,7 +830,6 @@ line-height:1.4;
 color:var(--text);font-weight:700;
 }
 
-/* Action buttons row */
 .mebook-root .mb-profile-actions{
 display:flex;
 justify-content:center;
@@ -867,7 +860,6 @@ justify-content:center;
 background:var(--input-bg);
 }
 
-/* Things in common box */
 .mebook-root .mb-profile-things-common{
 margin:0 20px 16px;
 padding:14px 18px;
@@ -895,7 +887,6 @@ width:22px;height:22px;fill:var(--text);flex-shrink:0;
 font-size:14px;color:var(--text-muted);margin-left:32px;
 }
 
-/* Tabs row (All / Photos / Reels) */
 .mebook-root .mb-profile-tabs{
 display:flex;
 gap:6px;
@@ -916,7 +907,6 @@ color:var(--green);
 background:rgba(34,197,94,.10);
 }
 
-/* Personal details */
 .mebook-root .mb-profile-section{
 padding:16px 20px 8px;
 }
@@ -1392,60 +1382,99 @@ export default function MeBookPage() {
       )
 
       /* ============================================================
-         ✅ FIXED: myFriends listener
-         Now uses TWO queries (a==uid and b==uid) and MERGES results
-         so BOTH sides of a friendship see each other in real-time.
+         ✅ FIXED: myFriends live listener
+         Single array-contains query — symmetric for BOTH sides.
+         Also runs a one-time migration for legacy docs (a/b only)
+         so both requester & accepter see the friendship in real time.
          ============================================================ */
-      const friendDocToOtherId = (data: any, selfUid: string): string | null => {
-        // Prefer members array if present
-        if (Array.isArray(data?.members)) {
-          const other = data.members.find((m: string) => m !== selfUid)
-          if (other) return other
-        }
-        if (data?.a === selfUid) return data?.b || null
-        if (data?.b === selfUid) return data?.a || null
-        return null
-      }
 
-      const friendsMap = new Map<string, any>()
-
-      const applyFriendSnapshot = async (snap: any, selfUid: string) => {
-        for (const d of snap.docs) {
-          const data = d.data()
-          const otherId = friendDocToOtherId(data, selfUid)
-          if (!otherId) continue
-          const s = await fb.getDoc(fb.doc(fb.db, "users", otherId))
-          if (s.exists()) {
-            friendsMap.set(otherId, { uid: s.id, ...s.data() })
-          }
-        }
-        // Refresh from map (drops stale entries automatically? no — we keep them)
-        setMyFriends(Array.from(friendsMap.values()))
-      }
-
-      const myFriendsQ1 = fb.query(
-        fb.collection(fb.db, "friends"),
-        fb.where("a", "==", uid)
-      )
-      const myFriendsQ2 = fb.query(
-        fb.collection(fb.db, "friends"),
-        fb.where("b", "==", uid)
-      )
-      // Also support new schema with members array (future-proof)
-      const myFriendsQ3 = fb.query(
+      const myFriendsQ = fb.query(
         fb.collection(fb.db, "friends"),
         fb.where("members", "array-contains", uid)
       )
 
       unsubscribersRef.current.push(
-        fb.onSnapshot(myFriendsQ1, (s: any) => applyFriendSnapshot(s, uid))
+        fb.onSnapshot(myFriendsQ, async (snap: any) => {
+          const arr: any[] = []
+          const seen = new Set<string>()
+          for (const d of snap.docs) {
+            const data = d.data()
+            const otherId = (data.members || []).find((m: string) => m !== uid)
+            if (!otherId || seen.has(otherId)) continue
+            seen.add(otherId)
+            try {
+              const s = await fb.getDoc(fb.doc(fb.db, "users", otherId))
+              if (s.exists()) arr.push({ uid: s.id, ...s.data() })
+            } catch {}
+          }
+          setMyFriends(arr)
+        })
       )
-      unsubscribersRef.current.push(
-        fb.onSnapshot(myFriendsQ2, (s: any) => applyFriendSnapshot(s, uid))
-      )
-      unsubscribersRef.current.push(
-        fb.onSnapshot(myFriendsQ3, (s: any) => applyFriendSnapshot(s, uid))
-      )
+
+      /* ============================================================
+         Legacy fallback — runs once at login.
+         Finds friends docs without `members` field, migrates them,
+         and immediately pushes them into state so both sides see
+         the friendship without needing to re-accept.
+         ============================================================ */
+      ;(async () => {
+        try {
+          const [s1, s2] = await Promise.all([
+            fb.getDocs(
+              fb.query(fb.collection(fb.db, "friends"), fb.where("a", "==", uid))
+            ),
+            fb.getDocs(
+              fb.query(fb.collection(fb.db, "friends"), fb.where("b", "==", uid))
+            ),
+          ])
+
+          const legacyDocs: any[] = []
+          const legacyOtherIds = new Set<string>()
+
+          const collect = (snap: any, otherField: "b" | "a") => {
+            snap.forEach((d: any) => {
+              const data = d.data()
+              if (Array.isArray(data.members) && data.members.length > 0) return
+              const otherId = data[otherField]
+              if (!otherId) return
+              legacyDocs.push({ id: d.id, a: data.a, b: data.b })
+              legacyOtherIds.add(otherId)
+            })
+          }
+          collect(s1, "b")
+          collect(s2, "a")
+
+          // Auto-migrate legacy docs (adds `members` array)
+          await Promise.all(
+            legacyDocs.map((doc) =>
+              fb.updateDoc(fb.doc(fb.db, "friends", doc.id), {
+                members: [doc.a, doc.b].filter(Boolean),
+              })
+            )
+          )
+
+          // Immediately push legacy friends into state
+          if (legacyOtherIds.size > 0) {
+            const arr: any[] = []
+            for (const otherId of legacyOtherIds) {
+              try {
+                const s = await fb.getDoc(fb.doc(fb.db, "users", otherId))
+                if (s.exists()) arr.push({ uid: s.id, ...s.data() })
+              } catch {}
+            }
+            if (arr.length > 0) {
+              setMyFriends((prev) => {
+                const merged = new Map<string, any>()
+                prev.forEach((f) => merged.set(f.uid, f))
+                arr.forEach((f) => merged.set(f.uid, f))
+                return Array.from(merged.values())
+              })
+            }
+          }
+        } catch (e) {
+          console.warn("legacy friends migration skipped:", e)
+        }
+      })()
 
       const chatsQ = fb.query(fb.collection(fb.db, "chats"), fb.where("members", "array-contains", uid))
       unsubscribersRef.current.push(
@@ -1928,20 +1957,39 @@ export default function MeBookPage() {
 
   /* ============================================================
      ✅ FIXED: handleAcceptRequest
-     Now writes BOTH a, b AND members array so both sides' listeners
-     (Q1: a==uid, Q2: b==uid, Q3: members array-contains uid) will
-     detect the friendship in real-time for both users.
+     - Writes `members` array (sorted) so `array-contains` works
+       for BOTH the accepter AND the requester.
+     - Falls back to find the request by (from,to) if reqId is stale.
      ============================================================ */
   const handleAcceptRequest = async (reqId: string, fromUid: string) => {
+    if (!user?.uid || !fromUid) return
     try {
       const fb = await getFirebase()
       const friendDocId = [user.uid, fromUid].sort().join("_")
 
       // 1) Mark the friend request as accepted
-      await fb.updateDoc(fb.doc(fb.db, "friendRequests", reqId), { status: "accepted" })
+      try {
+        await fb.updateDoc(fb.doc(fb.db, "friendRequests", reqId), {
+          status: "accepted",
+        })
+      } catch (err) {
+        // If reqId is stale (from notification page), find & update it
+        const q = fb.query(
+          fb.collection(fb.db, "friendRequests"),
+          fb.where("from", "==", fromUid),
+          fb.where("to", "==", user.uid),
+          fb.where("status", "==", "pending")
+        )
+        const snap = await fb.getDocs(q)
+        for (const d of snap.docs) {
+          await fb.updateDoc(fb.doc(fb.db, "friendRequests", d.id), {
+            status: "accepted",
+          })
+        }
+      }
 
-      // 2) Create the friendship doc with BOTH a/b AND members so that
-      //    both the accepter and the requester see each other in real time.
+      // 2) Create friendship doc with `members` array (this is what makes
+      //    both sides see each other in real time via array-contains)
       await fb.setDoc(
         fb.doc(fb.db, "friends", friendDocId),
         {
@@ -1953,19 +2001,22 @@ export default function MeBookPage() {
         { merge: true }
       )
 
-      // 3) Notify the requester that their request was accepted
-      await fb.addDoc(fb.collection(fb.db, "notifications"), {
-        uid: fromUid,
-        title: "Friend Request Accepted",
-        message: `${profile.name} accepted your friend request.`,
-        type: "friend",
-        read: false,
-        createdAt: fb.serverTimestamp(),
-      })
+      // 3) Notify the requester
+      try {
+        await fb.addDoc(fb.collection(fb.db, "notifications"), {
+          uid: fromUid,
+          title: "Friend Request Accepted",
+          message: `${profile?.name || "Someone"} accepted your friend request.`,
+          type: "friend",
+          read: false,
+          createdAt: fb.serverTimestamp(),
+        })
+      } catch {}
 
       showToast("You are now friends!", "Start chatting with them", "success")
     } catch (e: any) {
-      showToast("Error", e.message, "error")
+      console.error("accept failed:", e)
+      showToast("Error", e.message || "Failed to accept request", "error")
     }
   }
 
@@ -2589,12 +2640,10 @@ export default function MeBookPage() {
     const friendsCount = isOwn ? myFriends.length : 0
     const mutualCount = isOwn ? myFriends.length : 0
 
-    // Friend avatars strip (show up to 6)
     const stripFriends = (isOwn ? myFriends : []).slice(0, 6)
 
     return (
       <div className="mb-profile-head">
-        {/* Cover photo */}
         <div
           className="mb-profile-cover"
           onClick={isOwn ? handleChangeCover : undefined}
@@ -2616,7 +2665,6 @@ export default function MeBookPage() {
           )}
         </div>
 
-        {/* Avatar overlapping cover */}
         <div className="mb-profile-avatar-center">
           <div
             className="mb-profile-avatar-wrap"
@@ -2633,7 +2681,6 @@ export default function MeBookPage() {
           </div>
         </div>
 
-        {/* Name */}
         <div className="mb-profile-name-center">
           <div className="mb-profile-name">
             {u.name}
@@ -2644,7 +2691,6 @@ export default function MeBookPage() {
             )}
           </div>
 
-          {/* Subtitle: friends · mutual · posts */}
           <div className="mb-profile-sub">
             <b>{friendsCount}</b> friends
             {mutualCount > 0 && <> · <b>{mutualCount}</b> mutual</>}
@@ -2652,7 +2698,6 @@ export default function MeBookPage() {
           </div>
         </div>
 
-        {/* Location + handle */}
         {(u.location || u.handle) && (
           <div className="mb-profile-meta-row">
             {u.location && (
@@ -2674,7 +2719,6 @@ export default function MeBookPage() {
           </div>
         )}
 
-        {/* Friends avatars strip */}
         {stripFriends.length > 0 && (
           <div className="mb-profile-friends-strip">
             <div className="mb-profile-friends-avatars">
@@ -2689,7 +2733,6 @@ export default function MeBookPage() {
           </div>
         )}
 
-        {/* Action buttons */}
         <div className="mb-profile-actions">
           {isOwn ? (
             <>
@@ -2757,7 +2800,6 @@ export default function MeBookPage() {
           )}
         </div>
 
-        {/* Things in common (only for other users) */}
         {!isOwn && (
           <div className="mb-profile-things-common">
             <div className="mb-profile-things-common-title">
@@ -2772,7 +2814,6 @@ export default function MeBookPage() {
           </div>
         )}
 
-        {/* Tabs */}
         <div className="mb-profile-tabs">
           <button
             className={`mb-profile-tab${profileTab === "all" ? " active" : ""}`}
@@ -2794,7 +2835,6 @@ export default function MeBookPage() {
           </button>
         </div>
 
-        {/* Personal details (only for own profile) */}
         {isOwn && (u.location || u.birthday || u.handle) && (
           <div className="mb-profile-section">
             <h3>Personal details</h3>
@@ -2852,7 +2892,6 @@ export default function MeBookPage() {
 
       <ToastStack toasts={toasts} onDone={removeToast} />
 
-      {/* ============ HEADER ============ */}
       <header className="mb-header">
         <div className="mb-header-left" onClick={() => goTo("home")}>
           <img className="mb-header-logo" src={HEADER_LOGO} alt="MeBook" />
@@ -2925,7 +2964,6 @@ export default function MeBookPage() {
         </div>
       </header>
 
-      {/* ============ 3-DOTS MENU ============ */}
       <div
         className={`mb-menu-backdrop${menuOpen ? " open" : ""}`}
         onClick={() => setMenuOpen(false)}
@@ -3045,7 +3083,6 @@ export default function MeBookPage() {
         </button>
       </div>
 
-      {/* ============ LAYOUT ============ */}
       <div className="mb-layout">
         <aside className="mb-sidebar">
           <SideItem id="home" label="Home" active={currentView === "home"} onClick={handleNavClick} />
@@ -3060,7 +3097,6 @@ export default function MeBookPage() {
         </aside>
 
         <main className="mb-main">
-          {/* HOME */}
           {currentView === "home" && (
             <div className="mb-view active">
               <div className="mb-composer">
@@ -3101,7 +3137,6 @@ export default function MeBookPage() {
             </div>
           )}
 
-          {/* NOTIFICATIONS */}
           {currentView === "notifications" && (
             <div className="mb-view active">
               <h1 className="mb-page-title">
@@ -3230,7 +3265,6 @@ export default function MeBookPage() {
             </div>
           )}
 
-          {/* FRIENDS */}
           {currentView === "friends" && (
             <div className="mb-view active">
               <h1 className="mb-page-title">
@@ -3434,7 +3468,6 @@ export default function MeBookPage() {
             </div>
           )}
 
-          {/* USER PROFILE (other user — Facebook style) */}
           {currentView === "user-profile" && viewingUser && (
             <div className="mb-view active">
               <button className="mb-back-btn" onClick={goBack}>
@@ -3461,7 +3494,6 @@ export default function MeBookPage() {
             </div>
           )}
 
-          {/* MESSAGES */}
           {currentView === "messages" && (
             <div className="mb-view active">
               <h1 className="mb-page-title" style={{ marginBottom: 12 }}>
@@ -3594,7 +3626,6 @@ export default function MeBookPage() {
             </div>
           )}
 
-          {/* CREATE POST */}
           {currentView === "create-post" && (
             <div className="mb-view active">
               <button className="mb-back-btn" onClick={goBack}>
@@ -3677,7 +3708,6 @@ export default function MeBookPage() {
             </div>
           )}
 
-          {/* COMMENTS */}
           {currentView === "comments" && (() => {
             const post = findPost(currentParams.postId)
             if (!post) {
@@ -3748,7 +3778,6 @@ export default function MeBookPage() {
             )
           })()}
 
-          {/* SHARE */}
           {currentView === "share" && (() => {
             const post = findPost(currentParams.postId)
             if (!post) {
@@ -3832,12 +3861,10 @@ export default function MeBookPage() {
             )
           })()}
 
-          {/* PROFILE (own — Facebook style) */}
           {currentView === "profile" && (
             <div className="mb-view active">
               {renderProfilePage(profile, myPosts, true)}
 
-              {/* Privacy settings card */}
               <div className="mb-card" style={{ marginBottom: 16 }}>
                 <div className="mb-card-title">Privacy</div>
                 <div className="mb-privacy-toggle">
@@ -3903,7 +3930,6 @@ export default function MeBookPage() {
             </div>
           )}
 
-          {/* EDIT PROFILE */}
           {currentView === "edit-profile" && (
             <div className="mb-view active">
               <button className="mb-back-btn" onClick={goBack}>
@@ -3973,7 +3999,6 @@ export default function MeBookPage() {
             </div>
           )}
 
-          {/* SETTINGS */}
           {currentView === "settings" && (
             <div className="mb-view active">
               <h1 className="mb-page-title">
@@ -4050,7 +4075,6 @@ export default function MeBookPage() {
             </div>
           )}
 
-          {/* MEBOOK */}
           {currentView === "mebook" && (
             <div className="mb-view active">
               <div className="mb-mebook-hero">
@@ -4128,7 +4152,6 @@ export default function MeBookPage() {
             </div>
           )}
 
-          {/* COMMUNITY */}
           {currentView === "community" && (
             <div className="mb-view active">
               <div className="mb-community-hero">

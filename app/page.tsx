@@ -90,6 +90,7 @@ export default function Home() {
     }
 
     window.addEventListener("mvbd:open-subscriptions", openSubscriptions)
+
     return () => {
       window.removeEventListener(
         "mvbd:open-subscriptions",
@@ -131,8 +132,11 @@ export default function Home() {
     const updateViewportWidth = () => {
       setViewportWidth(Math.max(1, window.innerWidth))
     }
+
     updateViewportWidth()
+
     window.addEventListener("resize", updateViewportWidth)
+
     return () => window.removeEventListener("resize", updateViewportWidth)
   }, [])
 
@@ -156,13 +160,20 @@ export default function Home() {
     const handlePopState = () => {
       setTabHistory((history) => {
         if (history.length <= 1) return history
+
         const newHistory = history.slice(0, -1)
         const previousTab = newHistory[newHistory.length - 1]
-        if (previousTab) setActiveTab(previousTab)
+
+        if (previousTab) {
+          setActiveTab(previousTab)
+        }
+
         return newHistory
       })
     }
+
     window.addEventListener("popstate", handlePopState)
+
     return () => window.removeEventListener("popstate", handlePopState)
   }, [])
 
@@ -174,6 +185,7 @@ export default function Home() {
     const timer = window.setTimeout(() => {
       setShowWelcomePopup(true)
     }, 450)
+
     return () => window.clearTimeout(timer)
   }, [])
 
@@ -202,7 +214,11 @@ export default function Home() {
   }, [searchQuery, selectedGenre])
 
   const itemsPerPage = 30
-  const totalPages = Math.ceil(filteredMovies.length / itemsPerPage)
+
+  const totalPages = Math.ceil(
+    filteredMovies.length / itemsPerPage
+  )
+
   const paginatedMovies = filteredMovies.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
@@ -232,10 +248,14 @@ export default function Home() {
      PAGE NAVIGATION
   ========================================================= */
 
-  const handleTabChange = (newTab: string, addHistory = true) => {
+  const handleTabChange = (
+    newTab: string,
+    addHistory = true
+  ) => {
     if (!tabs.includes(newTab as TabId)) return
 
     const targetTab = newTab as TabId
+
     if (targetTab === activeTab) return
 
     setSettleMode(null)
@@ -245,7 +265,11 @@ export default function Home() {
     setActiveTab(targetTab)
 
     if (addHistory) {
-      setTabHistory((previous) => [...previous, targetTab])
+      setTabHistory((previous) => [
+        ...previous,
+        targetTab,
+      ])
+
       window.history.pushState(null, "", "")
     }
 
@@ -258,17 +282,26 @@ export default function Home() {
      PROTECTED SWIPE AREAS
   ========================================================= */
 
-  const isProtectedSwipeTarget = (target: EventTarget | null) => {
+  const isProtectedSwipeTarget = (
+    target: EventTarget | null
+  ) => {
     if (!(target instanceof Element)) return false
-    return Boolean(target.closest("[data-no-page-swipe]"))
+
+    return Boolean(
+      target.closest("[data-no-page-swipe]")
+    )
   }
 
   /* =========================================================
      APPLY SWIPE POSITION
   ========================================================= */
 
-  const applySwipePosition = (x: number, width: number) => {
+  const applySwipePosition = (
+    x: number,
+    width: number
+  ) => {
     const safeWidth = Math.max(1, width)
+
     const current = currentPageRef.current
     const previous = previousPageRef.current
     const next = nextPageRef.current
@@ -277,48 +310,82 @@ export default function Home() {
 
     let finalX = x
 
-    if (activeIndex === 0 && finalX > 0) finalX *= 0.22
-    if (activeIndex === tabs.length - 1 && finalX < 0) finalX *= 0.22
+    if (activeIndex === 0 && finalX > 0) {
+      finalX *= 0.22
+    }
 
-    finalX = Math.max(-safeWidth, Math.min(safeWidth, finalX))
+    if (
+      activeIndex === tabs.length - 1 &&
+      finalX < 0
+    ) {
+      finalX *= 0.22
+    }
+
+    finalX = Math.max(
+      -safeWidth,
+      Math.min(safeWidth, finalX)
+    )
+
     dragXRef.current = finalX
 
-    current.style.transform = `translate3d(${finalX}px, 0, 0)`
+    current.style.transform =
+      `translate3d(${finalX}px, 0, 0)`
 
-    if (finalX < 0 && activeIndex < tabs.length - 1) {
+    if (
+      finalX < 0 &&
+      activeIndex < tabs.length - 1
+    ) {
       if (next) {
         next.style.visibility = "visible"
-        next.style.transform = `translate3d(${safeWidth + finalX}px, 0, 0)`
+        next.style.transform =
+          `translate3d(${safeWidth + finalX}px, 0, 0)`
       }
+
       if (previous) {
         previous.style.visibility = "hidden"
-        previous.style.transform = `translate3d(-${safeWidth}px, 0, 0)`
+        previous.style.transform =
+          `translate3d(-${safeWidth}px, 0, 0)`
       }
-    } else if (finalX > 0 && activeIndex > 0) {
+    } else if (
+      finalX > 0 &&
+      activeIndex > 0
+    ) {
       if (previous) {
         previous.style.visibility = "visible"
-        previous.style.transform = `translate3d(${-safeWidth + finalX}px, 0, 0)`
+        previous.style.transform =
+          `translate3d(${-safeWidth + finalX}px, 0, 0)`
       }
+
       if (next) {
         next.style.visibility = "hidden"
-        next.style.transform = `translate3d(${safeWidth}px, 0, 0)`
+        next.style.transform =
+          `translate3d(${safeWidth}px, 0, 0)`
       }
     } else {
       if (previous) {
         previous.style.visibility = "hidden"
-        previous.style.transform = `translate3d(-${safeWidth}px, 0, 0)`
+        previous.style.transform =
+          `translate3d(-${safeWidth}px, 0, 0)`
       }
+
       if (next) {
         next.style.visibility = "hidden"
-        next.style.transform = `translate3d(${safeWidth}px, 0, 0)`
+        next.style.transform =
+          `translate3d(${safeWidth}px, 0, 0)`
       }
     }
 
-    const position = activeIndex - finalX / safeWidth
+    const position =
+      activeIndex - finalX / safeWidth
+
     const clampedPosition = Math.max(
       0,
-      Math.min(tabs.length - 1, position)
+      Math.min(
+        tabs.length - 1,
+        position
+      )
     )
+
     setSwipePosition(clampedPosition)
   }
 
@@ -333,20 +400,26 @@ export default function Home() {
 
     if (current) {
       current.style.transition = "none"
-      current.style.transform = "translate3d(0, 0, 0)"
+      current.style.transform =
+        "translate3d(0, 0, 0)"
     }
+
     if (previous) {
       previous.style.transition = "none"
       previous.style.visibility = "hidden"
-      previous.style.transform = `translate3d(-${viewportWidth}px, 0, 0)`
+      previous.style.transform =
+        `translate3d(-${viewportWidth}px, 0, 0)`
     }
+
     if (next) {
       next.style.transition = "none"
       next.style.visibility = "hidden"
-      next.style.transform = `translate3d(${viewportWidth}px, 0, 0)`
+      next.style.transform =
+        `translate3d(${viewportWidth}px, 0, 0)`
     }
 
     dragXRef.current = 0
+
     setSwipePosition(activeIndex)
   }
 
@@ -365,24 +438,42 @@ export default function Home() {
     if (!current) return
 
     const width = Math.max(1, viewportWidth)
-    const currentDrag = Math.abs(dragXRef.current)
+
+    const currentDrag = Math.abs(
+      dragXRef.current
+    )
+
     const remaining = committed
       ? Math.max(0, width - currentDrag)
       : currentDrag
-    const progress = Math.min(1, remaining / width)
+
+    const progress = Math.min(
+      1,
+      remaining / width
+    )
+
     const duration = committed
       ? Math.round(150 + progress * 150)
       : Math.round(150 + progress * 100)
-    const easing = "cubic-bezier(0.22, 1, 0.36, 1)"
 
-    setSettleMode(committed ? "commit" : "cancel")
+    const easing =
+      "cubic-bezier(0.22, 1, 0.36, 1)"
 
-    current.style.transition = `transform ${duration}ms ${easing}`
+    setSettleMode(
+      committed ? "commit" : "cancel"
+    )
+
+    current.style.transition =
+      `transform ${duration}ms ${easing}`
+
     if (previous) {
-      previous.style.transition = `transform ${duration}ms ${easing}`
+      previous.style.transition =
+        `transform ${duration}ms ${easing}`
     }
+
     if (next) {
-      next.style.transition = `transform ${duration}ms ${easing}`
+      next.style.transition =
+        `transform ${duration}ms ${easing}`
     }
 
     if (
@@ -390,88 +481,158 @@ export default function Home() {
       direction === "next" &&
       activeIndex < tabs.length - 1
     ) {
-      current.style.transform = `translate3d(-${width}px, 0, 0)`
+      current.style.transform =
+        `translate3d(-${width}px, 0, 0)`
+
       if (next) {
         next.style.visibility = "visible"
-        next.style.transform = "translate3d(0, 0, 0)"
+        next.style.transform =
+          "translate3d(0, 0, 0)"
       }
-      if (previous) previous.style.visibility = "hidden"
+
+      if (previous) {
+        previous.style.visibility = "hidden"
+      }
+
       setSwipePosition(activeIndex + 1)
-      settleTargetRef.current = tabs[activeIndex + 1]
+
+      settleTargetRef.current =
+        tabs[activeIndex + 1]
     } else if (
       committed &&
       direction === "previous" &&
       activeIndex > 0
     ) {
-      current.style.transform = `translate3d(${width}px, 0, 0)`
+      current.style.transform =
+        `translate3d(${width}px, 0, 0)`
+
       if (previous) {
         previous.style.visibility = "visible"
-        previous.style.transform = "translate3d(0, 0, 0)"
+        previous.style.transform =
+          "translate3d(0, 0, 0)"
       }
-      if (next) next.style.visibility = "hidden"
-      setSwipePosition(activeIndex - 1)
-      settleTargetRef.current = tabs[activeIndex - 1]
-    } else {
-      current.style.transform = "translate3d(0, 0, 0)"
-      if (previous) {
-        previous.style.visibility = "hidden"
-        previous.style.transform = `translate3d(-${width}px, 0, 0)`
-      }
+
       if (next) {
         next.style.visibility = "hidden"
-        next.style.transform = `translate3d(${width}px, 0, 0)`
       }
+
+      setSwipePosition(activeIndex - 1)
+
+      settleTargetRef.current =
+        tabs[activeIndex - 1]
+    } else {
+      current.style.transform =
+        "translate3d(0, 0, 0)"
+
+      if (previous) {
+        previous.style.visibility = "hidden"
+        previous.style.transform =
+          `translate3d(-${width}px, 0, 0)`
+      }
+
+      if (next) {
+        next.style.visibility = "hidden"
+        next.style.transform =
+          `translate3d(${width}px, 0, 0)`
+      }
+
       setSwipePosition(activeIndex)
+
       settleTargetRef.current = null
     }
 
     if (finishTimerRef.current !== null) {
-      window.clearTimeout(finishTimerRef.current)
+      window.clearTimeout(
+        finishTimerRef.current
+      )
     }
 
-    finishTimerRef.current = window.setTimeout(() => {
-      const target = settleTargetRef.current
+    finishTimerRef.current =
+      window.setTimeout(() => {
+        const target =
+          settleTargetRef.current
 
-      if (committed && target) {
-        setActiveTab(target)
-        setSwipePosition(tabs.indexOf(target))
-        if (target !== "profile") setProfileSubPage("main")
+        if (committed && target) {
+          setActiveTab(target)
 
-        setTabHistory((previousHistory) => [...previousHistory, target])
-        window.history.pushState(null, "", "")
-      }
+          setSwipePosition(
+            tabs.indexOf(target)
+          )
 
-      settleTargetRef.current = null
-      setSettleMode(null)
-      setIsSwiping(false)
+          if (target !== "profile") {
+            setProfileSubPage("main")
+          }
 
-      window.requestAnimationFrame(() => {
+          setTabHistory(
+            (previousHistory) => [
+              ...previousHistory,
+              target,
+            ]
+          )
+
+          window.history.pushState(
+            null,
+            "",
+            ""
+          )
+        }
+
+        settleTargetRef.current = null
+        setSettleMode(null)
+        setIsSwiping(false)
+
         window.requestAnimationFrame(() => {
-          resetPageTransforms()
+          window.requestAnimationFrame(() => {
+            resetPageTransforms()
+          })
         })
-      })
-    }, duration + 20)
+      }, duration + 20)
   }
 
   /* =========================================================
      POINTER DOWN
   ========================================================= */
 
-  const handlePointerDown = (event: PointerEvent<HTMLDivElement>) => {
-    if (event.pointerType === "mouse" && event.button !== 0) return
+  const handlePointerDown = (
+    event: PointerEvent<HTMLDivElement>
+  ) => {
+    if (
+      event.pointerType === "mouse" &&
+      event.button !== 0
+    ) {
+      return
+    }
+
     if (showDetailPage) return
-    if (isProtectedSwipeTarget(event.target)) return
+
+    if (
+      isProtectedSwipeTarget(event.target)
+    ) {
+      return
+    }
+
     if (settleMode !== null) return
 
-    pointerIdRef.current = event.pointerId
-    startXRef.current = event.clientX
-    startYRef.current = event.clientY
-    lastXRef.current = event.clientX
-    lastTimeRef.current = performance.now()
+    pointerIdRef.current =
+      event.pointerId
+
+    startXRef.current =
+      event.clientX
+
+    startYRef.current =
+      event.clientY
+
+    lastXRef.current =
+      event.clientX
+
+    lastTimeRef.current =
+      performance.now()
+
     velocityXRef.current = 0
     dragXRef.current = 0
     horizontalLockRef.current = false
     activeSwipeDirectionRef.current = null
+
     setIsSwiping(false)
     setSwipePosition(activeIndex)
   }
@@ -480,17 +641,38 @@ export default function Home() {
      POINTER MOVE
   ========================================================= */
 
-  const handlePointerMove = (event: PointerEvent<HTMLDivElement>) => {
-    if (pointerIdRef.current !== event.pointerId) return
+  const handlePointerMove = (
+    event: PointerEvent<HTMLDivElement>
+  ) => {
+    if (
+      pointerIdRef.current !==
+      event.pointerId
+    ) {
+      return
+    }
+
     if (showDetailPage) return
 
-    const deltaX = event.clientX - startXRef.current
-    const deltaY = event.clientY - startYRef.current
+    const deltaX =
+      event.clientX -
+      startXRef.current
+
+    const deltaY =
+      event.clientY -
+      startYRef.current
 
     if (!horizontalLockRef.current) {
-      if (Math.abs(deltaX) < 7 && Math.abs(deltaY) < 7) return
+      if (
+        Math.abs(deltaX) < 7 &&
+        Math.abs(deltaY) < 7
+      ) {
+        return
+      }
 
-      if (Math.abs(deltaY) > Math.abs(deltaX) * 1.15) {
+      if (
+        Math.abs(deltaY) >
+        Math.abs(deltaX) * 1.15
+      ) {
         pointerIdRef.current = null
         return
       }
@@ -498,71 +680,144 @@ export default function Home() {
       horizontalLockRef.current = true
 
       try {
-        swipeShellRef.current?.setPointerCapture(event.pointerId)
+        swipeShellRef.current?.setPointerCapture(
+          event.pointerId
+        )
       } catch {}
 
       setIsSwiping(true)
     }
 
     const now = performance.now()
-    const dt = now - lastTimeRef.current
+
+    const dt =
+      now - lastTimeRef.current
+
     if (dt > 0) {
-      const instantVelocity = (event.clientX - lastXRef.current) / dt
+      const instantVelocity =
+        (event.clientX -
+          lastXRef.current) /
+        dt
+
       velocityXRef.current =
-        velocityXRef.current * 0.65 + instantVelocity * 0.35
+        velocityXRef.current * 0.65 +
+        instantVelocity * 0.35
     }
-    lastXRef.current = event.clientX
+
+    lastXRef.current =
+      event.clientX
+
     lastTimeRef.current = now
 
-    if (deltaX < 0) activeSwipeDirectionRef.current = "next"
-    else if (deltaX > 0) activeSwipeDirectionRef.current = "previous"
+    if (deltaX < 0) {
+      activeSwipeDirectionRef.current =
+        "next"
+    } else if (deltaX > 0) {
+      activeSwipeDirectionRef.current =
+        "previous"
+    }
 
-    applySwipePosition(deltaX, viewportWidth)
+    applySwipePosition(
+      deltaX,
+      viewportWidth
+    )
 
-    if (event.cancelable) event.preventDefault()
+    if (event.cancelable) {
+      event.preventDefault()
+    }
   }
 
   /* =========================================================
      POINTER UP
   ========================================================= */
 
-  const handlePointerUp = (event: PointerEvent<HTMLDivElement>) => {
-    if (pointerIdRef.current !== event.pointerId) return
+  const handlePointerUp = (
+    event: PointerEvent<HTMLDivElement>
+  ) => {
+    if (
+      pointerIdRef.current !==
+      event.pointerId
+    ) {
+      return
+    }
+
     pointerIdRef.current = null
 
     try {
-      swipeShellRef.current?.releasePointerCapture(event.pointerId)
+      swipeShellRef.current?.releasePointerCapture(
+        event.pointerId
+      )
     } catch {}
 
-    if (!horizontalLockRef.current) return
+    if (!horizontalLockRef.current) {
+      return
+    }
 
-    const distance = event.clientX - startXRef.current
-    const velocity = velocityXRef.current
-    const width = Math.max(1, viewportWidth)
-    const projected = distance + velocity * 140
-    const commitDistance = width * 0.18
+    const distance =
+      event.clientX -
+      startXRef.current
 
-    let direction: "previous" | "next" | null = null
+    const velocity =
+      velocityXRef.current
 
-    if (projected < -commitDistance && activeIndex < tabs.length - 1) {
+    const width =
+      Math.max(1, viewportWidth)
+
+    const projected =
+      distance + velocity * 140
+
+    const commitDistance =
+      width * 0.18
+
+    let direction:
+      | "previous"
+      | "next"
+      | null = null
+
+    if (
+      projected < -commitDistance &&
+      activeIndex < tabs.length - 1
+    ) {
       direction = "next"
     }
-    if (projected > commitDistance && activeIndex > 0) {
+
+    if (
+      projected > commitDistance &&
+      activeIndex > 0
+    ) {
       direction = "previous"
     }
 
-    if (!direction && Math.abs(velocity) > 0.65) {
-      if (velocity < 0 && activeIndex < tabs.length - 1) {
+    if (
+      !direction &&
+      Math.abs(velocity) > 0.65
+    ) {
+      if (
+        velocity < 0 &&
+        activeIndex < tabs.length - 1
+      ) {
         direction = "next"
-      } else if (velocity > 0 && activeIndex > 0) {
+      } else if (
+        velocity > 0 &&
+        activeIndex > 0
+      ) {
         direction = "previous"
       }
     }
 
     setIsSwiping(false)
 
-    if (direction) finishSwipe(true, direction)
-    else finishSwipe(false, activeSwipeDirectionRef.current)
+    if (direction) {
+      finishSwipe(
+        true,
+        direction
+      )
+    } else {
+      finishSwipe(
+        false,
+        activeSwipeDirectionRef.current
+      )
+    }
 
     horizontalLockRef.current = false
   }
@@ -571,20 +826,38 @@ export default function Home() {
      POINTER CANCEL
   ========================================================= */
 
-  const handlePointerCancel = (event?: PointerEvent<HTMLDivElement>) => {
-    if (event && pointerIdRef.current !== event.pointerId) return
+  const handlePointerCancel = (
+    event?: PointerEvent<HTMLDivElement>
+  ) => {
+    if (
+      event &&
+      pointerIdRef.current !==
+        event.pointerId
+    ) {
+      return
+    }
+
     pointerIdRef.current = null
-    if (!horizontalLockRef.current) return
+
+    if (!horizontalLockRef.current) {
+      return
+    }
 
     try {
       if (event) {
-        swipeShellRef.current?.releasePointerCapture(event.pointerId)
+        swipeShellRef.current?.releasePointerCapture(
+          event.pointerId
+        )
       }
     } catch {}
 
     horizontalLockRef.current = false
     setIsSwiping(false)
-    finishSwipe(false, activeSwipeDirectionRef.current)
+
+    finishSwipe(
+      false,
+      activeSwipeDirectionRef.current
+    )
   }
 
   /* =========================================================
@@ -593,12 +866,18 @@ export default function Home() {
 
   const renderHomePage = () => (
     <div className="bg-black">
-      <Header onSearch={handleSearch} pageType="home" searchData={movies} />
+      <Header
+        onSearch={handleSearch}
+        pageType="home"
+        searchData={movies}
+      />
 
-      {searchQuery.trim() && filteredMovies.length === 0 ? (
+      {searchQuery.trim() &&
+      filteredMovies.length === 0 ? (
         <div className="px-4 py-12 text-center">
           <p className="mb-6 text-lg text-slate-300">
-            আমরা দুঃখিত! এই নামের কোনো মুভি আমাদের কালেকশনে নেই
+            আমরা দুঃখিত! এই নামের কোনো মুভি আমাদের
+            কালেকশনে নেই
           </p>
 
           <div className="flex gap-4 justify-center flex-wrap">
@@ -627,7 +906,9 @@ export default function Home() {
             <div
               data-no-page-swipe
               className="w-full"
-              style={{ touchAction: "pan-x pan-y" }}
+              style={{
+                touchAction: "pan-x pan-y",
+              }}
             >
               <TrendingCarousel
                 onMovieClick={(movie) => {
@@ -643,7 +924,9 @@ export default function Home() {
               genres={genres}
               selectedGenre={selectedGenre}
               onGenreSelect={handleGenreSelect}
-              showAdultContent={showAdultContent}
+              showAdultContent={
+                showAdultContent
+              }
             />
           )}
 
@@ -652,8 +935,10 @@ export default function Home() {
               <h2 className="text-xl font-bold text-white mb-2">
                 সার্চ রেজাল্ট: "{searchQuery}"
               </h2>
+
               <p className="text-slate-400 text-sm mb-4">
-                {filteredMovies.length} টি মুভি পাওয়া গেছে
+                {filteredMovies.length} টি মুভি
+                পাওয়া গেছে
               </p>
             </div>
           )}
@@ -667,7 +952,9 @@ export default function Home() {
             currentPage={currentPage}
             totalPages={totalPages}
             onPageChange={setCurrentPage}
-            showAdultContent={showAdultContent}
+            showAdultContent={
+              showAdultContent
+            }
             isSearching={isSearching}
           />
         </>
@@ -708,7 +995,9 @@ export default function Home() {
 
   const renderMebookPage = () => (
     <div className="bg-black">
-      <MeBookPage />
+      <MeBookPage
+        onExit={() => handleTabChange("home")}
+      />
     </div>
   )
 
@@ -720,22 +1009,34 @@ export default function Home() {
     <div className="bg-black">
       {profileSubPage === "main" && (
         <ProfilePage
-          onNavigate={(page) => setProfileSubPage(page)}
+          onNavigate={(page) =>
+            setProfileSubPage(page)
+          }
         />
       )}
 
       {profileSubPage === "contact" && (
         <ContactUsPage
-          onBack={() => setProfileSubPage("main")}
+          onBack={() =>
+            setProfileSubPage("main")
+          }
         />
       )}
 
       {profileSubPage === "about" && (
-        <AboutUsPage onBack={() => setProfileSubPage("main")} />
+        <AboutUsPage
+          onBack={() =>
+            setProfileSubPage("main")
+          }
+        />
       )}
 
       {profileSubPage === "settings" && (
-        <SettingsPage onBack={() => setProfileSubPage("main")} />
+        <SettingsPage
+          onBack={() =>
+            setProfileSubPage("main")
+          }
+        />
       )}
 
       <Footer />
@@ -750,14 +1051,19 @@ export default function Home() {
     switch (tab) {
       case "home":
         return renderHomePage()
+
       case "shorts":
         return renderAnimePage()
+
       case "mebook":
         return renderMebookPage()
+
       case "exclusive":
         return renderSeriesPage()
+
       case "profile":
         return renderProfilePage()
+
       default:
         return renderHomePage()
     }
@@ -770,34 +1076,57 @@ export default function Home() {
   useEffect(() => {
     if (settleMode !== null) return
 
-    const current = currentPageRef.current
-    const previous = previousPageRef.current
-    const next = nextPageRef.current
+    const current =
+      currentPageRef.current
+
+    const previous =
+      previousPageRef.current
+
+    const next =
+      nextPageRef.current
 
     if (current) {
       current.style.transition = "none"
-      current.style.transform = "translate3d(0, 0, 0)"
+      current.style.transform =
+        "translate3d(0, 0, 0)"
     }
+
     if (previous) {
       previous.style.transition = "none"
-      previous.style.visibility = "hidden"
-      previous.style.transform = `translate3d(-${viewportWidth}px, 0, 0)`
+      previous.style.visibility =
+        "hidden"
+
+      previous.style.transform =
+        `translate3d(-${viewportWidth}px, 0, 0)`
     }
+
     if (next) {
       next.style.transition = "none"
-      next.style.visibility = "hidden"
-      next.style.transform = `translate3d(${viewportWidth}px, 0, 0)`
+      next.style.visibility =
+        "hidden"
+
+      next.style.transform =
+        `translate3d(${viewportWidth}px, 0, 0)`
     }
 
     dragXRef.current = 0
+
     setSwipePosition(activeIndex)
-  }, [activeTab, activeIndex, viewportWidth, settleMode])
+  }, [
+    activeTab,
+    activeIndex,
+    viewportWidth,
+    settleMode,
+  ])
 
   /* =========================================================
      DETAIL PAGE
   ========================================================= */
 
-  if (showAnimeDetailPage && selectedAnime) {
+  if (
+    showAnimeDetailPage &&
+    selectedAnime
+  ) {
     return (
       <MovieDetailPage
         movie={selectedAnime as any}
@@ -806,7 +1135,9 @@ export default function Home() {
           setSelectedAnime(null)
         }}
         onMovieClick={(anime) => {
-          setSelectedAnime(anime as Anime)
+          setSelectedAnime(
+            anime as Anime
+          )
         }}
         relatedItems={animes as any}
         mediaType="anime"
@@ -814,7 +1145,10 @@ export default function Home() {
     )
   }
 
-  if (showDetailPage && selectedMovie) {
+  if (
+    showDetailPage &&
+    selectedMovie
+  ) {
     return (
       <MovieDetailPage
         movie={selectedMovie}
@@ -822,8 +1156,12 @@ export default function Home() {
           setShowDetailPage(false)
           setSelectedMovie(null)
         }}
-        onMovieClick={(movie) => setSelectedMovie(movie)}
-        showAdultContent={showAdultContent}
+        onMovieClick={(movie) =>
+          setSelectedMovie(movie)
+        }
+        showAdultContent={
+          showAdultContent
+        }
       />
     )
   }
@@ -833,9 +1171,14 @@ export default function Home() {
   ========================================================= */
 
   const previousTab =
-    activeIndex > 0 ? tabs[activeIndex - 1] : null
+    activeIndex > 0
+      ? tabs[activeIndex - 1]
+      : null
+
   const nextTab =
-    activeIndex < tabs.length - 1 ? tabs[activeIndex + 1] : null
+    activeIndex < tabs.length - 1
+      ? tabs[activeIndex + 1]
+      : null
 
   /* =========================================================
      MAIN RENDER
@@ -844,7 +1187,12 @@ export default function Home() {
   return (
     <div className="w-full bg-black">
       <div
+        ref={swipeShellRef}
         className="relative w-full"
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        onPointerCancel={handlePointerCancel}
         style={{
           touchAction: "pan-y pinch-zoom",
           overflowX: "clip",
@@ -856,40 +1204,59 @@ export default function Home() {
           ref={currentPageRef}
           className="relative w-full"
           style={{
-            transform: "translate3d(0, 0, 0)",
+            transform:
+              "translate3d(0, 0, 0)",
             transition: "none",
             willChange: "transform",
-            backfaceVisibility: "hidden",
-            WebkitBackfaceVisibility: "hidden",
+            backfaceVisibility:
+              "hidden",
+            WebkitBackfaceVisibility:
+              "hidden",
             zIndex: 2,
           }}
         >
           {renderPage(activeTab)}
         </div>
 
-        {/* BOTTOM NAVIGATION */}
-        <div
-          data-page-swipe-nav
-          className="relative z-[50]"
-          style={{
-            touchAction: "pan-y",
-            WebkitUserSelect: "none",
-            userSelect: "none",
-          }}
-        >
-          <BottomNavigation
-            activeTab={activeTab}
-            onTabChange={handleTabChange}
-            swipePosition={swipePosition}
-            isSwiping={isSwiping}
-          />
-        </div>
+        {/* =====================================================
+            BOTTOM NAVIGATION
+
+            MeBook page-এর সময় BottomNavigation hide থাকবে।
+            MeBook থেকে Exit করলে activeTab = home হবে,
+            তখন আবার BottomNavigation দেখা যাবে।
+        ===================================================== */}
+
+        {activeTab !== "mebook" && (
+          <div
+            data-page-swipe-nav
+            className="relative z-[50]"
+            style={{
+              touchAction: "pan-y",
+              WebkitUserSelect: "none",
+              userSelect: "none",
+            }}
+          >
+            <BottomNavigation
+              activeTab={activeTab}
+              onTabChange={handleTabChange}
+              swipePosition={swipePosition}
+              isSwiping={isSwiping}
+            />
+          </div>
+        )}
       </div>
 
       {/* WELCOME POPUP */}
-      {showWelcomePopup && <WelcomePopup onClose={handleClosePopup} />}
+      {showWelcomePopup && (
+        <WelcomePopup
+          onClose={handleClosePopup}
+        />
+      )}
 
-      {activeTab === "home" && <MvbdAiAssistant />}
+      {/* MVBD AI ASSISTANT */}
+      {activeTab === "home" && (
+        <MvbdAiAssistant />
+      )}
     </div>
   )
 }

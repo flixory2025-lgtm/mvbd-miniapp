@@ -156,6 +156,12 @@ STYLES
 ============================================================ */
 
 const MEBOOK_CSS = `
+html, body {
+  overflow-x: hidden;
+  margin: 0;
+  padding: 0;
+}
+
 .mebook-root{
 --green:#16a34a; --green-dark:#15803d; --green-light:#22c55e;
 --bg:#f0f2f5; --card:#ffffff; --text:#1c1e21; --text-muted:#65676b;
@@ -305,7 +311,7 @@ animation:cardFloat .7s cubic-bezier(.2,.8,.3,1);color:#f3f4f6;
 .mebook-root .auth-err.show{display:block;}
 @keyframes shake{0%,100%{transform:translateX(0);}25%{transform:translateX(-4px);}75%{transform:translateX(4px);}}
 
-/* ============ HEADER ============ */
+/* ============ HEADER — GLUED TO SCROLL ============ */
 .mebook-root .mb-header{
 position:fixed;top:0;left:0;right:0;height:60px;z-index:1000;
 background:var(--header-bg);
@@ -313,7 +319,7 @@ display:flex;align-items:center;justify-content:space-between;
 padding:0 16px;
 box-shadow:0 2px 12px rgba(0,0,0,.25);
 transform:translateY(0);
-transition:transform .3s cubic-bezier(.4,0,.2,1);
+transition:transform .2s ease-out;
 will-change:transform;
 backface-visibility:hidden;
 -webkit-backface-visibility:hidden;
@@ -1184,11 +1190,36 @@ export default function MeBookPage() {
   const [menuOpen, setMenuOpen] = useState(false)
 
   /* ============================================================
-     ✅ FIXED: Header scroll hide/show state
+     ✅ SIMPLE GLUED SCROLL HEADER
+     - Scroll down past 60px → header slides UP (hidden)
+     - Scroll back to top → header slides DOWN (visible)
+     - No complex diff tracking — just checks scroll position
+     - Works on ALL pages
      ============================================================ */
   const [headerHidden, setHeaderHidden] = useState(false)
-  const lastScrollYRef = useRef(0)
-  const tickingRef = useRef(false)
+  const headerTickingRef = useRef(false)
+
+  useEffect(() => {
+    const onScroll = () => {
+      if (headerTickingRef.current) return
+      headerTickingRef.current = true
+
+      window.requestAnimationFrame(() => {
+        const y = window.scrollY
+
+        if (y > 60) {
+          setHeaderHidden(true)
+        } else {
+          setHeaderHidden(false)
+        }
+
+        headerTickingRef.current = false
+      })
+    }
+
+    window.addEventListener("scroll", onScroll, { passive: true })
+    return () => window.removeEventListener("scroll", onScroll)
+  }, [])
 
   const [toasts, setToasts] = useState<ToastItem[]>([])
   const toastIdRef = useRef(0)
@@ -1279,61 +1310,6 @@ export default function MeBookPage() {
     const saved = localStorage.getItem("mebook-theme")
     const isDark = saved ? saved === "dark" : false
     setTheme(isDark ? "dark" : "light")
-  }, [])
-
-  /* ============================================================
-     ✅ FIXED: Header scroll hide/show effect
-     
-     How it works (Facebook / Chrome style):
-     - Scroll DOWN  → header smoothly slides UP (hidden)
-     - Scroll UP    → header smoothly slides DOWN (visible) — instantly
-     - Near the top (y ≤ 70) → header ALWAYS visible
-     - Micro-jitter (tiny 1-2px movements) is ignored
-     - Works on ALL pages (header is globally mounted)
-     - Uses requestAnimationFrame for buttery-smooth 60fps
-     ============================================================ */
-  useEffect(() => {
-    lastScrollYRef.current = window.scrollY
-
-    const onScroll = () => {
-      if (tickingRef.current) return
-      tickingRef.current = true
-
-      window.requestAnimationFrame(() => {
-        const y = window.scrollY
-        const last = lastScrollYRef.current
-        const diff = y - last
-
-        // ✅ ALWAYS update last scroll position (this was the bug before)
-        lastScrollYRef.current = y
-
-        // Near the very top → always show header
-        if (y <= 70) {
-          setHeaderHidden(false)
-          tickingRef.current = false
-          return
-        }
-
-        // Ignore micro-jitter (tiny scroll movements)
-        if (Math.abs(diff) < 2) {
-          tickingRef.current = false
-          return
-        }
-
-        if (diff > 0) {
-          // Scrolling DOWN → hide header
-          setHeaderHidden(true)
-        } else {
-          // Scrolling UP → show header (instantly)
-          setHeaderHidden(false)
-        }
-
-        tickingRef.current = false
-      })
-    }
-
-    window.addEventListener("scroll", onScroll, { passive: true })
-    return () => window.removeEventListener("scroll", onScroll)
   }, [])
 
   const toggleTheme = (isDark: boolean) => {
@@ -1756,22 +1732,22 @@ export default function MeBookPage() {
     setDrawerOpen(false)
     setMenuOpen(false)
     if (view !== "messages") setMobileChatWindow(false)
-    window.scrollTo({ top: 0, behavior: "auto" })
     setHeaderHidden(false)
+    window.scrollTo({ top: 0, behavior: "auto" })
   }
 
   const pushPage = (view: string, params: any = {}) => {
     setPageStack((s) => [...s, { view, params }])
     setDrawerOpen(false)
     setMenuOpen(false)
-    window.scrollTo({ top: 0, behavior: "auto" })
     setHeaderHidden(false)
+    window.scrollTo({ top: 0, behavior: "auto" })
   }
 
   const goBack = () => {
     setPageStack((s) => (s.length > 1 ? s.slice(0, -1) : [{ view: "home" }]))
-    window.scrollTo({ top: 0, behavior: "auto" })
     setHeaderHidden(false)
+    window.scrollTo({ top: 0, behavior: "auto" })
   }
 
   const handleNavClick = (view: string) => {
@@ -2939,7 +2915,7 @@ export default function MeBookPage() {
 
       <ToastStack toasts={toasts} onDone={removeToast} />
 
-      {/* ✅ Header — scroll down → slides up (hidden), scroll up → slides down (visible) */}
+      {/* ✅ Header — hides instantly when scrolled past 60px */}
       <header className={`mb-header${headerHidden ? " header-hidden" : ""}`}>
         <div className="mb-header-left" onClick={() => goTo("home")}>
           <img className="mb-header-logo" src={HEADER_LOGO} alt="MeBook" />

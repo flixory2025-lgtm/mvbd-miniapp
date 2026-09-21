@@ -544,7 +544,7 @@ scrollbar-width:none;
 .mebook-root .mb-action.liked svg{animation:likePop .4s ease;}
 @keyframes likePop{0%{transform:scale(1);}50%{transform:scale(1.35);}100%{transform:scale(1);}}
 
-/* Reaction picker for posts */
+/* Facebook-style reaction picker on posts */
 .mebook-root .post-reaction-picker{
 position:fixed;z-index:3000;
 background:var(--card);
@@ -570,9 +570,32 @@ display:flex;align-items:center;justify-content:center;
 font-size:26px;line-height:1;
 transition:transform .18s ease, background .15s;
 }
-.mebook-root .post-reaction-picker button:hover{
-transform:scale(1.35) translateY(-6px);
+.mebook-root .post-reaction-picker button:hover,
+.mebook-root .post-reaction-picker button.swipe-active{
+transform:scale(1.4) translateY(-8px);
 background:var(--hover);
+}
+
+/* Fast like animation */
+@keyframes fastLikeFly{
+0%{transform:scale(0.5);opacity:1;}
+50%{transform:scale(1.6);opacity:1;}
+100%{transform:scale(2.5) translateY(-30px);opacity:0;}
+}
+.mebook-root .fast-like-flyer{
+position:fixed;z-index:3500;font-size:28px;
+pointer-events:none;
+animation:fastLikeFly .6s cubic-bezier(.2,.8,.3,1) forwards;
+}
+
+/* Reaction picker swipe hint */
+@keyframes pickerPulse{
+0%{transform:scale(1);}
+50%{transform:scale(1.05);}
+100%{transform:scale(1);}
+}
+.mebook-root .post-reaction-picker.open{
+animation:pickerPulse .3s ease;
 }
 
 /* ============ BUTTONS ============ */
@@ -589,7 +612,7 @@ background:var(--hover);
 .mebook-root .mb-friend-btn-row .mb-btn{flex:1;}
 
 /* ============================================================
-   MESSENGER — MeChat
+   MESSENGER — MeChat (with Liquid Glass)
    ============================================================ */
 .mebook-root .msgr-wrap{
 border-radius:12px;box-shadow:var(--shadow);
@@ -630,7 +653,7 @@ scroll-behavior:smooth;-webkit-overflow-scrolling:touch;scrollbar-width:none;
 .mebook-root .msgr-item-time{font-size:11px;color:var(--text-muted);flex-shrink:0;}
 .mebook-root .msgr-window{flex:1;display:flex;flex-direction:column;min-width:0;}
 
-/* MeChat fullpage header (screenshot style) */
+/* MeChat fullpage header */
 .mebook-root .mechat-page{
 display:flex;flex-direction:column;
 height:calc(100vh - 60px);
@@ -698,15 +721,53 @@ position:relative;
 display:flex;flex-direction:column;gap:2px;
 }
 @keyframes bubbleIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
+
+/* MY BUBBLE - green liquid glass gradient */
 .mebook-root .mechat-bubble.me{
-background:linear-gradient(135deg,#0084ff,#4da3ff);color:#fff;
+background:linear-gradient(135deg,#16a34a 0%,#22c55e 40%,#4ade80 100%);
+color:#fff;
 border-bottom-right-radius:4px;
+backdrop-filter:blur(20px) saturate(180%);
+-webkit-backdrop-filter:blur(20px) saturate(180%);
+box-shadow:
+0 8px 32px rgba(22,163,74,.35),
+inset 0 1px 0 rgba(255,255,255,.25),
+inset 0 -1px 0 rgba(0,0,0,.1);
+border:1px solid rgba(255,255,255,.12);
+position:relative;
+overflow:hidden;
 }
+.mebook-root .mechat-bubble.me::before{
+content:'';
+position:absolute;
+top:-50%;left:-50%;
+width:200%;height:200%;
+background:
+radial-gradient(circle at 30% 30%,rgba(255,255,255,.15) 0%,transparent 50%),
+radial-gradient(circle at 70% 70%,rgba(134,239,172,.15) 0%,transparent 50%);
+pointer-events:none;
+animation:liquidShift 6s ease-in-out infinite;
+}
+@keyframes liquidShift{
+0%,100%{transform:translate(0,0) rotate(0deg);}
+50%{transform:translate(-5%,-5%) rotate(180deg);}
+}
+
+/* THEM BUBBLE */
 .mebook-root .mechat-bubble.them{
 color:var(--text);border-bottom-left-radius:4px;
 box-shadow:0 1px 2px rgba(0,0,0,.08);
 background:var(--bubble-them-bg);
+backdrop-filter:blur(12px) saturate(160%);
+-webkit-backdrop-filter:blur(12px) saturate(160%);
+border:1px solid rgba(0,0,0,.04);
 }
+.mebook-root.dark-mode .mechat-bubble.them{
+background:rgba(20,20,20,.85);
+border:1px solid rgba(255,255,255,.06);
+backdrop-filter:blur(12px) saturate(160%);
+}
+
 .mebook-root .mechat-bubble-time{
 font-size:10.5px;opacity:.75;align-self:flex-end;margin-top:1px;
 font-weight:500;
@@ -720,6 +781,7 @@ padding:4px 8px;border-radius:6px;
 background:rgba(255,255,255,.15);
 margin-bottom:4px;font-size:12.5px;
 max-width:100%;overflow:hidden;
+backdrop-filter:blur(8px);
 }
 .mebook-root .mechat-bubble.them .mechat-reply-quote{
 border-left-color:#0084ff;
@@ -751,6 +813,7 @@ position:absolute;right:8px;bottom:6px;
 background:rgba(0,0,0,.55);color:#fff;
 font-size:10px;padding:1px 6px;border-radius:8px;
 font-weight:600;
+backdrop-filter:blur(4px);
 }
 
 /* Voice bubble */
@@ -763,6 +826,7 @@ width:32px;height:32px;border-radius:50%;
 background:rgba(255,255,255,.25);
 display:flex;align-items:center;justify-content:center;
 flex-shrink:0;transition:transform .12s;
+backdrop-filter:blur(6px);
 }
 .mebook-root .mechat-bubble.them .mechat-voice-play{background:rgba(0,132,255,.15);}
 .mebook-root .mechat-voice-play:active{transform:scale(.9);}
@@ -791,23 +855,10 @@ box-shadow:0 1px 4px rgba(0,0,0,.15);
 border:1px solid var(--border);
 pointer-events:none;
 z-index:3;
+animation:bubbleIn .2s ease;
 }
 .mebook-root .mechat-bubble-wrap.me .mechat-reaction-badge{right:6px;}
 .mebook-root .mechat-bubble-wrap.them .mechat-reaction-badge{left:6px;}
-
-/* Swipe-to-reply indicator */
-.mebook-root .mechat-reply-indicator-inline{
-position:absolute;left:-42px;top:50%;
-transform:translateY(-50%);
-width:32px;height:32px;border-radius:50%;
-background:rgba(0,132,255,.15);
-display:flex;align-items:center;justify-content:center;
-color:#0084ff;
-opacity:0;transition:opacity .15s;
-}
-.mebook-root .mechat-bubble-wrap.me .mechat-reply-indicator-inline{
-left:auto;right:-42px;
-}
 
 /* Empty state */
 .mebook-root .mechat-empty{
@@ -818,13 +869,15 @@ color:var(--text-muted);gap:10px;padding:24px;text-align:center;
 .mebook-root .mechat-empty svg{width:64px;height:64px;fill:var(--border);}
 .mebook-root .mechat-empty b{font-size:16px;}
 
-/* Reply banner above input */
+/* Reply banner above input - LIQUID GLASS */
 .mebook-root .mechat-reply-banner{
 display:flex;align-items:center;gap:10px;
 padding:8px 12px;
-background:var(--input-bg);
-border-top:1px solid var(--border);
-border-bottom:1px solid var(--border);
+background:rgba(0,132,255,.08);
+backdrop-filter:blur(20px) saturate(180%);
+-webkit-backdrop-filter:blur(20px) saturate(180%);
+border-top:1px solid rgba(255,255,255,.1);
+border-bottom:1px solid rgba(255,255,255,.1);
 flex-shrink:0;
 animation:slideDown .2s ease;
 }
@@ -855,6 +908,7 @@ padding:10px 14px;
 border-top:1px solid var(--border);
 background:var(--card);
 flex-shrink:0;
+backdrop-filter:blur(12px);
 }
 .mebook-root .mechat-recording-dot{
 width:10px;height:10px;border-radius:50%;
@@ -890,13 +944,22 @@ background:#0084ff;color:#fff;
 .mebook-root .mechat-recording-cancel:active,
 .mebook-root .mechat-recording-send:active{transform:scale(.9);}
 
-/* Input bar */
+/* Input bar - LIQUID GLASS */
 .mebook-root .mechat-input-bar{
 display:flex;gap:8px;align-items:flex-end;
 padding:10px 12px 12px;
-border-top:1px solid var(--border);
-flex-shrink:0;background:var(--card);
+border-top:1px solid rgba(255,255,255,.08);
+flex-shrink:0;
+background:rgba(255,255,255,.7);
+backdrop-filter:blur(24px) saturate(180%);
+-webkit-backdrop-filter:blur(24px) saturate(180%);
 transition:padding-bottom .2s;
+box-shadow:0 -4px 24px rgba(0,0,0,.04);
+}
+.mebook-root.dark-mode .mechat-input-bar{
+background:rgba(10,10,10,.75);
+border-top:1px solid rgba(255,255,255,.06);
+box-shadow:0 -4px 24px rgba(0,0,0,.5);
 }
 .mebook-root .mechat-input-bar.kb-up{
 padding-bottom:max(12px, env(safe-area-inset-bottom));
@@ -923,16 +986,33 @@ padding:10px 16px;font-size:15px;
 outline:none;color:var(--text);
 resize:none;max-height:120px;
 font-family:inherit;line-height:1.4;
-background:var(--input-bg);
+background:rgba(240,242,245,.9);
+backdrop-filter:blur(12px);
+-webkit-backdrop-filter:blur(12px);
 min-height:40px;
+border:1px solid rgba(255,255,255,.4);
+transition:border-color .2s, box-shadow .2s;
+}
+.mebook-root.dark-mode .mechat-input-field{
+background:rgba(20,20,20,.9);
+border:1px solid rgba(255,255,255,.06);
+}
+.mebook-root .mechat-input-field:focus{
+border-color:rgba(34,197,94,.4);
+box-shadow:0 0 0 3px rgba(34,197,94,.1);
 }
 .mebook-root .mechat-input-field::placeholder{color:var(--text-muted);}
 
+/* Send button - LIQUID GLASS */
 .mebook-root .mechat-send-btn{
 width:40px;height:40px;border-radius:50%;
-background:#0084ff;color:#fff;
+background:linear-gradient(135deg,#16a34a,#22c55e);
+color:#fff;
 display:flex;align-items:center;justify-content:center;
-flex-shrink:0;transition:transform .12s, background .15s;
+flex-shrink:0;
+transition:transform .12s, box-shadow .2s;
+box-shadow:0 4px 16px rgba(22,163,74,.35), inset 0 1px 0 rgba(255,255,255,.3);
+border:1px solid rgba(255,255,255,.15);
 }
 .mebook-root .mechat-send-btn:active{transform:scale(.9);}
 .mebook-root .mechat-send-btn svg{width:20px;height:20px;fill:#fff;}
@@ -946,14 +1026,12 @@ position:relative;
 .mebook-root .mechat-like-btn:active{transform:scale(.9);}
 .mebook-root .mechat-like-btn svg{
 width:26px;height:26px;fill:#0084ff;
+transition:fill .2s;
 }
 .mebook-root.dark-mode .mechat-like-btn svg{fill:#4ade80;}
 .mebook-root .mechat-like-btn.my-liked svg{
 fill:#f33e58;
 animation:likePop .4s ease;
-}
-.mebook-root .mechat-like-btn .emoji-icon{
-font-size:22px;line-height:1;
 }
 
 /* Chat reaction picker */
@@ -1050,6 +1128,48 @@ font-size:13px;border:1px solid var(--border);
 }
 .mebook-root .cmt-bubble .cmt-reaction-badge small{font-size:11px;color:var(--text-muted);font-weight:600;margin-left:2px;}
 
+/* Comment image */
+.mebook-root .cmt-bubble-image{
+margin-top:6px;border-radius:12px;overflow:hidden;
+max-width:240px;background:#000;
+border:1px solid var(--border);
+animation:imagePop .35s cubic-bezier(.2,.8,.3,1);
+}
+.mebook-root .cmt-bubble-image img{
+width:100%;max-height:280px;object-fit:cover;display:block;
+}
+@keyframes imagePop{from{opacity:0;transform:scale(.85);}to{opacity:1;transform:scale(1);}}
+
+/* Comment image preview (before send) */
+.mebook-root .cmt-image-preview{
+position:relative;padding:10px 14px 0;
+display:flex;align-items:flex-start;gap:10px;
+animation:slideDown .25s ease;
+}
+.mebook-root .cmt-image-preview-img-wrap{
+position:relative;border-radius:12px;overflow:hidden;
+max-width:140px;background:#000;flex-shrink:0;
+box-shadow:0 4px 16px rgba(0,0,0,.15);
+}
+.mebook-root .cmt-image-preview-img-wrap img{
+width:100%;max-height:140px;object-fit:cover;display:block;
+}
+.mebook-root .cmt-image-preview-remove{
+position:absolute;top:4px;right:4px;
+width:24px;height:24px;border-radius:50%;
+background:rgba(0,0,0,.7);backdrop-filter:blur(4px);
+display:flex;align-items:center;justify-content:center;
+}
+.mebook-root .cmt-image-preview-remove svg{width:12px;height:12px;fill:#fff;}
+.mebook-root .cmt-image-preview-info{
+flex:1;font-size:12.5px;color:var(--text-muted);
+padding-top:8px;
+}
+.mebook-root .cmt-image-preview-info b{
+display:block;color:var(--text);font-weight:600;margin-bottom:2px;
+font-size:13px;
+}
+
 .mebook-root .cmt-actions-row{
 display:flex;align-items:center;gap:14px;
 margin-top:4px;padding:0 6px;
@@ -1102,14 +1222,45 @@ padding:2px 8px;border-radius:6px;
 .mebook-root .cmt-empty svg{width:60px;height:60px;fill:var(--border);margin:0 auto 12px;}
 .mebook-root .cmt-empty b{font-size:16px;display:block;margin-bottom:6px;color:var(--text);}
 
+/* Comment input - LIQUID GLASS */
 .mebook-root .cmt-input-wrap{
 display:flex;gap:8px;align-items:flex-end;
-padding:10px 14px 14px;border-top:1px solid var(--border);
-flex-shrink:0;background:var(--card);
+padding:10px 14px 14px;border-top:1px solid rgba(255,255,255,.08);
+flex-shrink:0;
+background:rgba(255,255,255,.7);
+backdrop-filter:blur(24px) saturate(180%);
+-webkit-backdrop-filter:blur(24px) saturate(180%);
+box-shadow:0 -4px 24px rgba(0,0,0,.04);
+}
+.mebook-root.dark-mode .cmt-input-wrap{
+background:rgba(10,10,10,.75);
+border-top:1px solid rgba(255,255,255,.06);
+box-shadow:0 -4px 24px rgba(0,0,0,.5);
 }
 .mebook-root .cmt-input-avatar{width:36px;height:36px;border-radius:50%;object-fit:cover;flex-shrink:0;background:#cbd5e1;}
-.mebook-root .cmt-input{flex:1;border:none;border-radius:20px;padding:10px 14px;font-size:14.5px;outline:none;color:var(--text);resize:none;max-height:120px;font-family:inherit;line-height:1.4;background:var(--input-bg);}
-.mebook-root .cmt-send{width:38px;height:38px;border-radius:50%;background:var(--green);color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:transform .12s;}
+.mebook-root .cmt-input{flex:1;border:none;border-radius:20px;padding:10px 14px;font-size:14.5px;outline:none;color:var(--text);resize:none;max-height:120px;font-family:inherit;line-height:1.4;background:rgba(240,242,245,.9);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.4);}
+.mebook-root.dark-mode .cmt-input{background:rgba(20,20,20,.9);border:1px solid rgba(255,255,255,.06);}
+.mebook-root .cmt-input:focus{border-color:rgba(34,197,94,.4);box-shadow:0 0 0 3px rgba(34,197,94,.1);}
+
+.mebook-root .cmt-img-btn{
+width:36px;height:36px;border-radius:50%;
+display:flex;align-items:center;justify-content:center;
+flex-shrink:0;color:var(--green);transition:transform .12s, background .15s;
+}
+.mebook-root .cmt-img-btn:hover{background:rgba(34,197,94,.1);}
+.mebook-root .cmt-img-btn:active{transform:scale(.9);}
+.mebook-root .cmt-img-btn svg{width:20px;height:20px;fill:var(--green);}
+
+.mebook-root .cmt-send{
+width:38px;height:38px;border-radius:50%;
+background:linear-gradient(135deg,#16a34a,#22c55e);
+color:#fff;
+display:flex;align-items:center;justify-content:center;
+flex-shrink:0;
+transition:transform .12s, box-shadow .2s;
+box-shadow:0 4px 16px rgba(22,163,74,.35), inset 0 1px 0 rgba(255,255,255,.3);
+border:1px solid rgba(255,255,255,.15);
+}
 .mebook-root .cmt-send:active{transform:scale(.9);}
 .mebook-root .cmt-send:disabled{opacity:.5;cursor:not-allowed;}
 .mebook-root .cmt-send svg{width:18px;height:18px;fill:#fff;}
@@ -1692,7 +1843,7 @@ function ReactionPicker({
 }
 
 /* ============================================================
-POST REACTION PICKER
+POST REACTION PICKER (Facebook-style swipe)
 ============================================================ */
 
 function PostReactionPicker({
@@ -1704,18 +1855,52 @@ function PostReactionPicker({
   open: boolean
   onReact: (reactionKey: string, emoji: string) => void
 }) {
+  const [hoveredKey, setHoveredKey] = useState<string | null>(null)
+  const [touchActive, setTouchActive] = useState(false)
+
   if (!anchorRect) return null
+
   return (
     <div
       className={`post-reaction-picker${open ? " open" : ""}`}
       style={{
-        left: Math.max(8, Math.min(anchorRect.x, window.innerWidth - 320)),
+        left: Math.max(8, Math.min(anchorRect.x, window.innerWidth - 340)),
         top: Math.max(70, anchorRect.y - 60),
       }}
       onClick={(e) => e.stopPropagation()}
+      onMouseLeave={() => setHoveredKey(null)}
     >
       {REACTIONS.map((r) => (
-        <button key={r.key} type="button" title={r.label} onClick={() => onReact(r.key, r.emoji)}>
+        <button
+          key={r.key}
+          type="button"
+          title={r.label}
+          className={hoveredKey === r.key || touchActive ? "swipe-active" : ""}
+          onMouseEnter={() => setHoveredKey(r.key)}
+          onTouchStart={() => {
+            setTouchActive(true)
+            setHoveredKey(r.key)
+          }}
+          onTouchMove={(e) => {
+            const touch = e.touches[0]
+            const el = document.elementFromPoint(touch.clientX, touch.clientY)
+            if (el && el.closest(".post-reaction-picker button")) {
+              const btns = document.querySelectorAll(".post-reaction-picker button")
+              btns.forEach((btn, idx) => {
+                const rect = btn.getBoundingClientRect()
+                if (touch.clientX >= rect.left && touch.clientX <= rect.right) {
+                  setHoveredKey(REACTIONS[idx]?.key || null)
+                }
+              })
+            }
+          }}
+          onTouchEnd={() => {
+            setTouchActive(false)
+            if (hoveredKey) onReact(hoveredKey, REACTIONS.find((rr) => rr.key === hoveredKey)?.emoji || "👍")
+            setHoveredKey(null)
+          }}
+          onClick={() => onReact(r.key, r.emoji)}
+        >
           {r.emoji}
         </button>
       ))}
@@ -1858,6 +2043,8 @@ export default function MeBookPage() {
     anchorRect: { x: number; y: number; width: number } | null
   }>({ open: false, postId: null, anchorRect: null })
   const [postReactions, setPostReactions] = useState<Record<string, Record<string, string>>>({})
+  const [fastLikeFlyers, setFastLikeFlyers] = useState<Array<{ id: number; x: number; y: number; emoji: string }>>([])
+  const fastLikeIdRef = useRef(0)
 
   // Comment reactions
   const [commentText, setCommentText] = useState("")
@@ -1866,6 +2053,10 @@ export default function MeBookPage() {
   const [expandedReplies, setExpandedReplies] = useState<Set<string>>(new Set())
   const commentListRef = useRef<HTMLDivElement>(null)
   const commentInputRef = useRef<HTMLTextAreaElement>(null)
+  const commentImgInputRef = useRef<HTMLInputElement>(null)
+  const [commentImageFile, setCommentImageFile] = useState<File | null>(null)
+  const [commentImagePreview, setCommentImagePreview] = useState("")
+  const [commentUploading, setCommentUploading] = useState(false)
 
   const [reactionPicker, setReactionPicker] = useState<{
     open: boolean
@@ -2320,15 +2511,90 @@ export default function MeBookPage() {
   }
 
   /* ============================================================
+     FAST LIKE (single tap with fast animation)
+     ============================================================ */
+
+  const handleFastLike = async (
+    postId: string,
+    evt?: { clientX: number; clientY: number }
+  ) => {
+    try {
+      const fb = await getFirebase()
+      const ref = fb.doc(fb.db, "posts", postId)
+      const snap = await fb.getDoc(ref)
+      if (!snap.exists()) return
+      const post = snap.data()
+      const likes: string[] = post.likes || []
+      const reactions: Record<string, string> = post.reactions || {}
+      const has = likes.includes(user.uid)
+
+      if (has && reactions[user.uid] === "like") {
+        // Unlike
+        delete reactions[user.uid]
+        await fb.updateDoc(ref, {
+          likes: fb.arrayRemove(user.uid),
+          reactions,
+        })
+      } else {
+        // Like instantly
+        reactions[user.uid] = "like"
+        await fb.updateDoc(ref, {
+          likes: fb.arrayUnion(user.uid),
+          reactions,
+        })
+
+        // Fast fly animation
+        if (evt) {
+          const id = ++fastLikeIdRef.current
+          setFastLikeFlyers((prev) => [
+            ...prev,
+            { id, x: evt.clientX - 14, y: evt.clientY - 14, emoji: "👍" },
+          ])
+          setTimeout(() => {
+            setFastLikeFlyers((prev) => prev.filter((r) => r.id !== id))
+          }, 650)
+        }
+
+        if (post.authorId && post.authorId !== user.uid && post.authorId !== "admin") {
+          await fb.addDoc(fb.collection(fb.db, "notifications"), {
+            uid: post.authorId,
+            title: "New Like",
+            message: `${profile.name} liked your post.`,
+            type: "like",
+            read: false,
+            createdAt: fb.serverTimestamp(),
+          })
+        }
+      }
+    } catch (e: any) {
+      showToast("Error", e.message, "error")
+    }
+  }
+
+  /* ============================================================
      COMMENT / REACTION HELPERS
      ============================================================ */
 
   const buildCommentId = () => `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
 
+  const handleCommentImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0]
+    if (!f) return
+    setCommentImageFile(f)
+    setCommentImagePreview(URL.createObjectURL(f))
+    e.target.value = ""
+  }
+
+  const removeCommentImage = () => {
+    setCommentImageFile(null)
+    setCommentImagePreview("")
+  }
+
   const handleAddComment = async (postId: string) => {
     const text = commentText.trim()
-    if (!text || commentBusy) return
+    if ((!text && !commentImageFile) || commentBusy) return
     setCommentBusy(true)
+    setCommentUploading(!!commentImageFile)
     try {
       const fb = await getFirebase()
       const ref = fb.doc(fb.db, "posts", postId)
@@ -2338,12 +2604,19 @@ export default function MeBookPage() {
         return
       }
       const existing = snap.data().comments || []
+
+      let imageUrl = ""
+      if (commentImageFile) {
+        imageUrl = await cloudinaryUpload(commentImageFile)
+      }
+
       const newComment: any = {
         id: buildCommentId(),
         uid: user.uid,
         name: profile.name,
         avatar: profile.photoURL || "",
         text,
+        image: imageUrl,
         at: Date.now(),
         reactions: {},
       }
@@ -2377,6 +2650,8 @@ export default function MeBookPage() {
       }
 
       setCommentText("")
+      setCommentImageFile(null)
+      setCommentImagePreview("")
       setReplyTo(null)
       showToast(replyTo ? "Reply added!" : "Comment added!", "", "success")
 
@@ -2391,6 +2666,7 @@ export default function MeBookPage() {
       showToast("Error", e.message, "error")
     } finally {
       setCommentBusy(false)
+      setCommentUploading(false)
     }
   }
 
@@ -2716,6 +2992,8 @@ export default function MeBookPage() {
     if (view !== "comments") {
       setReplyTo(null)
       setCommentText("")
+      setCommentImageFile(null)
+      setCommentImagePreview("")
     }
     if (view !== "messages") {
       setChatView("list")
@@ -2737,6 +3015,8 @@ export default function MeBookPage() {
     setPageStack((s) => (s.length > 1 ? s.slice(0, -1) : [{ view: "home" }]))
     setReplyTo(null)
     setCommentText("")
+    setCommentImageFile(null)
+    setCommentImagePreview("")
     if (currentView === "messages") {
       setChatView("list")
       setActiveChat(null)
@@ -2754,47 +3034,11 @@ export default function MeBookPage() {
     }
   }
 
-  const handleLikePost = async (postId: string) => {
-    try {
-      const fb = await getFirebase()
-      const ref = fb.doc(fb.db, "posts", postId)
-      const snap = await fb.getDoc(ref)
-      if (!snap.exists()) return
-      const post = snap.data()
-      const likes = post.likes || []
-      const reactions = { ...(post.reactions || {}) }
-      const has = likes.includes(user.uid)
-      if (has) {
-        delete reactions[user.uid]
-        await fb.updateDoc(ref, {
-          likes: fb.arrayRemove(user.uid),
-          reactions,
-        })
-      } else {
-        reactions[user.uid] = "like"
-        await fb.updateDoc(ref, {
-          likes: fb.arrayUnion(user.uid),
-          reactions,
-        })
-        if (post.authorId && post.authorId !== user.uid && post.authorId !== "admin") {
-          await fb.addDoc(fb.collection(fb.db, "notifications"), {
-            uid: post.authorId,
-            title: "New Like",
-            message: `${profile.name} liked your post.`,
-            type: "like",
-            read: false,
-            createdAt: fb.serverTimestamp(),
-          })
-        }
-      }
-    } catch (e: any) {
-      showToast("Error", e.message, "error")
-    }
-  }
-
   const openComments = (post: any) => {
     setReplyTo(null)
     setCommentText("")
+    setCommentImageFile(null)
+    setCommentImagePreview("")
     pushPage("comments", { postId: post.id })
     setTimeout(() => {
       try {
@@ -3719,6 +3963,22 @@ export default function MeBookPage() {
       ? REACTIONS.find((r) => r.key === myReaction)?.emoji
       : null
 
+    // Long press timer for reaction picker
+    let pressTimer: any = null
+
+    const startPress = (e: React.MouseEvent | React.TouchEvent) => {
+      pressTimer = setTimeout(() => {
+        openPostReactionPicker(e, post.id)
+      }, 400)
+    }
+
+    const cancelPress = () => {
+      if (pressTimer) {
+        clearTimeout(pressTimer)
+        pressTimer = null
+      }
+    }
+
     return (
       <article className={`mb-post${isOfficial ? " official" : ""}`} key={post.id}>
         <div className="mb-post-head">
@@ -3788,10 +4048,7 @@ export default function MeBookPage() {
         ) : null}
 
         <div className="mb-post-stats">
-          <div className="mb-reacts" onClick={() => openPostReactionPicker(
-            { currentTarget: document.createElement("div") } as any,
-            post.id
-          )}>
+          <div className="mb-reacts">
             {likesCount ? (
               <span className="mb-react-pill">
                 {reactionEmojis.length > 0 ? reactionEmojis.join("") : "👍"}
@@ -3809,19 +4066,18 @@ export default function MeBookPage() {
         <div className="mb-post-actions">
           <button
             className={`mb-action${liked || myReaction ? " liked" : ""}`}
-            onClick={(e) => {
-              if (myReaction || liked) {
-                handleLikePost(post.id)
-              } else {
-                openPostReactionPicker(e, post.id)
-              }
-            }}
+            onClick={(e) => handleFastLike(post.id, { clientX: e.clientX, clientY: e.clientY })}
+            onMouseDown={startPress}
+            onMouseUp={cancelPress}
+            onMouseLeave={cancelPress}
+            onTouchStart={startPress}
+            onTouchEnd={cancelPress}
+            onTouchCancel={cancelPress}
             onContextMenu={(e) => {
               e.preventDefault()
               openPostReactionPicker(e, post.id)
             }}
-            onDoubleClick={(e) => openPostReactionPicker(e, post.id)}
-            title="Click for Like, hold for reactions"
+            title="Tap to like, hold for reactions"
           >
             {myReactionEmoji ? (
               <span style={{ fontSize: 18, lineHeight: 1 }}>{myReactionEmoji}</span>
@@ -4176,11 +4432,22 @@ export default function MeBookPage() {
 
       <ToastStack toasts={toasts} onDone={removeToast} />
 
-      {/* Flying reactions */}
+      {/* Flying reactions (long-press selected) */}
       {flyingReactions.map((r) => (
         <div
           key={r.id}
           className="cmt-flying-reaction"
+          style={{ left: r.x, top: r.y }}
+        >
+          {r.emoji}
+        </div>
+      ))}
+
+      {/* Fast like flyers */}
+      {fastLikeFlyers.map((r) => (
+        <div
+          key={r.id}
+          className="fast-like-flyer"
           style={{ left: r.x, top: r.y }}
         >
           {r.emoji}
@@ -4224,6 +4491,14 @@ export default function MeBookPage() {
         open={chatReactionPicker.open}
         onReact={(key, emoji) => {
           if (!chatReactionPicker.msgId) return
+          if (chatReactionPicker.msgId === "__send_reaction__") {
+            // send reaction via like button path
+            setChatLikeActive(true)
+            setTimeout(() => setChatLikeActive(false), 600)
+            handleSendLike()
+            setChatReactionPicker({ open: false, msgId: null, anchorRect: null })
+            return
+          }
           const pos = { clientX: window.innerWidth / 2, clientY: window.innerHeight / 2 }
           if (chatReactionPicker.anchorRect) {
             pos.clientX = chatReactionPicker.anchorRect.x
@@ -5344,7 +5619,8 @@ export default function MeBookPage() {
                         }
 
                         return (
-                          <div                            key={m.id}
+                          <div
+                            key={m.id}
                             className={`mechat-bubble-wrap ${mine ? "me" : "them"} ${showAvatar ? "show-avatar" : ""}`}
                             onTouchStart={onTouchStart}
                             onTouchMove={onTouchMove}
@@ -5664,6 +5940,11 @@ export default function MeBookPage() {
                     >
                       <b>{c.name || "User"}</b>
                       {c.text}
+                      {c.image && (
+                        <div className="cmt-bubble-image">
+                          <img src={c.image} alt="" />
+                        </div>
+                      )}
                       <span className="cmt-time">{timeAgo(c.at)}</span>
                       {renderReactionBadge(c.reactions || {})}
                     </div>
@@ -5786,8 +6067,41 @@ export default function MeBookPage() {
                     </div>
                   )}
 
+                  {commentImagePreview && (
+                    <div className="cmt-image-preview">
+                      <div className="cmt-image-preview-img-wrap">
+                        <img src={commentImagePreview} alt="" />
+                        <button className="cmt-image-preview-remove" onClick={removeCommentImage}>
+                          <svg viewBox="0 0 24 24">
+                            <path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
+                          </svg>
+                        </button>
+                      </div>
+                      <div className="cmt-image-preview-info">
+                        <b>{commentUploading ? "Uploading..." : "Ready to send"}</b>
+                        Image will be sent with your comment
+                      </div>
+                    </div>
+                  )}
+
                   <div className="cmt-input-wrap">
                     <img className="cmt-input-avatar" src={avatarUrl(profile)} alt="" />
+                    <button
+                      className="cmt-img-btn"
+                      onClick={() => commentImgInputRef.current?.click()}
+                      title="Add image"
+                    >
+                      <svg viewBox="0 0 24 24">
+                        <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z" />
+                      </svg>
+                    </button>
+                    <input
+                      ref={commentImgInputRef}
+                      type="file"
+                      accept="image/*"
+                      style={{ display: "none" }}
+                      onChange={handleCommentImageSelect}
+                    />
                     <textarea
                       ref={commentInputRef}
                       className="cmt-input"
@@ -5805,7 +6119,7 @@ export default function MeBookPage() {
                     <button
                       className="cmt-send"
                       onClick={() => handleAddComment(post.id)}
-                      disabled={!commentText.trim() || commentBusy}
+                      disabled={(!commentText.trim() && !commentImageFile) || commentBusy}
                     >
                       <svg viewBox="0 0 24 24">
                         <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />

@@ -704,7 +704,15 @@ display:flex;flex-direction:column;gap:2px;
 scroll-behavior:smooth;
 }
 .mebook-root .mechat-body::-webkit-scrollbar{width:6px;}
-.mebook-root .mechat-body::-webkit-scrollbar-thumb{background:var(--border);border-radius:10px;}
+  .mebook-root .mechat-body::-webkit-scrollbar-thumb{background:var(--border);border-radius:10px;}
+  .mebook-root .mechat-typing{display:flex;align-items:center;gap:8px;align-self:flex-start;margin:4px 0 6px 34px;color:var(--text-muted);font-size:12px;animation:bubbleIn .2s ease;}
+  .mebook-root .mechat-typing-dots{display:flex;gap:3px;padding:8px 10px;border-radius:16px 16px 16px 4px;background:var(--bubble-them-bg);box-shadow:0 1px 2px rgba(0,0,0,.08);}
+  .mebook-root .mechat-typing-dots i{width:5px;height:5px;border-radius:50%;background:#94a3b8;animation:typingDot 1.1s infinite ease-in-out;}
+  .mebook-root .mechat-typing-dots i:nth-child(2){animation-delay:.15s}.mebook-root .mechat-typing-dots i:nth-child(3){animation-delay:.3s}
+  @keyframes typingDot{0%,60%,100%{transform:translateY(0);opacity:.45}30%{transform:translateY(-3px);opacity:1}}
+  .mebook-root .mechat-seen{display:flex;justify-content:flex-end;align-items:center;gap:5px;margin:3px 5px 0;color:var(--text-muted);font-size:11px;animation:bubbleIn .2s ease;}
+  .mebook-root .mechat-seen img{width:16px;height:16px;border-radius:50%;object-fit:cover;box-shadow:0 0 0 2px var(--card);}
+
 
 .mebook-root .mechat-bubble-wrap{
 display:flex;align-items:flex-end;gap:6px;
@@ -2058,6 +2066,10 @@ export default function MeBookPage() {
   const [friendSearch, setFriendSearch] = useState("")
   const [chatSearch, setChatSearch] = useState("")
   const [chatInput, setChatInput] = useState("")
+  const [chatTyping, setChatTyping] = useState(false)
+  const [otherTyping, setOtherTyping] = useState(false)
+  const [chatReadAt, setChatReadAt] = useState<any>(null)
+  const typingTimerRef = useRef<any>(null)
 
   // Post reactions
   const [postReactionPicker, setPostReactionPicker] = useState<{
@@ -3433,18 +3445,30 @@ export default function MeBookPage() {
       chatUnsubRef.current = null
     }
     const fb = await getFirebase()
+    const chatRef = fb.doc(fb.db, "chats", chatId)
+    const chatPresenceUnsub = fb.onSnapshot(chatRef, (snap: any) => {
+      const data = snap.exists() ? snap.data() : {}
+      setOtherTyping(Boolean(data.typing?.[otherId]))
+      setChatReadAt(data.readBy?.[otherId] || null)
+    })
     const q = fb.query(
       fb.collection(fb.db, "chats", chatId, "messages"),
       fb.orderBy("at", "asc")
     )
-    chatUnsubRef.current = fb.onSnapshot(q, (snap: any) => {
+    chatUnsubRef.current = () => {
+      try { chatPresenceUnsub() } catch {}
+      try { messageUnsub() } catch {}
+    }
+    const messageUnsub = fb.onSnapshot(q, (snap: any) => {
       const arr: any[] = []
       snap.forEach((d: any) => arr.push({ id: d.id, ...d.data() }))
       setChatMessages(arr)
+      const newestIncoming = [...arr].reverse().find((m) => m.from === otherId)
+      if (newestIncoming) {
+        fb.updateDoc(chatRef, { [`readBy.${user.uid}`]: newestIncoming.at || fb.serverTimestamp() }).catch(() => {})
+      }
       setTimeout(() => {
-        if (chatBodyRef.current) {
-          chatBodyRef.current.scrollTop = chatBodyRef.current.scrollHeight
-        }
+        if (chatBodyRef.current) chatBodyRef.current.scrollTop = chatBodyRef.current.scrollHeight
       }, 80)
     })
   }
@@ -3461,12 +3485,30 @@ export default function MeBookPage() {
     }
   }
 
+  const updateTypingPresence = async (value: string) => {
+    if (!activeChat) return
+    const fb = await getFirebase()
+    const chatRef = fb.doc(fb.db, "chats", activeChat)
+    const typing = value.trim().length > 0
+    setChatTyping(typing)
+    await fb.updateDoc(chatRef, { [`typing.${user.uid}`]: typing }).catch(() => {})
+    if (typing) {
+      clearTimeout(typingTimerRef.current)
+      typingTimerRef.current = setTimeout(() => {
+        fb.updateDoc(chatRef, { [`typing.${user.uid}`]: false }).catch(() => {})
+        setChatTyping(false)
+      }, 3500)
+    }
+  }
+
   const handleSendMessage = async () => {
     const text = chatInput.trim()
     if (!text || !activeChat) return
     const reply = chatReplyTo
     setChatInput("")
     setChatReplyTo(null)
+    clearTimeout(typingTimerRef.current)
+    setChatTyping(false)
     try {
       const fb = await getFirebase()
       const payload: any = {
@@ -5711,6 +5753,18 @@ export default function MeBookPage() {
                         )
                       })
                     )}
+                    {otherTyping && (
+                      <div className="mechat-typing" aria-live="polite">
+                        <div className="mechat-typing-dots"><i /><i /><i /></div>
+                        <span>{chatPartner?.name || "User"} is typing</span>
+                      </div>
+                    )}
+                    {chatReadAt && chatMessages.some((m) => m.from === user.uid) && (
+                      <div className="mechat-seen" aria-label="Seen">
+                        <span>Seen</span>
+                        <img src={chatPartner ? avatarUrl(chatPartner) : ""} alt={`${chatPartner?.name || "User"} profile`} />
+                      </div>
+                    )}
                   </div>
 
                   {recording && (
@@ -5786,8 +5840,12 @@ export default function MeBookPage() {
                         placeholder="Aa"
                         rows={1}
                         value={chatInput}
-                        onChange={(e) => setChatInput(e.target.value)}
+                        onChange={(e) => {
+                          setChatInput(e.target.value)
+                          updateTypingPresence(e.target.value)
+                        }}
                         onKeyDown={(e) => {
+                          if (e.nativeEvent.isComposing || e.keyCode === 229) return
                           if (e.key === "Enter" && !e.shiftKey) {
                             e.preventDefault()
                             handleSendMessage()

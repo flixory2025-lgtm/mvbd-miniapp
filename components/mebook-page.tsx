@@ -690,13 +690,62 @@ scroll-behavior:smooth;
 .mebook-root .mechat-body::-webkit-scrollbar{width:6px;}
 .mebook-root .mechat-body::-webkit-scrollbar-thumb{background:var(--border);border-radius:10px;}
 
+/* ===== MECHAT MESSAGE ROW ===== */
 .mebook-root .mechat-bubble-wrap{
-display:flex;align-items:flex-end;gap:6px;
-margin-top:2px;position:relative;
-user-select:none;
+  width:100%;
+  display:flex;
+  align-items:flex-end;
+  gap:6px;
+  margin-top:2px;
+  position:relative;
+  user-select:none;
+  box-sizing:border-box;
 }
-.mebook-root .mechat-bubble-wrap.me{justify-content:flex-end;flex-direction:row-reverse;}
-.mebook-root .mechat-bubble-wrap.them{justify-content:flex-start;}
+
+/* ===== MY MESSAGE — RIGHT SIDE ===== */
+.mebook-root .mechat-bubble-wrap.me{
+  justify-content:flex-end;
+  flex-direction:row;
+}
+
+/* ===== OTHER PERSON — LEFT SIDE ===== */
+.mebook-root .mechat-bubble-wrap.them{
+  justify-content:flex-start;
+  flex-direction:row;
+}
+
+/* Avatar */
+.mebook-root .mechat-bubble-avatar{
+  width:28px;
+  height:28px;
+  border-radius:50%;
+  object-fit:cover;
+  flex-shrink:0;
+  background:#cbd5e1;
+  opacity:0;
+  transition:opacity .2s;
+}
+
+.mebook-root .mechat-bubble-wrap.show-avatar .mechat-bubble-avatar{
+  opacity:1;
+}
+
+/* Message bubble */
+.mebook-root .mechat-bubble{
+  max-width:72%;
+  padding:8px 12px 6px;
+  border-radius:18px;
+  font-size:14.5px;
+  line-height:1.4;
+  word-wrap:break-word;
+  white-space:pre-wrap;
+  animation:bubbleIn .22s ease;
+  position:relative;
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+  box-sizing:border-box;
+}
 .mebook-root .mechat-bubble-avatar{
 width:28px;height:28px;border-radius:50%;
 object-fit:cover;flex-shrink:0;background:#cbd5e1;

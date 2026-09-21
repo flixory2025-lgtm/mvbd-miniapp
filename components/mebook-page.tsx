@@ -312,6 +312,11 @@ background:var(--header-bg);
 display:flex;align-items:center;justify-content:space-between;
 padding:0 16px;
 box-shadow:0 2px 12px rgba(0,0,0,.25);
+transition:transform .3s cubic-bezier(.2,.8,.3,1);
+will-change:transform;
+}
+.mebook-root .mb-header.header-hidden{
+transform:translateY(-100%);
 }
 .mebook-root.dark-mode .mb-header{
 background:#000000;
@@ -390,7 +395,7 @@ padding:8px;
 transform-origin:top right;
 transform:scale(.9) translateY(-8px);
 opacity:0;visibility:hidden;
-transition:transform .22s cubic-bezier(.2,.8,.3,1), opacity .22s ease, visibility .22s ease;
+transition:transform .22s cubic-bezier(.2,.8,.3,1), opacity .22s ease, visibility .22s ease, top .3s cubic-bezier(.2,.8,.3,1);
 max-height:calc(100vh - 80px);
 overflow-y:auto;
 overscroll-behavior:contain;
@@ -1015,7 +1020,7 @@ font-weight:500;
 .mebook-root .cp-actions .mb-btn{flex:1;padding:11px;}
 
 /* ============ TOAST ============ */
-.mebook-root .mb-toast-container{position:fixed;top:80px;right:20px;z-index:6000;display:flex;flex-direction:column;gap:10px;pointer-events:none;max-width:360px;}
+.mebook-root .mb-toast-container{position:fixed;top:80px;right:20px;z-index:6000;display:flex;flex-direction:column;gap:10px;pointer-events:none;max-width:360px;transition:top .3s cubic-bezier(.2,.8,.3,1);}
 .mebook-root .mb-toast{padding:12px 16px;border-radius:12px;font-size:14px;font-weight:500;box-shadow:0 8px 32px rgba(0,0,0,.18),0 0 0 1px rgba(0,0,0,.04);display:flex;align-items:center;gap:10px;pointer-events:auto;animation:toastIn .4s cubic-bezier(.2,.8,.3,1);min-width:240px;position:relative;overflow:hidden;background:var(--card);color:var(--text);}
 .mebook-root .mb-toast.removing{animation:toastOut .35s cubic-bezier(.4,0,1,1) forwards;}
 @keyframes toastIn{0%{opacity:0;transform:translateX(120%) scale(.9);}60%{opacity:1;transform:translateX(-6px) scale(1.02);}100%{opacity:1;transform:translateX(0) scale(1);}}
@@ -1175,6 +1180,13 @@ export default function MeBookPage() {
 
   const [menuOpen, setMenuOpen] = useState(false)
 
+  /* ============================================================
+     ✅ NEW: Header scroll hide/show state
+     ============================================================ */
+  const [headerHidden, setHeaderHidden] = useState(false)
+  const lastScrollYRef = useRef(0)
+  const tickingRef = useRef(false)
+
   const [toasts, setToasts] = useState<ToastItem[]>([])
   const toastIdRef = useRef(0)
   const showToast = useCallback(
@@ -1264,6 +1276,45 @@ export default function MeBookPage() {
     const saved = localStorage.getItem("mebook-theme")
     const isDark = saved ? saved === "dark" : false
     setTheme(isDark ? "dark" : "light")
+  }, [])
+
+  /* ============================================================
+     ✅ NEW: Header scroll hide/show effect
+     Scroll down → header slides up (hidden)
+     Scroll up   → header slides down (visible)
+     Works on ALL pages because the header is globally mounted.
+     ============================================================ */
+  useEffect(() => {
+    lastScrollYRef.current = window.scrollY
+
+    const onScroll = () => {
+      if (tickingRef.current) return
+      tickingRef.current = true
+      window.requestAnimationFrame(() => {
+        const y = window.scrollY
+        const last = lastScrollYRef.current
+        const diff = y - last
+
+        // Only react to meaningful scrolls to avoid jitter
+        if (Math.abs(diff) > 4) {
+          if (y > 70 && diff > 0) {
+            // Scrolling DOWN past 70px → hide header
+            setHeaderHidden(true)
+          } else if (diff < 0) {
+            // Scrolling UP → show header
+            setHeaderHidden(false)
+          } else if (y <= 70) {
+            // Near the top → always show
+            setHeaderHidden(false)
+          }
+          lastScrollYRef.current = y
+        }
+        tickingRef.current = false
+      })
+    }
+
+    window.addEventListener("scroll", onScroll, { passive: true })
+    return () => window.removeEventListener("scroll", onScroll)
   }, [])
 
   const toggleTheme = (isDark: boolean) => {
@@ -1383,9 +1434,6 @@ export default function MeBookPage() {
 
       /* ============================================================
          ✅ FIXED: myFriends live listener
-         Single array-contains query — symmetric for BOTH sides.
-         Also runs a one-time migration for legacy docs (a/b only)
-         so both requester & accepter see the friendship in real time.
          ============================================================ */
 
       const myFriendsQ = fb.query(
@@ -1413,9 +1461,6 @@ export default function MeBookPage() {
 
       /* ============================================================
          Legacy fallback — runs once at login.
-         Finds friends docs without `members` field, migrates them,
-         and immediately pushes them into state so both sides see
-         the friendship without needing to re-accept.
          ============================================================ */
       ;(async () => {
         try {
@@ -1444,7 +1489,6 @@ export default function MeBookPage() {
           collect(s1, "b")
           collect(s2, "a")
 
-          // Auto-migrate legacy docs (adds `members` array)
           await Promise.all(
             legacyDocs.map((doc) =>
               fb.updateDoc(fb.doc(fb.db, "friends", doc.id), {
@@ -1453,7 +1497,6 @@ export default function MeBookPage() {
             )
           )
 
-          // Immediately push legacy friends into state
           if (legacyOtherIds.size > 0) {
             const arr: any[] = []
             for (const otherId of legacyOtherIds) {
@@ -1955,25 +1998,17 @@ export default function MeBookPage() {
     }
   }
 
-  /* ============================================================
-     ✅ FIXED: handleAcceptRequest
-     - Writes `members` array (sorted) so `array-contains` works
-       for BOTH the accepter AND the requester.
-     - Falls back to find the request by (from,to) if reqId is stale.
-     ============================================================ */
   const handleAcceptRequest = async (reqId: string, fromUid: string) => {
     if (!user?.uid || !fromUid) return
     try {
       const fb = await getFirebase()
       const friendDocId = [user.uid, fromUid].sort().join("_")
 
-      // 1) Mark the friend request as accepted
       try {
         await fb.updateDoc(fb.doc(fb.db, "friendRequests", reqId), {
           status: "accepted",
         })
       } catch (err) {
-        // If reqId is stale (from notification page), find & update it
         const q = fb.query(
           fb.collection(fb.db, "friendRequests"),
           fb.where("from", "==", fromUid),
@@ -1988,8 +2023,6 @@ export default function MeBookPage() {
         }
       }
 
-      // 2) Create friendship doc with `members` array (this is what makes
-      //    both sides see each other in real time via array-contains)
       await fb.setDoc(
         fb.doc(fb.db, "friends", friendDocId),
         {
@@ -2001,7 +2034,6 @@ export default function MeBookPage() {
         { merge: true }
       )
 
-      // 3) Notify the requester
       try {
         await fb.addDoc(fb.collection(fb.db, "notifications"), {
           uid: fromUid,
@@ -2892,7 +2924,8 @@ export default function MeBookPage() {
 
       <ToastStack toasts={toasts} onDone={removeToast} />
 
-      <header className="mb-header">
+      {/* ✅ Header — scroll down → slides up (hidden), scroll up → slides down (visible) */}
+      <header className={`mb-header${headerHidden ? " header-hidden" : ""}`}>
         <div className="mb-header-left" onClick={() => goTo("home")}>
           <img className="mb-header-logo" src={HEADER_LOGO} alt="MeBook" />
           <div className="mb-logo-stack">

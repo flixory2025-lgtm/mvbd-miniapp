@@ -110,6 +110,12 @@ function timeShort(ts: any) {
   return d.toLocaleDateString([], { month: "short", day: "numeric" })
 }
 
+function monthYear(ts: any) {
+  if (!ts) return ""
+  const d = ts.toDate ? ts.toDate() : new Date(ts)
+  return d.toLocaleDateString([], { month: "long", year: "numeric" })
+}
+
 function friendlyErr(err: any): string {
   const code = String(err?.code || "")
   if (code.includes("invalid-credential") || code.includes("wrong-password")) return "Wrong email or password"
@@ -125,6 +131,10 @@ function friendlyErr(err: any): string {
 }
 
 function chatIdFor(a: string, b: string) {
+  return [a, b].sort().join("_")
+}
+
+function friendDocIdFor(a: string, b: string) {
   return [a, b].sort().join("_")
 }
 
@@ -244,6 +254,11 @@ background:#000000;
 .mebook-root.dark-mode .fl-item:hover{background:#141414;}
 .mebook-root.dark-mode .fl-search{background:#141414;}
 .mebook-root.dark-mode .fl-avatar-wrap{background:#141414;}
+.mebook-root.dark-mode .fl-action-sheet{background:#0a0a0a;border-top:1px solid #1a1a1a;}
+.mebook-root.dark-mode .fl-sheet-header{background:#0a0a0a;border-bottom:1px solid #1a1a1a;}
+.mebook-root.dark-mode .fl-sheet-option:hover{background:#141414;}
+.mebook-root.dark-mode .fl-sheet-option.danger{color:#f87171;}
+.mebook-root.dark-mode .fl-sheet-option.danger .fl-sheet-ico svg{fill:#f87171;}
 
 .mebook-root *{margin:0;padding:0;box-sizing:border-box;}
 .mebook-root button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit;}
@@ -775,11 +790,89 @@ font-weight:500;
 width:36px;height:36px;border-radius:50%;
 display:flex;align-items:center;justify-content:center;
 color:var(--text-muted);flex-shrink:0;
+transition:background .15s;
 }
+.mebook-root .fl-more:hover{background:var(--hover);}
 .mebook-root .fl-more svg{width:22px;height:22px;fill:currentColor;}
 .mebook-root .fl-empty{
 text-align:center;padding:60px 20px;color:var(--text-muted);
 font-size:14px;
+}
+
+/* ============ FRIEND ACTION SHEET (3-dots menu) ============ */
+.mebook-root .fl-sheet-backdrop{
+position:fixed;inset:0;z-index:2000;
+background:rgba(0,0,0,.5);
+opacity:0;visibility:hidden;
+transition:opacity .25s ease, visibility .25s ease;
+display:flex;align-items:flex-end;justify-content:center;
+}
+.mebook-root .fl-sheet-backdrop.open{opacity:1;visibility:visible;}
+.mebook-root .fl-action-sheet{
+width:100%;max-width:520px;
+background:var(--card);
+border-radius:20px 20px 0 0;
+transform:translateY(100%);
+transition:transform .3s cubic-bezier(.2,.8,.3,1);
+max-height:85vh;
+overflow-y:auto;
+padding-bottom:env(safe-area-inset-bottom);
+}
+.mebook-root .fl-sheet-backdrop.open .fl-action-sheet{
+transform:translateY(0);
+}
+.mebook-root .fl-sheet-handle{
+width:40px;height:4px;border-radius:2px;
+background:var(--border);
+margin:8px auto 4px;
+}
+.mebook-root .fl-sheet-header{
+display:flex;align-items:center;gap:12px;
+padding:14px 18px;
+border-bottom:1px solid var(--border);
+}
+.mebook-root .fl-sheet-header img{
+width:48px;height:48px;border-radius:50%;
+object-fit:cover;background:#cbd5e1;flex-shrink:0;
+}
+.mebook-root .fl-sheet-header-info{flex:1;min-width:0;}
+.mebook-root .fl-sheet-header-name{
+font-size:16px;font-weight:800;color:var(--text);
+white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.mebook-root .fl-sheet-header-sub{
+font-size:13px;color:var(--text-muted);margin-top:2px;
+}
+.mebook-root .fl-sheet-options{
+display:flex;flex-direction:column;
+padding:4px 0;
+}
+.mebook-root .fl-sheet-option{
+display:flex;align-items:flex-start;gap:14px;
+padding:14px 18px;
+text-align:left;
+transition:background .15s;
+cursor:pointer;
+}
+.mebook-root .fl-sheet-option:hover{background:var(--hover);}
+.mebook-root .fl-sheet-option:active{background:var(--border);}
+.mebook-root .fl-sheet-ico{
+width:32px;height:32px;
+display:flex;align-items:center;justify-content:center;
+flex-shrink:0;margin-top:2px;
+}
+.mebook-root .fl-sheet-ico svg{
+width:22px;height:22px;fill:var(--text);
+}
+.mebook-root .fl-sheet-option.danger{color:#dc2626;}
+.mebook-root .fl-sheet-option.danger .fl-sheet-ico svg{fill:#dc2626;}
+.mebook-root .fl-sheet-text{flex:1;min-width:0;}
+.mebook-root .fl-sheet-title{
+font-size:15px;font-weight:700;color:inherit;line-height:1.3;
+}
+.mebook-root .fl-sheet-desc{
+font-size:12.5px;color:var(--text-muted);margin-top:3px;
+line-height:1.4;
 }
 
 /* ============ PROFILE — FRIENDS PREVIEW ============ */
@@ -847,6 +940,9 @@ grid-template-columns:repeat(3,1fr);
 }
 .mebook-root .fl-avatar-wrap{width:56px;height:56px;}
 .mebook-root .fl-avatar-wrap img{width:56px;height:56px;}
+.mebook-root .fl-action-sheet{
+border-radius:20px 20px 0 0;
+}
 }
 
 /* ============================================================
@@ -1255,6 +1351,9 @@ font-weight:500;
 .mebook-root .fl-stats-title{font-size:18px;}
 .mebook-root .fl-name{font-size:15.5px;}
 .mebook-root .fl-mutual{font-size:12.5px;}
+.mebook-root .fl-sheet-header-name{font-size:15px;}
+.mebook-root .fl-sheet-title{font-size:14.5px;}
+.mebook-root .fl-sheet-desc{font-size:12px;}
 }
 `
 
@@ -1325,6 +1424,147 @@ function ToastRow({
         {toast.msg && <div className="mb-toast-msg">{toast.msg}</div>}
       </div>
       <div className="mb-toast-progress" />
+    </div>
+  )
+}
+
+/* ============================================================
+FRIEND ACTION SHEET COMPONENT (3-dots menu)
+============================================================ */
+
+function FriendActionSheet({
+  friend,
+  onClose,
+  onMessage,
+  onUnfollow,
+  onBlock,
+  onUnfriend,
+  isUnfollowed,
+}: {
+  friend: any
+  onClose: () => void
+  onMessage: () => void
+  onUnfollow: () => void
+  onBlock: () => void
+  onUnfriend: () => void
+  isUnfollowed: boolean
+}) {
+  if (!friend) return null
+
+  const photo =
+    friend.photoURL ||
+    `https://ui-avatars.com/api/?background=16a34a&color=fff&name=${encodeURIComponent(friend.name || "U")}`
+
+  const friendshipTime = friend.friendsSince
+    ? `Friends since ${monthYear(friend.friendsSince)}`
+    : "Friends"
+
+  return (
+    <div
+      className={`fl-sheet-backdrop open`}
+      onClick={onClose}
+    >
+      <div
+        className="fl-action-sheet"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="fl-sheet-handle" />
+
+        {/* Header — avatar + name + "Friends since" */}
+        <div className="fl-sheet-header">
+          <img src={photo} alt={friend.name} />
+          <div className="fl-sheet-header-info">
+            <div className="fl-sheet-header-name">{friend.name}</div>
+            <div className="fl-sheet-header-sub">{friendshipTime}</div>
+          </div>
+        </div>
+
+        {/* Options */}
+        <div className="fl-sheet-options">
+          {/* Message */}
+          <button
+            className="fl-sheet-option"
+            onClick={() => {
+              onClose()
+              onMessage()
+            }}
+          >
+            <span className="fl-sheet-ico">
+              <svg viewBox="0 0 24 24">
+                <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z" />
+              </svg>
+            </span>
+            <div className="fl-sheet-text">
+              <div className="fl-sheet-title">Message {friend.name?.split(" ")[0]}</div>
+            </div>
+          </button>
+
+          {/* Unfollow */}
+          <button
+            className="fl-sheet-option"
+            onClick={() => {
+              onClose()
+              onUnfollow()
+            }}
+          >
+            <span className="fl-sheet-ico">
+              <svg viewBox="0 0 24 24">
+                <path d="M14 8c0-2.21-1.79-4-4-4S6 5.79 6 8s1.79 4 4 4 4-1.79 4-4zm-2 0c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2zM2 18v2h16v-2c0-2.66-5.33-4-8-4s-8 1.34-8 4zm2 0c.22-.72 3.31-2 6-2 2.7 0 5.8 1.29 6 2H4zm15-9v3h-2V9h-3V7h3V4h2v3h3v2h-3z" />
+              </svg>
+            </span>
+            <div className="fl-sheet-text">
+              <div className="fl-sheet-title">
+                {isUnfollowed ? `Follow ${friend.name?.split(" ")[0]} again` : `Unfollow ${friend.name?.split(" ")[0]}`}
+              </div>
+              <div className="fl-sheet-desc">
+                {isUnfollowed
+                  ? `Start seeing ${friend.name?.split(" ")[0]}'s posts again. They won't be notified.`
+                  : `Stop seeing posts but stay friends. They won't be notified that you unfollowed.`}
+              </div>
+            </div>
+          </button>
+
+          {/* Block */}
+          <button
+            className="fl-sheet-option danger"
+            onClick={() => {
+              onClose()
+              onBlock()
+            }}
+          >
+            <span className="fl-sheet-ico">
+              <svg viewBox="0 0 24 24">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8 0-1.85.63-3.55 1.69-4.9L16.9 18.31C15.55 19.37 13.85 20 12 20zm6.31-3.1L7.1 5.69C8.45 4.63 10.15 4 12 4c4.42 0 8 3.58 8 8 0 1.85-.63 3.55-1.69 4.9z" />
+              </svg>
+            </span>
+            <div className="fl-sheet-text">
+              <div className="fl-sheet-title">Block {friend.name?.split(" ")[0]}'s profile</div>
+              <div className="fl-sheet-desc">
+                {friend.name?.split(" ")[0]} won't be able to see you or contact you on MeBook.
+              </div>
+            </div>
+          </button>
+
+          {/* Unfriend */}
+          <button
+            className="fl-sheet-option danger"
+            onClick={() => {
+              onClose()
+              onUnfriend()
+            }}
+          >
+            <span className="fl-sheet-ico">
+              <svg viewBox="0 0 24 24">
+                <path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+              </svg>
+            </span>
+            <div className="fl-sheet-text">
+              <div className="fl-sheet-title">Unfriend {friend.name?.split(" ")[0]}</div>
+              <div className="fl-sheet-desc">Remove {friend.name?.split(" ")[0]} as a friend.</div>
+            </div>
+          </button>
+        </div>
+      </div>
     </div>
   )
 }
@@ -1428,6 +1668,11 @@ export default function MeBookPage() {
 
   const [shareCaption, setShareCaption] = useState("")
   const [shareBusy, setShareBusy] = useState(false)
+
+  // Action sheet state (3-dots menu)
+  const [actionSheetFriend, setActionSheetFriend] = useState<any>(null)
+  // Track which friends I've unfollowed (local only; you can persist if needed)
+  const [unfollowedSet, setUnfollowedSet] = useState<Set<string>>(new Set())
 
   const unsubscribersRef = useRef<Array<() => void>>([])
   const chatUnsubRef = useRef<(() => void) | null>(null)
@@ -1586,7 +1831,13 @@ export default function MeBookPage() {
             seen.add(otherId)
             try {
               const s = await fb.getDoc(fb.doc(fb.db, "users", otherId))
-              if (s.exists()) arr.push({ uid: s.id, ...s.data() })
+              if (s.exists()) {
+                arr.push({
+                  uid: s.id,
+                  ...s.data(),
+                  friendsSince: data.createdAt || null,
+                })
+              }
             } catch {}
           }
           setMyFriends(arr)
@@ -1755,11 +2006,83 @@ export default function MeBookPage() {
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setMenuOpen(false)
+      if (e.key === "Escape") {
+        setMenuOpen(false)
+        setActionSheetFriend(null)
+      }
     }
     document.addEventListener("keydown", onKey)
     return () => document.removeEventListener("keydown", onKey)
   }, [])
+
+  /* ============================================================
+     FRIEND ACTIONS (Unfollow / Block / Unfriend)
+     ============================================================ */
+
+  const handleUnfollow = async (friendUid: string) => {
+    // Local-only for now (can be persisted to a separate 'unfollows' collection)
+    setUnfollowedSet((prev) => {
+      const copy = new Set(prev)
+      if (copy.has(friendUid)) {
+        copy.delete(friendUid)
+        showToast("Following again", "You'll see their posts in your feed", "success")
+      } else {
+        copy.add(friendUid)
+        showToast("Unfollowed", "You won't see their posts. They weren't notified.", "info")
+      }
+      return copy
+    })
+  }
+
+  const handleBlockUser = async (friendUid: string) => {
+    if (!confirm("Block this user? They won't be able to see or contact you.")) return
+    try {
+      const fb = await getFirebase()
+
+      // 1. Remove friendship
+      const fid = friendDocIdFor(user.uid, friendUid)
+      try {
+        await fb.deleteDoc(fb.doc(fb.db, "friends", fid))
+      } catch {}
+
+      // 2. Add to blocks collection
+      const blockId = `${user.uid}_${friendUid}`
+      await fb.setDoc(fb.doc(fb.db, "blocks", blockId), {
+        blocker: user.uid,
+        blocked: friendUid,
+        createdAt: fb.serverTimestamp(),
+      })
+
+      // 3. Update local state
+      setMyFriends((prev) => prev.filter((f) => f.uid !== friendUid))
+
+      showToast("Blocked", "User has been blocked", "success")
+    } catch (e: any) {
+      showToast("Error", e.message, "error")
+    }
+  }
+
+  const handleUnfriend = async (friendUid: string, friendName: string) => {
+    if (!confirm(`Remove ${friendName} as a friend?`)) return
+    try {
+      const fb = await getFirebase()
+      const fid = friendDocIdFor(user.uid, friendUid)
+
+      // Delete friendship doc
+      await fb.deleteDoc(fb.doc(fb.db, "friends", fid))
+
+      // Update local state immediately (real-time will also update)
+      setMyFriends((prev) => prev.filter((f) => f.uid !== friendUid))
+
+      showToast("Unfriended", `${friendName} has been removed from your friends`, "info")
+    } catch (e: any) {
+      showToast("Error", e.message, "error")
+    }
+  }
+
+  /* ============================================================
+     AUTH HANDLERS
+     ============================================================ */
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -1866,6 +2189,10 @@ export default function MeBookPage() {
     }
   }
 
+  /* ============================================================
+     NAVIGATION
+     ============================================================ */
+
   const goTo = (view: string, params: any = {}) => {
     setPageStack([{ view, params }])
     setDrawerOpen(false)
@@ -1927,9 +2254,6 @@ export default function MeBookPage() {
   const openComments = (post: any) => pushPage("comments", { postId: post.id })
   const openShare = (post: any) => pushPage("share", { postId: post.id })
 
-  /* ============================================================
-     openUserProfile
-     ============================================================ */
   const openUserProfile = async (uid: string) => {
     if (uid === user.uid) {
       goTo("profile")
@@ -2002,10 +2326,6 @@ export default function MeBookPage() {
     }
   }
 
-  /* ============================================================
-     openFriendsList — new page for "View All" / Friends list
-     params: { uid, name } — whose friends to show
-     ============================================================ */
   const openFriendsList = (uid: string, name: string) => {
     pushPage("friends-list", { uid, name })
   }
@@ -2173,7 +2493,7 @@ export default function MeBookPage() {
     if (!user?.uid || !fromUid) return
     try {
       const fb = await getFirebase()
-      const friendDocId = [user.uid, fromUid].sort().join("_")
+      const friendDocId = friendDocIdFor(user.uid, fromUid)
 
       try {
         await fb.updateDoc(fb.doc(fb.db, "friendRequests", reqId), {
@@ -2837,7 +3157,6 @@ export default function MeBookPage() {
 
   /* ============================================================
   renderProfilePage
-  Friends preview = 5 avatars + "View All" tile (if > 5)
   ============================================================ */
   const renderProfilePage = (
     u: any,
@@ -2851,10 +3170,7 @@ export default function MeBookPage() {
     const friendsCount = profileFriends.length
     const mutualCount = friendsCount
 
-    // Strip avatars near the header
     const stripFriends = profileFriends.slice(0, 6)
-
-    // Preview grid: 5 friends + View All tile (if > 5)
     const previewFriends = profileFriends.slice(0, 5)
     const showViewAll = friendsCount > 5
 
@@ -3051,7 +3367,7 @@ export default function MeBookPage() {
           </button>
         </div>
 
-        {/* ===== Friends preview: 5 avatars + "View All" tile ===== */}
+        {/* Friends preview: 5 avatars + "View All" tile */}
         <div className="mb-profile-friends-section">
           <div className="mb-profile-friends-section-head">
             <h3>
@@ -3132,6 +3448,35 @@ export default function MeBookPage() {
       )}
 
       <ToastStack toasts={toasts} onDone={removeToast} />
+
+      {/* ===== Friend Action Sheet (3-dots) ===== */}
+      {actionSheetFriend && (
+        <FriendActionSheet
+          friend={actionSheetFriend}
+          onClose={() => setActionSheetFriend(null)}
+          isUnfollowed={unfollowedSet.has(actionSheetFriend.uid)}
+          onMessage={() => {
+            const f = actionSheetFriend
+            setActionSheetFriend(null)
+            startChat(f.uid, f.name, f.photoURL || "")
+          }}
+          onUnfollow={() => {
+            const f = actionSheetFriend
+            setActionSheetFriend(null)
+            handleUnfollow(f.uid)
+          }}
+          onBlock={() => {
+            const f = actionSheetFriend
+            setActionSheetFriend(null)
+            handleBlockUser(f.uid)
+          }}
+          onUnfriend={() => {
+            const f = actionSheetFriend
+            setActionSheetFriend(null)
+            handleUnfriend(f.uid, f.name)
+          }}
+        />
+      )}
 
       <header className="mb-header">
         <div className="mb-header-left" onClick={() => goTo("home")}>
@@ -3604,7 +3949,6 @@ export default function MeBookPage() {
 
                   {friendsTab === "all" && (
                     <>
-                      {/* ===== NEW: screenshot-style list ===== */}
                       <div className="fl-page">
                         <div className="fl-search">
                           <svg viewBox="0 0 24 24">
@@ -3638,7 +3982,7 @@ export default function MeBookPage() {
                                 if (!q) return true
                                 return (f.name || "").toLowerCase().includes(q)
                               })
-                              .map((f) => {
+                              .map((f, idx) => {
                                 const fPhoto = avatarUrl(f)
                                 return (
                                   <div
@@ -3648,7 +3992,8 @@ export default function MeBookPage() {
                                   >
                                     <div className="fl-avatar-wrap">
                                       <img src={fPhoto} alt={f.name} />
-                                      <span className="fl-online-dot" />
+                                      {idx % 5 === 0 && <div className="fl-avatar-ring" />}
+                                      {idx % 3 === 0 && <span className="fl-online-dot" />}
                                     </div>
                                     <div className="fl-info">
                                       <div className="fl-name">
@@ -3656,14 +4001,21 @@ export default function MeBookPage() {
                                         {isVerified(f) ? " ✓" : ""}
                                       </div>
                                       <div className="fl-mutual">
-                                        {Math.max(1, Math.floor(Math.random() * 50))} mutual friends
+                                        {Math.max(1, ((idx * 7) % 50) + 1)} mutual friends
                                       </div>
                                     </div>
-                                    <div className="fl-more">
+                                    <button
+                                      className="fl-more"
+                                      onClick={(e) => {
+                                        e.stopPropagation()
+                                        setActionSheetFriend(f)
+                                      }}
+                                      title="More options"
+                                    >
                                       <svg viewBox="0 0 24 24">
                                         <path d="M6 10c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm12 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-6 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
                                       </svg>
-                                    </div>
+                                    </button>
                                   </div>
                                 )
                               })}
@@ -3675,56 +4027,116 @@ export default function MeBookPage() {
 
                   {friendsTab === "mutual" && (
                     <>
-                      <div className="mb-search-box" style={{ marginBottom: 14 }}>
-                        <svg viewBox="0 0 24 24">
-                          <path d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
-                        </svg>
-                        <input
-                          type="text"
-                          placeholder="Search all MeBook users..."
-                          value={friendSearch}
-                          onChange={(e) => setFriendSearch(e.target.value)}
-                        />
-                      </div>
-                      {filteredFriends.length === 0 ? (
-                        <div className="mb-empty"><b>No users found</b></div>
-                      ) : (
-                        <div className="fr-grid">
-                          {filteredFriends.map((u) => {
-                            const photo = avatarUrl(u)
-                            const isFriend = myFriends.some((f) => f.uid === u.uid)
-                            const hasPendingSent = sentFriendRequests.some((r) => r.to === u.uid && r.status === "pending")
-                            return (
-                              <div className="fr-card" key={u.uid} onClick={() => openUserProfile(u.uid)}>
-                                <img className="fr-card-img" src={photo} alt="" />
-                                <div className="fr-card-info">
-                                  <div className="fr-card-name">{u.name}{isVerified(u) && " ✓"}</div>
-                                  <div className="fr-card-actions">
-                                    {isFriend ? (
-                                      <button className="mb-btn mb-btn-primary" disabled>✓ Friends</button>
-                                    ) : hasPendingSent ? (
-                                      <button className="mb-btn mb-btn-secondary" disabled>Sent ✓</button>
-                                    ) : (
-                                      <button
-                                        className="mb-btn mb-btn-primary"
-                                        onClick={(e) => { e.stopPropagation(); handleSendRequest(u.uid) }}
-                                      >
-                                        Add Friend
-                                      </button>
-                                    )}
-                                    <button
-                                      className="mb-btn mb-btn-secondary"
-                                      onClick={(e) => { e.stopPropagation(); startChat(u.uid, u.name, photo) }}
-                                    >
-                                      Message
-                                    </button>
-                                  </div>
-                                </div>
-                              </div>
-                            )
-                          })}
+                      {/* ===== Find Friends tab — NOW IN LIST VIEW ===== */}
+                      <div className="fl-page">
+                        <div className="fl-search">
+                          <svg viewBox="0 0 24 24">
+                            <path d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
+                          </svg>
+                          <input
+                            type="text"
+                            placeholder="Search all MeBook users"
+                            value={friendSearch}
+                            onChange={(e) => setFriendSearch(e.target.value)}
+                          />
                         </div>
-                      )}
+
+                        <div className="fl-stats-row">
+                          <div className="fl-stats-left">
+                            <div className="fl-stats-title">{filteredFriends.length} people</div>
+                            <div className="fl-stats-sub">
+                              {filteredFriends.filter((_, i) => i % 3 === 0).length} online
+                            </div>
+                          </div>
+                          <button className="fl-sort">Sort</button>
+                        </div>
+
+                        {filteredFriends.length === 0 ? (
+                          <div className="fl-empty">No users found</div>
+                        ) : (
+                          <div className="fl-list">
+                            {filteredFriends.map((u, idx) => {
+                              const photo = avatarUrl(u)
+                              const isFriend = myFriends.some((f) => f.uid === u.uid)
+                              const hasPendingSent = sentFriendRequests.some(
+                                (r) => r.to === u.uid && r.status === "pending"
+                              )
+                              const isOnline = idx % 3 === 0
+                              const showRing = idx % 5 === 0
+
+                              return (
+                                <div
+                                  className="fl-item"
+                                  key={u.uid}
+                                  onClick={() => openUserProfile(u.uid)}
+                                >
+                                  <div className="fl-avatar-wrap">
+                                    <img src={photo} alt={u.name} />
+                                    {showRing && <div className="fl-avatar-ring" />}
+                                    {isOnline && <span className="fl-online-dot" />}
+                                  </div>
+                                  <div className="fl-info">
+                                    <div className="fl-name">
+                                      {u.name}
+                                      {isVerified(u) ? " ✓" : ""}
+                                    </div>
+                                    <div className="fl-mutual">
+                                      {isFriend
+                                        ? "Already friends"
+                                        : hasPendingSent
+                                        ? "Request pending"
+                                        : `${Math.max(1, ((idx * 7) % 50) + 1)} mutual friends`}
+                                    </div>
+                                  </div>
+
+                                  {/* Right-side action button */}
+                                  {isFriend ? (
+                                    <button
+                                      className="fl-more"
+                                      onClick={(e) => {
+                                        e.stopPropagation()
+                                        startChat(u.uid, u.name, photo)
+                                      }}
+                                      title="Message"
+                                    >
+                                      <svg viewBox="0 0 24 24">
+                                        <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z" />
+                                      </svg>
+                                    </button>
+                                  ) : hasPendingSent ? (
+                                    <button
+                                      className="fl-more"
+                                      onClick={(e) => {
+                                        e.stopPropagation()
+                                        handleCancelRequest(u.uid)
+                                      }}
+                                      title="Cancel request"
+                                    >
+                                      <svg viewBox="0 0 24 24">
+                                        <path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
+                                      </svg>
+                                    </button>
+                                  ) : (
+                                    <button
+                                      className="fl-more"
+                                      style={{ color: "#22c55e" }}
+                                      onClick={(e) => {
+                                        e.stopPropagation()
+                                        handleSendRequest(u.uid)
+                                      }}
+                                      title="Add friend"
+                                    >
+                                      <svg viewBox="0 0 24 24">
+                                        <path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                                      </svg>
+                                    </button>
+                                  )}
+                                </div>
+                              )
+                            })}
+                          </div>
+                        )}
+                      </div>
                     </>
                   )}
                 </div>
@@ -3732,7 +4144,7 @@ export default function MeBookPage() {
             </div>
           )}
 
-          {/* ============ FRIENDS LIST PAGE (screenshot style) ============ */}
+          {/* ============ FRIENDS LIST PAGE ============ */}
           {currentView === "friends-list" && (() => {
             const targetUid = currentParams.uid || user.uid
             const targetName = currentParams.name || profile.name
@@ -3797,6 +4209,8 @@ export default function MeBookPage() {
                           const fPhoto = avatarUrl(f)
                           const isOnline = idx % 3 === 0
                           const showRing = idx % 5 === 0
+                          const isOwnFriend = myFriends.some((mf) => mf.uid === f.uid)
+
                           return (
                             <div
                               className="fl-item"
@@ -3819,11 +4233,25 @@ export default function MeBookPage() {
                               </div>
                               <button
                                 className="fl-more"
-                                onClick={(e) => e.stopPropagation()}
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  if (isOwnFriend) {
+                                    setActionSheetFriend(f)
+                                  } else {
+                                    startChat(f.uid, f.name, fPhoto)
+                                  }
+                                }}
+                                title={isOwnFriend ? "More options" : "Message"}
                               >
-                                <svg viewBox="0 0 24 24">
-                                  <path d="M6 10c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm12 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-6 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
-                                </svg>
+                                {isOwnFriend ? (
+                                  <svg viewBox="0 0 24 24">
+                                    <path d="M6 10c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm12 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-6 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
+                                  </svg>
+                                ) : (
+                                  <svg viewBox="0 0 24 24">
+                                    <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z" />
+                                  </svg>
+                                )}
                               </button>
                             </div>
                           )

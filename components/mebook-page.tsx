@@ -85,6 +85,19 @@ const LOGO_URL = "https://i.postimg.cc/g0pGNkxc/file-000000000bf482118c249820a09
 const HEADER_LOGO = "https://i.postimg.cc/rsBBsQWF/17832-removebg-preview.png"
 
 /* ============================================================
+REACTION CONFIG
+============================================================ */
+
+const REACTIONS = [
+  { key: "like", emoji: "👍", label: "Like", color: "#1877f2" },
+  { key: "love", emoji: "❤️", label: "Love", color: "#f33e58" },
+  { key: "haha", emoji: "😂", label: "Haha", color: "#f7b125" },
+  { key: "wow", emoji: "😮", label: "Wow", color: "#f7b125" },
+  { key: "sad", emoji: "😢", label: "Sad", color: "#f7b125" },
+  { key: "angry", emoji: "😡", label: "Angry", color: "#e9710f" },
+]
+
+/* ============================================================
 HELPERS
 ============================================================ */
 
@@ -587,23 +600,164 @@ scrollbar-width:none;
 .mebook-root .msgr-wrap.mobile-on-window .msgr-window{display:flex;}
 }
 
-/* ============ COMMENTS PAGE ============ */
-.mebook-root .cmt-page-wrap{border-radius:12px;box-shadow:var(--shadow);overflow:hidden;margin-bottom:16px;}
-.mebook-root .cmt-page-head{padding:14px 16px;border-bottom:1px solid var(--border);font-size:16px;font-weight:700;}
-.mebook-root .cmt-page-list{padding:14px 16px;max-height:480px;overflow-y:auto;}
+/* ============================================================
+   ENHANCED COMMENTS PAGE
+   ============================================================ */
+.mebook-root .cmt-page-wrap{
+border-radius:12px;box-shadow:var(--shadow);overflow:hidden;margin-bottom:16px;
+display:flex;flex-direction:column;
+height:calc(100vh - 200px);
+min-height:480px;
+}
+.mebook-root .cmt-page-head{
+padding:14px 16px;border-bottom:1px solid var(--border);
+font-size:16px;font-weight:700;flex-shrink:0;
+display:flex;align-items:center;justify-content:space-between;
+}
+.mebook-root .cmt-page-list{
+flex:1;overflow-y:auto;padding:14px 16px;
+scroll-behavior:smooth;
+}
+.mebook-root .cmt-page-list::-webkit-scrollbar{width:6px;}
+.mebook-root .cmt-page-list::-webkit-scrollbar-thumb{background:var(--border);border-radius:10px;}
+
 .mebook-root .cmt-row{display:flex;gap:8px;margin-bottom:12px;animation:cmtIn .3s ease;}
 @keyframes cmtIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
-.mebook-root .cmt-row-avatar{width:34px;height:34px;border-radius:50%;object-fit:cover;flex-shrink:0;background:#cbd5e1;}
-.mebook-root .cmt-bubble{border-radius:16px 16px 16px 4px;padding:8px 12px;font-size:14px;line-height:1.42;color:var(--text);max-width:78%;word-wrap:break-word;white-space:pre-wrap;background:var(--input-bg);}
+.mebook-root .cmt-row-avatar{width:36px;height:36px;border-radius:50%;object-fit:cover;flex-shrink:0;background:#cbd5e1;cursor:pointer;}
+.mebook-root .cmt-row-body{flex:1;min-width:0;}
+.mebook-root .cmt-bubble{
+border-radius:16px 16px 16px 4px;
+padding:8px 12px;font-size:14px;line-height:1.42;
+color:var(--text);max-width:88%;word-wrap:break-word;white-space:pre-wrap;
+background:var(--input-bg);position:relative;
+display:inline-block;
+}
 .mebook-root .cmt-bubble b{display:block;font-size:13px;font-weight:700;margin-bottom:2px;color:var(--text);}
 .mebook-root .cmt-bubble .cmt-time{display:block;font-size:11px;color:var(--text-muted);margin-top:3px;font-weight:500;}
-.mebook-root .cmt-empty{text-align:center;padding:40px 20px;color:var(--text-muted);font-size:14px;}
-.mebook-root .cmt-input-wrap{display:flex;gap:8px;align-items:flex-end;padding:10px 14px 14px;border-top:1px solid var(--border);}
-.mebook-root .cmt-input-avatar{width:34px;height:34px;border-radius:50%;object-fit:cover;flex-shrink:0;background:#cbd5e1;}
+.mebook-root .cmt-bubble .cmt-reaction-badge{
+position:absolute;bottom:-8px;right:-6px;
+background:var(--card);border-radius:14px;
+padding:1px 5px;display:flex;align-items:center;gap:2px;
+box-shadow:0 1px 4px rgba(0,0,0,.15);
+font-size:13px;border:1px solid var(--border);
+}
+.mebook-root .cmt-bubble .cmt-reaction-badge small{font-size:11px;color:var(--text-muted);font-weight:600;margin-left:2px;}
+
+.mebook-root .cmt-actions-row{
+display:flex;align-items:center;gap:14px;
+margin-top:4px;padding:0 6px;
+font-size:12.5px;font-weight:600;color:var(--text-muted);
+}
+.mebook-root .cmt-action-btn{
+padding:2px 4px;border-radius:4px;transition:color .15s;
+position:relative;
+}
+.mebook-root .cmt-action-btn:hover{color:var(--green);}
+.mebook-root .cmt-action-btn.my-reaction{color:var(--green);}
+
+/* Reply indent */
+.mebook-root .cmt-replies{
+margin-left:44px;margin-top:6px;
+padding-left:10px;
+border-left:2px solid var(--border);
+display:flex;flex-direction:column;gap:8px;
+}
+.mebook-root .cmt-reply-row{
+display:flex;gap:8px;animation:cmtIn .3s ease;
+}
+.mebook-root .cmt-reply-row .cmt-row-avatar{
+width:28px;height:28px;
+}
+.mebook-root .cmt-reply-row .cmt-bubble{
+font-size:13.5px;padding:6px 10px;
+}
+.mebook-root .cmt-view-more-replies{
+font-size:12.5px;font-weight:700;color:#3b82f6;
+padding:3px 6px;cursor:pointer;display:inline-block;
+border-radius:6px;transition:background .15s;
+}
+.mebook-root .cmt-view-more-replies:hover{background:rgba(59,130,246,.08);text-decoration:underline;}
+
+/* Reply indicator */
+.mebook-root .cmt-reply-indicator{
+display:flex;align-items:center;gap:6px;
+padding:8px 12px;background:var(--input-bg);
+border-top:1px solid var(--border);
+font-size:12.5px;color:var(--text-muted);
+flex-shrink:0;
+}
+.mebook-root .cmt-reply-indicator b{color:var(--text);font-weight:700;}
+.mebook-root .cmt-reply-indicator button{
+margin-left:auto;color:#ef4444;font-weight:700;
+padding:2px 8px;border-radius:6px;
+}
+.mebook-root .cmt-reply-indicator button:hover{background:rgba(239,68,68,.1);}
+
+.mebook-root .cmt-empty{text-align:center;padding:60px 20px;color:var(--text-muted);font-size:14px;}
+.mebook-root .cmt-empty svg{width:60px;height:60px;fill:var(--border);margin:0 auto 12px;}
+.mebook-root .cmt-empty b{font-size:16px;display:block;margin-bottom:6px;color:var(--text);}
+
+.mebook-root .cmt-input-wrap{
+display:flex;gap:8px;align-items:flex-end;
+padding:10px 14px 14px;border-top:1px solid var(--border);
+flex-shrink:0;background:var(--card);
+transition:transform .25s ease;
+}
+.mebook-root .cmt-input-wrap.keyboard-up{
+transform:translateY(0);
+}
+.mebook-root .cmt-input-avatar{width:36px;height:36px;border-radius:50%;object-fit:cover;flex-shrink:0;background:#cbd5e1;}
 .mebook-root .cmt-input{flex:1;border:none;border-radius:20px;padding:10px 14px;font-size:14.5px;outline:none;color:var(--text);resize:none;max-height:120px;font-family:inherit;line-height:1.4;background:var(--input-bg);}
-.mebook-root .cmt-send{width:38px;height:38px;border-radius:50%;background:var(--green);color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.mebook-root .cmt-send{width:38px;height:38px;border-radius:50%;background:var(--green);color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:transform .12s;}
+.mebook-root .cmt-send:active{transform:scale(.9);}
 .mebook-root .cmt-send:disabled{opacity:.5;cursor:not-allowed;}
 .mebook-root .cmt-send svg{width:18px;height:18px;fill:#fff;}
+
+/* Reaction picker */
+.mebook-root .cmt-reaction-picker{
+position:fixed;z-index:3000;
+background:var(--card);
+border-radius:30px;
+padding:6px 8px;
+display:flex;gap:2px;
+box-shadow:0 6px 24px rgba(0,0,0,.25), 0 0 0 1px rgba(0,0,0,.05);
+transform:scale(.7) translateY(8px);
+opacity:0;pointer-events:none;
+transform-origin:bottom left;
+transition:transform .22s cubic-bezier(.2,1.4,.4,1), opacity .18s ease;
+}
+.mebook-root.dark-mode .cmt-reaction-picker{
+box-shadow:0 6px 28px rgba(0,0,0,.9), 0 0 0 1px rgba(255,255,255,.06);
+}
+.mebook-root .cmt-reaction-picker.open{
+opacity:1;pointer-events:auto;
+transform:scale(1) translateY(0);
+}
+.mebook-root .cmt-reaction-picker button{
+width:40px;height:40px;border-radius:50%;
+display:flex;align-items:center;justify-content:center;
+font-size:24px;line-height:1;
+transition:transform .18s ease, background .15s;
+}
+.mebook-root .cmt-reaction-picker button:hover{
+transform:scale(1.35) translateY(-4px);
+background:var(--hover);
+}
+.mebook-root .cmt-reaction-picker button:active{
+transform:scale(1.1);
+}
+
+/* Reaction flying animation */
+@keyframes reactionFly{
+0%{transform:scale(1) translateY(0);opacity:1;}
+50%{transform:scale(1.8) translateY(-30px);opacity:1;}
+100%{transform:scale(.3) translateY(-70px);opacity:0;}
+}
+.mebook-root .cmt-flying-reaction{
+position:fixed;z-index:3500;font-size:26px;
+pointer-events:none;
+animation:reactionFly .7s cubic-bezier(.2,.8,.3,1) forwards;
+}
 
 /* ============ SHARE PAGE ============ */
 .mebook-root .share-page-wrap{border-radius:12px;box-shadow:var(--shadow);padding:16px;margin-bottom:16px;}
@@ -1082,8 +1236,7 @@ padding:14px 20px 6px;
 flex-wrap:wrap;
 }
 .mebook-root .mb-profile-friends-avatars{
-display:flex;
-flex-shrink:0;
+display:flex;flex-shrink:0;
 }
 .mebook-root .mb-profile-friends-avatars img{
 width:34px;height:34px;border-radius:50%;
@@ -1354,6 +1507,8 @@ font-weight:500;
 .mebook-root .fl-sheet-header-name{font-size:15px;}
 .mebook-root .fl-sheet-title{font-size:14.5px;}
 .mebook-root .fl-sheet-desc{font-size:12px;}
+.mebook-root .cmt-replies{margin-left:36px;}
+.mebook-root .cmt-row-avatar{width:32px;height:32px;}
 }
 `
 
@@ -1470,7 +1625,6 @@ function FriendActionSheet({
       >
         <div className="fl-sheet-handle" />
 
-        {/* Header — avatar + name + "Friends since" */}
         <div className="fl-sheet-header">
           <img src={photo} alt={friend.name} />
           <div className="fl-sheet-header-info">
@@ -1479,9 +1633,7 @@ function FriendActionSheet({
           </div>
         </div>
 
-        {/* Options */}
         <div className="fl-sheet-options">
-          {/* Message */}
           <button
             className="fl-sheet-option"
             onClick={() => {
@@ -1499,7 +1651,6 @@ function FriendActionSheet({
             </div>
           </button>
 
-          {/* Unfollow */}
           <button
             className="fl-sheet-option"
             onClick={() => {
@@ -1524,7 +1675,6 @@ function FriendActionSheet({
             </div>
           </button>
 
-          {/* Block */}
           <button
             className="fl-sheet-option danger"
             onClick={() => {
@@ -1545,7 +1695,6 @@ function FriendActionSheet({
             </div>
           </button>
 
-          {/* Unfriend */}
           <button
             className="fl-sheet-option danger"
             onClick={() => {
@@ -1565,6 +1714,45 @@ function FriendActionSheet({
           </button>
         </div>
       </div>
+    </div>
+  )
+}
+
+/* ============================================================
+REACTION PICKER COMPONENT
+============================================================ */
+
+function ReactionPicker({
+  anchorRect,
+  open,
+  onReact,
+  onClose,
+}: {
+  anchorRect: { x: number; y: number; width: number } | null
+  open: boolean
+  onReact: (reactionKey: string, emoji: string) => void
+  onClose: () => void
+}) {
+  if (!anchorRect) return null
+  return (
+    <div
+      className={`cmt-reaction-picker${open ? " open" : ""}`}
+      style={{
+        left: anchorRect.x,
+        top: anchorRect.y - 52,
+      }}
+      onClick={(e) => e.stopPropagation()}
+    >
+      {REACTIONS.map((r) => (
+        <button
+          key={r.key}
+          type="button"
+          title={r.label}
+          onClick={() => onReact(r.key, r.emoji)}
+        >
+          {r.emoji}
+        </button>
+      ))}
     </div>
   )
 }
@@ -1664,14 +1852,47 @@ export default function MeBookPage() {
 
   const [commentText, setCommentText] = useState("")
   const [commentBusy, setCommentBusy] = useState(false)
+  const [replyTo, setReplyTo] = useState<any>(null) // the comment being replied to
+  const [expandedReplies, setExpandedReplies] = useState<Set<string>>(new Set())
   const commentListRef = useRef<HTMLDivElement>(null)
+  const commentInputRef = useRef<HTMLTextAreaElement>(null)
+  const commentWrapRef = useRef<HTMLDivElement>(null)
+
+  // Reaction picker state
+  const [reactionPicker, setReactionPicker] = useState<{
+    open: boolean
+    commentKey: string | null
+    anchorRect: { x: number; y: number; width: number } | null
+  }>({ open: false, commentKey: null, anchorRect: null })
+
+  // Flying reactions (for animation)
+  const [flyingReactions, setFlyingReactions] = useState<
+    Array<{ id: number; x: number; y: number; emoji: string }>
+  >([])
+  const flyingIdRef = useRef(0)
+
+  // Keyboard handling for mobile — push the input above keyboard
+  const [kbUp, setKbUp] = useState(false)
+  useEffect(() => {
+    if (typeof window === "undefined") return
+    const vv = (window as any).visualViewport
+    if (!vv) return
+    const handleResize = () => {
+      const isKbOpen = window.innerHeight - vv.height > 120
+      setKbUp(isKbOpen)
+    }
+    vv.addEventListener("resize", handleResize)
+    vv.addEventListener("scroll", handleResize)
+    return () => {
+      vv.removeEventListener("resize", handleResize)
+      vv.removeEventListener("scroll", handleResize)
+    }
+  }, [])
 
   const [shareCaption, setShareCaption] = useState("")
   const [shareBusy, setShareBusy] = useState(false)
 
-  // Action sheet state (3-dots menu)
   const [actionSheetFriend, setActionSheetFriend] = useState<any>(null)
-  // Track which friends I've unfollowed (local only; you can persist if needed)
   const [unfollowedSet, setUnfollowedSet] = useState<Set<string>>(new Set())
 
   const unsubscribersRef = useRef<Array<() => void>>([])
@@ -2009,18 +2230,201 @@ export default function MeBookPage() {
       if (e.key === "Escape") {
         setMenuOpen(false)
         setActionSheetFriend(null)
+        setReactionPicker({ open: false, commentKey: null, anchorRect: null })
       }
     }
     document.addEventListener("keydown", onKey)
     return () => document.removeEventListener("keydown", onKey)
   }, [])
 
+  // Close reaction picker on outside click
+  useEffect(() => {
+    if (!reactionPicker.open) return
+    const handler = () => {
+      setReactionPicker({ open: false, commentKey: null, anchorRect: null })
+    }
+    // delay to avoid same-click close
+    setTimeout(() => {
+      document.addEventListener("click", handler)
+    }, 10)
+    return () => document.removeEventListener("click", handler)
+  }, [reactionPicker.open])
+
   /* ============================================================
-     FRIEND ACTIONS (Unfollow / Block / Unfriend)
+     COMMENT / REACTION HELPERS
+     ============================================================ */
+
+  // Comments are stored on the post as an array of objects:
+  // { id, uid, name, avatar, text, at, parentId?, reactions?: { uid: reactionKey } }
+  const buildCommentId = () => `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
+
+  const handleAddComment = async (postId: string) => {
+    const text = commentText.trim()
+    if (!text || commentBusy) return
+    setCommentBusy(true)
+    try {
+      const fb = await getFirebase()
+      const ref = fb.doc(fb.db, "posts", postId)
+      const snap = await fb.getDoc(ref)
+      if (!snap.exists()) {
+        showToast("Error", "Post not found", "error")
+        return
+      }
+      const existing = snap.data().comments || []
+      const newComment: any = {
+        id: buildCommentId(),
+        uid: user.uid,
+        name: profile.name,
+        avatar: profile.photoURL || "",
+        text,
+        at: Date.now(),
+        reactions: {},
+      }
+      if (replyTo && replyTo.id) {
+        newComment.parentId = replyTo.id
+      }
+      const updated = [...existing, newComment]
+      await fb.updateDoc(ref, { comments: updated })
+
+      // Notification
+      const post = snap.data()
+      if (post.authorId && post.authorId !== user.uid && post.authorId !== "admin") {
+        await fb.addDoc(fb.collection(fb.db, "notifications"), {
+          uid: post.authorId,
+          title: replyTo ? "New Reply" : "New Comment",
+          message: `${profile.name} ${replyTo ? "replied to a comment" : "commented"} on your post.`,
+          type: "comment",
+          read: false,
+          createdAt: fb.serverTimestamp(),
+        })
+      }
+
+      // If replying, also notify the parent comment author
+      if (replyTo && replyTo.uid && replyTo.uid !== user.uid && replyTo.uid !== post.authorId) {
+        await fb.addDoc(fb.collection(fb.db, "notifications"), {
+          uid: replyTo.uid,
+          title: "New Reply",
+          message: `${profile.name} replied to your comment.`,
+          type: "comment",
+          read: false,
+          createdAt: fb.serverTimestamp(),
+        })
+      }
+
+      setCommentText("")
+      setReplyTo(null)
+      showToast(replyTo ? "Reply added!" : "Comment added!", "", "success")
+
+      // Auto-expand replies if we were replying
+      if (replyTo && replyTo.id) {
+        setExpandedReplies((s) => {
+          const c = new Set(s)
+          c.add(replyTo.id)
+          return c
+        })
+      }
+    } catch (e: any) {
+      showToast("Error", e.message, "error")
+    } finally {
+      setCommentBusy(false)
+    }
+  }
+
+  const handleReactToComment = async (
+    postId: string,
+    commentId: string,
+    reactionKey: string,
+    emoji: string,
+    evt?: { clientX: number; clientY: number }
+  ) => {
+    try {
+      const fb = await getFirebase()
+      const ref = fb.doc(fb.db, "posts", postId)
+      const snap = await fb.getDoc(ref)
+      if (!snap.exists()) return
+      const comments = snap.data().comments || []
+      const updated = comments.map((c: any) => {
+        if (c.id === commentId) {
+          const reactions = { ...(c.reactions || {}) }
+          if (reactions[user.uid] === reactionKey) {
+            delete reactions[user.uid]
+          } else {
+            reactions[user.uid] = reactionKey
+          }
+          return { ...c, reactions }
+        }
+        return c
+      })
+      await fb.updateDoc(ref, { comments: updated })
+
+      // Flying animation
+      if (evt) {
+        const id = ++flyingIdRef.current
+        setFlyingReactions((prev) => [
+          ...prev,
+          { id, x: evt.clientX, y: evt.clientY, emoji },
+        ])
+        setTimeout(() => {
+          setFlyingReactions((prev) => prev.filter((r) => r.id !== id))
+        }, 750)
+      }
+
+      // Notification
+      const targetComment = comments.find((c: any) => c.id === commentId)
+      if (targetComment && targetComment.uid && targetComment.uid !== user.uid) {
+        await fb.addDoc(fb.collection(fb.db, "notifications"), {
+          uid: targetComment.uid,
+          title: "New Reaction",
+          message: `${profile.name} reacted ${emoji} to your comment.`,
+          type: "like",
+          read: false,
+          createdAt: fb.serverTimestamp(),
+        })
+      }
+    } catch (e: any) {
+      showToast("Error", e.message, "error")
+    } finally {
+      setReactionPicker({ open: false, commentKey: null, anchorRect: null })
+    }
+  }
+
+  const handleLongPressReaction = (
+    evt: React.MouseEvent | React.TouchEvent,
+    commentKey: string
+  ) => {
+    const target = evt.currentTarget as HTMLElement
+    const rect = target.getBoundingClientRect()
+    setReactionPicker({
+      open: true,
+      commentKey,
+      anchorRect: {
+        x: rect.left,
+        y: rect.top,
+        width: rect.width,
+      },
+    })
+  }
+
+  // Build tree: top-level comments + replies
+  const buildCommentTree = (comments: any[]) => {
+    const tops: any[] = []
+    const repliesMap: Record<string, any[]> = {}
+    for (const c of comments) {
+      if (c.parentId) {
+        if (!repliesMap[c.parentId]) repliesMap[c.parentId] = []
+        repliesMap[c.parentId].push(c)
+      } else {
+        tops.push(c)
+      }
+    }
+    return { tops, repliesMap }
+  }
+
+  /* ============================================================
+     FRIEND ACTIONS
      ============================================================ */
 
   const handleUnfollow = async (friendUid: string) => {
-    // Local-only for now (can be persisted to a separate 'unfollows' collection)
     setUnfollowedSet((prev) => {
       const copy = new Set(prev)
       if (copy.has(friendUid)) {
@@ -2038,24 +2442,17 @@ export default function MeBookPage() {
     if (!confirm("Block this user? They won't be able to see or contact you.")) return
     try {
       const fb = await getFirebase()
-
-      // 1. Remove friendship
       const fid = friendDocIdFor(user.uid, friendUid)
       try {
         await fb.deleteDoc(fb.doc(fb.db, "friends", fid))
       } catch {}
-
-      // 2. Add to blocks collection
       const blockId = `${user.uid}_${friendUid}`
       await fb.setDoc(fb.doc(fb.db, "blocks", blockId), {
         blocker: user.uid,
         blocked: friendUid,
         createdAt: fb.serverTimestamp(),
       })
-
-      // 3. Update local state
       setMyFriends((prev) => prev.filter((f) => f.uid !== friendUid))
-
       showToast("Blocked", "User has been blocked", "success")
     } catch (e: any) {
       showToast("Error", e.message, "error")
@@ -2067,13 +2464,8 @@ export default function MeBookPage() {
     try {
       const fb = await getFirebase()
       const fid = friendDocIdFor(user.uid, friendUid)
-
-      // Delete friendship doc
       await fb.deleteDoc(fb.doc(fb.db, "friends", fid))
-
-      // Update local state immediately (real-time will also update)
       setMyFriends((prev) => prev.filter((f) => f.uid !== friendUid))
-
       showToast("Unfriended", `${friendName} has been removed from your friends`, "info")
     } catch (e: any) {
       showToast("Error", e.message, "error")
@@ -2198,6 +2590,10 @@ export default function MeBookPage() {
     setDrawerOpen(false)
     setMenuOpen(false)
     if (view !== "messages") setMobileChatWindow(false)
+    if (view !== "comments") {
+      setReplyTo(null)
+      setCommentText("")
+    }
     window.scrollTo({ top: 0, behavior: "auto" })
   }
 
@@ -2210,6 +2606,8 @@ export default function MeBookPage() {
 
   const goBack = () => {
     setPageStack((s) => (s.length > 1 ? s.slice(0, -1) : [{ view: "home" }]))
+    setReplyTo(null)
+    setCommentText("")
     window.scrollTo({ top: 0, behavior: "auto" })
   }
 
@@ -2251,7 +2649,21 @@ export default function MeBookPage() {
     }
   }
 
-  const openComments = (post: any) => pushPage("comments", { postId: post.id })
+  const openComments = (post: any) => {
+    setReplyTo(null)
+    setCommentText("")
+    pushPage("comments", { postId: post.id })
+    // Auto focus + scroll after render
+    setTimeout(() => {
+      try {
+        commentInputRef.current?.focus()
+      } catch {}
+      if (commentListRef.current) {
+        commentListRef.current.scrollTop = commentListRef.current.scrollHeight
+      }
+    }, 220)
+  }
+
   const openShare = (post: any) => pushPage("share", { postId: post.id })
 
   const openUserProfile = async (uid: string) => {
@@ -2727,50 +3139,6 @@ export default function MeBookPage() {
       showToast("Privacy updated", "Your preferences have been saved", "success")
     } catch (e: any) {
       showToast("Error", e.message, "error")
-    }
-  }
-
-  const handleAddComment = async (postId: string) => {
-    const text = commentText.trim()
-    if (!text || commentBusy) return
-    setCommentBusy(true)
-    try {
-      const fb = await getFirebase()
-      const ref = fb.doc(fb.db, "posts", postId)
-      const snap = await fb.getDoc(ref)
-      await fb.updateDoc(ref, {
-        comments: fb.arrayUnion({
-          uid: user.uid,
-          name: profile.name,
-          avatar: profile.photoURL || "",
-          text,
-          at: Date.now(),
-        }),
-      })
-      if (snap.exists()) {
-        const post = snap.data()
-        if (post.authorId && post.authorId !== user.uid && post.authorId !== "admin") {
-          await fb.addDoc(fb.collection(fb.db, "notifications"), {
-            uid: post.authorId,
-            title: "New Comment",
-            message: `${profile.name} commented on your post.`,
-            type: "comment",
-            read: false,
-            createdAt: fb.serverTimestamp(),
-          })
-        }
-      }
-      setCommentText("")
-      showToast("Comment added!", "Your comment is now visible", "success")
-      setTimeout(() => {
-        if (commentListRef.current) {
-          commentListRef.current.scrollTop = commentListRef.current.scrollHeight
-        }
-      }, 100)
-    } catch (e: any) {
-      showToast("Error", e.message, "error")
-    } finally {
-      setCommentBusy(false)
     }
   }
 
@@ -3367,7 +3735,6 @@ export default function MeBookPage() {
           </button>
         </div>
 
-        {/* Friends preview: 5 avatars + "View All" tile */}
         <div className="mb-profile-friends-section">
           <div className="mb-profile-friends-section-head">
             <h3>
@@ -3449,7 +3816,41 @@ export default function MeBookPage() {
 
       <ToastStack toasts={toasts} onDone={removeToast} />
 
-      {/* ===== Friend Action Sheet (3-dots) ===== */}
+      {/* ===== Flying reactions animation layer ===== */}
+      {flyingReactions.map((r) => (
+        <div
+          key={r.id}
+          className="cmt-flying-reaction"
+          style={{ left: r.x, top: r.y }}
+        >
+          {r.emoji}
+        </div>
+      ))}
+
+      {/* ===== Reaction picker ===== */}
+      <ReactionPicker
+        anchorRect={reactionPicker.anchorRect}
+        open={reactionPicker.open}
+        onReact={(key, emoji) => {
+          const postId = currentParams.postId
+          if (!postId || !reactionPicker.commentKey) return
+          // Find last pointer position for flying animation
+          const pos = { clientX: window.innerWidth / 2, clientY: window.innerHeight / 2 }
+          const clickHandler = (ev: MouseEvent) => {
+            pos.clientX = ev.clientX
+            pos.clientY = ev.clientY
+          }
+          // We already have anchorRect → derive approximate position
+          if (reactionPicker.anchorRect) {
+            pos.clientX = reactionPicker.anchorRect.x + reactionPicker.anchorRect.width / 2
+            pos.clientY = reactionPicker.anchorRect.y
+          }
+          handleReactToComment(postId, reactionPicker.commentKey, key, emoji, pos)
+        }}
+        onClose={() => setReactionPicker({ open: false, commentKey: null, anchorRect: null })}
+      />
+
+      {/* ===== Friend Action Sheet ===== */}
       {actionSheetFriend && (
         <FriendActionSheet
           friend={actionSheetFriend}
@@ -4027,7 +4428,6 @@ export default function MeBookPage() {
 
                   {friendsTab === "mutual" && (
                     <>
-                      {/* ===== Find Friends tab — NOW IN LIST VIEW ===== */}
                       <div className="fl-page">
                         <div className="fl-search">
                           <svg viewBox="0 0 24 24">
@@ -4089,7 +4489,6 @@ export default function MeBookPage() {
                                     </div>
                                   </div>
 
-                                  {/* Right-side action button */}
                                   {isFriend ? (
                                     <button
                                       className="fl-more"
@@ -4144,7 +4543,6 @@ export default function MeBookPage() {
             </div>
           )}
 
-          {/* ============ FRIENDS LIST PAGE ============ */}
           {currentView === "friends-list" && (() => {
             const targetUid = currentParams.uid || user.uid
             const targetName = currentParams.name || profile.name
@@ -4509,6 +4907,9 @@ export default function MeBookPage() {
             </div>
           )}
 
+          {/* ============================================================
+              COMMENTS PAGE — ONLY COMMENTS, NO POST
+              ============================================================ */}
           {currentView === "comments" && (() => {
             const post = findPost(currentParams.postId)
             if (!post) {
@@ -4519,6 +4920,148 @@ export default function MeBookPage() {
                 </div>
               )
             }
+
+            const allComments = post.comments || []
+            const { tops, repliesMap } = buildCommentTree(allComments)
+
+            const totalCount = allComments.length
+
+            const renderReactionBadge = (reactions: Record<string, string>) => {
+              const entries = Object.entries(reactions || {})
+              if (entries.length === 0) return null
+              // Count by reaction key
+              const counts: Record<string, number> = {}
+              for (const [, key] of entries) {
+                counts[key] = (counts[key] || 0) + 1
+              }
+              const keys = Object.keys(counts)
+              const top = keys.slice(0, 3)
+              const emojis = top
+                .map((k) => REACTIONS.find((r) => r.key === k)?.emoji || "👍")
+                .join("")
+              return (
+                <span className="cmt-reaction-badge">
+                  {emojis}
+                  <small>{entries.length}</small>
+                </span>
+              )
+            }
+
+            const renderCommentRow = (
+              c: any,
+              isReply: boolean,
+              parentComment?: any
+            ) => {
+              const cAvatar =
+                c.avatar ||
+                `https://ui-avatars.com/api/?background=16a34a&color=fff&name=${encodeURIComponent(c.name || "U")}`
+              const myReaction = c.reactions?.[user.uid]
+              const commentKey = c.id
+
+              return (
+                <div
+                  className={isReply ? "cmt-reply-row" : "cmt-row"}
+                  key={c.id}
+                >
+                  <img
+                    className="cmt-row-avatar"
+                    src={cAvatar}
+                    alt=""
+                    onClick={() => c.uid && openUserProfile(c.uid)}
+                  />
+                  <div className="cmt-row-body">
+                    <div
+                      className="cmt-bubble"
+                      onDoubleClick={(evt) => handleLongPressReaction(evt, commentKey)}
+                      onContextMenu={(evt) => {
+                        evt.preventDefault()
+                        handleLongPressReaction(evt, commentKey)
+                      }}
+                    >
+                      <b>{c.name || "User"}</b>
+                      {c.text}
+                      <span className="cmt-time">{timeAgo(c.at)}</span>
+                      {renderReactionBadge(c.reactions || {})}
+                    </div>
+                    <div className="cmt-actions-row">
+                      <button
+                        className={`cmt-action-btn${myReaction ? " my-reaction" : ""}`}
+                        onClick={(evt) => handleLongPressReaction(evt, commentKey)}
+                        title="React"
+                      >
+                        {myReaction ? (
+                          <>
+                            {REACTIONS.find((r) => r.key === myReaction)?.emoji}{" "}
+                            {REACTIONS.find((r) => r.key === myReaction)?.label}
+                          </>
+                        ) : (
+                          "Like"
+                        )}
+                      </button>
+                      <button
+                        className="cmt-action-btn"
+                        onClick={() => {
+                          setReplyTo({
+                            id: isReply && parentComment ? parentComment.id : c.id,
+                            name: c.name,
+                            uid: c.uid,
+                          })
+                          setTimeout(() => commentInputRef.current?.focus(), 30)
+                        }}
+                      >
+                        Reply
+                      </button>
+                    </div>
+
+                    {/* Replies */}
+                    {!isReply && repliesMap[c.id] && repliesMap[c.id].length > 0 && (
+                      <div className="cmt-replies">
+                        {(() => {
+                          const replies = repliesMap[c.id]
+                          const expanded = expandedReplies.has(c.id)
+                          const visible = expanded ? replies : replies.slice(0, 2)
+                          const hidden = replies.length - visible.length
+                          return (
+                            <>
+                              {visible.map((r) => renderCommentRow(r, true, c))}
+                              {!expanded && hidden > 0 && (
+                                <span
+                                  className="cmt-view-more-replies"
+                                  onClick={() => {
+                                    setExpandedReplies((s) => {
+                                      const copy = new Set(s)
+                                      copy.add(c.id)
+                                      return copy
+                                    })
+                                  }}
+                                >
+                                  View {hidden} more {hidden === 1 ? "reply" : "replies"}
+                                </span>
+                              )}
+                              {expanded && replies.length > 2 && (
+                                <span
+                                  className="cmt-view-more-replies"
+                                  onClick={() => {
+                                    setExpandedReplies((s) => {
+                                      const copy = new Set(s)
+                                      copy.delete(c.id)
+                                      return copy
+                                    })
+                                  }}
+                                >
+                                  Hide replies
+                                </span>
+                              )}
+                            </>
+                          )
+                        })()}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )
+            }
+
             return (
               <div className="mb-view active">
                 <button className="mb-back-btn" onClick={goBack}>
@@ -4527,38 +5070,53 @@ export default function MeBookPage() {
                   </svg>
                   Back
                 </button>
-                <h1 className="mb-page-title">Comments</h1>
-                {renderPost(post)}
-                <div className="cmt-page-wrap">
-                  <div className="cmt-page-head">{post.comments?.length || 0} Comments</div>
+
+                <div
+                  className="cmt-page-wrap"
+                  style={kbUp ? { paddingBottom: 260 } : undefined}
+                >
+                  <div className="cmt-page-head">
+                    <span>💬 Comments ({totalCount})</span>
+                    <span style={{ fontSize: 12.5, color: "var(--text-muted)", fontWeight: 500 }}>
+                      Double-click a comment to react
+                    </span>
+                  </div>
+
                   <div className="cmt-page-list" ref={commentListRef}>
-                    {!post.comments?.length ? (
+                    {tops.length === 0 ? (
                       <div className="cmt-empty">
+                        <svg viewBox="0 0 24 24">
+                          <path d="M21.99 4c0-1.1-.89-2-1.99-2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14l4 4-.01-18z" />
+                        </svg>
                         <b>No comments yet</b>
                         <p style={{ marginTop: 6 }}>Be the first to comment</p>
                       </div>
                     ) : (
-                      post.comments.map((c: any, i: number) => {
-                        const avatar = c.avatar || `https://ui-avatars.com/api/?background=16a34a&color=fff&name=${encodeURIComponent(c.name || "U")}`
-                        return (
-                          <div className="cmt-row" key={i}>
-                            <img className="cmt-row-avatar" src={avatar} alt="" />
-                            <div className="cmt-bubble">
-                              <b>{c.name || "User"}</b>
-                              {c.text || ""}
-                              <span className="cmt-time">{timeAgo(c.at)}</span>
-                            </div>
-                          </div>
-                        )
-                      })
+                      tops.map((c: any) => renderCommentRow(c, false))
                     )}
                   </div>
-                  <div className="cmt-input-wrap">
+
+                  {/* Reply indicator */}
+                  {replyTo && (
+                    <div className="cmt-reply-indicator">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M10 9V5l-7 7 7 7v-4.1c5 0 8.5 1.6 11 5.1-1-5-4-10-11-11z" />
+                      </svg>
+                      Replying to <b>{replyTo.name}</b>
+                      <button onClick={() => setReplyTo(null)}>Cancel</button>
+                    </div>
+                  )}
+
+                  <div
+                    className={`cmt-input-wrap${kbUp ? " keyboard-up" : ""}`}
+                    ref={commentWrapRef}
+                  >
                     <img className="cmt-input-avatar" src={avatarUrl(profile)} alt="" />
                     <textarea
+                      ref={commentInputRef}
                       className="cmt-input"
                       rows={1}
-                      placeholder="Write a comment..."
+                      placeholder={replyTo ? `Reply to ${replyTo.name}...` : "Write a comment..."}
                       value={commentText}
                       onChange={(e) => setCommentText(e.target.value)}
                       onKeyDown={(e) => {
@@ -4568,7 +5126,11 @@ export default function MeBookPage() {
                         }
                       }}
                     />
-                    <button className="cmt-send" onClick={() => handleAddComment(post.id)} disabled={!commentText.trim() || commentBusy}>
+                    <button
+                      className="cmt-send"
+                      onClick={() => handleAddComment(post.id)}
+                      disabled={!commentText.trim() || commentBusy}
+                    >
                       <svg viewBox="0 0 24 24">
                         <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
                       </svg>

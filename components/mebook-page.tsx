@@ -312,8 +312,11 @@ background:var(--header-bg);
 display:flex;align-items:center;justify-content:space-between;
 padding:0 16px;
 box-shadow:0 2px 12px rgba(0,0,0,.25);
-transition:transform .3s cubic-bezier(.2,.8,.3,1);
+transform:translateY(0);
+transition:transform .3s cubic-bezier(.4,0,.2,1);
 will-change:transform;
+backface-visibility:hidden;
+-webkit-backface-visibility:hidden;
 }
 .mebook-root .mb-header.header-hidden{
 transform:translateY(-100%);
@@ -1181,7 +1184,7 @@ export default function MeBookPage() {
   const [menuOpen, setMenuOpen] = useState(false)
 
   /* ============================================================
-     ✅ NEW: Header scroll hide/show state
+     ✅ FIXED: Header scroll hide/show state
      ============================================================ */
   const [headerHidden, setHeaderHidden] = useState(false)
   const lastScrollYRef = useRef(0)
@@ -1279,10 +1282,15 @@ export default function MeBookPage() {
   }, [])
 
   /* ============================================================
-     ✅ NEW: Header scroll hide/show effect
-     Scroll down → header slides up (hidden)
-     Scroll up   → header slides down (visible)
-     Works on ALL pages because the header is globally mounted.
+     ✅ FIXED: Header scroll hide/show effect
+     
+     How it works (Facebook / Chrome style):
+     - Scroll DOWN  → header smoothly slides UP (hidden)
+     - Scroll UP    → header smoothly slides DOWN (visible) — instantly
+     - Near the top (y ≤ 70) → header ALWAYS visible
+     - Micro-jitter (tiny 1-2px movements) is ignored
+     - Works on ALL pages (header is globally mounted)
+     - Uses requestAnimationFrame for buttery-smooth 60fps
      ============================================================ */
   useEffect(() => {
     lastScrollYRef.current = window.scrollY
@@ -1290,25 +1298,36 @@ export default function MeBookPage() {
     const onScroll = () => {
       if (tickingRef.current) return
       tickingRef.current = true
+
       window.requestAnimationFrame(() => {
         const y = window.scrollY
         const last = lastScrollYRef.current
         const diff = y - last
 
-        // Only react to meaningful scrolls to avoid jitter
-        if (Math.abs(diff) > 4) {
-          if (y > 70 && diff > 0) {
-            // Scrolling DOWN past 70px → hide header
-            setHeaderHidden(true)
-          } else if (diff < 0) {
-            // Scrolling UP → show header
-            setHeaderHidden(false)
-          } else if (y <= 70) {
-            // Near the top → always show
-            setHeaderHidden(false)
-          }
-          lastScrollYRef.current = y
+        // ✅ ALWAYS update last scroll position (this was the bug before)
+        lastScrollYRef.current = y
+
+        // Near the very top → always show header
+        if (y <= 70) {
+          setHeaderHidden(false)
+          tickingRef.current = false
+          return
         }
+
+        // Ignore micro-jitter (tiny scroll movements)
+        if (Math.abs(diff) < 2) {
+          tickingRef.current = false
+          return
+        }
+
+        if (diff > 0) {
+          // Scrolling DOWN → hide header
+          setHeaderHidden(true)
+        } else {
+          // Scrolling UP → show header (instantly)
+          setHeaderHidden(false)
+        }
+
         tickingRef.current = false
       })
     }
@@ -1432,10 +1451,6 @@ export default function MeBookPage() {
         })
       )
 
-      /* ============================================================
-         ✅ FIXED: myFriends live listener
-         ============================================================ */
-
       const myFriendsQ = fb.query(
         fb.collection(fb.db, "friends"),
         fb.where("members", "array-contains", uid)
@@ -1459,9 +1474,6 @@ export default function MeBookPage() {
         })
       )
 
-      /* ============================================================
-         Legacy fallback — runs once at login.
-         ============================================================ */
       ;(async () => {
         try {
           const [s1, s2] = await Promise.all([
@@ -1745,6 +1757,7 @@ export default function MeBookPage() {
     setMenuOpen(false)
     if (view !== "messages") setMobileChatWindow(false)
     window.scrollTo({ top: 0, behavior: "auto" })
+    setHeaderHidden(false)
   }
 
   const pushPage = (view: string, params: any = {}) => {
@@ -1752,11 +1765,13 @@ export default function MeBookPage() {
     setDrawerOpen(false)
     setMenuOpen(false)
     window.scrollTo({ top: 0, behavior: "auto" })
+    setHeaderHidden(false)
   }
 
   const goBack = () => {
     setPageStack((s) => (s.length > 1 ? s.slice(0, -1) : [{ view: "home" }]))
     window.scrollTo({ top: 0, behavior: "auto" })
+    setHeaderHidden(false)
   }
 
   const handleNavClick = (view: string) => {

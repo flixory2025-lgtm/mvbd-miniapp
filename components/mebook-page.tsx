@@ -2094,6 +2094,14 @@ export default function MeBookPage({ onExit }: MeBookPageProps) {
   const [friendSearch, setFriendSearch] = useState("")
   const [chatSearch, setChatSearch] = useState("")
   const [chatInput, setChatInput] = useState("")
+  // ============================================================
+// MECHAT — TYPING + SEEN STATE
+// ============================================================
+const [partnerTyping, setPartnerTyping] = useState(false)
+const [partnerLastSeenMessageId, setPartnerLastSeenMessageId] = useState<string | null>(null)
+
+const typingTimeoutRef = useRef<any>(null)
+const lastMarkedSeenRef = useRef<string | null>(null)
 
   // Post reactions
   const [postReactionPicker, setPostReactionPicker] = useState<{
@@ -2137,6 +2145,63 @@ export default function MeBookPage({ onExit }: MeBookPageProps) {
   const flyingIdRef = useRef(0)
   const chatBodyRef = useRef<HTMLDivElement>(null)
   const chatInputRef = useRef<HTMLTextAreaElement>(null)
+  // ============================================================
+// MECHAT — TYPING STATE
+// ============================================================
+
+const updateTypingState = async (
+  chatId: string | null,
+  isTyping: boolean
+) => {
+  if (!chatId || !user?.uid) return
+
+  try {
+    const fb = await getFirebase()
+
+    await fb.setDoc(
+      fb.doc(fb.db, "chats", chatId, "typing", user.uid),
+      {
+        typing: isTyping,
+        updatedAt: fb.serverTimestamp(),
+      },
+      { merge: true }
+    )
+  } catch {
+    // Typing indicator fail করলে chat বন্ধ হবে না
+  }
+}
+
+const handleChatTyping = (value: string) => {
+  setChatInput(value)
+
+  if (!activeChat) return
+
+  // Empty input হলে typing বন্ধ
+  if (!value.trim()) {
+    void updateTypingState(activeChat, false)
+
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current)
+      typingTimeoutRef.current = null
+    }
+
+    return
+  }
+
+  // Typing শুরু
+  void updateTypingState(activeChat, true)
+
+  // আগের timeout cancel
+  if (typingTimeoutRef.current) {
+    clearTimeout(typingTimeoutRef.current)
+  }
+
+  // 1.5 sec কিছু না লিখলে typing বন্ধ
+  typingTimeoutRef.current = setTimeout(() => {
+    void updateTypingState(activeChat, false)
+    typingTimeoutRef.current = null
+  }, 1500)
+}
 
   // Image upload for chat
   const chatFileInputRef = useRef<HTMLInputElement>(null)
@@ -3481,8 +3546,20 @@ export default function MeBookPage({ onExit }: MeBookPageProps) {
   }
 
   const closeChat = () => {
-    setChatView("list")
-    setActiveChat(null)
+  // Chat বন্ধ করার আগে নিজের typing OFF
+  if (activeChat) {
+    void updateTypingState(activeChat, false)
+  }
+
+  if (typingTimeoutRef.current) {
+    clearTimeout(typingTimeoutRef.current)
+    typingTimeoutRef.current = null
+  }
+
+  setPartnerTyping(false)
+
+  setChatView("list")
+  setActiveChat(null)
     setChatPartner(null)
     setChatMessages([])
     setChatReplyTo(null)
@@ -3493,9 +3570,17 @@ export default function MeBookPage({ onExit }: MeBookPageProps) {
   }
 
   const handleSendMessage = async () => {
-    const text = chatInput.trim()
-    if (!text || !activeChat) return
-    const reply = chatReplyTo
+  const text = chatInput.trim()
+  if (!text || !activeChat) return
+  const reply = chatReplyTo
+
+  // Message send করার সাথে সাথে typing OFF
+  void updateTypingState(activeChat, false)
+
+  if (typingTimeoutRef.current) {
+    clearTimeout(typingTimeoutRef.current)
+    typingTimeoutRef.current = null
+  }
     setChatInput("")
     setChatReplyTo(null)
     try {
@@ -5828,7 +5913,7 @@ export default function MeBookPage({ onExit }: MeBookPageProps) {
                         placeholder="Aa"
                         rows={1}
                         value={chatInput}
-                        onChange={(e) => setChatInput(e.target.value)}
+                        onChange={(e) => handleChatTyping(e.target.value)}
                         onKeyDown={(e) => {
                           if (e.key === "Enter" && !e.shiftKey) {
                             e.preventDefault()

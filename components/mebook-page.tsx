@@ -316,8 +316,24 @@ radial-gradient(circle at 75% 75%,rgba(16,185,129,.22) 0%,transparent 45%);
 animation:authGlow 16s ease-in-out infinite;z-index:0;filter:blur(60px);
 }
 @keyframes authGlow{0%,100%{transform:translate(0,0) scale(1) rotate(0deg);}33%{transform:translate(-4%,4%) scale(1.12) rotate(120deg);}66%{transform:translate(4%,-4%) scale(.95) rotate(240deg);}}
-.mebook-root .auth-card{
-position:relative;z-index:2;width:100%;max-width:440px;
+  .mebook-root .auth-loading-card{
+  position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;width:min(100%,380px);padding:42px 28px 30px;border-radius:28px;background:rgba(17,24,39,.72);backdrop-filter:blur(28px) saturate(180%);-webkit-backdrop-filter:blur(28px) saturate(180%);border:1px solid rgba(255,255,255,.1);box-shadow:0 32px 90px rgba(0,0,0,.58),0 0 0 1px rgba(255,255,255,.04) inset;color:#f3f4f6;animation:cardFloat .7s cubic-bezier(.2,.8,.3,1);text-align:center;
+  }
+  .mebook-root .auth-loading-logo{position:relative;width:94px;height:94px;display:grid;place-items:center;margin-bottom:24px;}
+  .mebook-root .auth-loading-logo::before,.mebook-root .auth-loading-logo::after{content:'';position:absolute;inset:0;border-radius:30px;border:1px solid rgba(74,222,128,.28);animation:loadingRing 2.2s ease-out infinite;}
+  .mebook-root .auth-loading-logo::after{animation-delay:1.1s;}
+  .mebook-root .auth-loading-logo img{position:relative;z-index:1;width:62px;height:62px;object-fit:contain;filter:drop-shadow(0 5px 22px rgba(34,197,94,.65));animation:logoPulse 1.8s ease-in-out infinite;}
+  .mebook-root .auth-loading-title{font-size:26px;font-weight:800;letter-spacing:-.8px;background:linear-gradient(135deg,#f8fafc,#4ade80);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;}
+  .mebook-root .auth-loading-sub{margin-top:8px;color:#94a3b8;font-size:13px;letter-spacing:.2px;}
+  .mebook-root .auth-loading-dots{display:flex;gap:6px;margin-top:22px;}
+  .mebook-root .auth-loading-dots span{width:7px;height:7px;border-radius:50%;background:#4ade80;animation:loadingDot 1.2s ease-in-out infinite;}
+  .mebook-root .auth-loading-dots span:nth-child(2){animation-delay:.16s}.mebook-root .auth-loading-dots span:nth-child(3){animation-delay:.32s}
+  .mebook-root .auth-loading-from{margin-top:34px;color:#64748b;font-size:11px;letter-spacing:1.8px;text-transform:uppercase;font-weight:700;}
+  @keyframes loadingRing{0%{opacity:.8;transform:scale(.8)}100%{opacity:0;transform:scale(1.45)}}
+  @keyframes logoPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
+  @keyframes loadingDot{0%,80%,100%{opacity:.3;transform:translateY(0)}40%{opacity:1;transform:translateY(-5px)}}
+  .mebook-root .auth-card{
+  position:relative;z-index:2;width:100%;max-width:440px;
 padding:36px 32px 32px;border-radius:24px;
 background:rgba(17,24,39,.72);
 backdrop-filter:blur(28px) saturate(180%);-webkit-backdrop-filter:blur(28px) saturate(180%);
@@ -1958,6 +1974,7 @@ export default function MeBookPage() {
   const [authMode, setAuthMode] = useState<"signin" | "signup">("signin")
   const [authErr, setAuthErr] = useState<{ si: string; su: string }>({ si: "", su: "" })
   const [authBusy, setAuthBusy] = useState(false)
+  const [authChecking, setAuthChecking] = useState(true)
   const [user, setUser] = useState<any>(null)
   const [profile, setProfile] = useState<any>(null)
 
@@ -2375,6 +2392,7 @@ export default function MeBookPage() {
             setProfile(p)
             setPrivacy(p.privacy || { info: true, posts: true, requests: true })
             setAuthBusy(false)
+            setAuthChecking(false)
 
             const profileUnsub = fb.onSnapshot(userRef, (s: any) => {
               if (s.exists()) setProfile(s.data())
@@ -2387,6 +2405,7 @@ export default function MeBookPage() {
             setProfile(null)
             cleanupListeners()
             setAuthBusy(false)
+            setAuthChecking(false)
             setPageStack([{ view: "home" }])
           }
         })
@@ -2880,8 +2899,9 @@ export default function MeBookPage() {
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault()
     if (authBusy) return
-    setAuthBusy(true)
-    setAuthErr((prev) => ({ ...prev, si: "" }))
+  setAuthBusy(true)
+  setAuthChecking(true)
+  setAuthErr((prev) => ({ ...prev, si: "" }))
     try {
       const fb = await getFirebase()
       await fb.signInWithEmailAndPassword(fb.auth, siEmail.trim(), siPass)
@@ -2896,8 +2916,9 @@ export default function MeBookPage() {
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault()
     if (authBusy) return
-    setAuthBusy(true)
-    setAuthErr((prev) => ({ ...prev, su: "" }))
+  setAuthBusy(true)
+  setAuthChecking(true)
+  setAuthErr((prev) => ({ ...prev, su: "" }))
     try {
       const fb = await getFirebase()
       const cred = await fb.createUserWithEmailAndPassword(fb.auth, suEmail.trim(), suPass)
@@ -2928,6 +2949,7 @@ export default function MeBookPage() {
   const handleGoogleSignIn = async () => {
     if (authBusy) return
     setAuthBusy(true)
+    setAuthChecking(true)
     try {
       const fb = await getFirebase()
       const provider = new fb.GoogleAuthProvider()
@@ -3797,6 +3819,25 @@ export default function MeBookPage() {
   /* ============================================================
   AUTH SCREEN
   ============================================================ */
+  if (authChecking) {
+    return (
+      <div className="mebook-root dark-mode" ref={rootRef}>
+        <div className="auth-wrap" aria-live="polite" aria-busy="true">
+          <div className="auth-loading-card">
+            <div className="auth-loading-logo">
+              <img src={HEADER_LOGO} alt="MeBook" />
+            </div>
+            <div className="auth-loading-title">MeBook</div>
+            <div className="auth-loading-sub">Getting your MeBook ready</div>
+            <div className="auth-loading-dots" aria-hidden="true">
+              <span /><span /><span />
+            </div>
+            <div className="auth-loading-from">from MVBD</div>
+          </div>
+        </div>
+      </div>
+    )
+  }
   if (!user) {
     return (
       <div className="mebook-root dark-mode" ref={rootRef}>

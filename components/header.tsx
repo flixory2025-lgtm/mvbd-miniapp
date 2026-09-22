@@ -9,8 +9,13 @@ import { animes } from "@/lib/anime-data"
 
 interface HeaderProps {
   onSearch: (query: string) => void
+  searchQuery?: string
   pageType?: "home" | "anime" | "series"
-  searchData?: Array<{ title: string; poster?: string }>
+  searchData?: Array<{
+    title: string
+    poster?: string
+    id?: number
+  }>
 }
 
 const TYPING_SUGGESTIONS_HOME = [
@@ -52,66 +57,175 @@ const TYPING_SUGGESTIONS_SERIES = [
   "Romance series...",
 ]
 
-const TYPING_SPEED = 50 // ms per character
-const DELETE_SPEED = 30 // ms per character
-const PAUSE_DURATION = 2500 // ms to show complete text
+const TYPING_SPEED = 50
+const DELETE_SPEED = 30
+const PAUSE_DURATION = 2500
 
-export default function Header({ onSearch, pageType = "home", searchData }: HeaderProps) {
-  const [searchInput, setSearchInput] = useState("")
+export default function Header({
+  onSearch,
+  searchQuery = "",
+  pageType = "home",
+  searchData,
+}: HeaderProps) {
   const [isFocused, setIsFocused] = useState(false)
-  const [bubbles, setBubbles] = useState<Array<{ id: number; x: number; y: number }>>([])
+
+  const [bubbles, setBubbles] = useState<
+    Array<{ id: number; x: number; y: number }>
+  >([])
+
   const [displayedPlaceholder, setDisplayedPlaceholder] = useState("")
   const [currentSuggestionIndex, setCurrentSuggestionIndex] = useState(0)
   const [isTyping, setIsTyping] = useState(true)
-  const placeholderIndexRef = useRef(0)
+
   const placeholderTimeoutRef = useRef<NodeJS.Timeout>()
   const bubbleIdRef = useRef(0)
 
-  // Select typing suggestions based on page type
-  const TYPING_SUGGESTIONS =
-    pageType === "anime" ? TYPING_SUGGESTIONS_ANIME :
-    pageType === "series" ? TYPING_SUGGESTIONS_SERIES :
-    TYPING_SUGGESTIONS_HOME
+  // ------------------------------------------
+  // Typing placeholder suggestions
+  // ------------------------------------------
 
-  // Select data source based on page type
+  const TYPING_SUGGESTIONS =
+    pageType === "anime"
+      ? TYPING_SUGGESTIONS_ANIME
+      : pageType === "series"
+        ? TYPING_SUGGESTIONS_SERIES
+        : TYPING_SUGGESTIONS_HOME
+
+  // ------------------------------------------
+  // Search data
+  // ------------------------------------------
+
   const dataSource = useMemo(() => {
     if (searchData) return searchData
-    if (pageType === "anime") return animes
-    if (pageType === "series") {
-      return movies.filter((m) => m.title.toLowerCase().includes("season"))
+
+    if (pageType === "anime") {
+      return animes
     }
+
+    if (pageType === "series") {
+      return movies.filter((m) =>
+        m.title.toLowerCase().includes("season")
+      )
+    }
+
     return movies
   }, [pageType, searchData])
 
-  const allSearchSuggestions = useMemo(() => {
-    if (!searchInput.trim()) return []
-    const query = searchInput.toLowerCase()
-    return dataSource.filter((item) => item.title.toLowerCase().includes(query))
-  }, [searchInput, dataSource])
+  // ------------------------------------------
+  // Smart search suggestions
+  // Latest movies first
+  // ------------------------------------------
 
-  const searchSuggestions = allSearchSuggestions.slice(0, 5)
+  const allSearchSuggestions = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase()
+
+    if (!query) return []
+
+    /*
+     * User-এর search-কে আলাদা আলাদা word-এ ভাগ করা হচ্ছে।
+     *
+     * Example:
+     * "spider man"
+     *
+     * তাহলে title-এর মধ্যে spider এবং man
+     * দুটোই থাকা movie match করবে।
+     */
+
+    const queryWords = query
+      .split(/\s+/)
+      .filter(Boolean)
+
+    const matches = dataSource.filter((item) => {
+      const title = item.title.toLowerCase()
+
+      return queryWords.every((word) => title.includes(word))
+    })
+
+    /*
+     * Latest movie আগে।
+     *
+     * movie-data-তে ID নতুন movie-র ক্ষেত্রে বড় ধরে
+     * latest → oldest সাজানো হচ্ছে।
+     *
+     * Anime/other data-তে ID না থাকলে original position
+     * ধরে রাখা হবে।
+     */
+
+    return [...matches].sort((a, b) => {
+      const idA = typeof a.id === "number" ? a.id : 0
+      const idB = typeof b.id === "number" ? b.id : 0
+
+      return idB - idA
+    })
+  }, [searchQuery, dataSource])
+
+  /*
+   * আগে এখানে slice(0, 5) ছিল।
+   *
+   * এখন সব matching movie suggestion-এ থাকবে।
+   */
+  const searchSuggestions = allSearchSuggestions
+
+  // ------------------------------------------
+  // Search input
+  // ------------------------------------------
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
-    setSearchInput(value)
+
+    /*
+     * Search state এখন parent page.tsx-এ আছে।
+     * তাই Header remount হলেও search text হারাবে না।
+     */
     onSearch(value)
   }
 
+  // ------------------------------------------
+  // Clear search
+  // ------------------------------------------
+
+  const handleClearSearch = () => {
+    onSearch("")
+    setIsFocused(false)
+  }
+
+  // ------------------------------------------
+  // Liquid bubbles
+  // ------------------------------------------
+
   const createBubbles = () => {
     if (!isFocused) return
+
     const newBubbles = []
+
     for (let i = 0; i < 3; i++) {
       const id = bubbleIdRef.current++
+
       const x = Math.random() * 20 - 10
-      newBubbles.push({ id, x, y: Math.random() * 10 })
+      const y = Math.random() * 10
+
+      newBubbles.push({
+        id,
+        x,
+        y,
+      })
+
       setTimeout(() => {
-        setBubbles((prev) => prev.filter((b) => b.id !== id))
+        setBubbles((prev) =>
+          prev.filter((b) => b.id !== id)
+        )
       }, 800)
     }
+
     setBubbles((prev) => [...prev, ...newBubbles])
   }
 
-  const currentSuggestion = TYPING_SUGGESTIONS[currentSuggestionIndex]
+  // ------------------------------------------
+  // Current animated placeholder
+  // ------------------------------------------
+
+  const currentSuggestion =
+    TYPING_SUGGESTIONS[currentSuggestionIndex]
 
   useEffect(() => {
     if (placeholderTimeoutRef.current) {
@@ -119,27 +233,37 @@ export default function Header({ onSearch, pageType = "home", searchData }: Head
     }
 
     if (isTyping) {
-      if (displayedPlaceholder.length < currentSuggestion.length) {
-        // Typing phase - add one character
+      if (
+        displayedPlaceholder.length <
+        currentSuggestion.length
+      ) {
         placeholderTimeoutRef.current = setTimeout(() => {
-          setDisplayedPlaceholder(currentSuggestion.slice(0, displayedPlaceholder.length + 1))
+          setDisplayedPlaceholder(
+            currentSuggestion.slice(
+              0,
+              displayedPlaceholder.length + 1
+            )
+          )
         }, TYPING_SPEED)
       } else {
-        // Typed complete - pause before deleting
         placeholderTimeoutRef.current = setTimeout(() => {
           setIsTyping(false)
         }, PAUSE_DURATION)
       }
     } else {
       if (displayedPlaceholder.length > 0) {
-        // Deleting phase - remove one character
         placeholderTimeoutRef.current = setTimeout(() => {
-          setDisplayedPlaceholder(displayedPlaceholder.slice(0, -1))
+          setDisplayedPlaceholder(
+            displayedPlaceholder.slice(0, -1)
+          )
         }, DELETE_SPEED)
       } else {
-        // Done deleting - move to next suggestion and reset
         placeholderTimeoutRef.current = setTimeout(() => {
-          setCurrentSuggestionIndex((prev) => (prev + 1) % TYPING_SUGGESTIONS.length)
+          setCurrentSuggestionIndex(
+            (prev) =>
+              (prev + 1) % TYPING_SUGGESTIONS.length
+          )
+
           setDisplayedPlaceholder("")
           setIsTyping(true)
         }, 300)
@@ -151,12 +275,16 @@ export default function Header({ onSearch, pageType = "home", searchData }: Head
         clearTimeout(placeholderTimeoutRef.current)
       }
     }
-  }, [isTyping, displayedPlaceholder, currentSuggestion])
+  }, [
+    isTyping,
+    displayedPlaceholder,
+    currentSuggestion,
+    TYPING_SUGGESTIONS.length,
+  ])
 
-  const handleFocus = () => {
-    setIsFocused(true)
-    createBubbles()
-  }
+  // ------------------------------------------
+  // UI
+  // ------------------------------------------
 
   return (
     <header className="sticky top-0 z-40 bg-black/40 backdrop-blur-xl border-b border-white/10 shadow-lg">
@@ -167,11 +295,13 @@ export default function Header({ onSearch, pageType = "home", searchData }: Head
             background: rgba(255, 255, 255, 0.05);
             backdrop-filter: blur(20px);
           }
+
           50% {
             transform: scale(1.03);
             background: rgba(255, 255, 255, 0.08);
             backdrop-filter: blur(25px);
           }
+
           100% {
             transform: scale(1.06);
             background: rgba(255, 255, 255, 0.1);
@@ -181,13 +311,21 @@ export default function Header({ onSearch, pageType = "home", searchData }: Head
 
         @keyframes liquidGlassGlow {
           0% {
-            box-shadow: 0 0 0 0 rgba(100, 200, 255, 0.3), inset 0 0 20px rgba(255, 255, 255, 0.1);
+            box-shadow:
+              0 0 0 0 rgba(100, 200, 255, 0.3),
+              inset 0 0 20px rgba(255, 255, 255, 0.1);
           }
+
           50% {
-            box-shadow: 0 0 15px 5px rgba(100, 200, 255, 0.2), inset 0 0 30px rgba(255, 255, 255, 0.15);
+            box-shadow:
+              0 0 15px 5px rgba(100, 200, 255, 0.2),
+              inset 0 0 30px rgba(255, 255, 255, 0.15);
           }
+
           100% {
-            box-shadow: 0 0 25px 10px rgba(100, 200, 255, 0.1), inset 0 0 40px rgba(255, 255, 255, 0.2);
+            box-shadow:
+              0 0 25px 10px rgba(100, 200, 255, 0.1),
+              inset 0 0 40px rgba(255, 255, 255, 0.2);
           }
         }
 
@@ -202,7 +340,9 @@ export default function Header({ onSearch, pageType = "home", searchData }: Head
           background: rgba(255, 255, 255, 0.08);
           backdrop-filter: blur(30px);
           border: 1px solid rgba(100, 200, 255, 0.4);
-          animation: liquidGlassZoom 0.6s ease-out forwards, liquidGlassGlow 0.6s ease-out;
+          animation:
+            liquidGlassZoom 0.6s ease-out forwards,
+            liquidGlassGlow 0.6s ease-out;
         }
 
         .search-input-liquid {
@@ -219,16 +359,28 @@ export default function Header({ onSearch, pageType = "home", searchData }: Head
           top: 100%;
           left: 0;
           right: 0;
+
           background: rgba(20, 20, 30, 0.95);
           backdrop-filter: blur(20px);
+
           border: 1px solid rgba(100, 200, 255, 0.3);
           border-radius: 12px;
+
           margin-top: 8px;
-          max-height: 280px;
+
+          /*
+           * অনেক movie থাকলেও dropdown-এর ভিতর
+           * scroll করা যাবে।
+           */
+          max-height: 360px;
           overflow-y: auto;
+
           z-index: 50;
+
           scrollbar-width: thin;
-          scrollbar-color: rgba(100, 200, 255, 0.5) transparent;
+          scrollbar-color:
+            rgba(100, 200, 255, 0.5)
+            transparent;
         }
 
         .search-suggestions::-webkit-scrollbar {
@@ -252,7 +404,9 @@ export default function Header({ onSearch, pageType = "home", searchData }: Head
           padding: 12px 16px;
           cursor: pointer;
           transition: all 0.2s ease;
-          border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+
+          border-bottom:
+            1px solid rgba(255, 255, 255, 0.05);
         }
 
         .search-suggestion-item:hover {
@@ -269,6 +423,7 @@ export default function Header({ onSearch, pageType = "home", searchData }: Head
             transform: scale(1) translateY(0);
             filter: blur(0);
           }
+
           100% {
             opacity: 0;
             transform: scale(0.2) translateY(-50px);
@@ -277,10 +432,14 @@ export default function Header({ onSearch, pageType = "home", searchData }: Head
         }
 
         .liquid-bubble {
-          animation: liquidBubbleRise 0.8s ease-out forwards;
+          animation:
+            liquidBubbleRise 0.8s ease-out forwards;
         }
       `}</style>
+
       <div className="px-4 py-4 flex items-center gap-4">
+
+        {/* MVBD Logo */}
         <div className="flex-shrink-0">
           <img
             src="https://i.postimg.cc/0yqFXMFW/photo-2025-12-11-09-45-29-removebg-preview.png"
@@ -289,29 +448,59 @@ export default function Header({ onSearch, pageType = "home", searchData }: Head
           />
         </div>
 
+        {/* Search */}
         <div className="flex-1 relative">
+
           <div className="liquid-glass-search rounded-2xl px-4 py-3 flex items-center gap-3">
+
             <Search className="w-5 h-5 text-slate-300 flex-shrink-0" />
+
             <input
               type="text"
-              placeholder={displayedPlaceholder || TYPING_SUGGESTIONS[0]}
-              value={searchInput}
+              placeholder={
+                displayedPlaceholder ||
+                TYPING_SUGGESTIONS[0]
+              }
+
+              /*
+               * IMPORTANT:
+               * Parent-এর searchQuery directly ব্যবহার করা হচ্ছে।
+               *
+               * তাই:
+               * Search → Movie → Back
+               *
+               * করলে search text আর হারাবে না।
+               */
+              value={searchQuery}
+
               onChange={handleSearch}
-              onFocus={handleFocus}
-              onBlur={() => setTimeout(() => setIsFocused(false), 200)}
+
+              onFocus={() => {
+                setIsFocused(true)
+                createBubbles()
+              }}
+
+              onBlur={() =>
+                setTimeout(
+                  () => setIsFocused(false),
+                  200
+                )
+              }
+
               className="search-input-liquid w-full text-white text-sm outline-none"
             />
-            {searchInput && (
+
+            {searchQuery && (
               <button
-                onClick={() => {
-                  setSearchInput("")
-                  onSearch("")
-                }}
+                type="button"
+                onClick={handleClearSearch}
                 className="text-slate-400 hover:text-white transition"
+                aria-label="Clear search"
               >
                 <X className="w-4 h-4" />
               </button>
             )}
+
             {bubbles.map((bubble) => (
               <div
                 key={bubble.id}
@@ -323,36 +512,60 @@ export default function Header({ onSearch, pageType = "home", searchData }: Head
                   top: `${bubble.y}px`,
                   position: "absolute",
                   borderRadius: "50%",
-                  background: "radial-gradient(circle at 30% 30%, rgba(100, 200, 255, 0.8), rgba(59, 130, 246, 0.3))",
-                  border: "1px solid rgba(100, 200, 255, 0.5)",
-                  boxShadow: "0 0 8px rgba(100, 200, 255, 0.4), inset -2px -2px 4px rgba(0, 0, 0, 0.2)",
+                  background:
+                    "radial-gradient(circle at 30% 30%, rgba(100, 200, 255, 0.8), rgba(59, 130, 246, 0.3))",
+                  border:
+                    "1px solid rgba(100, 200, 255, 0.5)",
+                  boxShadow:
+                    "0 0 8px rgba(100, 200, 255, 0.4), inset -2px -2px 4px rgba(0, 0, 0, 0.2)",
                 }}
               />
             ))}
           </div>
 
-          {isFocused && allSearchSuggestions.length > 0 && (
-            <div className="search-suggestions">
-              {searchSuggestions.map((suggestion, idx) => (
-                <div
-                  key={`${suggestion.title}-${idx}`}
-                  className="search-suggestion-item flex items-center gap-3 text-slate-200"
-                  onMouseDown={() => {
-                    setSearchInput(suggestion.title)
-                    onSearch(suggestion.title)
-                    setIsFocused(false)
-                  }}
-                >
-                  {suggestion.poster ? (
-                    <img src={suggestion.poster} alt="" className="h-10 w-7 flex-shrink-0 rounded object-cover" />
-                  ) : (
-                    <Search className="h-4 w-4 flex-shrink-0 text-slate-500" />
-                  )}
-                  <span>{suggestion.title}</span>
-                </div>
-              ))}
-            </div>
-          )}
+          {/* Search suggestions */}
+          {isFocused &&
+            allSearchSuggestions.length > 0 && (
+              <div className="search-suggestions">
+
+                {searchSuggestions.map(
+                  (suggestion, idx) => (
+                    <div
+                      key={`${suggestion.title}-${suggestion.id ?? idx}`}
+                      className="search-suggestion-item flex items-center gap-3 text-slate-200"
+
+                      onMouseDown={() => {
+                        /*
+                         * Suggestion click করলেও
+                         * parent search state update হবে।
+                         */
+                        onSearch(suggestion.title)
+                        setIsFocused(false)
+                      }}
+                    >
+
+                      {suggestion.poster ? (
+                        <img
+                          src={suggestion.poster}
+                          alt=""
+                          className="h-10 w-7 flex-shrink-0 rounded object-cover"
+                        />
+                      ) : (
+                        <Search
+                          className="h-4 w-4 flex-shrink-0 text-slate-500"
+                        />
+                      )}
+
+                      <span>
+                        {suggestion.title}
+                      </span>
+
+                    </div>
+                  )
+                )}
+
+              </div>
+            )}
         </div>
       </div>
     </header>

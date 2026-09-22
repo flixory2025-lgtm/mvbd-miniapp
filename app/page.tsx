@@ -34,9 +34,10 @@ import type { Anime } from "@/lib/anime-data"
    Home → Anime(shorts) → MeBook(mebook)
    → Subscriptions(exclusive) → Profile
 
-   NOTE:
-   Page swipe navigation has been completely removed.
-   Pages now change ONLY from BottomNavigation clicks.
+   IMPORTANT:
+   Horizontal swipe/page navigation is completely disabled.
+   Pages can ONLY be changed from BottomNavigation clicks
+   or normal programmatic navigation.
 ========================================================= */
 
 const tabs = [
@@ -91,7 +92,86 @@ export default function Home() {
     >("main")
 
   /* =========================================================
+     HORIZONTAL TOUCH BLOCKING
+
+     IMPORTANT:
+
+     এখানে কোনো swipe navigation করা হচ্ছে না।
+
+     এই refs শুধু touch-এর শুরুতে X position মনে রাখে,
+     যাতে user finger দিয়ে left/right swipe করলে browser/app
+     horizontal gesture চালাতে না পারে।
+
+     Vertical scrolling সম্পূর্ণ স্বাভাবিক থাকবে।
+  ========================================================= */
+
+  const touchStartXRef = useRef<number | null>(null)
+  const touchStartYRef = useRef<number | null>(null)
+
+  const handleTouchStart = (
+    e: React.TouchEvent<HTMLDivElement>
+  ) => {
+    const touch = e.touches[0]
+
+    if (!touch) {
+      touchStartXRef.current = null
+      touchStartYRef.current = null
+      return
+    }
+
+    touchStartXRef.current = touch.clientX
+    touchStartYRef.current = touch.clientY
+  }
+
+  const handleTouchMove = (
+    e: React.TouchEvent<HTMLDivElement>
+  ) => {
+    const touch = e.touches[0]
+
+    if (
+      !touch ||
+      touchStartXRef.current === null ||
+      touchStartYRef.current === null
+    ) {
+      return
+    }
+
+    const deltaX =
+      touch.clientX - touchStartXRef.current
+
+    const deltaY =
+      touch.clientY - touchStartYRef.current
+
+    /*
+      Horizontal movement clearly বেশি হলে
+      browser-এর horizontal gesture prevent করা হবে।
+
+      Vertical movement হলে কিছুই করা হবে না,
+      তাই normal page scrolling কাজ করবে।
+    */
+
+    if (
+      Math.abs(deltaX) >
+      Math.abs(deltaY)
+    ) {
+      e.preventDefault()
+    }
+  }
+
+  const handleTouchEnd = () => {
+    touchStartXRef.current = null
+    touchStartYRef.current = null
+  }
+
+  const handleTouchCancel = () => {
+    touchStartXRef.current = null
+    touchStartYRef.current = null
+  }
+
+  /* =========================================================
      ACTIVE TAB INDEX
+
+     Kept for compatibility / existing logic.
   ========================================================= */
 
   const activeIndex = Math.max(
@@ -127,8 +207,8 @@ export default function Home() {
   /* =========================================================
      BROWSER BACK BUTTON
 
-     Navigation history থাকবে।
-     Swipe navigation নেই।
+     Browser history থাকবে।
+     Horizontal swipe navigation নেই।
   ========================================================= */
 
   useEffect(() => {
@@ -147,7 +227,9 @@ export default function Home() {
         if (previousTab) {
           setActiveTab(previousTab)
 
-          if (previousTab !== "profile") {
+          if (
+            previousTab !== "profile"
+          ) {
             setProfileSubPage("main")
           }
         }
@@ -268,10 +350,9 @@ export default function Home() {
      PAGE NAVIGATION
 
      IMPORTANT:
-     Page change ONLY happens when BottomNavigation
-     calls this function.
+     Page change ONLY happens from this function.
 
-     Swipe/page gesture navigation has been removed.
+     There is NO swipe-to-page logic.
   ========================================================= */
 
   const handleTabChange = (
@@ -554,7 +635,7 @@ export default function Home() {
   }
 
   /* =========================================================
-     DETAIL PAGE
+     ANIME DETAIL PAGE
   ========================================================= */
 
   if (
@@ -585,6 +666,10 @@ export default function Home() {
     )
   }
 
+  /* =========================================================
+     MOVIE DETAIL PAGE
+  ========================================================= */
+
   if (
     showDetailPage &&
     selectedMovie
@@ -613,37 +698,89 @@ export default function Home() {
   /* =========================================================
      MAIN RENDER
 
-     NO SWIPE NAVIGATION HERE.
+     IMPORTANT:
 
-     The page simply renders the currently selected tab.
-     BottomNavigation controls tab changes.
+     1. touchAction: "pan-y"
+        → vertical scrolling allowed
+        → horizontal browser gesture blocked
+
+     2. overscrollBehaviorX: "none"
+        → horizontal overscroll disabled
+
+     3. onTouchMove
+        → horizontal finger movement detected হলে
+          preventDefault()
+
+     4. NO swipe state
+        → no isSwiping
+        → no swipePosition
+        → no previous/next page transform
+        → no pointer swipe navigation
+
+     Therefore:
+       LEFT/RIGHT SWIPE = NOTHING
+       UP/DOWN SCROLL = WORKS
+       BOTTOM NAV CLICK = PAGE CHANGES
   ========================================================= */
 
   return (
-    <div className="w-full bg-black">
+    <div
+      className="w-full bg-black"
+      style={{
+        width: "100%",
+        minHeight: "100vh",
+        overflowX: "hidden",
+        overscrollBehaviorX: "none",
+        touchAction: "pan-y",
+      }}
+      onTouchStart={
+        handleTouchStart
+      }
+      onTouchMove={
+        handleTouchMove
+      }
+      onTouchEnd={
+        handleTouchEnd
+      }
+      onTouchCancel={
+        handleTouchCancel
+      }
+    >
       <div
         className="relative w-full"
         style={{
-          overflowX: "clip",
+          width: "100%",
+          overflowX: "hidden",
           overflowY: "visible",
+          overscrollBehaviorX: "none",
+          touchAction: "pan-y",
         }}
       >
         {/* =====================================================
             CURRENT PAGE
+
+            Only activeTab is rendered.
+            No previous/next page exists for swipe navigation.
         ===================================================== */}
 
-        <div className="relative w-full">
+        <div
+          className="relative w-full"
+          style={{
+            width: "100%",
+            overflowX: "hidden",
+            touchAction: "pan-y",
+          }}
+        >
           {renderPage(activeTab)}
         </div>
 
         {/* =====================================================
             BOTTOM NAVIGATION
 
-            MeBook page-এর সময় BottomNavigation hide থাকবে।
-            MeBook থেকে Exit করলে activeTab = home হবে,
-            তখন আবার BottomNavigation দেখা যাবে।
+            MeBook page-এর সময় hidden থাকবে।
+            অন্য page-এ BottomNavigation দিয়ে tab change হবে।
 
-            Page swipe completely disabled/removed.
+            এখানে কোনো swipe prop দেওয়া হচ্ছে না।
         ===================================================== */}
 
         {activeTab !== "mebook" && (
@@ -654,6 +791,8 @@ export default function Home() {
                 "none",
               userSelect:
                 "none",
+              touchAction:
+                "manipulation",
             }}
           >
             <BottomNavigation

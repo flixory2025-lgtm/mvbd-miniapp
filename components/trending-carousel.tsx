@@ -142,7 +142,7 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
           {extendedMovies.map((movie, idx) => (
             <div
               key={`${movie.id}-${idx}`}
-              className="flex-shrink-0 w-1/3 aspect-[2/3] rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-all duration-500 transform hover:scale-105 cursor-pointer relative"
+              className="flex-shrink-0 w-1/3 md:w-1/5 lg:w-[18%] xl:w-[15%] 2xl:w-[13%] aspect-[2/3] rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-all duration-500 transform hover:scale-105 cursor-pointer relative"
               onClick={() => onMovieClick(movie)}
             >
               <img src={movie.poster || "/placeholder.svg"} alt={movie.title} className="w-full h-full object-cover" />

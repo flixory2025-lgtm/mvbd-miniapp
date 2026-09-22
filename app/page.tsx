@@ -83,19 +83,28 @@ export default function Home() {
     >("main")
 
   /* =========================================================
+     SCROLL POSITION
+
+     Movie / Anime detail page-এ যাওয়ার আগে
+     current scroll position save হবে।
+
+     Back করলে সেই position restore হবে।
+  ========================================================= */
+
+  const homeScrollPositionRef = useRef(0)
+  const animeScrollPositionRef = useRef(0)
+
+  const restoreHomeScrollRef = useRef(false)
+  const restoreAnimeScrollRef = useRef(false)
+
+  /* =========================================================
      HORIZONTAL SWIPE BLOCKING
 
-     IMPORTANT:
-     এখানে কোনো page/tab swipe navigation নেই।
-
      Left / Right swipe:
-       → page change করবে না
+       → page/tab change করবে না
 
      Up / Down:
        → normal scrolling কাজ করবে
-
-     Wrapper-এ overflowX hidden বা touchAction বসানো হয়নি,
-     যাতে Header-এর existing scroll behavior নষ্ট না হয়।
   ========================================================= */
 
   const touchStartXRef = useRef<number | null>(null)
@@ -137,11 +146,9 @@ export default function Home() {
 
     /*
       শুধুমাত্র horizontal movement হলে
-      browser/app-এর horizontal gesture block হবে।
+      horizontal gesture block হবে।
 
-      Vertical movement হলে কোনো preventDefault হবে না।
-      তাই normal page scrolling এবং Header scroll behavior
-      স্বাভাবিক থাকবে।
+      Vertical movement হলে preventDefault হবে না।
     */
 
     if (
@@ -161,6 +168,52 @@ export default function Home() {
     touchStartXRef.current = null
     touchStartYRef.current = null
   }
+
+  /* =========================================================
+     SCROLL RESTORE
+
+     Home Movie Detail থেকে Back করলে
+     আগের position-এ ফিরে যাবে।
+  ========================================================= */
+
+  useEffect(() => {
+    if (
+      !showDetailPage &&
+      restoreHomeScrollRef.current
+    ) {
+      restoreHomeScrollRef.current = false
+
+      requestAnimationFrame(() => {
+        window.scrollTo({
+          top: homeScrollPositionRef.current,
+          behavior: "instant",
+        })
+      })
+    }
+  }, [showDetailPage])
+
+  /* =========================================================
+     SCROLL RESTORE
+
+     Anime Detail থেকে Back করলে
+     আগের position-এ ফিরে যাবে।
+  ========================================================= */
+
+  useEffect(() => {
+    if (
+      !showAnimeDetailPage &&
+      restoreAnimeScrollRef.current
+    ) {
+      restoreAnimeScrollRef.current = false
+
+      requestAnimationFrame(() => {
+        window.scrollTo({
+          top: animeScrollPositionRef.current,
+          behavior: "instant",
+        })
+      })
+    }
+  }, [showAnimeDetailPage])
 
   /* =========================================================
      ACTIVE TAB INDEX
@@ -339,10 +392,66 @@ export default function Home() {
   }
 
   /* =========================================================
-     PAGE NAVIGATION
+     PAGINATION
+
+     Home page pagination change করলে
+     automatically top-এ যাবে।
+  ========================================================= */
+
+  const handleMoviePageChange = (
+    page: number
+  ) => {
+    setCurrentPage(page)
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    })
+  }
+
+  /* =========================================================
+     HOME MOVIE OPEN
+
+     Movie open করার আগে current scroll position
+     save করা হচ্ছে।
+  ========================================================= */
+
+  const handleHomeMovieClick = (
+    movie: (typeof movies)[0]
+  ) => {
+    homeScrollPositionRef.current =
+      window.scrollY
+
+    restoreHomeScrollRef.current = true
+
+    setSelectedMovie(movie)
+    setShowDetailPage(true)
+  }
+
+  /* =========================================================
+     ANIME OPEN
+
+     Anime detail-এ যাওয়ার আগে current scroll position
+     save করা হচ্ছে।
+  ========================================================= */
+
+  const handleAnimeClick = (
+    anime: Anime
+  ) => {
+    animeScrollPositionRef.current =
+      window.scrollY
+
+    restoreAnimeScrollRef.current = true
+
+    setSelectedAnime(anime)
+    setShowAnimeDetailPage(true)
+  }
+
+  /* =========================================================
+     PAGE / TAB NAVIGATION
 
      Page/tab change ONLY through this function.
-     Horizontal swipe does NOT call this function.
+     Horizontal swipe কোনো page change করবে না।
   ========================================================= */
 
   const handleTabChange = (
@@ -435,10 +544,9 @@ export default function Home() {
           {!isSearching && (
             <div className="w-full">
               <TrendingCarousel
-                onMovieClick={(movie) => {
-                  setSelectedMovie(movie)
-                  setShowDetailPage(true)
-                }}
+                onMovieClick={
+                  handleHomeMovieClick
+                }
               />
             </div>
           )}
@@ -474,10 +582,9 @@ export default function Home() {
 
           <MovieGrid
             movies={paginatedMovies}
-            onMovieClick={(movie) => {
-              setSelectedMovie(movie)
-              setShowDetailPage(true)
-            }}
+            onMovieClick={
+              handleHomeMovieClick
+            }
             currentPage={
               currentPage
             }
@@ -485,7 +592,7 @@ export default function Home() {
               totalPages
             }
             onPageChange={
-              setCurrentPage
+              handleMoviePageChange
             }
             showAdultContent={
               showAdultContent
@@ -508,12 +615,9 @@ export default function Home() {
   const renderAnimePage = () => (
     <div className="bg-black">
       <AnimePage
-        onAnimeClick={(anime) => {
-          setSelectedAnime(anime)
-          setShowAnimeDetailPage(
-            true
-          )
-        }}
+        onAnimeClick={
+          handleAnimeClick
+        }
       />
     </div>
   )
@@ -673,10 +777,8 @@ export default function Home() {
           )
           setSelectedMovie(null)
         }}
-        onMovieClick={(movie) =>
-          setSelectedMovie(
-            movie
-          )
+        onMovieClick={
+          handleHomeMovieClick
         }
         showAdultContent={
           showAdultContent
@@ -688,23 +790,8 @@ export default function Home() {
   /* =========================================================
      MAIN RENDER
 
-     IMPORTANT:
-
-     এখানে কোনো overflowX:hidden বা touchAction:pan-y
-     parent wrapper-এ দেওয়া হয়নি।
-
-     কারণ এগুলো Header-এর existing scroll behavior-এ
-     interfere করতে পারে।
-
-     Horizontal swipe block করা হচ্ছে touch handlers-এর
-     মাধ্যমে।
-
-     Result:
-
-       ← Left swipe  = Page change হবে না
-       → Right swipe = Page change হবে না
-       ↑↓ Scroll     = স্বাভাবিক থাকবে
-       Bottom Nav    = Page change হবে
+     Horizontal swipe block থাকবে।
+     Vertical scrolling স্বাভাবিক থাকবে।
   ========================================================= */
 
   return (
@@ -732,13 +819,6 @@ export default function Home() {
           overscrollBehaviorX: "none",
         }}
       >
-        {/* =====================================================
-            CURRENT PAGE
-
-            শুধুমাত্র activeTab render হবে।
-            Previous/next page বা swipe transform নেই।
-        ===================================================== */}
-
         <div
           className="relative w-full"
           style={{
@@ -751,8 +831,6 @@ export default function Home() {
 
         {/* =====================================================
             BOTTOM NAVIGATION
-
-            MeBook page-এ hidden থাকবে।
         ===================================================== */}
 
         {activeTab !== "mebook" && (
@@ -791,8 +869,6 @@ export default function Home() {
 
       {/* =====================================================
           MVBD AI ASSISTANT
-
-          Only Home page-এ থাকবে।
       ===================================================== */}
 
       {activeTab === "home" && (

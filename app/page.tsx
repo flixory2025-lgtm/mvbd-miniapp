@@ -29,15 +29,7 @@ import { animes } from "@/lib/anime-data"
 import type { Anime } from "@/lib/anime-data"
 
 /* =========================================================
-   TABS — MUST MATCH bottom-navigation.tsx
-
-   Home → Anime(shorts) → MeBook(mebook)
-   → Subscriptions(exclusive) → Profile
-
-   IMPORTANT:
-   Horizontal swipe/page navigation is completely disabled.
-   Pages can ONLY be changed from BottomNavigation clicks
-   or normal programmatic navigation.
+   TABS
 ========================================================= */
 
 const tabs = [
@@ -59,8 +51,7 @@ export default function Home() {
     (typeof movies)[0] | null
   >(null)
 
-  const [currentPage, setCurrentPage] =
-    useState(1)
+  const [currentPage, setCurrentPage] = useState(1)
 
   const [showWelcomePopup, setShowWelcomePopup] =
     useState(false)
@@ -92,17 +83,19 @@ export default function Home() {
     >("main")
 
   /* =========================================================
-     HORIZONTAL TOUCH BLOCKING
+     HORIZONTAL SWIPE BLOCKING
 
      IMPORTANT:
+     এখানে কোনো page/tab swipe navigation নেই।
 
-     এখানে কোনো swipe navigation করা হচ্ছে না।
+     Left / Right swipe:
+       → page change করবে না
 
-     এই refs শুধু touch-এর শুরুতে X position মনে রাখে,
-     যাতে user finger দিয়ে left/right swipe করলে browser/app
-     horizontal gesture চালাতে না পারে।
+     Up / Down:
+       → normal scrolling কাজ করবে
 
-     Vertical scrolling সম্পূর্ণ স্বাভাবিক থাকবে।
+     Wrapper-এ overflowX hidden বা touchAction বসানো হয়নি,
+     যাতে Header-এর existing scroll behavior নষ্ট না হয়।
   ========================================================= */
 
   const touchStartXRef = useRef<number | null>(null)
@@ -143,11 +136,12 @@ export default function Home() {
       touch.clientY - touchStartYRef.current
 
     /*
-      Horizontal movement clearly বেশি হলে
-      browser-এর horizontal gesture prevent করা হবে।
+      শুধুমাত্র horizontal movement হলে
+      browser/app-এর horizontal gesture block হবে।
 
-      Vertical movement হলে কিছুই করা হবে না,
-      তাই normal page scrolling কাজ করবে।
+      Vertical movement হলে কোনো preventDefault হবে না।
+      তাই normal page scrolling এবং Header scroll behavior
+      স্বাভাবিক থাকবে।
     */
 
     if (
@@ -170,8 +164,6 @@ export default function Home() {
 
   /* =========================================================
      ACTIVE TAB INDEX
-
-     Kept for compatibility / existing logic.
   ========================================================= */
 
   const activeIndex = Math.max(
@@ -208,7 +200,7 @@ export default function Home() {
      BROWSER BACK BUTTON
 
      Browser history থাকবে।
-     Horizontal swipe navigation নেই।
+     Swipe navigation নেই।
   ========================================================= */
 
   useEffect(() => {
@@ -349,10 +341,8 @@ export default function Home() {
   /* =========================================================
      PAGE NAVIGATION
 
-     IMPORTANT:
-     Page change ONLY happens from this function.
-
-     There is NO swipe-to-page logic.
+     Page/tab change ONLY through this function.
+     Horizontal swipe does NOT call this function.
   ========================================================= */
 
   const handleTabChange = (
@@ -700,39 +690,26 @@ export default function Home() {
 
      IMPORTANT:
 
-     1. touchAction: "pan-y"
-        → vertical scrolling allowed
-        → horizontal browser gesture blocked
+     এখানে কোনো overflowX:hidden বা touchAction:pan-y
+     parent wrapper-এ দেওয়া হয়নি।
 
-     2. overscrollBehaviorX: "none"
-        → horizontal overscroll disabled
+     কারণ এগুলো Header-এর existing scroll behavior-এ
+     interfere করতে পারে।
 
-     3. onTouchMove
-        → horizontal finger movement detected হলে
-          preventDefault()
+     Horizontal swipe block করা হচ্ছে touch handlers-এর
+     মাধ্যমে।
 
-     4. NO swipe state
-        → no isSwiping
-        → no swipePosition
-        → no previous/next page transform
-        → no pointer swipe navigation
+     Result:
 
-     Therefore:
-       LEFT/RIGHT SWIPE = NOTHING
-       UP/DOWN SCROLL = WORKS
-       BOTTOM NAV CLICK = PAGE CHANGES
+       ← Left swipe  = Page change হবে না
+       → Right swipe = Page change হবে না
+       ↑↓ Scroll     = স্বাভাবিক থাকবে
+       Bottom Nav    = Page change হবে
   ========================================================= */
 
   return (
     <div
       className="w-full bg-black"
-      style={{
-        width: "100%",
-        minHeight: "100vh",
-        overflowX: "hidden",
-        overscrollBehaviorX: "none",
-        touchAction: "pan-y",
-      }}
       onTouchStart={
         handleTouchStart
       }
@@ -750,25 +727,23 @@ export default function Home() {
         className="relative w-full"
         style={{
           width: "100%",
-          overflowX: "hidden",
+          overflowX: "clip",
           overflowY: "visible",
           overscrollBehaviorX: "none",
-          touchAction: "pan-y",
         }}
       >
         {/* =====================================================
             CURRENT PAGE
 
-            Only activeTab is rendered.
-            No previous/next page exists for swipe navigation.
+            শুধুমাত্র activeTab render হবে।
+            Previous/next page বা swipe transform নেই।
         ===================================================== */}
 
         <div
           className="relative w-full"
           style={{
             width: "100%",
-            overflowX: "hidden",
-            touchAction: "pan-y",
+            overflowX: "clip",
           }}
         >
           {renderPage(activeTab)}
@@ -777,10 +752,7 @@ export default function Home() {
         {/* =====================================================
             BOTTOM NAVIGATION
 
-            MeBook page-এর সময় hidden থাকবে।
-            অন্য page-এ BottomNavigation দিয়ে tab change হবে।
-
-            এখানে কোনো swipe prop দেওয়া হচ্ছে না।
+            MeBook page-এ hidden থাকবে।
         ===================================================== */}
 
         {activeTab !== "mebook" && (
@@ -791,8 +763,6 @@ export default function Home() {
                 "none",
               userSelect:
                 "none",
-              touchAction:
-                "manipulation",
             }}
           >
             <BottomNavigation

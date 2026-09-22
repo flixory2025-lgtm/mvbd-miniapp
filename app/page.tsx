@@ -5,7 +5,6 @@ import {
   useMemo,
   useRef,
   useState,
-  type PointerEvent,
 } from "react"
 
 import Header from "@/components/header"
@@ -31,7 +30,13 @@ import type { Anime } from "@/lib/anime-data"
 
 /* =========================================================
    TABS — MUST MATCH bottom-navigation.tsx
-   Home → Anime(shorts) → MeBook(mebook) → Subscriptions(exclusive) → Profile
+
+   Home → Anime(shorts) → MeBook(mebook)
+   → Subscriptions(exclusive) → Profile
+
+   NOTE:
+   Page swipe navigation has been completely removed.
+   Pages now change ONLY from BottomNavigation clicks.
 ========================================================= */
 
 const tabs = [
@@ -44,37 +49,55 @@ const tabs = [
 
 type TabId = (typeof tabs)[number]
 
-type SettleMode = "commit" | "cancel" | null
-
 export default function Home() {
   const [searchQuery, setSearchQuery] = useState("")
-  const [selectedGenre, setSelectedGenre] = useState<string | null>(null)
+  const [selectedGenre, setSelectedGenre] =
+    useState<string | null>(null)
+
   const [selectedMovie, setSelectedMovie] = useState<
     (typeof movies)[0] | null
   >(null)
-  const [currentPage, setCurrentPage] = useState(1)
-  const [showWelcomePopup, setShowWelcomePopup] = useState(false)
-  const [activeTab, setActiveTab] = useState<TabId>("home")
-  const [isSearching, setIsSearching] = useState(false)
-  const [showAdultContent, setShowAdultContent] = useState(false)
-  const [tabHistory, setTabHistory] = useState<TabId[]>(["home"])
-  const [showDetailPage, setShowDetailPage] = useState(false)
-  const [selectedAnime, setSelectedAnime] = useState<Anime | null>(null)
-  const [showAnimeDetailPage, setShowAnimeDetailPage] = useState(false)
-  const [profileSubPage, setProfileSubPage] = useState<
-    "main" | "contact" | "about" | "settings"
-  >("main")
+
+  const [currentPage, setCurrentPage] =
+    useState(1)
+
+  const [showWelcomePopup, setShowWelcomePopup] =
+    useState(false)
+
+  const [activeTab, setActiveTab] =
+    useState<TabId>("home")
+
+  const [isSearching, setIsSearching] =
+    useState(false)
+
+  const [showAdultContent, setShowAdultContent] =
+    useState(false)
+
+  const [tabHistory, setTabHistory] =
+    useState<TabId[]>(["home"])
+
+  const [showDetailPage, setShowDetailPage] =
+    useState(false)
+
+  const [selectedAnime, setSelectedAnime] =
+    useState<Anime | null>(null)
+
+  const [showAnimeDetailPage, setShowAnimeDetailPage] =
+    useState(false)
+
+  const [profileSubPage, setProfileSubPage] =
+    useState<
+      "main" | "contact" | "about" | "settings"
+    >("main")
 
   /* =========================================================
-     SWIPE STATE
+     ACTIVE TAB INDEX
   ========================================================= */
 
-  const [isSwiping, setIsSwiping] = useState(false)
-  const [swipePosition, setSwipePosition] = useState(0)
-  const [settleMode, setSettleMode] = useState<SettleMode>(null)
-  const [viewportWidth, setViewportWidth] = useState(390)
-
-  const activeIndex = Math.max(0, tabs.indexOf(activeTab))
+  const activeIndex = Math.max(
+    0,
+    tabs.indexOf(activeTab)
+  )
 
   /* =========================================================
      OPEN SUBSCRIPTIONS EVENT
@@ -85,11 +108,13 @@ export default function Home() {
       setSelectedMovie(null)
       setShowDetailPage(false)
       setActiveTab("exclusive")
-      setSwipePosition(tabs.indexOf("exclusive"))
       setProfileSubPage("main")
     }
 
-    window.addEventListener("mvbd:open-subscriptions", openSubscriptions)
+    window.addEventListener(
+      "mvbd:open-subscriptions",
+      openSubscriptions
+    )
 
     return () => {
       window.removeEventListener(
@@ -100,81 +125,48 @@ export default function Home() {
   }, [])
 
   /* =========================================================
-     DOM REFS
-  ========================================================= */
-
-  const swipeShellRef = useRef<HTMLDivElement>(null)
-  const currentPageRef = useRef<HTMLDivElement>(null)
-  const previousPageRef = useRef<HTMLDivElement>(null)
-  const nextPageRef = useRef<HTMLDivElement>(null)
-
-  /* =========================================================
-     POINTER / PHYSICS REFS
-  ========================================================= */
-
-  const pointerIdRef = useRef<number | null>(null)
-  const startXRef = useRef(0)
-  const startYRef = useRef(0)
-  const lastXRef = useRef(0)
-  const lastTimeRef = useRef(0)
-  const velocityXRef = useRef(0)
-  const dragXRef = useRef(0)
-  const horizontalLockRef = useRef(false)
-  const activeSwipeDirectionRef = useRef<"previous" | "next" | null>(null)
-  const settleTargetRef = useRef<TabId | null>(null)
-  const finishTimerRef = useRef<number | null>(null)
-
-  /* =========================================================
-     VIEWPORT WIDTH
-  ========================================================= */
-
-  useEffect(() => {
-    const updateViewportWidth = () => {
-      setViewportWidth(Math.max(1, window.innerWidth))
-    }
-
-    updateViewportWidth()
-
-    window.addEventListener("resize", updateViewportWidth)
-
-    return () => window.removeEventListener("resize", updateViewportWidth)
-  }, [])
-
-  /* =========================================================
-     CLEANUP TIMER
-  ========================================================= */
-
-  useEffect(() => {
-    return () => {
-      if (finishTimerRef.current !== null) {
-        window.clearTimeout(finishTimerRef.current)
-      }
-    }
-  }, [])
-
-  /* =========================================================
      BROWSER BACK BUTTON
+
+     Navigation history থাকবে।
+     Swipe navigation নেই।
   ========================================================= */
 
   useEffect(() => {
     const handlePopState = () => {
       setTabHistory((history) => {
-        if (history.length <= 1) return history
+        if (history.length <= 1) {
+          return history
+        }
 
-        const newHistory = history.slice(0, -1)
-        const previousTab = newHistory[newHistory.length - 1]
+        const newHistory =
+          history.slice(0, -1)
+
+        const previousTab =
+          newHistory[newHistory.length - 1]
 
         if (previousTab) {
           setActiveTab(previousTab)
+
+          if (previousTab !== "profile") {
+            setProfileSubPage("main")
+          }
         }
 
         return newHistory
       })
     }
 
-    window.addEventListener("popstate", handlePopState)
+    window.addEventListener(
+      "popstate",
+      handlePopState
+    )
 
-    return () => window.removeEventListener("popstate", handlePopState)
+    return () => {
+      window.removeEventListener(
+        "popstate",
+        handlePopState
+      )
+    }
   }, [])
 
   /* =========================================================
@@ -186,10 +178,14 @@ export default function Home() {
       setShowWelcomePopup(true)
     }, 450)
 
-    return () => window.clearTimeout(timer)
+    return () => {
+      window.clearTimeout(timer)
+    }
   }, [])
 
-  const handleClosePopup = () => setShowWelcomePopup(false)
+  const handleClosePopup = () => {
+    setShowWelcomePopup(false)
+  }
 
   /* =========================================================
      FILTERED MOVIES
@@ -200,664 +196,127 @@ export default function Home() {
 
     if (searchQuery.trim()) {
       filtered = filtered.filter((movie) =>
-        movie.title.toLowerCase().includes(searchQuery.toLowerCase())
+        movie.title
+          .toLowerCase()
+          .includes(
+            searchQuery.toLowerCase()
+          )
       )
     }
 
-    if (selectedGenre && !searchQuery.trim()) {
+    if (
+      selectedGenre &&
+      !searchQuery.trim()
+    ) {
       filtered = filtered.filter((movie) =>
         movie.genre.includes(selectedGenre)
       )
     }
 
-    return [...filtered].sort((a, b) => b.id - a.id)
-  }, [searchQuery, selectedGenre])
+    return [...filtered].sort(
+      (a, b) => b.id - a.id
+    )
+  }, [
+    searchQuery,
+    selectedGenre,
+  ])
 
   const itemsPerPage = 30
 
   const totalPages = Math.ceil(
-    filteredMovies.length / itemsPerPage
+    filteredMovies.length /
+      itemsPerPage
   )
 
-  const paginatedMovies = filteredMovies.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  )
+  const paginatedMovies =
+    filteredMovies.slice(
+      (currentPage - 1) *
+        itemsPerPage,
+      currentPage *
+        itemsPerPage
+    )
 
   /* =========================================================
      SEARCH
   ========================================================= */
 
-  const handleSearch = (query: string) => {
+  const handleSearch = (
+    query: string
+  ) => {
     setSearchQuery(query)
     setCurrentPage(1)
-    setIsSearching(query.trim().length > 0)
+    setIsSearching(
+      query.trim().length > 0
+    )
   }
 
   /* =========================================================
      GENRE
   ========================================================= */
 
-  const handleGenreSelect = (genre: string | null) => {
+  const handleGenreSelect = (
+    genre: string | null
+  ) => {
     setSelectedGenre(genre)
     setCurrentPage(1)
-    setShowAdultContent(genre === "Adult")
+    setShowAdultContent(
+      genre === "Adult"
+    )
   }
 
   /* =========================================================
      PAGE NAVIGATION
+
+     IMPORTANT:
+     Page change ONLY happens when BottomNavigation
+     calls this function.
+
+     Swipe/page gesture navigation has been removed.
   ========================================================= */
 
   const handleTabChange = (
     newTab: string,
     addHistory = true
   ) => {
-    if (!tabs.includes(newTab as TabId)) return
+    if (
+      !tabs.includes(
+        newTab as TabId
+      )
+    ) {
+      return
+    }
 
-    const targetTab = newTab as TabId
+    const targetTab =
+      newTab as TabId
 
-    if (targetTab === activeTab) return
+    if (
+      targetTab === activeTab
+    ) {
+      return
+    }
 
-    setSettleMode(null)
-    dragXRef.current = 0
-    setIsSwiping(false)
-    setSwipePosition(tabs.indexOf(targetTab))
     setActiveTab(targetTab)
 
     if (addHistory) {
-      setTabHistory((previous) => [
-        ...previous,
-        targetTab,
-      ])
+      setTabHistory(
+        (previous) => [
+          ...previous,
+          targetTab,
+        ]
+      )
 
-      window.history.pushState(null, "", "")
+      window.history.pushState(
+        null,
+        "",
+        ""
+      )
     }
 
-    if (targetTab !== "profile") {
+    if (
+      targetTab !== "profile"
+    ) {
       setProfileSubPage("main")
     }
-  }
-
-  /* =========================================================
-     PROTECTED SWIPE AREAS
-  ========================================================= */
-
-  const isProtectedSwipeTarget = (
-    target: EventTarget | null
-  ) => {
-    if (!(target instanceof Element)) return false
-
-    return Boolean(
-      target.closest("[data-no-page-swipe]")
-    )
-  }
-
-  /* =========================================================
-     APPLY SWIPE POSITION
-  ========================================================= */
-
-  const applySwipePosition = (
-    x: number,
-    width: number
-  ) => {
-    const safeWidth = Math.max(1, width)
-
-    const current = currentPageRef.current
-    const previous = previousPageRef.current
-    const next = nextPageRef.current
-
-    if (!current) return
-
-    let finalX = x
-
-    if (activeIndex === 0 && finalX > 0) {
-      finalX *= 0.22
-    }
-
-    if (
-      activeIndex === tabs.length - 1 &&
-      finalX < 0
-    ) {
-      finalX *= 0.22
-    }
-
-    finalX = Math.max(
-      -safeWidth,
-      Math.min(safeWidth, finalX)
-    )
-
-    dragXRef.current = finalX
-
-    current.style.transform =
-      `translate3d(${finalX}px, 0, 0)`
-
-    if (
-      finalX < 0 &&
-      activeIndex < tabs.length - 1
-    ) {
-      if (next) {
-        next.style.visibility = "visible"
-        next.style.transform =
-          `translate3d(${safeWidth + finalX}px, 0, 0)`
-      }
-
-      if (previous) {
-        previous.style.visibility = "hidden"
-        previous.style.transform =
-          `translate3d(-${safeWidth}px, 0, 0)`
-      }
-    } else if (
-      finalX > 0 &&
-      activeIndex > 0
-    ) {
-      if (previous) {
-        previous.style.visibility = "visible"
-        previous.style.transform =
-          `translate3d(${-safeWidth + finalX}px, 0, 0)`
-      }
-
-      if (next) {
-        next.style.visibility = "hidden"
-        next.style.transform =
-          `translate3d(${safeWidth}px, 0, 0)`
-      }
-    } else {
-      if (previous) {
-        previous.style.visibility = "hidden"
-        previous.style.transform =
-          `translate3d(-${safeWidth}px, 0, 0)`
-      }
-
-      if (next) {
-        next.style.visibility = "hidden"
-        next.style.transform =
-          `translate3d(${safeWidth}px, 0, 0)`
-      }
-    }
-
-    const position =
-      activeIndex - finalX / safeWidth
-
-    const clampedPosition = Math.max(
-      0,
-      Math.min(
-        tabs.length - 1,
-        position
-      )
-    )
-
-    setSwipePosition(clampedPosition)
-  }
-
-  /* =========================================================
-     RESET PAGE POSITIONS
-  ========================================================= */
-
-  const resetPageTransforms = () => {
-    const current = currentPageRef.current
-    const previous = previousPageRef.current
-    const next = nextPageRef.current
-
-    if (current) {
-      current.style.transition = "none"
-      current.style.transform =
-        "translate3d(0, 0, 0)"
-    }
-
-    if (previous) {
-      previous.style.transition = "none"
-      previous.style.visibility = "hidden"
-      previous.style.transform =
-        `translate3d(-${viewportWidth}px, 0, 0)`
-    }
-
-    if (next) {
-      next.style.transition = "none"
-      next.style.visibility = "hidden"
-      next.style.transform =
-        `translate3d(${viewportWidth}px, 0, 0)`
-    }
-
-    dragXRef.current = 0
-
-    setSwipePosition(activeIndex)
-  }
-
-  /* =========================================================
-     FINISH SWIPE
-  ========================================================= */
-
-  const finishSwipe = (
-    committed: boolean,
-    direction: "previous" | "next" | null
-  ) => {
-    const current = currentPageRef.current
-    const previous = previousPageRef.current
-    const next = nextPageRef.current
-
-    if (!current) return
-
-    const width = Math.max(1, viewportWidth)
-
-    const currentDrag = Math.abs(
-      dragXRef.current
-    )
-
-    const remaining = committed
-      ? Math.max(0, width - currentDrag)
-      : currentDrag
-
-    const progress = Math.min(
-      1,
-      remaining / width
-    )
-
-    const duration = committed
-      ? Math.round(150 + progress * 150)
-      : Math.round(150 + progress * 100)
-
-    const easing =
-      "cubic-bezier(0.22, 1, 0.36, 1)"
-
-    setSettleMode(
-      committed ? "commit" : "cancel"
-    )
-
-    current.style.transition =
-      `transform ${duration}ms ${easing}`
-
-    if (previous) {
-      previous.style.transition =
-        `transform ${duration}ms ${easing}`
-    }
-
-    if (next) {
-      next.style.transition =
-        `transform ${duration}ms ${easing}`
-    }
-
-    if (
-      committed &&
-      direction === "next" &&
-      activeIndex < tabs.length - 1
-    ) {
-      current.style.transform =
-        `translate3d(-${width}px, 0, 0)`
-
-      if (next) {
-        next.style.visibility = "visible"
-        next.style.transform =
-          "translate3d(0, 0, 0)"
-      }
-
-      if (previous) {
-        previous.style.visibility = "hidden"
-      }
-
-      setSwipePosition(activeIndex + 1)
-
-      settleTargetRef.current =
-        tabs[activeIndex + 1]
-    } else if (
-      committed &&
-      direction === "previous" &&
-      activeIndex > 0
-    ) {
-      current.style.transform =
-        `translate3d(${width}px, 0, 0)`
-
-      if (previous) {
-        previous.style.visibility = "visible"
-        previous.style.transform =
-          "translate3d(0, 0, 0)"
-      }
-
-      if (next) {
-        next.style.visibility = "hidden"
-      }
-
-      setSwipePosition(activeIndex - 1)
-
-      settleTargetRef.current =
-        tabs[activeIndex - 1]
-    } else {
-      current.style.transform =
-        "translate3d(0, 0, 0)"
-
-      if (previous) {
-        previous.style.visibility = "hidden"
-        previous.style.transform =
-          `translate3d(-${width}px, 0, 0)`
-      }
-
-      if (next) {
-        next.style.visibility = "hidden"
-        next.style.transform =
-          `translate3d(${width}px, 0, 0)`
-      }
-
-      setSwipePosition(activeIndex)
-
-      settleTargetRef.current = null
-    }
-
-    if (finishTimerRef.current !== null) {
-      window.clearTimeout(
-        finishTimerRef.current
-      )
-    }
-
-    finishTimerRef.current =
-      window.setTimeout(() => {
-        const target =
-          settleTargetRef.current
-
-        if (committed && target) {
-          setActiveTab(target)
-
-          setSwipePosition(
-            tabs.indexOf(target)
-          )
-
-          if (target !== "profile") {
-            setProfileSubPage("main")
-          }
-
-          setTabHistory(
-            (previousHistory) => [
-              ...previousHistory,
-              target,
-            ]
-          )
-
-          window.history.pushState(
-            null,
-            "",
-            ""
-          )
-        }
-
-        settleTargetRef.current = null
-        setSettleMode(null)
-        setIsSwiping(false)
-
-        window.requestAnimationFrame(() => {
-          window.requestAnimationFrame(() => {
-            resetPageTransforms()
-          })
-        })
-      }, duration + 20)
-  }
-
-  /* =========================================================
-     POINTER DOWN
-  ========================================================= */
-
-  const handlePointerDown = (
-    event: PointerEvent<HTMLDivElement>
-  ) => {
-    if (
-      event.pointerType === "mouse" &&
-      event.button !== 0
-    ) {
-      return
-    }
-
-    if (showDetailPage) return
-
-    if (
-      isProtectedSwipeTarget(event.target)
-    ) {
-      return
-    }
-
-    if (settleMode !== null) return
-
-    pointerIdRef.current =
-      event.pointerId
-
-    startXRef.current =
-      event.clientX
-
-    startYRef.current =
-      event.clientY
-
-    lastXRef.current =
-      event.clientX
-
-    lastTimeRef.current =
-      performance.now()
-
-    velocityXRef.current = 0
-    dragXRef.current = 0
-    horizontalLockRef.current = false
-    activeSwipeDirectionRef.current = null
-
-    setIsSwiping(false)
-    setSwipePosition(activeIndex)
-  }
-
-  /* =========================================================
-     POINTER MOVE
-  ========================================================= */
-
-  const handlePointerMove = (
-    event: PointerEvent<HTMLDivElement>
-  ) => {
-    if (
-      pointerIdRef.current !==
-      event.pointerId
-    ) {
-      return
-    }
-
-    if (showDetailPage) return
-
-    const deltaX =
-      event.clientX -
-      startXRef.current
-
-    const deltaY =
-      event.clientY -
-      startYRef.current
-
-    if (!horizontalLockRef.current) {
-      if (
-        Math.abs(deltaX) < 7 &&
-        Math.abs(deltaY) < 7
-      ) {
-        return
-      }
-
-      if (
-        Math.abs(deltaY) >
-        Math.abs(deltaX) * 1.15
-      ) {
-        pointerIdRef.current = null
-        return
-      }
-
-      horizontalLockRef.current = true
-
-      try {
-        swipeShellRef.current?.setPointerCapture(
-          event.pointerId
-        )
-      } catch {}
-
-      setIsSwiping(true)
-    }
-
-    const now = performance.now()
-
-    const dt =
-      now - lastTimeRef.current
-
-    if (dt > 0) {
-      const instantVelocity =
-        (event.clientX -
-          lastXRef.current) /
-        dt
-
-      velocityXRef.current =
-        velocityXRef.current * 0.65 +
-        instantVelocity * 0.35
-    }
-
-    lastXRef.current =
-      event.clientX
-
-    lastTimeRef.current = now
-
-    if (deltaX < 0) {
-      activeSwipeDirectionRef.current =
-        "next"
-    } else if (deltaX > 0) {
-      activeSwipeDirectionRef.current =
-        "previous"
-    }
-
-    applySwipePosition(
-      deltaX,
-      viewportWidth
-    )
-
-    if (event.cancelable) {
-      event.preventDefault()
-    }
-  }
-
-  /* =========================================================
-     POINTER UP
-  ========================================================= */
-
-  const handlePointerUp = (
-    event: PointerEvent<HTMLDivElement>
-  ) => {
-    if (
-      pointerIdRef.current !==
-      event.pointerId
-    ) {
-      return
-    }
-
-    pointerIdRef.current = null
-
-    try {
-      swipeShellRef.current?.releasePointerCapture(
-        event.pointerId
-      )
-    } catch {}
-
-    if (!horizontalLockRef.current) {
-      return
-    }
-
-    const distance =
-      event.clientX -
-      startXRef.current
-
-    const velocity =
-      velocityXRef.current
-
-    const width =
-      Math.max(1, viewportWidth)
-
-    const projected =
-      distance + velocity * 140
-
-    const commitDistance =
-      width * 0.18
-
-    let direction:
-      | "previous"
-      | "next"
-      | null = null
-
-    if (
-      projected < -commitDistance &&
-      activeIndex < tabs.length - 1
-    ) {
-      direction = "next"
-    }
-
-    if (
-      projected > commitDistance &&
-      activeIndex > 0
-    ) {
-      direction = "previous"
-    }
-
-    if (
-      !direction &&
-      Math.abs(velocity) > 0.65
-    ) {
-      if (
-        velocity < 0 &&
-        activeIndex < tabs.length - 1
-      ) {
-        direction = "next"
-      } else if (
-        velocity > 0 &&
-        activeIndex > 0
-      ) {
-        direction = "previous"
-      }
-    }
-
-    setIsSwiping(false)
-
-    if (direction) {
-      finishSwipe(
-        true,
-        direction
-      )
-    } else {
-      finishSwipe(
-        false,
-        activeSwipeDirectionRef.current
-      )
-    }
-
-    horizontalLockRef.current = false
-  }
-
-  /* =========================================================
-     POINTER CANCEL
-  ========================================================= */
-
-  const handlePointerCancel = (
-    event?: PointerEvent<HTMLDivElement>
-  ) => {
-    if (
-      event &&
-      pointerIdRef.current !==
-        event.pointerId
-    ) {
-      return
-    }
-
-    pointerIdRef.current = null
-
-    if (!horizontalLockRef.current) {
-      return
-    }
-
-    try {
-      if (event) {
-        swipeShellRef.current?.releasePointerCapture(
-          event.pointerId
-        )
-      }
-    } catch {}
-
-    horizontalLockRef.current = false
-    setIsSwiping(false)
-
-    finishSwipe(
-      false,
-      activeSwipeDirectionRef.current
-    )
   }
 
   /* =========================================================
@@ -903,13 +362,7 @@ export default function Home() {
       ) : (
         <>
           {!isSearching && (
-            <div
-              data-no-page-swipe
-              className="w-full"
-              style={{
-                touchAction: "pan-x pan-y",
-              }}
-            >
+            <div className="w-full">
               <TrendingCarousel
                 onMovieClick={(movie) => {
                   setSelectedMovie(movie)
@@ -922,8 +375,12 @@ export default function Home() {
           {!isSearching && (
             <GenreCategories
               genres={genres}
-              selectedGenre={selectedGenre}
-              onGenreSelect={handleGenreSelect}
+              selectedGenre={
+                selectedGenre
+              }
+              onGenreSelect={
+                handleGenreSelect
+              }
               showAdultContent={
                 showAdultContent
               }
@@ -933,7 +390,8 @@ export default function Home() {
           {isSearching && (
             <div className="px-4 pt-4">
               <h2 className="text-xl font-bold text-white mb-2">
-                সার্চ রেজাল্ট: "{searchQuery}"
+                সার্চ রেজাল্ট: "
+                {searchQuery}"
               </h2>
 
               <p className="text-slate-400 text-sm mb-4">
@@ -949,13 +407,21 @@ export default function Home() {
               setSelectedMovie(movie)
               setShowDetailPage(true)
             }}
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={setCurrentPage}
+            currentPage={
+              currentPage
+            }
+            totalPages={
+              totalPages
+            }
+            onPageChange={
+              setCurrentPage
+            }
             showAdultContent={
               showAdultContent
             }
-            isSearching={isSearching}
+            isSearching={
+              isSearching
+            }
           />
         </>
       )}
@@ -973,7 +439,9 @@ export default function Home() {
       <AnimePage
         onAnimeClick={(anime) => {
           setSelectedAnime(anime)
-          setShowAnimeDetailPage(true)
+          setShowAnimeDetailPage(
+            true
+          )
         }}
       />
     </div>
@@ -996,7 +464,9 @@ export default function Home() {
   const renderMebookPage = () => (
     <div className="bg-black">
       <MeBookPage
-        onExit={() => handleTabChange("home")}
+        onExit={() =>
+          handleTabChange("home")
+        }
       />
     </div>
   )
@@ -1007,34 +477,46 @@ export default function Home() {
 
   const renderProfilePage = () => (
     <div className="bg-black">
-      {profileSubPage === "main" && (
+      {profileSubPage ===
+        "main" && (
         <ProfilePage
           onNavigate={(page) =>
-            setProfileSubPage(page)
+            setProfileSubPage(
+              page
+            )
           }
         />
       )}
 
-      {profileSubPage === "contact" && (
+      {profileSubPage ===
+        "contact" && (
         <ContactUsPage
           onBack={() =>
-            setProfileSubPage("main")
+            setProfileSubPage(
+              "main"
+            )
           }
         />
       )}
 
-      {profileSubPage === "about" && (
+      {profileSubPage ===
+        "about" && (
         <AboutUsPage
           onBack={() =>
-            setProfileSubPage("main")
+            setProfileSubPage(
+              "main"
+            )
           }
         />
       )}
 
-      {profileSubPage === "settings" && (
+      {profileSubPage ===
+        "settings" && (
         <SettingsPage
           onBack={() =>
-            setProfileSubPage("main")
+            setProfileSubPage(
+              "main"
+            )
           }
         />
       )}
@@ -1047,7 +529,9 @@ export default function Home() {
      RENDER PAGE
   ========================================================= */
 
-  const renderPage = (tab: TabId) => {
+  const renderPage = (
+    tab: TabId
+  ) => {
     switch (tab) {
       case "home":
         return renderHomePage()
@@ -1070,56 +554,6 @@ export default function Home() {
   }
 
   /* =========================================================
-     PAGE POSITION RESET
-  ========================================================= */
-
-  useEffect(() => {
-    if (settleMode !== null) return
-
-    const current =
-      currentPageRef.current
-
-    const previous =
-      previousPageRef.current
-
-    const next =
-      nextPageRef.current
-
-    if (current) {
-      current.style.transition = "none"
-      current.style.transform =
-        "translate3d(0, 0, 0)"
-    }
-
-    if (previous) {
-      previous.style.transition = "none"
-      previous.style.visibility =
-        "hidden"
-
-      previous.style.transform =
-        `translate3d(-${viewportWidth}px, 0, 0)`
-    }
-
-    if (next) {
-      next.style.transition = "none"
-      next.style.visibility =
-        "hidden"
-
-      next.style.transform =
-        `translate3d(${viewportWidth}px, 0, 0)`
-    }
-
-    dragXRef.current = 0
-
-    setSwipePosition(activeIndex)
-  }, [
-    activeTab,
-    activeIndex,
-    viewportWidth,
-    settleMode,
-  ])
-
-  /* =========================================================
      DETAIL PAGE
   ========================================================= */
 
@@ -1129,9 +563,13 @@ export default function Home() {
   ) {
     return (
       <MovieDetailPage
-        movie={selectedAnime as any}
+        movie={
+          selectedAnime as any
+        }
         onBack={() => {
-          setShowAnimeDetailPage(false)
+          setShowAnimeDetailPage(
+            false
+          )
           setSelectedAnime(null)
         }}
         onMovieClick={(anime) => {
@@ -1139,7 +577,9 @@ export default function Home() {
             anime as Anime
           )
         }}
-        relatedItems={animes as any}
+        relatedItems={
+          animes as any
+        }
         mediaType="anime"
       />
     )
@@ -1153,11 +593,15 @@ export default function Home() {
       <MovieDetailPage
         movie={selectedMovie}
         onBack={() => {
-          setShowDetailPage(false)
+          setShowDetailPage(
+            false
+          )
           setSelectedMovie(null)
         }}
         onMovieClick={(movie) =>
-          setSelectedMovie(movie)
+          setSelectedMovie(
+            movie
+          )
         }
         showAdultContent={
           showAdultContent
@@ -1167,54 +611,28 @@ export default function Home() {
   }
 
   /* =========================================================
-     PREVIOUS / NEXT TAB
-  ========================================================= */
-
-  const previousTab =
-    activeIndex > 0
-      ? tabs[activeIndex - 1]
-      : null
-
-  const nextTab =
-    activeIndex < tabs.length - 1
-      ? tabs[activeIndex + 1]
-      : null
-
-  /* =========================================================
      MAIN RENDER
+
+     NO SWIPE NAVIGATION HERE.
+
+     The page simply renders the currently selected tab.
+     BottomNavigation controls tab changes.
   ========================================================= */
 
   return (
     <div className="w-full bg-black">
       <div
-        ref={swipeShellRef}
         className="relative w-full"
-        onPointerDown={handlePointerDown}
-        onPointerMove={handlePointerMove}
-        onPointerUp={handlePointerUp}
-        onPointerCancel={handlePointerCancel}
         style={{
-          touchAction: "pan-y pinch-zoom",
           overflowX: "clip",
           overflowY: "visible",
         }}
       >
-        {/* CURRENT PAGE */}
-        <div
-          ref={currentPageRef}
-          className="relative w-full"
-          style={{
-            transform:
-              "translate3d(0, 0, 0)",
-            transition: "none",
-            willChange: "transform",
-            backfaceVisibility:
-              "hidden",
-            WebkitBackfaceVisibility:
-              "hidden",
-            zIndex: 2,
-          }}
-        >
+        {/* =====================================================
+            CURRENT PAGE
+        ===================================================== */}
+
+        <div className="relative w-full">
           {renderPage(activeTab)}
         </div>
 
@@ -1224,36 +642,50 @@ export default function Home() {
             MeBook page-এর সময় BottomNavigation hide থাকবে।
             MeBook থেকে Exit করলে activeTab = home হবে,
             তখন আবার BottomNavigation দেখা যাবে।
+
+            Page swipe completely disabled/removed.
         ===================================================== */}
 
         {activeTab !== "mebook" && (
           <div
-            data-page-swipe-nav
             className="relative z-[50]"
             style={{
-              touchAction: "pan-y",
-              WebkitUserSelect: "none",
-              userSelect: "none",
+              WebkitUserSelect:
+                "none",
+              userSelect:
+                "none",
             }}
           >
             <BottomNavigation
-              activeTab={activeTab}
-              onTabChange={handleTabChange}
-              swipePosition={swipePosition}
-              isSwiping={isSwiping}
+              activeTab={
+                activeTab
+              }
+              onTabChange={
+                handleTabChange
+              }
             />
           </div>
         )}
       </div>
 
-      {/* WELCOME POPUP */}
+      {/* =====================================================
+          WELCOME POPUP
+      ===================================================== */}
+
       {showWelcomePopup && (
         <WelcomePopup
-          onClose={handleClosePopup}
+          onClose={
+            handleClosePopup
+          }
         />
       )}
 
-      {/* MVBD AI ASSISTANT */}
+      {/* =====================================================
+          MVBD AI ASSISTANT
+
+          Only Home page-এ থাকবে।
+      ===================================================== */}
+
       {activeTab === "home" && (
         <MvbdAiAssistant />
       )}

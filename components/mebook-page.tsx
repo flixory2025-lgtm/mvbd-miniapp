@@ -2087,9 +2087,9 @@ export default function MeBookPage({ onExit }: MeBookPageProps) {
   }, [])
 
   const [feed, setFeed] = useState<any[]>([])
-  const [myPosts, setMyPosts] = useState<any[]>([])
-  const [communityFeed, setCommunityFeed] = useState<any[]>([])
-  const [friends, setFriends] = useState<any[]>([])
+const [myPosts, setMyPosts] = useState<any[]>([])
+// communityFeed line টা পুরো delete করে দিন
+const [friends, setFriends] = useState<any[]>([])
   const [requests, setRequests] = useState<any[]>([])
   const [myFriends, setMyFriends] = useState<any[]>([])
   const [sentFriendRequests, setSentFriendRequests] = useState<any[]>([])
@@ -2545,15 +2545,7 @@ const handleChatTyping = (value: string) => {
         })
       )
 
-      const commQ = fb.query(fb.collection(fb.db, "posts"), fb.orderBy("createdAt", "desc"))
-      unsubscribersRef.current.push(
-        fb.onSnapshot(commQ, (snap: any) => {
-          const arr: any[] = []
-          snap.forEach((d: any) => arr.push({ id: d.id, ...d.data() }))
-          setCommunityFeed(arr)
-        })
-      )
-
+    
       const usersQ = fb.query(fb.collection(fb.db, "users"))
       unsubscribersRef.current.push(
         fb.onSnapshot(usersQ, (snap: any) => {
@@ -6948,37 +6940,35 @@ const handleChatTyping = (value: string) => {
             </div>
           )}
 
-          {currentView === "community" && (
-            <div className="mb-view active">
-              <div className="mb-community-hero">
-                <h2>🎬 MeBook Community</h2>
-                <p>Official posts, announcements and featured reviews from the MeBook team.</p>
-              </div>
-              <div>
-                {communityFeed.filter((p) => p.isOfficial === true).length === 0 ? (
-                  renderPost({
-                    id: "comm-1",
-                    authorId: "admin",
-                    authorName: "MeBook Official",
-                    authorAvatar: LOGO_URL,
-                    verified: true,
-                    isOfficial: true,
-                    caption:
-                      "🎉 Welcome to the MeBook Community! Share your favourite movie screenshots & reviews. Use #MeBookReview to get featured!",
-                    movie: "Community Announcement",
-                    image: "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=900&q=80",
-                    likes: [],
-                    reactions: {},
-                    comments: [],
-                    shares: 0,
-                    timeText: "just now",
-                  })
-                ) : (
-                  communityFeed.filter((p) => p.isOfficial === true).map((p) => renderPost(p))
-                )}
-              </div>
-            </div>
-          )}
+          {currentView === "community" && (() => {
+  // feed state থেকে official post filter করছি
+  const officialPosts = feed.filter(
+    (p) => p.isOfficial === true || p.authorId === "admin"
+  )
+  return (
+    <div className="mb-view active">
+      <div className="mb-community-hero">
+        <h2>🎬 MeBook Community</h2>
+        <p>Official posts, announcements and featured reviews from the MeBook team.</p>
+      </div>
+      <div>
+        {officialPosts.length === 0 ? (
+          <div className="mb-empty">
+            <svg viewBox="0 0 24 24">
+              <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z" />
+            </svg>
+            <b>No official posts yet</b>
+            <p style={{ fontSize: 14, marginTop: 4 }}>
+              Admin panel থেকে official post publish করলে এখানে দেখা যাবে।
+            </p>
+          </div>
+        ) : (
+          officialPosts.map((p) => renderPost(p))
+        )}
+      </div>
+    </div>
+  )
+})()}
         </main>
 
         <aside className="mb-right">

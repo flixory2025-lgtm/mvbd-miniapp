@@ -85,7 +85,7 @@ export default function MovieGrid({
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 mb-8">
+          <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 2xl:grid-cols-8 gap-3 md:gap-4 mb-8">
             {movies.map((movie) => {
               const isAdult = isAdultMovie(movie.genre)
               const shouldBlur = isAdult && !showAdultContent

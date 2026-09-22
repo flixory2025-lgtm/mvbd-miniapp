@@ -506,10 +506,11 @@ export default function Home() {
   const renderHomePage = () => (
     <div className="bg-black">
       <Header
-        onSearch={handleSearch}
-        pageType="home"
-        searchData={movies}
-      />
+  onSearch={handleSearch}
+  searchQuery={searchQuery}
+  pageType="home"
+  searchData={movies}
+/>
 
       {searchQuery.trim() &&
       filteredMovies.length === 0 ? (

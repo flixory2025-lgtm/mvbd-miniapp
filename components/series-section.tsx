@@ -1,40 +1,28 @@
 "use client"
 
 import {
-  useCallback,
   useEffect,
+  useRef,
   useState,
   type ReactNode,
 } from "react"
-
 import { createPortal } from "react-dom"
 
 import { useAuth } from "@/components/auth-provider"
-
-import {
-  createPendingPaymentRequest,
-} from "@/lib/payment-requests"
+import { createPendingPaymentRequest } from "@/lib/payment-requests"
 
 import {
   PAYMENT_NUMBER,
   SUBSCRIPTION_PLANS,
   type SubscriptionPlan,
-  type PlanAccessItem,
+  type FreeAccessItem,
 } from "@/lib/subscription-plans"
 
 type Plan = SubscriptionPlan
 
-const plans = SUBSCRIPTION_PLANS
-
-const MOBILE_BACKGROUND =
-  "https://i.postimg.cc/43PLHM4Z/file-0000000041908206b4fe692b01e0940b.png"
-
-const DESKTOP_BACKGROUND =
-  "https://i.postimg.cc/43s2dZg3/file-00000000e1908211bbeb998f8584d5ba.png"
-
-/* =========================================================
-   VIEWPORT MODAL
-========================================================= */
+interface SeriesSectionProps {
+  onOpenMeBook?: () => void
+}
 
 function ViewportModal({
   children,
@@ -48,21 +36,15 @@ function ViewportModal({
   useEffect(() => {
     setMounted(true)
 
-    const previousOverflow =
-      document.body.style.overflow
-
-    const previousTouchAction =
-      document.body.style.touchAction
+    const oldOverflow = document.body.style.overflow
+    const oldTouchAction = document.body.style.touchAction
 
     document.body.style.overflow = "hidden"
     document.body.style.touchAction = "none"
 
     return () => {
-      document.body.style.overflow =
-        previousOverflow
-
-      document.body.style.touchAction =
-        previousTouchAction
+      document.body.style.overflow = oldOverflow
+      document.body.style.touchAction = oldTouchAction
     }
   }, [])
 
@@ -70,7 +52,8 @@ function ViewportModal({
 
   return createPortal(
     <div
-      className="mvbd-viewport-modal"
+      className="mvbd-modal-backdrop"
+      role="presentation"
       onClick={(event) => {
         if (
           event.target === event.currentTarget &&
@@ -82,26 +65,17 @@ function ViewportModal({
     >
       {children}
     </div>,
-    document.body,
+    document.body
   )
 }
 
-/* =========================================================
-   MAIN
-========================================================= */
-
 export default function SeriesSection({
   onOpenMeBook,
-}: {
-  onOpenMeBook?: () => void
-}) {
+}: SeriesSectionProps) {
   const { user, profile } = useAuth()
 
   const [selectedPlan, setSelectedPlan] =
     useState<Plan | null>(null)
-
-  const [transactionId, setTransactionId] =
-    useState("")
 
   const [showPayment, setShowPayment] =
     useState(false)
@@ -115,8 +89,10 @@ export default function SeriesSection({
   const [showSuccess, setShowSuccess] =
     useState(false)
 
-  const [progress, setProgress] =
-    useState(0)
+  const [transactionId, setTransactionId] =
+    useState("")
+
+  const [progress, setProgress] = useState(0)
 
   const [copied, setCopied] =
     useState(false)
@@ -124,162 +100,95 @@ export default function SeriesSection({
   const [error, setError] =
     useState("")
 
-  /* =======================================================
-     OPEN FREE PLAN
-  ======================================================= */
+  const processingTimerRef =
+    useRef<number | null>(null)
 
-  const openFreePlan = useCallback(() => {
-    setSelectedPlan(null)
-    setError("")
-    setShowFreeAccess(true)
-  }, [])
+  const successTimerRef =
+    useRef<number | null>(null)
 
-  /* =======================================================
-     OPEN PAID PLAN
-  ======================================================= */
-
-  const openPlan = useCallback(
-    (plan: Plan) => {
-      if (plan.planId === "trial") {
-        openFreePlan()
-        return
+  useEffect(() => {
+    return () => {
+      if (processingTimerRef.current) {
+        window.clearInterval(
+          processingTimerRef.current
+        )
       }
 
-      setSelectedPlan(plan)
-      setTransactionId("")
-      setError("")
-      setCopied(false)
-      setShowPayment(true)
-    },
-    [openFreePlan],
-  )
+      if (successTimerRef.current) {
+        window.clearTimeout(
+          successTimerRef.current
+        )
+      }
+    }
+  }, [])
 
-  /* =======================================================
-     CLOSE MODALS
-  ======================================================= */
+  const openPlan = (plan: Plan) => {
+    setSelectedPlan(plan)
+    setError("")
+    setTransactionId("")
+    setCopied(false)
 
-  const closePayment = useCallback(() => {
+    if (plan.planId === "trial") {
+      setShowFreeAccess(true)
+      setShowPayment(false)
+      return
+    }
+
+    setShowPayment(true)
+  }
+
+  const closePayment = () => {
     setShowPayment(false)
     setError("")
-  }, [])
+  }
 
-  const closeFreeAccess = useCallback(() => {
+  const closeFreeAccess = () => {
     setShowFreeAccess(false)
-  }, [])
+  }
 
-  const closeSuccess = useCallback(() => {
-    setShowSuccess(false)
-    setSelectedPlan(null)
-    setTransactionId("")
-    setProgress(0)
-    setError("")
-  }, [])
-
-  /* =======================================================
-     COPY NUMBER
-  ======================================================= */
-
-  const copyNumber = useCallback(async () => {
+  const copyNumber = async () => {
     try {
       await navigator.clipboard.writeText(
-        PAYMENT_NUMBER,
+        PAYMENT_NUMBER
       )
 
       setCopied(true)
 
       window.setTimeout(() => {
         setCopied(false)
-      }, 1600)
+      }, 1800)
     } catch {
       setCopied(false)
     }
-  }, [])
-
-  /* =======================================================
-     FREE ACCESS ACTION
-  ======================================================= */
-
-  const handleFreeAccess = useCallback(
-    (item: PlanAccessItem) => {
-      if (!item.available || item.locked) return
-
-      switch (item.action) {
-        case "mvbd-pm":
-          window.open(
-            "https://t.me/mvbdpm2",
-            "_blank",
-            "noopener,noreferrer",
-          )
-          break
-
-        case "anime-verse":
-          window.open(
-            "https://t.me/avbdpm",
-            "_blank",
-            "noopener,noreferrer",
-          )
-          break
-
-        case "mebook":
-          setShowFreeAccess(false)
-          onOpenMeBook?.()
-          break
-
-        case "mini-app":
-          /*
-           * Mini App URL can be connected here when you want
-           * to make the destination explicit.
-           *
-           * For now the button gives a local access message.
-           */
-          window.dispatchEvent(
-            new CustomEvent(
-              "mvbd:mini-app-access",
-            ),
-          )
-          break
-
-        case "trailers":
-          setShowFreeAccess(false)
-
-          window.dispatchEvent(
-            new CustomEvent(
-              "mvbd:open-trailers",
-            ),
-          )
-          break
-
-        default:
-          break
-      }
-    },
-    [onOpenMeBook],
-  )
-
-  /* =======================================================
-     SUBMIT PAYMENT
-  ======================================================= */
+  }
 
   const submitPayment = async () => {
     const trx = transactionId.trim()
 
     if (!user || !profile) {
       setError(
-        "Please sign in before submitting a payment request.",
+        "Please sign in before submitting a payment request."
       )
       return
     }
 
     if (!trx || trx.length < 3) {
       setError(
-        "Please enter a valid transaction ID.",
+        "Please enter a valid transaction ID."
       )
       return
     }
 
     if (!selectedPlan) {
       setError(
-        "Please select a subscription plan.",
+        "Please select a subscription plan."
+      )
+      return
+    }
+
+    if (selectedPlan.planId === "trial") {
+      setError(
+        "The Free Plan does not require payment."
       )
       return
     }
@@ -297,7 +206,7 @@ export default function SeriesSection({
       setError(
         requestError instanceof Error
           ? requestError.message
-          : "Unable to submit your payment request.",
+          : "Unable to submit your payment request."
       )
 
       return
@@ -307,1303 +216,562 @@ export default function SeriesSection({
     setShowProcessing(true)
     setProgress(0)
 
-    /*
-     * Lower-frequency updates reduce unnecessary React
-     * renders and make the page much smoother.
-     */
+    if (processingTimerRef.current) {
+      window.clearInterval(
+        processingTimerRef.current
+      )
+    }
+
+    if (successTimerRef.current) {
+      window.clearTimeout(
+        successTimerRef.current
+      )
+    }
+
     const startTime = Date.now()
     const processingDuration = 9000
 
-    const timer = window.setInterval(() => {
-      const elapsed =
-        Date.now() - startTime
+    processingTimerRef.current =
+      window.setInterval(() => {
+        const elapsed =
+          Date.now() - startTime
 
-      const percentage = Math.min(
-        100,
-        Math.round(
-          (elapsed / processingDuration) * 100,
-        ),
-      )
+        const percentage = Math.min(
+          100,
+          Math.round(
+            (elapsed / processingDuration) * 100
+          )
+        )
 
-      setProgress(percentage)
+        setProgress(percentage)
 
-      if (percentage >= 100) {
-        window.clearInterval(timer)
+        if (percentage >= 100) {
+          if (processingTimerRef.current) {
+            window.clearInterval(
+              processingTimerRef.current
+            )
+          }
 
-        window.setTimeout(() => {
-          setShowProcessing(false)
-          setShowSuccess(true)
-        }, 450)
-      }
-    }, 180)
+          successTimerRef.current =
+            window.setTimeout(() => {
+              setShowProcessing(false)
+              setShowSuccess(true)
+            }, 500)
+        }
+      }, 200)
   }
 
-  /* =======================================================
-     CLEANUP
-  ======================================================= */
+  const closeSuccess = () => {
+    setShowSuccess(false)
+    setSelectedPlan(null)
+    setTransactionId("")
+    setProgress(0)
+    setError("")
+  }
 
-  useEffect(() => {
-    return () => {
-      document.body.style.overflow = ""
-      document.body.style.touchAction = ""
+  const handleFreeAccess = (
+    item: FreeAccessItem
+  ) => {
+    if (item.type === "mebook") {
+      setShowFreeAccess(false)
+      onOpenMeBook?.()
     }
-  }, [])
+  }
 
   return (
     <>
       <main className="mvbd-premium-page">
+        {/* Background */}
+        <div className="mvbd-page-background" />
+
+        <div className="mvbd-page-overlay" />
+
+        <div className="mvbd-page-content">
+          {/* HEADER */}
+          <header className="mvbd-premium-header">
+            <div className="mvbd-brand">
+              <div className="mvbd-brand-mark">
+                M
+              </div>
+
+              <div>
+                <strong>
+                  MoviesVerseBD
+                </strong>
+
+                <span>
+                  Premium Membership
+                </span>
+              </div>
+            </div>
+
+            <div className="mvbd-status">
+              <span className="mvbd-status-dot" />
+              MEMBERSHIP
+            </div>
+          </header>
+
+          {/* HERO */}
+          <section className="mvbd-premium-hero">
+            <div className="mvbd-eyebrow">
+              MOVIESVERSEBD
+            </div>
+
+            <h1>
+              Choose Your
+              <span> Premium Plan</span>
+            </h1>
+
+            <p>
+              Select a membership plan that works
+              best for you.
+            </p>
+          </section>
+
+          {/* PLANS */}
+          <section className="mvbd-plans-grid">
+            {SUBSCRIPTION_PLANS.map((plan) => (
+              <article
+                key={plan.planId}
+                className={[
+                  "mvbd-plan-card",
+                  `mvbd-plan-${plan.planId}`,
+                  plan.popular
+                    ? "mvbd-plan-popular"
+                    : "",
+                ].join(" ")}
+              >
+                {plan.popular && (
+                  <div className="mvbd-popular-badge">
+                    MOST POPULAR
+                  </div>
+                )}
+
+                <div className="mvbd-card-top">
+                  <div className="mvbd-plan-icon">
+                    {plan.planId === "trial"
+                      ? "✦"
+                      : plan.planId === "monthly"
+                        ? "◆"
+                        : plan.planId ===
+                            "two_months"
+                          ? "◇"
+                          : "★"}
+                  </div>
+
+                  <div className="mvbd-plan-name">
+                    {plan.name}
+                  </div>
+                </div>
+
+                <div className="mvbd-price">
+                  {plan.price}
+                </div>
+
+                <div className="mvbd-duration">
+                  {plan.duration}
+                </div>
+
+                {plan.save ? (
+                  <div className="mvbd-save">
+                    {plan.save}
+                  </div>
+                ) : (
+                  <div className="mvbd-save mvbd-save-empty">
+                    &nbsp;
+                  </div>
+                )}
+
+                <p className="mvbd-plan-description">
+                  {plan.description}
+                </p>
+
+                <ul className="mvbd-feature-list">
+                  {plan.planId === "trial" ? (
+                    <>
+                      <li>
+                        <span>✓</span>
+                        Basic MVBD access
+                      </li>
+
+                      <li>
+                        <span>✓</span>
+                        Selected free features
+                      </li>
+
+                      <li>
+                        <span>✓</span>
+                        Community channels
+                      </li>
+
+                      <li className="locked">
+                        <span>×</span>
+                        Premium features locked
+                      </li>
+                    </>
+                  ) : (
+                    <>
+                      <li>
+                        <span>✓</span>
+                        Premium access
+                      </li>
+
+                      <li>
+                        <span>✓</span>
+                        MVBD app access
+                      </li>
+
+                      <li>
+                        <span>✓</span>
+                        Telegram access included
+                      </li>
+
+                      <li>
+                        <span>✓</span>
+                        Fast premium experience
+                      </li>
+                    </>
+                  )}
+                </ul>
+
+                <button
+                  type="button"
+                  className="mvbd-choose-button"
+                  onClick={() => openPlan(plan)}
+                >
+                  {plan.planId === "trial"
+                    ? "View Free Access"
+                    : "Continue"}
+                </button>
+              </article>
+            ))}
+          </section>
+
+          {/* INFO */}
+          <section className="mvbd-payment-info">
+            <div className="mvbd-info-icon">
+              ৳
+            </div>
+
+            <div>
+              <strong>
+                Secure Payment
+              </strong>
+
+              <span>
+                Paid plans are activated after
+                transaction verification.
+              </span>
+            </div>
+          </section>
+
+          <footer className="mvbd-premium-footer">
+            MoviesVerseBD • MVBD Premium Membership
+          </footer>
+        </div>
 
         <style jsx global>{`
-
-          /* =================================================
-             RESET
-          ================================================= */
-
-          .mvbd-premium-page,
-          .mvbd-premium-page *,
-          .mvbd-viewport-modal,
-          .mvbd-viewport-modal * {
+          * {
             box-sizing: border-box;
           }
 
-          /* =================================================
-             PAGE
-          ================================================= */
-
           .mvbd-premium-page {
             position: relative;
-
-            min-height: 100dvh;
-
-            overflow: hidden;
-
+            min-height: 100svh;
+            width: 100%;
+            overflow-x: hidden;
+            background: #020605;
+            color: #ffffff;
             isolation: isolate;
-
-            padding:
-              18px 16px 70px;
-
-            color: white;
-
-            background:
-              #020403;
-
-            contain:
-              paint;
           }
 
-          /*
-           * Responsive poster background.
-           *
-           * Mobile:
-           * 43PLHM4Z
-           *
-           * Desktop/tablet:
-           * 43s2dZg3
-           */
+          /* ---------------- BACKGROUND ---------------- */
 
-          .mvbd-premium-page::after {
-            content: "";
-
-            position: absolute;
-
+          .mvbd-page-background {
+            position: fixed;
             inset: 0;
-
-            z-index: -4;
-
+            z-index: -3;
             pointer-events: none;
 
             background-image:
+              url("https://i.postimg.cc/43PLHM4Z/file-0000000041908206b4fe692b01e0940b.png");
+
+            background-position: center top;
+            background-size: cover;
+            background-repeat: no-repeat;
+
+            transform: translateZ(0);
+          }
+
+          .mvbd-page-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: -2;
+            pointer-events: none;
+
+            background:
               linear-gradient(
                 180deg,
-                rgba(0, 8, 4, 0.20),
-                rgba(0, 5, 3, 0.72)
-              ),
-              url("${MOBILE_BACKGROUND}");
-
-            background-position:
-              center top;
-
-            background-repeat:
-              no-repeat;
-
-            background-size:
-              cover;
-
-            opacity: 0.82;
-
-            transform:
-              translateZ(0);
-
-            will-change:
-              transform;
+                rgba(0, 0, 0, 0.58) 0%,
+                rgba(0, 5, 3, 0.76) 48%,
+                rgba(0, 0, 0, 0.94) 100%
+              );
           }
 
-          /* =================================================
-             DESKTOP BACKGROUND
-          ================================================= */
-
+          /*
+           Desktop / Tablet background
+          */
           @media (min-width: 761px) {
-            .mvbd-premium-page::after {
+            .mvbd-page-background {
               background-image:
-                linear-gradient(
-                  180deg,
-                  rgba(0, 8, 4, 0.18),
-                  rgba(0, 5, 3, 0.68)
-                ),
-                url("${DESKTOP_BACKGROUND}");
+                url("https://i.postimg.cc/43s2dZg3/file-00000000e1908211bbeb998f8584d5ba.png");
             }
           }
 
-          /* =================================================
-             DARK GLASS OVERLAY
-          ================================================= */
+          /* ---------------- CONTENT ---------------- */
 
-          .mvbd-premium-page::before {
-            content: "";
-
-            position: absolute;
-
-            inset: 0;
-
-            z-index: -3;
-
-            pointer-events: none;
-
-            background:
-              radial-gradient(
-                circle at 50% 15%,
-                rgba(67, 255, 122, 0.14),
-                transparent 34%
-              ),
-              radial-gradient(
-                circle at 5% 65%,
-                rgba(0, 255, 112, 0.08),
-                transparent 27%
-              ),
-              radial-gradient(
-                circle at 95% 75%,
-                rgba(0, 225, 92, 0.08),
-                transparent 28%
-              );
-
-            opacity: 0.9;
-          }
-
-          /* =================================================
-             LIQUID LIGHT
-          ================================================= */
-
-          .mvbd-liquid-light {
-            position: absolute;
-
-            width: 360px;
-            height: 360px;
-
-            border-radius: 50%;
-
-            pointer-events: none;
-
-            z-index: -2;
-
-            background:
-              radial-gradient(
-                circle,
-                rgba(42, 255, 105, 0.10),
-                transparent 67%
-              );
-
-            filter: blur(30px);
-
-            animation:
-              mvbdLightFloat
-              12s
-              ease-in-out
-              infinite
-              alternate;
-
-            transform:
-              translateZ(0);
-          }
-
-          @keyframes mvbdLightFloat {
-            from {
-              transform:
-                translate3d(-100px, 30px, 0)
-                scale(0.9);
-            }
-
-            to {
-              transform:
-                translate3d(
-                  calc(100vw - 280px),
-                  180px,
-                  0
-                )
-                scale(1.12);
-            }
-          }
-
-          /* =================================================
-             STARS / PARTICLES
-          ================================================= */
-
-          .mvbd-stars {
-            position: absolute;
-
-            inset: 0;
-
-            height: 650px;
-
-            overflow: hidden;
-
-            pointer-events: none;
-
-            z-index: -1;
-
-            opacity: 0.65;
-          }
-
-          .mvbd-star {
-            position: absolute;
-
-            width: 3px;
-            height: 3px;
-
-            border-radius: 50%;
-
-            background:
-              rgba(164, 255, 186, 0.85);
-
-            box-shadow:
-              0 0 9px
-              rgba(78, 255, 124, 0.7);
-
-            animation:
-              mvbdStarPulse
-              var(--duration)
-              ease-in-out
-              infinite
-              alternate;
-          }
-
-          @keyframes mvbdStarPulse {
-            from {
-              opacity: 0.12;
-              transform: scale(0.55);
-            }
-
-            to {
-              opacity: 0.75;
-              transform: scale(1.25);
-            }
-          }
-
-          /* =================================================
-             CONTAINER
-          ================================================= */
-
-          .mvbd-container {
+          .mvbd-page-content {
             position: relative;
+            z-index: 1;
 
-            z-index: 2;
+            width: min(
+              1440px,
+              calc(100% - 32px)
+            );
 
-            width:
-              min(1180px, 100%);
-
-            margin:
-              0 auto;
+            margin: 0 auto;
+            padding:
+              22px
+              0
+              45px;
           }
 
-          /* =================================================
-             NAV
-          ================================================= */
+          /* ---------------- HEADER ---------------- */
 
-          .mvbd-nav {
+          .mvbd-premium-header {
             display: flex;
-
             align-items: center;
             justify-content: space-between;
+            gap: 16px;
 
-            padding: 11px 14px;
+            padding: 14px 18px;
 
-            border:
-              1px solid
-              rgba(157, 255, 187, 0.22);
+            border: 1px solid
+              rgba(97, 255, 151, 0.2);
 
-            border-radius: 24px;
+            border-radius: 22px;
 
             background:
-              rgba(2, 24, 13, 0.47);
-
-            backdrop-filter:
-              blur(14px)
-              saturate(125%);
-
-            -webkit-backdrop-filter:
-              blur(14px)
-              saturate(125%);
+              rgba(2, 10, 7, 0.76);
 
             box-shadow:
-              0 15px 55px
-              rgba(0, 0, 0, 0.45),
-              inset 0 1px
-              rgba(255, 255, 255, 0.12);
-
-            transform:
-              translateZ(0);
+              0 12px 35px
+                rgba(0, 0, 0, 0.35),
+              inset 0 1px 0
+                rgba(255, 255, 255, 0.06);
           }
 
           .mvbd-brand {
             display: flex;
-
             align-items: center;
-
-            gap: 10px;
-
-            font-size: 14px;
-
-            font-weight: 900;
+            gap: 12px;
           }
 
-          .mvbd-logo {
-            width: 39px;
-            height: 39px;
+          .mvbd-brand-mark {
+            width: 42px;
+            height: 42px;
 
             display: grid;
-
             place-items: center;
 
-            border-radius: 14px;
+            border-radius: 13px;
+
+            font-size: 24px;
+            font-weight: 900;
+
+            color: #001b0c;
 
             background:
               linear-gradient(
-                145deg,
-                #35ff67,
-                #08a83d
+                135deg,
+                #75ffad,
+                #00d95f
               );
 
-            color: #001f0b;
-
-            font-size: 21px;
-
-            font-weight: 1000;
-
             box-shadow:
-              0 0 25px
-              rgba(35, 255, 100, 0.32),
-              inset 0 1px
-              rgba(255, 255, 255, 0.55);
+              0 0 22px
+                rgba(0, 255, 105, 0.35);
           }
 
-          .mvbd-nav-badge {
+          .mvbd-brand strong {
+            display: block;
+
+            font-size: 15px;
+            font-weight: 800;
+            letter-spacing: 0.3px;
+          }
+
+          .mvbd-brand span {
+            display: block;
+
+            margin-top: 2px;
+
+            color: #8ea99b;
+
+            font-size: 11px;
+          }
+
+          .mvbd-status {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+
             padding: 8px 12px;
 
             border-radius: 999px;
 
-            border:
-              1px solid
-              rgba(123, 255, 157, 0.17);
+            color: #79fca9;
 
             background:
-              rgba(77, 255, 117, 0.055);
+              rgba(0, 255, 106, 0.07);
 
-            color:
-              rgba(198, 255, 210, 0.75);
+            border: 1px solid
+              rgba(0, 255, 106, 0.16);
 
             font-size: 10px;
-
             font-weight: 800;
+            letter-spacing: 1px;
           }
 
-          /* =================================================
-             HERO
-          ================================================= */
-
-          .mvbd-hero {
-            position: relative;
-
-            padding:
-              68px 8px 42px;
-
-            text-align: center;
-          }
-
-          .mvbd-hero-glow {
-            position: absolute;
-
-            width: 420px;
-            height: 230px;
-
-            left: 50%;
-            top: 55px;
-
-            transform:
-              translateX(-50%);
-
-            border-radius: 50%;
-
-            background:
-              radial-gradient(
-                circle,
-                rgba(45, 255, 103, 0.17),
-                transparent 68%
-              );
-
-            filter: blur(25px);
-
-            pointer-events: none;
-
-            animation:
-              mvbdHeroGlow
-              6s
-              ease-in-out
-              infinite
-              alternate;
-          }
-
-          @keyframes mvbdHeroGlow {
-            from {
-              opacity: 0.55;
-              transform:
-                translateX(-50%)
-                scale(0.93);
-            }
-
-            to {
-              opacity: 0.95;
-              transform:
-                translateX(-50%)
-                scale(1.1);
-            }
-          }
-
-          .mvbd-eyebrow {
-            position: relative;
-
-            display: inline-flex;
-
-            align-items: center;
-
-            gap: 7px;
-
-            padding: 8px 13px;
-
-            border-radius: 999px;
-
-            border:
-              1px solid
-              rgba(119, 255, 153, 0.19);
-
-            background:
-              rgba(19, 75, 35, 0.28);
-
-            backdrop-filter:
-              blur(12px);
-
-            color:
-              rgba(208, 255, 218, 0.84);
-
-            font-size: 11px;
-
-            font-weight: 800;
-          }
-
-          .mvbd-live-dot {
+          .mvbd-status-dot {
             width: 7px;
             height: 7px;
 
             border-radius: 50%;
 
-            background:
-              #45ff73;
+            background: #36ff88;
 
             box-shadow:
-              0 0 8px
-              #35ff68,
-              0 0 20px
-              rgba(53, 255, 104, 0.5);
+              0 0 10px #36ff88;
 
             animation:
-              mvbdLivePulse
-              1.7s
-              ease-in-out
-              infinite;
+              mvbdPulse 1.8s ease-in-out infinite;
           }
 
-          @keyframes mvbdLivePulse {
-            50% {
-              transform: scale(1.5);
-              opacity: 0.45;
-            }
+          /* ---------------- HERO ---------------- */
+
+          .mvbd-premium-hero {
+            text-align: center;
+
+            padding:
+              64px
+              16px
+              42px;
           }
 
-          .mvbd-hero h1 {
-            position: relative;
-
-            margin:
-              22px 0 13px;
-
-            font-size:
-              clamp(42px, 7vw, 76px);
-
-            line-height: 0.95;
-
-            letter-spacing: -3.8px;
-
-            font-weight: 950;
-
-            background:
-              linear-gradient(
-                100deg,
-                #ffffff 5%,
-                #d8ffe2 48%,
-                #43ff70 95%
-              );
-
-            -webkit-background-clip: text;
-
-            background-clip: text;
-
-            color: transparent;
-
-            text-shadow:
-              0 0 35px
-              rgba(47, 255, 99, 0.10);
-          }
-
-          .mvbd-premium-title {
-            margin-bottom: 14px;
-
-            color:
-              rgba(190, 255, 204, 0.75);
-
-            font-size:
-              clamp(12px, 2vw, 18px);
-
-            font-weight: 900;
-
-            letter-spacing: 6px;
-          }
-
-          .mvbd-subtitle {
-            max-width: 630px;
-
-            margin: auto;
-
-            color:
-              rgba(255, 255, 255, 0.65);
-
-            font-size: 13px;
-
-            line-height: 1.75;
-          }
-
-          .mvbd-trial {
-            display: inline-flex;
-
-            margin-top: 18px;
-
-            padding: 9px 14px;
-
-            border-radius: 999px;
-
-            border:
-              1px solid
-              rgba(69, 255, 110, 0.22);
-
-            background:
-              rgba(34, 255, 90, 0.055);
-
-            color:
-              rgba(205, 255, 216, 0.78);
+          .mvbd-eyebrow {
+            color: #48ff91;
 
             font-size: 11px;
+            font-weight: 900;
+            letter-spacing: 3px;
 
-            font-weight: 800;
+            margin-bottom: 12px;
           }
 
-          /* =================================================
-             PLANS
-          ================================================= */
+          .mvbd-premium-hero h1 {
+            margin: 0;
 
-          .mvbd-plans {
+            font-size:
+              clamp(
+                34px,
+                5vw,
+                68px
+              );
+
+            line-height: 1.05;
+
+            font-weight: 900;
+            letter-spacing: -2px;
+
+            text-shadow:
+              0 4px 30px
+                rgba(0, 0, 0, 0.6);
+          }
+
+          .mvbd-premium-hero h1 span {
+            display: block;
+
+            color: #3cff86;
+
+            text-shadow:
+              0 0 30px
+                rgba(0, 255, 112, 0.28);
+          }
+
+          .mvbd-premium-hero p {
+            margin:
+              16px
+              auto
+              0;
+
+            max-width: 550px;
+
+            color: #a4b9af;
+
+            font-size: 14px;
+            line-height: 1.7;
+          }
+
+          /* ---------------- PLAN GRID ---------------- */
+
+          .mvbd-plans-grid {
             display: grid;
 
             grid-template-columns:
               repeat(4, minmax(0, 1fr));
 
-            gap: 14px;
-
-            align-items: stretch;
+            gap: 18px;
           }
 
-          /* =================================================
-             LIQUID PLAN CARD
-          ================================================= */
+          /* ---------------- CARD ---------------- */
 
-          .mvbd-card {
+          .mvbd-plan-card {
             position: relative;
 
-            overflow: hidden;
-
-            padding: 22px;
-
-            border-radius:
-              32px 26px 34px 25px;
-
-            border:
-              1px solid
-              rgba(133, 255, 166, 0.22);
-
-            background:
-              linear-gradient(
-                145deg,
-                rgba(3, 38, 17, 0.70),
-                rgba(1, 15, 8, 0.56)
-              );
-
-            backdrop-filter:
-              blur(14px)
-              saturate(130%);
-
-            -webkit-backdrop-filter:
-              blur(14px)
-              saturate(130%);
-
-            box-shadow:
-              0 25px 70px
-              rgba(0, 0, 0, 0.45),
-              inset 0 1px
-              rgba(255, 255, 255, 0.12);
-
-            transform:
-              translateZ(0);
-
-            transition:
-              transform 0.32s ease,
-              box-shadow 0.32s ease,
-              border-color 0.32s ease;
-          }
-
-          /*
-           * Animated liquid edge.
-           */
-
-          .mvbd-card::before {
-            content: "";
-
-            position: absolute;
-
-            inset: -2px;
-
-            z-index: -1;
-
-            border-radius:
-              35% 65% 50% 50% /
-              55% 35% 65% 45%;
-
-            background:
-              conic-gradient(
-                from 0deg,
-                rgba(50, 255, 105, 0.85),
-                rgba(0, 184, 255, 0.50),
-                rgba(162, 55, 255, 0.48),
-                rgba(255, 211, 52, 0.52),
-                rgba(50, 255, 105, 0.85)
-              );
-
-            opacity: 0.24;
-
-            filter: blur(7px);
-
-            animation:
-              mvbdLiquidBorder
-              8s
-              ease-in-out
-              infinite;
-          }
-
-          @keyframes mvbdLiquidBorder {
-            0% {
-              transform:
-                rotate(0deg)
-                scale(1);
-              border-radius:
-                35% 65% 50% 50% /
-                55% 35% 65% 45%;
-            }
-
-            50% {
-              transform:
-                rotate(4deg)
-                scale(1.035);
-              border-radius:
-                55% 45% 38% 62% /
-                40% 60% 40% 60%;
-            }
-
-            100% {
-              transform:
-                rotate(-3deg)
-                scale(1);
-              border-radius:
-                35% 65% 50% 50% /
-                55% 35% 65% 45%;
-            }
-          }
-
-          .mvbd-card::after {
-            content: "";
-
-            position: absolute;
-
-            width: 190px;
-            height: 190px;
-
-            right: -105px;
-            top: -105px;
-
-            border-radius: 50%;
-
-            background:
-              radial-gradient(
-                circle,
-                rgba(85, 255, 123, 0.19),
-                transparent 68%
-              );
-
-            pointer-events: none;
-
-            animation:
-              mvbdCardGlow
-              7s
-              ease-in-out
-              infinite
-              alternate;
-          }
-
-          @keyframes mvbdCardGlow {
-            from {
-              transform:
-                translate(0, 0)
-                scale(0.85);
-            }
-
-            to {
-              transform:
-                translate(-35px, 45px)
-                scale(1.15);
-            }
-          }
-
-          .mvbd-card:hover {
-            transform:
-              translateY(-6px);
-
-            border-color:
-              rgba(111, 255, 143, 0.40);
-
-            box-shadow:
-              0 35px 85px
-              rgba(0, 0, 0, 0.58),
-              0 0 35px
-              rgba(51, 255, 103, 0.08),
-              inset 0 1px
-              rgba(255, 255, 255, 0.16);
-          }
-
-          /* =================================================
-             CARD COLORS
-          ================================================= */
-
-          .mvbd-card-free {
-            border-color:
-              rgba(54, 255, 105, 0.35);
-          }
-
-          .mvbd-card-month {
-            border-color:
-              rgba(38, 214, 255, 0.30);
-          }
-
-          .mvbd-card-two {
-            border-color:
-              rgba(190, 91, 255, 0.34);
-          }
-
-          .mvbd-card-three {
-            border-color:
-              rgba(255, 218, 59, 0.34);
-          }
-
-          /* =================================================
-             POPULAR
-          ================================================= */
-
-          .mvbd-ribbon {
-            position: absolute;
-
-            right: 15px;
-            top: 15px;
-
-            padding: 7px 10px;
-
-            border-radius: 999px;
-
-            background:
-              linear-gradient(
-                135deg,
-                #bc7cff,
-                #ff63db
-              );
-
-            color:
-              #210c31;
-
-            font-size: 8px;
-
-            font-weight: 950;
-
-            box-shadow:
-              0 0 25px
-              rgba(193, 90, 255, 0.25);
-          }
-
-          /* =================================================
-             FREE BADGE
-          ================================================= */
-
-          .mvbd-free-badge {
-            display: inline-flex;
-
-            margin-bottom: 10px;
-
-            padding: 6px 9px;
-
-            border-radius: 999px;
-
-            background:
-              rgba(53, 255, 104, 0.10);
-
-            border:
-              1px solid
-              rgba(53, 255, 104, 0.24);
-
-            color:
-              #9cffb2;
-
-            font-size: 9px;
-
-            font-weight: 900;
-          }
-
-          .mvbd-plan-name {
-            color:
-              rgba(221, 255, 228, 0.82);
-
-            font-size: 11px;
-
-            font-weight: 900;
-
-            letter-spacing: 0.8px;
-          }
-
-          .mvbd-price {
-            margin:
-              13px 0 3px;
-
-            font-size: 42px;
-
-            font-weight: 950;
-
-            letter-spacing: -2px;
-
-            line-height: 1;
-          }
-
-          .mvbd-price small {
-            color:
-              rgba(255, 255, 255, 0.42);
-
-            font-size: 11px;
-
-            font-weight: 700;
-
-            letter-spacing: 0;
-          }
-
-          .mvbd-save {
-            min-height: 17px;
-
-            color:
-              rgba(140, 255, 164, 0.80);
-
-            font-size: 10px;
-
-            font-weight: 800;
-          }
-
-          .mvbd-description {
-            margin-top: 12px;
-
-            min-height: 56px;
-
-            color:
-              rgba(255, 255, 255, 0.52);
-
-            font-size: 11px;
-
-            line-height: 1.6;
-          }
-
-          /* =================================================
-             FEATURES
-          ================================================= */
-
-          .mvbd-features {
-            list-style: none;
-
-            margin:
-              12px 0 18px;
-
-            padding: 0;
-
-            color:
-              rgba(255, 255, 255, 0.58);
-
-            font-size: 11px;
-
-            line-height: 1.85;
-          }
-
-          .mvbd-features li::before {
-            content: "✓";
-
-            margin-right: 7px;
-
-            color:
-              #45ff72;
-
-            font-weight: 950;
-          }
-
-          /* =================================================
-             LIQUID BUTTON
-          ================================================= */
-
-          .mvbd-choose {
-            position: relative;
-
-            overflow: hidden;
-
-            width: 100%;
-
-            min-height: 48px;
-
-            border: 1px solid
-              rgba(255, 255, 255, 0.18);
-
-            border-radius:
-              17px 21px 16px 20px;
-
-            padding: 12px 14px;
-
-            cursor: pointer;
-
-            background:
-              linear-gradient(
-                135deg,
-                rgba(57, 255, 108, 0.90),
-                rgba(10, 177, 70, 0.92)
-              );
-
-            color:
-              #001d08;
-
-            box-shadow:
-              0 12px 32px
-              rgba(38, 255, 95, 0.14),
-              inset 0 1px
-              rgba(255, 255, 255, 0.62);
-
-            font-size: 12px;
-
-            font-weight: 950;
-
-            transform:
-              translateZ(0);
-
-            transition:
-              transform 0.22s ease,
-              filter 0.22s ease;
-          }
-
-          .mvbd-choose::after {
-            content: "";
-
-            position: absolute;
-
-            top: -80%;
-            left: -60%;
-
-            width: 35%;
-            height: 260%;
-
-            transform:
-              rotate(25deg)
-              translateZ(0);
-
-            background:
-              rgba(255, 255, 255, 0.42);
-
-            filter: blur(7px);
-
-            animation:
-              mvbdButtonShine
-              4.5s
-              ease-in-out
-              infinite;
-          }
-
-          @keyframes mvbdButtonShine {
-            0%,
-            58% {
-              left: -70%;
-            }
-
-            100% {
-              left: 145%;
-            }
-          }
-
-          .mvbd-choose:hover {
-            filter: brightness(1.07);
-
-            transform:
-              translateY(-2px);
-          }
-
-          .mvbd-choose:active {
-            transform:
-              scale(0.97);
-          }
-
-          /* =================================================
-             INFO
-          ================================================= */
-
-          .mvbd-info {
-            margin-top: 16px;
-
-            padding: 17px;
-
-            border:
-              1px solid
-              rgba(112, 255, 146, 0.15);
-
-            border-radius: 23px;
-
-            background:
-              rgba(2, 30, 13, 0.46);
-
-            backdrop-filter:
-              blur(12px);
-
-            text-align: center;
-
-            color:
-              rgba(255, 255, 255, 0.50);
-
-            font-size: 11px;
-
-            line-height: 1.7;
-          }
-
-          .mvbd-info strong {
-            color:
-              #9cffb2;
-          }
-
-          .mvbd-footer {
-            padding:
-              25px 0 0;
-
-            text-align: center;
-
-            color:
-              rgba(220, 255, 227, 0.35);
-
-            font-size: 10px;
-          }
-
-          /* =================================================
-             MODAL BACKDROP
-          ================================================= */
-
-          .mvbd-viewport-modal {
-            position: fixed !important;
-
-            inset: 0 !important;
-
-            width: 100vw !important;
-            height: 100dvh !important;
-
-            display: flex !important;
-
-            align-items: center !important;
-
-            justify-content: center !important;
-
-            padding:
-              max(14px, env(safe-area-inset-top))
-              max(14px, env(safe-area-inset-right))
-              max(14px, env(safe-area-inset-bottom))
-              max(14px, env(safe-area-inset-left)) !important;
-
-            overflow: hidden !important;
-
-            z-index: 2147483647 !important;
-
-            background:
-              rgba(0, 7, 3, 0.78);
-
-            backdrop-filter:
-              blur(13px);
-
-            -webkit-backdrop-filter:
-              blur(13px);
-
-            animation:
-              mvbdOverlayIn
-              0.20s
-              ease-out
-              both;
-
-            will-change:
-              opacity;
-          }
-
-          @keyframes mvbdOverlayIn {
-            from {
-              opacity: 0;
-            }
-
-            to {
-              opacity: 1;
-            }
-          }
-
-          /* =================================================
-             SHEET
-          ================================================= */
-
-          .mvbd-sheet {
-            position: relative !important;
-
-            width:
-              min(480px, calc(100vw - 28px)) !important;
-
-            max-width:
-              calc(100vw - 28px) !important;
-
-            max-height:
-              min(88dvh, 720px) !important;
-
-            margin: 0 !important;
+            min-width: 0;
 
             padding: 23px;
 
-            overflow-x: hidden;
+            border-radius: 27px;
 
-            overflow-y: auto;
+            overflow: hidden;
 
-            border:
-              1px solid
-              rgba(110, 255, 144, 0.25);
-
-            border-radius:
-              31px 25px 34px 27px;
+            border: 1px solid
+              rgba(87, 255, 144, 0.22);
 
             background:
               linear-gradient(
-                145deg,
-                rgba(7, 42, 19, 0.94),
-                rgba(2, 14, 7, 0.97)
+                160deg,
+                rgba(9, 27, 20, 0.94),
+                rgba(2, 8, 6, 0.94)
               );
 
             box-shadow:
-              0 35px 110px
-              rgba(0, 0, 0, 0.78),
-              0 0 55px
-              rgba(35, 255, 95, 0.08),
-              inset 0 1px
-              rgba(255, 255, 255, 0.12);
+              0 18px 50px
+                rgba(0, 0, 0, 0.42),
+              inset 0 1px 0
+                rgba(255, 255, 255, 0.06);
 
-            animation:
-              mvbdSheetIn
-              0.30s
-              cubic-bezier(
-                0.16,
-                1,
-                0.3,
-                1
-              )
-              both;
+            transform: translateZ(0);
 
-            transform:
-              translateZ(0);
-
-            will-change:
-              transform,
-              opacity;
+            transition:
+              transform 0.28s ease,
+              border-color 0.28s ease,
+              box-shadow 0.28s ease;
           }
 
-          @keyframes mvbdSheetIn {
-            from {
-              opacity: 0;
-
-              transform:
-                translate3d(0, 18px, 0)
-                scale(0.965);
-            }
-
-            to {
-              opacity: 1;
-
-              transform:
-                translate3d(0, 0, 0)
-                scale(1);
-            }
-          }
-
-          /* =================================================
-             MODAL LIQUID GLOW
-          ================================================= */
-
-          .mvbd-sheet::before {
-            content: "";
-
-            position: absolute;
-
-            width: 220px;
-            height: 220px;
-
-            right: -115px;
-            top: -115px;
-
-            border-radius: 50%;
-
-            background:
-              radial-gradient(
-                circle,
-                rgba(54, 255, 104, 0.18),
-                transparent 68%
-              );
-
-            pointer-events: none;
-          }
-
-          .mvbd-sheet::after {
+          .mvbd-plan-card::before {
             content: "";
 
             position: absolute;
@@ -1611,48 +779,521 @@ export default function SeriesSection({
             width: 180px;
             height: 180px;
 
-            left: -105px;
-            bottom: -105px;
+            top: -100px;
+            right: -70px;
 
             border-radius: 50%;
 
             background:
               radial-gradient(
                 circle,
-                rgba(0, 180, 255, 0.10),
+                rgba(47, 255, 133, 0.18),
                 transparent 68%
               );
 
             pointer-events: none;
+
+            animation:
+              mvbdFloat 7s ease-in-out infinite;
           }
 
-          /* =================================================
-             CLOSE
-          ================================================= */
+          .mvbd-plan-card::after {
+            content: "";
 
-          .mvbd-close {
+            position: absolute;
+
+            left: -80px;
+            bottom: -110px;
+
+            width: 220px;
+            height: 220px;
+
+            border-radius: 45% 55% 60% 40%;
+
+            background:
+              radial-gradient(
+                circle,
+                rgba(0, 214, 255, 0.08),
+                transparent 68%
+              );
+
+            pointer-events: none;
+
+            animation:
+              mvbdLiquid 9s ease-in-out infinite;
+          }
+
+          .mvbd-plan-card:hover {
+            transform:
+              translateY(-7px);
+
+            border-color:
+              rgba(73, 255, 139, 0.55);
+
+            box-shadow:
+              0 25px 65px
+                rgba(0, 0, 0, 0.52),
+              0 0 35px
+                rgba(0, 255, 106, 0.11);
+          }
+
+          .mvbd-plan-popular {
+            border-color:
+              rgba(0, 240, 255, 0.35);
+          }
+
+          .mvbd-plan-two_months {
+            border-color:
+              rgba(0, 255, 170, 0.35);
+          }
+
+          .mvbd-plan-three_months {
+            border-color:
+              rgba(255, 215, 85, 0.28);
+          }
+
+          .mvbd-card-top,
+          .mvbd-price,
+          .mvbd-duration,
+          .mvbd-save,
+          .mvbd-plan-description,
+          .mvbd-feature-list,
+          .mvbd-choose-button {
             position: relative;
+            z-index: 2;
+          }
 
-            z-index: 3;
+          .mvbd-card-top {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+          }
 
-            float: right;
-
+          .mvbd-plan-icon {
             width: 36px;
             height: 36px;
 
-            border:
-              1px solid
-              rgba(255, 255, 255, 0.10);
+            display: grid;
+            place-items: center;
+
+            border-radius: 12px;
+
+            color: #69ffa0;
+
+            background:
+              rgba(0, 255, 111, 0.09);
+
+            border: 1px solid
+              rgba(0, 255, 111, 0.18);
+          }
+
+          .mvbd-plan-name {
+            font-size: 13px;
+            font-weight: 900;
+            letter-spacing: 1.2px;
+          }
+
+          .mvbd-price {
+            margin-top: 25px;
+
+            font-size: 38px;
+            line-height: 1;
+
+            font-weight: 900;
+            letter-spacing: -1px;
+          }
+
+          .mvbd-duration {
+            margin-top: 8px;
+
+            color: #7f9a8e;
+
+            font-size: 12px;
+          }
+
+          .mvbd-save {
+            display: inline-flex;
+
+            margin-top: 13px;
+
+            padding: 5px 9px;
+
+            border-radius: 999px;
+
+            color: #63ff9b;
+
+            background:
+              rgba(0, 255, 106, 0.08);
+
+            border: 1px solid
+              rgba(0, 255, 106, 0.15);
+
+            font-size: 10px;
+            font-weight: 800;
+          }
+
+          .mvbd-save-empty {
+            visibility: hidden;
+          }
+
+          .mvbd-plan-description {
+            min-height: 48px;
+
+            margin:
+              17px
+              0
+              18px;
+
+            color: #9caf a4;
+
+            color: #9cafa5;
+
+            font-size: 12px;
+            line-height: 1.6;
+          }
+
+          /* ---------------- FEATURES ---------------- */
+
+          .mvbd-feature-list {
+            list-style: none;
+
+            margin: 0;
+            padding: 0;
+
+            display: grid;
+            gap: 10px;
+          }
+
+          .mvbd-feature-list li {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+
+            color: #c3d1ca;
+
+            font-size: 11px;
+            line-height: 1.4;
+          }
+
+          .mvbd-feature-list li span {
+            width: 18px;
+            height: 18px;
+
+            flex: 0 0 18px;
+
+            display: grid;
+            place-items: center;
 
             border-radius: 50%;
 
+            color: #5cff99;
+
             background:
-              rgba(255, 255, 255, 0.055);
+              rgba(0, 255, 106, 0.09);
 
-            color:
-              rgba(255, 255, 255, 0.82);
+            font-size: 10px;
+            font-weight: 900;
+          }
 
-            font-size: 20px;
+          .mvbd-feature-list li.locked {
+            color: #697970;
+          }
+
+          .mvbd-feature-list li.locked span {
+            color: #78847e;
+
+            background:
+              rgba(255, 255, 255, 0.04);
+          }
+
+          /* ---------------- BUTTON ---------------- */
+
+          .mvbd-choose-button {
+            width: 100%;
+
+            margin-top: 25px;
+
+            min-height: 48px;
+
+            border: 0;
+            border-radius: 15px;
+
+            color: #001b0c;
+
+            background:
+              linear-gradient(
+                135deg,
+                #8affb7,
+                #25ef77
+              );
+
+            font-size: 12px;
+            font-weight: 900;
+
+            cursor: pointer;
+
+            box-shadow:
+              0 8px 25px
+                rgba(0, 255, 106, 0.18);
+
+            transition:
+              transform 0.2s ease,
+              box-shadow 0.2s ease;
+          }
+
+          .mvbd-choose-button:hover {
+            transform:
+              translateY(-2px);
+
+            box-shadow:
+              0 12px 32px
+                rgba(0, 255, 106, 0.3);
+          }
+
+          .mvbd-choose-button:active {
+            transform:
+              scale(0.98);
+          }
+
+          /* ---------------- POPULAR ---------------- */
+
+          .mvbd-popular-badge {
+            position: absolute;
+
+            top: 0;
+            right: 0;
+
+            padding:
+              7px
+              12px;
+
+            border-radius:
+              0
+              0
+              0
+              13px;
+
+            color: #001b16;
+
+            background:
+              linear-gradient(
+                135deg,
+                #5effd4,
+                #26d9ff
+              );
+
+            font-size: 8px;
+            font-weight: 900;
+            letter-spacing: 0.7px;
+
+            z-index: 3;
+          }
+
+          /* ---------------- PAYMENT INFO ---------------- */
+
+          .mvbd-payment-info {
+            display: flex;
+            align-items: center;
+            gap: 13px;
+
+            max-width: 650px;
+
+            margin:
+              28px
+              auto
+              0;
+
+            padding:
+              14px
+              17px;
+
+            border-radius: 17px;
+
+            background:
+              rgba(3, 13, 9, 0.8);
+
+            border: 1px solid
+              rgba(255, 255, 255, 0.08);
+          }
+
+          .mvbd-info-icon {
+            width: 35px;
+            height: 35px;
+
+            display: grid;
+            place-items: center;
+
+            border-radius: 11px;
+
+            color: #62ff9b;
+
+            background:
+              rgba(0, 255, 106, 0.08);
+          }
+
+          .mvbd-payment-info strong {
+            display: block;
+
+            font-size: 12px;
+          }
+
+          .mvbd-payment-info span {
+            display: block;
+
+            margin-top: 3px;
+
+            color: #80948b;
+
+            font-size: 10px;
+          }
+
+          .mvbd-premium-footer {
+            text-align: center;
+
+            margin-top: 30px;
+
+            color: #52645b;
+
+            font-size: 10px;
+          }
+
+          /* ---------------- MODAL ---------------- */
+
+          .mvbd-modal-backdrop {
+            position: fixed;
+            inset: 0;
+
+            z-index: 99999;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            padding: 18px;
+
+            background:
+              rgba(0, 0, 0, 0.78);
+
+            animation:
+              mvbdModalIn 0.2s ease both;
+          }
+
+          .mvbd-modal {
+            width: min(
+              470px,
+              100%
+            );
+
+            max-height:
+              min(
+                88svh,
+                760px
+              );
+
+            overflow-y: auto;
+
+            padding: 22px;
+
+            border-radius: 25px;
+
+            border: 1px solid
+              rgba(76, 255, 137, 0.28);
+
+            background:
+              linear-gradient(
+                155deg,
+                #07130e,
+                #020605
+              );
+
+            box-shadow:
+              0 30px 90px
+                rgba(0, 0, 0, 0.7),
+              0 0 45px
+                rgba(0, 255, 106, 0.08);
+
+            animation:
+              mvbdModalScale 0.24s
+              cubic-bezier(
+                0.2,
+                0.8,
+                0.2,
+                1
+              )
+              both;
+          }
+
+          .mvbd-modal::-webkit-scrollbar {
+            width: 4px;
+          }
+
+          .mvbd-modal::-webkit-scrollbar-thumb {
+            background: #235e3b;
+            border-radius: 99px;
+          }
+
+          .mvbd-modal-title {
+            font-size: 22px;
+            font-weight: 900;
+          }
+
+          .mvbd-modal-subtitle {
+            margin-top: 7px;
+
+            color: #84988e;
+
+            font-size: 12px;
+            line-height: 1.6;
+          }
+
+          .mvbd-modal-close {
+            float: right;
+
+            width: 32px;
+            height: 32px;
+
+            border: 0;
+            border-radius: 50%;
+
+            color: #a9bcb3;
+
+            background:
+              rgba(255, 255, 255, 0.06);
+
+            cursor: pointer;
+
+            font-size: 16px;
+          }
+
+          /* ---------------- FREE ACCESS ---------------- */
+
+          .mvbd-free-access-list {
+            display: grid;
+            gap: 10px;
+
+            margin-top: 20px;
+          }
+
+          .mvbd-access-button {
+            width: 100%;
+
+            display: flex;
+            align-items: center;
+            gap: 12px;
+
+            padding: 13px;
+
+            border: 1px solid
+              rgba(85, 255, 145, 0.15);
+
+            border-radius: 16px;
+
+            background:
+              rgba(255, 255, 255, 0.035);
+
+            color: #ffffff;
+
+            text-align: left;
 
             cursor: pointer;
 
@@ -1661,607 +1302,309 @@ export default function SeriesSection({
               background 0.2s ease;
           }
 
-          .mvbd-close:hover {
-            transform:
-              rotate(90deg);
-
-            background:
-              rgba(255, 255, 255, 0.11);
-          }
-
-          .mvbd-sheet h2 {
-            position: relative;
-
-            z-index: 2;
-
-            margin:
-              3px 42px 7px 0;
-
-            font-size: 23px;
-
-            letter-spacing: -0.8px;
-          }
-
-          .mvbd-muted {
-            position: relative;
-
-            z-index: 2;
-
-            color:
-              rgba(255, 255, 255, 0.52);
-
-            font-size: 12px;
-
-            line-height: 1.7;
-          }
-
-          /* =================================================
-             FREE ACCESS
-          ================================================= */
-
-          .mvbd-access-list {
-            position: relative;
-
-            z-index: 2;
-
-            display: grid;
-
-            gap: 9px;
-
-            margin-top: 17px;
-          }
-
-          .mvbd-access-item {
-            display: flex;
-
-            align-items: center;
-
-            justify-content: space-between;
-
-            gap: 10px;
-
-            padding: 11px;
-
-            border:
-              1px solid
-              rgba(119, 255, 150, 0.13);
-
-            border-radius: 17px;
-
-            background:
-              rgba(255, 255, 255, 0.035);
-
-            box-shadow:
-              inset 0 1px
-              rgba(255, 255, 255, 0.055);
-          }
-
-          .mvbd-access-left {
-            min-width: 0;
-          }
-
-          .mvbd-access-title {
-            color:
-              rgba(255, 255, 255, 0.86);
-
-            font-size: 11px;
-
-            font-weight: 850;
-          }
-
-          .mvbd-access-description {
-            margin-top: 2px;
-
-            color:
-              rgba(255, 255, 255, 0.38);
-
-            font-size: 9px;
-
-            line-height: 1.45;
-          }
-
-          .mvbd-access-button {
-            flex:
-              0 0 auto;
-
-            min-height: 34px;
-
-            border:
-              1px solid
-              rgba(74, 255, 113, 0.23);
-
-            border-radius: 11px;
-
-            padding:
-              7px 9px;
-
-            background:
-              rgba(50, 255, 100, 0.075);
-
-            color:
-              #a5ffb8;
-
-            font-size: 9px;
-
-            font-weight: 900;
-
-            cursor: pointer;
-
-            transition:
-              transform 0.18s ease,
-              background 0.18s ease;
-          }
-
           .mvbd-access-button:hover {
             transform:
-              translateY(-1px);
+              translateY(-2px);
 
             background:
-              rgba(50, 255, 100, 0.13);
+              rgba(42, 255, 117, 0.07);
           }
 
-          .mvbd-access-button:active {
-            transform:
-              scale(0.96);
-          }
+          .mvbd-access-icon {
+            width: 38px;
+            height: 38px;
 
-          .mvbd-access-button.locked {
-            border-color:
-              rgba(255, 104, 104, 0.18);
+            flex: 0 0 38px;
+
+            display: grid;
+            place-items: center;
+
+            border-radius: 12px;
+
+            color: #67ff9d;
 
             background:
-              rgba(255, 70, 70, 0.055);
-
-            color:
-              #ffaaa3;
-
-            cursor:
-              not-allowed;
+              rgba(0, 255, 106, 0.09);
           }
 
-          /* =================================================
-             LOCKED
-          ================================================= */
-
-          .mvbd-locked-box {
-            position: relative;
-
-            z-index: 2;
-
-            margin-top: 15px;
-
-            padding: 14px;
-
-            border:
-              1px solid
-              rgba(255, 105, 105, 0.15);
-
-            border-radius: 19px;
-
-            background:
-              rgba(255, 55, 55, 0.035);
+          .mvbd-access-text {
+            min-width: 0;
+            flex: 1;
           }
 
-          .mvbd-locked-title {
-            margin-bottom: 8px;
+          .mvbd-access-text strong {
+            display: block;
 
-            color:
-              #ffaaa3;
+            font-size: 12px;
+          }
+
+          .mvbd-access-text span {
+            display: block;
+
+            margin-top: 3px;
+
+            color: #758a80;
 
             font-size: 10px;
-
-            font-weight: 900;
-
-            text-transform: uppercase;
-
-            letter-spacing: 0.6px;
+            line-height: 1.5;
           }
 
-          .mvbd-locked-list {
-            display: grid;
+          .mvbd-access-arrow {
+            color: #56ff94;
+            font-size: 16px;
+          }
 
-            gap: 4px;
+          .mvbd-access-info {
+            cursor: default;
+          }
 
+          .mvbd-access-restricted {
+            cursor: not-allowed;
+
+            border-color:
+              rgba(255, 255, 255, 0.07);
+
+            opacity: 0.65;
+          }
+
+          .mvbd-access-restricted
+            .mvbd-access-icon {
+            color: #8d9792;
+
+            background:
+              rgba(255, 255, 255, 0.05);
+          }
+
+          .mvbd-not-included {
+            margin-top: 22px;
+            padding-top: 18px;
+
+            border-top: 1px solid
+              rgba(255, 255, 255, 0.07);
+          }
+
+          .mvbd-not-included-title {
+            margin-bottom: 11px;
+
+            color: #7c8e86;
+
+            font-size: 10px;
+            font-weight: 900;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+          }
+
+          .mvbd-not-included ul {
             margin: 0;
-
             padding: 0;
 
             list-style: none;
 
-            color:
-              rgba(255, 255, 255, 0.43);
+            display: grid;
+            gap: 8px;
+          }
+
+          .mvbd-not-included li {
+            color: #67766f;
 
             font-size: 10px;
-
-            line-height: 1.5;
           }
 
-          .mvbd-locked-list li::before {
+          .mvbd-not-included li::before {
             content: "×";
 
-            margin-right: 7px;
+            margin-right: 8px;
 
-            color:
-              #ff7770;
-
-            font-weight: 900;
+            color: #66716d;
           }
 
-          /* =================================================
-             UPGRADE
-          ================================================= */
+          /* ---------------- PAYMENT MODAL ---------------- */
 
-          .mvbd-upgrade {
-            position: relative;
-
-            z-index: 2;
-
-            width: 100%;
-
-            margin-top: 15px;
-
-            padding: 13px;
-
-            border: 0;
-
-            border-radius: 16px;
-
-            background:
-              linear-gradient(
-                135deg,
-                #49ff76,
-                #08ad47
-              );
-
-            color:
-              #001b08;
-
-            font-size: 11px;
-
-            font-weight: 950;
-
-            cursor: pointer;
-
-            box-shadow:
-              0 13px 30px
-              rgba(49, 255, 104, 0.13),
-              inset 0 1px
-              rgba(255, 255, 255, 0.58);
-
-            transition:
-              transform 0.2s ease,
-              filter 0.2s ease;
-          }
-
-          .mvbd-upgrade:hover {
-            transform:
-              translateY(-2px);
-
-            filter:
-              brightness(1.05);
-          }
-
-          /* =================================================
-             PAYMENT
-          ================================================= */
-
-          .mvbd-selected {
-            position: relative;
-
-            z-index: 2;
-
-            display: flex;
-
-            align-items: center;
-
-            justify-content: space-between;
-
-            gap: 15px;
-
-            margin: 17px 0;
+          .mvbd-selected-plan {
+            margin-top: 18px;
 
             padding: 14px;
 
-            border:
-              1px solid
-              rgba(255, 255, 255, 0.09);
+            border-radius: 15px;
 
-            border-radius: 18px;
+            background:
+              rgba(0, 255, 106, 0.055);
+
+            border: 1px solid
+              rgba(0, 255, 106, 0.12);
+          }
+
+          .mvbd-selected-plan small {
+            display: block;
+
+            color: #719083;
+
+            font-size: 9px;
+          }
+
+          .mvbd-selected-plan strong {
+            display: block;
+
+            margin-top: 4px;
+
+            font-size: 17px;
+          }
+
+          .mvbd-payment-number {
+            margin-top: 15px;
+
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+
+            padding: 13px;
+
+            border-radius: 14px;
 
             background:
               rgba(255, 255, 255, 0.045);
           }
 
-          .mvbd-selected-price {
-            color:
-              #8dffad;
+          .mvbd-payment-number strong {
+            color: #65ff9c;
 
-            font-weight: 950;
+            font-size: 17px;
+            letter-spacing: 1px;
           }
 
-          .mvbd-payment-box {
-            position: relative;
+          .mvbd-copy-button {
+            border: 1px solid
+              rgba(255, 255, 255, 0.1);
 
-            z-index: 2;
+            border-radius: 9px;
 
-            padding: 15px;
+            padding: 7px 10px;
 
-            border:
-              1px solid
-              rgba(74, 255, 111, 0.15);
-
-            border-radius: 19px;
+            color: #c8d7d0;
 
             background:
-              rgba(50, 255, 100, 0.045);
-          }
-
-          .mvbd-label {
-            color:
-              rgba(255, 255, 255, 0.42);
-
-            font-size: 9px;
-
-            font-weight: 850;
-
-            letter-spacing: 0.8px;
-
-            text-transform: uppercase;
-          }
-
-          .mvbd-number-row {
-            display: flex;
-
-            align-items: center;
-
-            justify-content: space-between;
-
-            gap: 8px;
-
-            margin-top: 8px;
-          }
-
-          .mvbd-number {
-            font-size: 18px;
-
-            font-weight: 950;
-          }
-
-          .mvbd-copy {
-            flex-shrink: 0;
-
-            border:
-              1px solid
-              rgba(255, 255, 255, 0.09);
-
-            border-radius: 11px;
-
-            padding: 8px 10px;
-
-            background:
-              rgba(255, 255, 255, 0.055);
-
-            color:
-              rgba(255, 255, 255, 0.82);
-
-            font-size: 9px;
+              rgba(255, 255, 255, 0.05);
 
             cursor: pointer;
-          }
-
-          /* =================================================
-             INPUT
-          ================================================= */
-
-          .mvbd-input {
-            position: relative;
-
-            z-index: 2;
-
-            display: block;
-
-            width: 100%;
-
-            margin-top: 11px;
-
-            padding: 13px 14px;
-
-            border:
-              1px solid
-              rgba(255, 255, 255, 0.10);
-
-            border-radius: 15px;
-
-            outline: none;
-
-            background:
-              rgba(0, 0, 0, 0.25);
-
-            color: white;
-
-            font-size: 13px;
-          }
-
-          .mvbd-input::placeholder {
-            color:
-              rgba(255, 255, 255, 0.27);
-          }
-
-          .mvbd-input:focus {
-            border-color:
-              rgba(80, 255, 121, 0.35);
-
-            box-shadow:
-              0 0 0 3px
-              rgba(50, 255, 100, 0.055);
-          }
-
-          .mvbd-error {
-            position: relative;
-
-            z-index: 2;
-
-            margin-top: 7px;
-
-            color:
-              #ffaaa3;
 
             font-size: 10px;
           }
 
-          .mvbd-send {
-            position: relative;
-
-            z-index: 2;
-
+          .mvbd-input {
             width: 100%;
 
-            margin-top: 11px;
+            margin-top: 14px;
 
-            padding: 13px;
+            min-height: 48px;
+
+            padding:
+              0
+              14px;
+
+            outline: none;
+
+            border-radius: 13px;
+
+            border: 1px solid
+              rgba(255, 255, 255, 0.1);
+
+            color: #ffffff;
+
+            background:
+              rgba(255, 255, 255, 0.045);
+
+            font-size: 13px;
+          }
+
+          .mvbd-input:focus {
+            border-color:
+              rgba(63, 255, 136, 0.55);
+          }
+
+          .mvbd-error {
+            margin-top: 10px;
+
+            padding: 10px;
+
+            border-radius: 10px;
+
+            color: #ff9d9d;
+
+            background:
+              rgba(255, 50, 50, 0.07);
+
+            font-size: 10px;
+          }
+
+          .mvbd-submit-button {
+            width: 100%;
+
+            min-height: 48px;
+
+            margin-top: 14px;
 
             border: 0;
+            border-radius: 14px;
 
-            border-radius: 16px;
+            color: #001b0c;
 
             background:
               linear-gradient(
                 135deg,
-                #48ff75,
-                #09ad48
+                #8affb7,
+                #27ed78
               );
 
-            color:
-              #001d08;
-
-            font-weight: 950;
+            font-size: 12px;
+            font-weight: 900;
 
             cursor: pointer;
           }
 
-          .mvbd-note {
-            position: relative;
-
-            z-index: 2;
-
-            margin-top: 9px;
-
-            color:
-              rgba(255, 255, 255, 0.25);
-
-            font-size: 9px;
-
-            line-height: 1.5;
-
-            text-align: center;
-          }
-
-          /* =================================================
-             PROCESSING
-          ================================================= */
+          /* ---------------- PROCESSING ---------------- */
 
           .mvbd-processing {
             text-align: center;
 
-            padding:
-              25px 9px 9px;
+            padding: 22px 10px;
           }
 
-          .mvbd-orb {
-            position: relative;
-
-            width: 88px;
-            height: 88px;
+          .mvbd-loader {
+            width: 62px;
+            height: 62px;
 
             margin:
-              5px auto 21px;
+              0
+              auto
+              22px;
 
-            border-radius:
-              46% 54% 61% 39% /
-              55% 42% 58% 45%;
+            border-radius: 50%;
 
-            background:
-              conic-gradient(
-                from 0deg,
-                #37ff6d,
-                #24c8ff,
-                #a75dff,
-                #37ff6d
-              );
+            border:
+              3px solid
+              rgba(255, 255, 255, 0.08);
+
+            border-top-color: #52ff95;
 
             animation:
-              mvbdOrbSpin
-              3.8s
-              linear
-              infinite,
-              mvbdOrbMorph
-              4.8s
-              ease-in-out
-              infinite
-              alternate;
-
-            box-shadow:
-              0 0 45px
-              rgba(62, 255, 110, 0.15);
+              mvbdSpin 0.8s linear infinite;
           }
 
-          .mvbd-orb::after {
-            content: "";
+          .mvbd-progress-track {
+            height: 7px;
 
-            position: absolute;
-
-            inset: 8px;
-
-            border-radius: inherit;
-
-            background:
-              radial-gradient(
-                circle at 35% 25%,
-                rgba(255, 255, 255, 0.08),
-                #050907 62%
-              );
-          }
-
-          @keyframes mvbdOrbSpin {
-            to {
-              transform:
-                rotate(360deg);
-            }
-          }
-
-          @keyframes mvbdOrbMorph {
-            from {
-              border-radius:
-                46% 54% 61% 39% /
-                55% 42% 58% 45%;
-            }
-
-            to {
-              border-radius:
-                62% 38% 44% 56% /
-                39% 59% 41% 61%;
-            }
-          }
-
-          /* =================================================
-             PROGRESS
-          ================================================= */
-
-          .mvbd-progress {
-            height: 5px;
-
-            margin:
-              22px 0 9px;
+            margin-top: 20px;
 
             overflow: hidden;
 
-            border-radius: 999px;
+            border-radius: 99px;
 
             background:
               rgba(255, 255, 255, 0.07);
           }
 
-          .mvbd-progress-bar {
+          .mvbd-progress-fill {
             height: 100%;
 
             border-radius: inherit;
@@ -2269,904 +1612,619 @@ export default function SeriesSection({
             background:
               linear-gradient(
                 90deg,
-                #40ff73,
-                #20c9ff,
-                #a56cff
+                #00d95f,
+                #72ffac
               );
 
-            box-shadow:
-              0 0 14px
-              rgba(69, 255, 116, 0.35);
-
             transition:
-              width 0.18s linear;
+              width 0.2s linear;
           }
 
-          .mvbd-percent {
-            color:
-              rgba(255, 255, 255, 0.30);
+          .mvbd-progress-text {
+            margin-top: 10px;
+
+            color: #70877c;
 
             font-size: 10px;
           }
 
-          /* =================================================
-             SUCCESS
-          ================================================= */
+          /* ---------------- SUCCESS ---------------- */
+
+          .mvbd-success {
+            text-align: center;
+
+            padding: 15px 10px;
+          }
 
           .mvbd-success-icon {
-            width: 74px;
-            height: 74px;
+            width: 68px;
+            height: 68px;
 
             display: grid;
-
             place-items: center;
 
             margin:
-              7px auto 17px;
-
-            border:
-              1px solid
-              rgba(115, 255, 146, 0.25);
+              0
+              auto
+              18px;
 
             border-radius: 50%;
 
+            color: #001b0c;
+
             background:
-              radial-gradient(
-                circle,
-                rgba(76, 255, 111, 0.12),
-                rgba(76, 255, 111, 0.025)
+              linear-gradient(
+                135deg,
+                #8affb7,
+                #29ed78
               );
 
-            color:
-              #aaffbc;
-
-            font-size: 34px;
+            font-size: 30px;
+            font-weight: 900;
 
             box-shadow:
-              0 0 45px
-              rgba(69, 255, 105, 0.10);
-
-            animation:
-              mvbdSuccess
-              0.42s
-              cubic-bezier(
-                0.16,
-                1,
-                0.3,
-                1
-              );
+              0 0 35px
+                rgba(0, 255, 106, 0.22);
           }
 
-          @keyframes mvbdSuccess {
+          /* ---------------- ANIMATIONS ---------------- */
+
+          @keyframes mvbdPulse {
+            0%,
+            100% {
+              opacity: 0.45;
+              transform: scale(0.85);
+            }
+
+            50% {
+              opacity: 1;
+              transform: scale(1);
+            }
+          }
+
+          @keyframes mvbdFloat {
+            0%,
+            100% {
+              transform:
+                translate3d(
+                  0,
+                  0,
+                  0
+                );
+            }
+
+            50% {
+              transform:
+                translate3d(
+                  -25px,
+                  18px,
+                  0
+                );
+            }
+          }
+
+          @keyframes mvbdLiquid {
+            0%,
+            100% {
+              transform:
+                translate3d(
+                  0,
+                  0,
+                  0
+                )
+                rotate(0deg);
+            }
+
+            50% {
+              transform:
+                translate3d(
+                  22px,
+                  -18px,
+                  0
+                )
+                rotate(8deg);
+            }
+          }
+
+          @keyframes mvbdModalIn {
+            from {
+              opacity: 0;
+            }
+
+            to {
+              opacity: 1;
+            }
+          }
+
+          @keyframes mvbdModalScale {
             from {
               opacity: 0;
               transform:
-                scale(0.65);
-            }
-
-            70% {
-              transform:
-                scale(1.08);
+                translateY(12px)
+                scale(0.97);
             }
 
             to {
               opacity: 1;
               transform:
+                translateY(0)
                 scale(1);
             }
           }
 
-          .mvbd-done {
-            position: relative;
-
-            z-index: 2;
-
-            width: 100%;
-
-            margin-top: 17px;
-
-            padding: 13px;
-
-            border:
-              1px solid
-              rgba(255, 255, 255, 0.09);
-
-            border-radius: 15px;
-
-            background:
-              rgba(255, 255, 255, 0.055);
-
-            color: white;
-
-            font-weight: 850;
-
-            cursor: pointer;
+          @keyframes mvbdSpin {
+            to {
+              transform: rotate(360deg);
+            }
           }
 
-          /* =================================================
-             TABLET
-          ================================================= */
+          @media (
+            prefers-reduced-motion: reduce
+          ) {
+            .mvbd-plan-card,
+            .mvbd-access-button,
+            .mvbd-choose-button {
+              transition: none;
+            }
 
-          @media (max-width: 1000px) {
-            .mvbd-plans {
+            .mvbd-plan-card::before,
+            .mvbd-plan-card::after,
+            .mvbd-status-dot,
+            .mvbd-loader {
+              animation: none;
+            }
+          }
+
+          /* ---------------- TABLET ---------------- */
+
+          @media (max-width: 1050px) {
+            .mvbd-plans-grid {
               grid-template-columns:
                 repeat(2, minmax(0, 1fr));
             }
           }
 
-          /* =================================================
-             MOBILE
-          ================================================= */
+          /* ---------------- MOBILE ---------------- */
 
           @media (max-width: 760px) {
-
-            .mvbd-premium-page {
-              padding:
-                12px 10px 60px;
-            }
-
-            .mvbd-plans {
-              grid-template-columns: 1fr;
-
-              gap: 13px;
-            }
-
-            .mvbd-hero {
-              padding:
-                55px 6px 34px;
-            }
-
-            .mvbd-hero h1 {
-              font-size:
-                clamp(39px, 12vw, 55px);
-
-              letter-spacing:
-                -2.8px;
-            }
-
-            .mvbd-card {
-              padding: 20px;
-
-              border-radius:
-                29px 24px 31px 25px;
-            }
-
-            .mvbd-price {
-              font-size: 40px;
-            }
-
-            .mvbd-sheet {
+            .mvbd-page-content {
               width:
-                calc(100vw - 20px) !important;
+                calc(100% - 22px);
 
-              max-width:
-                calc(100vw - 20px) !important;
-
-              max-height:
-                87dvh !important;
-
-              padding: 19px;
-
-              border-radius:
-                27px 23px 30px 25px;
+              padding-top: 11px;
+              padding-bottom: 30px;
             }
 
-            .mvbd-access-item {
-              align-items:
-                flex-start;
+            .mvbd-premium-header {
+              padding: 11px 13px;
+              border-radius: 18px;
             }
 
-            .mvbd-access-button {
+            .mvbd-brand-mark {
+              width: 37px;
+              height: 37px;
+
+              border-radius: 11px;
+
+              font-size: 21px;
+            }
+
+            .mvbd-brand strong {
+              font-size: 13px;
+            }
+
+            .mvbd-brand span {
+              font-size: 9px;
+            }
+
+            .mvbd-status {
+              padding: 7px 9px;
+
               font-size: 8px;
             }
 
-            .mvbd-stars {
-              height: 570px;
-            }
-          }
-
-          /* =================================================
-             SMALL PHONE
-          ================================================= */
-
-          @media (max-width: 380px) {
-
-            .mvbd-premium-page {
-              padding-left:
-                8px;
-
-              padding-right:
-                8px;
-            }
-
-            .mvbd-sheet {
-              width:
-                calc(100vw - 16px) !important;
-
-              max-width:
-                calc(100vw - 16px) !important;
-
+            .mvbd-premium-hero {
               padding:
-                17px;
+                45px
+                8px
+                30px;
             }
 
-            .mvbd-access-item {
-              gap: 7px;
+            .mvbd-premium-hero h1 {
+              font-size: 36px;
+              letter-spacing: -1.5px;
             }
 
-            .mvbd-access-title {
-              font-size: 10px;
+            .mvbd-premium-hero p {
+              font-size: 12px;
             }
 
-            .mvbd-number {
-              font-size: 15px;
+            .mvbd-plans-grid {
+              grid-template-columns: 1fr;
+              gap: 14px;
+            }
+
+            .mvbd-plan-card {
+              padding: 20px;
+
+              border-radius: 23px;
+            }
+
+            .mvbd-price {
+              font-size: 35px;
+            }
+
+            .mvbd-plan-description {
+              min-height: auto;
+            }
+
+            .mvbd-choose-button {
+              min-height: 50px;
             }
           }
 
-          /* =================================================
-             REDUCED MOTION
-          ================================================= */
+          @media (max-width: 420px) {
+            .mvbd-page-content {
+              width:
+                calc(100% - 16px);
+            }
 
-          @media (prefers-reduced-motion: reduce) {
+            .mvbd-status {
+              display: none;
+            }
 
-            .mvbd-premium-page *,
-            .mvbd-premium-page *::before,
-            .mvbd-premium-page *::after,
-            .mvbd-viewport-modal *,
-            .mvbd-viewport-modal *::before,
-            .mvbd-viewport-modal *::after {
-              animation-duration:
-                0.01ms !important;
+            .mvbd-premium-hero h1 {
+              font-size: 32px;
+            }
 
-              animation-iteration-count:
-                1 !important;
+            .mvbd-modal-backdrop {
+              padding: 10px;
+            }
 
-              transition:
-                none !important;
+            .mvbd-modal {
+              padding: 18px;
+
+              border-radius: 21px;
             }
           }
-
         `}</style>
-
-        {/* =================================================
-            LIQUID LIGHT
-        ================================================= */}
-
-        <div
-          className="mvbd-liquid-light"
-          aria-hidden="true"
-        />
-
-        {/* =================================================
-            PARTICLES
-        ================================================= */}
-
-        <div
-          className="mvbd-stars"
-          aria-hidden="true"
-        >
-          {Array.from({
-            length: 20,
-          }).map((_, index) => (
-            <span
-              key={index}
-              className="mvbd-star"
-              style={
-                {
-                  left:
-                    `${(index * 47.3) % 100}%`,
-
-                  top:
-                    `${(index * 71.7) % 600}px`,
-
-                  ["--duration" as string]:
-                    `${2 + (index % 4) * 0.65}s`,
-
-                  animationDelay:
-                    `${-(index % 5) * 0.45}s`,
-                } as React.CSSProperties
-              }
-            />
-          ))}
-        </div>
-
-        <div className="mvbd-container">
-
-          {/* =================================================
-              NAV
-          ================================================= */}
-
-          <nav className="mvbd-nav">
-
-            <div className="mvbd-brand">
-
-              <div className="mvbd-logo">
-                M
-              </div>
-
-              <span>
-                MoviesVerseBD
-              </span>
-
-            </div>
-
-            <div className="mvbd-nav-badge">
-              Premium Access
-            </div>
-
-          </nav>
-
-          {/* =================================================
-              HERO
-          ================================================= */}
-
-          <section className="mvbd-hero">
-
-            <div className="mvbd-hero-glow" />
-
-            <div className="mvbd-eyebrow">
-
-              <span className="mvbd-live-dot" />
-
-              Unlock your premium experience
-
-            </div>
-
-            <h1>
-              Choose your
-              <br />
-              perfect plan.
-            </h1>
-
-            <div className="mvbd-premium-title">
-              MVBD PREMIUM
-            </div>
-
-            <p className="mvbd-subtitle">
-              Enjoy the MVBD experience with
-              community access and premium
-              membership options.
-            </p>
-
-            <div className="mvbd-trial">
-              ✦ Free access available for everyone
-            </div>
-
-          </section>
-
-          {/* =================================================
-              PLANS
-          ================================================= */}
-
-          <section className="mvbd-plans">
-
-            {plans.map((plan) => {
-
-              const isFree =
-                plan.planId === "trial"
-
-              const cardClass =
-                isFree
-                  ? "mvbd-card-free"
-                  : plan.planId === "monthly"
-                    ? "mvbd-card-month"
-                    : plan.planId === "two_months"
-                      ? "mvbd-card-two"
-                      : "mvbd-card-three"
-
-              return (
-                <article
-                  key={plan.planId}
-                  className={
-                    `mvbd-card ${cardClass}`
-                  }
-                >
-
-                  {isFree && (
-                    <div className="mvbd-free-badge">
-                      FREE PLAN
-                    </div>
-                  )}
-
-                  {plan.popular && (
-                    <div className="mvbd-ribbon">
-                      MOST POPULAR
-                    </div>
-                  )}
-
-                  <div className="mvbd-plan-name">
-                    {plan.name}
-                  </div>
-
-                  <div className="mvbd-price">
-                    {plan.price}
-
-                    {!isFree && (
-                      <small>
-                        {" "}
-                        / {plan.duration}
-                      </small>
-                    )}
-                  </div>
-
-                  <div className="mvbd-save">
-                    {isFree
-                      ? "Basic access"
-                      : plan.save || "\u00a0"}
-                  </div>
-
-                  <div className="mvbd-description">
-                    {plan.description}
-                  </div>
-
-                  <ul className="mvbd-features">
-
-                    {isFree ? (
-                      <>
-                        <li>
-                          Community access
-                        </li>
-
-                        <li>
-                          Anime channel access
-                        </li>
-
-                        <li>
-                          MVBD MeBook access
-                        </li>
-
-                        <li>
-                          Basic Mini App access
-                        </li>
-
-                        <li>
-                          Trailer access
-                        </li>
-                      </>
-                    ) : (
-                      <>
-                        <li>
-                          Full premium membership
-                        </li>
-
-                        <li>
-                          Premium library access
-                        </li>
-
-                        <li>
-                          Premium app experience
-                        </li>
-
-                        <li>
-                          Regular updates
-                        </li>
-
-                        <li>
-                          Priority support
-                        </li>
-                      </>
-                    )}
-
-                  </ul>
-
-                  <button
-                    type="button"
-                    className="mvbd-choose"
-                    onClick={() =>
-                      openPlan(plan)
-                    }
-                  >
-                    {isFree
-                      ? "Explore Free Access →"
-                      : `Get ${plan.planName} →`}
-                  </button>
-
-                </article>
-              )
-            })}
-
-          </section>
-
-          {/* =================================================
-              INFO
-          ================================================= */}
-
-          <div className="mvbd-info">
-
-            <strong>
-              Free Plan
-            </strong>{" "}
-
-            gives access to selected MVBD
-            community features.
-
-            <br />
-
-            Premium features require an active
-            paid subscription.
-
-            <br />
-
-            After payment, submit your
-            transaction ID for admin review.
-
-          </div>
-
-          <div className="mvbd-footer">
-            MoviesVerseBD • MVBD Premium Membership
-          </div>
-
-        </div>
-
       </main>
 
-      {/* =====================================================
-          FREE ACCESS MODAL
-      ===================================================== */}
+      {/* ================= FREE ACCESS MODAL ================= */}
 
-      {showFreeAccess && (
+      {showFreeAccess && selectedPlan && (
         <ViewportModal
           onBackdropClick={
             closeFreeAccess
           }
         >
-
           <div
-            className="mvbd-sheet"
-            onClick={(event) =>
-              event.stopPropagation()
-            }
+            className="mvbd-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="free-plan-title"
           >
-
             <button
               type="button"
-              className="mvbd-close"
+              className="mvbd-modal-close"
               onClick={closeFreeAccess}
               aria-label="Close"
             >
               ×
             </button>
 
-            <h2>
-              Free Plan Access
-            </h2>
-
-            <p className="mvbd-muted">
-              These features are available
-              without a paid subscription.
-              Premium streaming features remain
-              locked.
-            </p>
-
-            <div className="mvbd-access-list">
-
-              {plans
-                .find(
-                  (plan) =>
-                    plan.planId === "trial",
-                )
-                ?.accessItems?.map(
-                  (item) => (
-                    <div
-                      key={item.id}
-                      className="mvbd-access-item"
-                    >
-
-                      <div className="mvbd-access-left">
-
-                        <div className="mvbd-access-title">
-                          {item.available
-                            ? "✓ "
-                            : "🔒 "}
-                          {item.title}
-                        </div>
-
-                        <div className="mvbd-access-description">
-                          {item.description}
-                        </div>
-
-                      </div>
-
-                      <button
-                        type="button"
-                        disabled={
-                          !item.available ||
-                          item.locked
-                        }
-                        className={
-                          `mvbd-access-button ${
-                            item.locked
-                              ? "locked"
-                              : ""
-                          }`
-                        }
-                        onClick={() =>
-                          handleFreeAccess(
-                            item,
-                          )
-                        }
-                      >
-                        {item.buttonText}
-                      </button>
-
-                    </div>
-                  ),
-                )}
-
+            <div
+              id="free-plan-title"
+              className="mvbd-modal-title"
+            >
+              Free Plan
             </div>
 
-            <div className="mvbd-locked-box">
+            <p className="mvbd-modal-subtitle">
+              আপনার Free Plan-এ যেসব access
+              available আছে সেগুলো এখান থেকে
+              ব্যবহার করতে পারবেন।
+            </p>
 
-              <div className="mvbd-locked-title">
-                🔒 Not included in Free Plan
-              </div>
+            <div className="mvbd-free-access-list">
+              {(
+                selectedPlan.freeAccess || []
+              ).map((item) => {
+                if (item.type === "external") {
+                  return (
+                    <a
+                      key={item.id}
+                      href={item.href}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="mvbd-access-button"
+                    >
+                      <div className="mvbd-access-icon">
+                        ↗
+                      </div>
 
-              <ul className="mvbd-locked-list">
+                      <div className="mvbd-access-text">
+                        <strong>
+                          {item.title}
+                        </strong>
 
-                {plans
-                  .find(
-                    (plan) =>
-                      plan.planId === "trial",
+                        <span>
+                          {item.description}
+                        </span>
+                      </div>
+
+                      <div className="mvbd-access-arrow">
+                        ›
+                      </div>
+                    </a>
                   )
-                  ?.lockedItems?.map(
+                }
+
+                if (item.type === "mebook") {
+                  return (
+                    <button
+                      key={item.id}
+                      type="button"
+                      className="mvbd-access-button"
+                      onClick={() =>
+                        handleFreeAccess(
+                          item
+                        )
+                      }
+                    >
+                      <div className="mvbd-access-icon">
+                        M
+                      </div>
+
+                      <div className="mvbd-access-text">
+                        <strong>
+                          {item.title}
+                        </strong>
+
+                        <span>
+                          {item.description}
+                        </span>
+                      </div>
+
+                      <div className="mvbd-access-arrow">
+                        ›
+                      </div>
+                    </button>
+                  )
+                }
+
+                if (
+                  item.type === "restricted"
+                ) {
+                  return (
+                    <div
+                      key={item.id}
+                      className="mvbd-access-button mvbd-access-restricted"
+                    >
+                      <div className="mvbd-access-icon">
+                        🔒
+                      </div>
+
+                      <div className="mvbd-access-text">
+                        <strong>
+                          {item.title}
+                        </strong>
+
+                        <span>
+                          {item.description}
+                        </span>
+                      </div>
+                    </div>
+                  )
+                }
+
+                return (
+                  <div
+                    key={item.id}
+                    className="mvbd-access-button mvbd-access-info"
+                  >
+                    <div className="mvbd-access-icon">
+                      ✓
+                    </div>
+
+                    <div className="mvbd-access-text">
+                      <strong>
+                        {item.title}
+                      </strong>
+
+                      <span>
+                        {item.description}
+                      </span>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+
+            {!!selectedPlan.notIncluded
+              ?.length && (
+              <div className="mvbd-not-included">
+                <div className="mvbd-not-included-title">
+                  Not included
+                </div>
+
+                <ul>
+                  {selectedPlan.notIncluded.map(
                     (item) => (
                       <li key={item}>
                         {item}
                       </li>
-                    ),
+                    )
                   )}
-
-              </ul>
-
-            </div>
-
-            <button
-              type="button"
-              className="mvbd-upgrade"
-              onClick={() => {
-                setShowFreeAccess(false)
-
-                const monthlyPlan =
-                  plans.find(
-                    (plan) =>
-                      plan.planId ===
-                      "monthly",
-                  )
-
-                if (monthlyPlan) {
-                  openPlan(monthlyPlan)
-                }
-              }}
-            >
-              Unlock Premium Access →
-            </button>
-
+                </ul>
+              </div>
+            )}
           </div>
-
         </ViewportModal>
       )}
 
-      {/* =====================================================
-          PAYMENT MODAL
-      ===================================================== */}
+      {/* ================= PAYMENT MODAL ================= */}
 
-      {showPayment &&
-        selectedPlan && (
-          <ViewportModal
-            onBackdropClick={
-              closePayment
-            }
+      {showPayment && selectedPlan && (
+        <ViewportModal
+          onBackdropClick={
+            closePayment
+          }
+        >
+          <div
+            className="mvbd-modal"
+            role="dialog"
+            aria-modal="true"
           >
-
-            <div
-              className="mvbd-sheet"
-              onClick={(event) =>
-                event.stopPropagation()
-              }
+            <button
+              type="button"
+              className="mvbd-modal-close"
+              onClick={closePayment}
             >
+              ×
+            </button>
 
-              <button
-                type="button"
-                className="mvbd-close"
-                onClick={closePayment}
-                aria-label="Close"
-              >
-                ×
-              </button>
-
-              <h2>
-                Complete your payment
-              </h2>
-
-              <p className="mvbd-muted">
-                Send Money to the payment
-                number and then enter your
-                transaction ID below.
-              </p>
-
-              <div className="mvbd-selected">
-
-                <span>
-                  {selectedPlan.name}
-                </span>
-
-                <span className="mvbd-selected-price">
-                  {selectedPlan.price}
-                </span>
-
-              </div>
-
-              <div className="mvbd-payment-box">
-
-                <div className="mvbd-label">
-                  Send Money — bKash
-                </div>
-
-                <div className="mvbd-number-row">
-
-                  <span className="mvbd-number">
-                    {PAYMENT_NUMBER}
-                  </span>
-
-                  <button
-                    type="button"
-                    className="mvbd-copy"
-                    onClick={copyNumber}
-                  >
-                    {copied
-                      ? "Copied ✓"
-                      : "Copy"}
-                  </button>
-
-                </div>
-
-              </div>
-
-              <input
-                className="mvbd-input"
-                type="text"
-                inputMode="text"
-                autoComplete="off"
-                placeholder="Paste transaction ID here"
-                value={transactionId}
-                onChange={(event) => {
-                  setTransactionId(
-                    event.target.value,
-                  )
-
-                  setError("")
-                }}
-              />
-
-              {error && (
-                <div className="mvbd-error">
-                  {error}
-                </div>
-              )}
-
-              <button
-                type="button"
-                className="mvbd-send"
-                onClick={submitPayment}
-              >
-                Send for Review →
-              </button>
-
-              <div className="mvbd-note">
-                Please make sure your
-                transaction ID is correct before
-                submitting.
-              </div>
-
+            <div className="mvbd-modal-title">
+              Complete Payment
             </div>
 
-          </ViewportModal>
-        )}
+            <p className="mvbd-modal-subtitle">
+              Send the exact plan amount to the
+              bKash number below and enter your
+              transaction ID.
+            </p>
 
-      {/* =====================================================
-          PROCESSING
-      ===================================================== */}
+            <div className="mvbd-selected-plan">
+              <small>
+                SELECTED PLAN
+              </small>
+
+              <strong>
+                {selectedPlan.planName} •{" "}
+                {selectedPlan.price}
+              </strong>
+            </div>
+
+            <div className="mvbd-payment-number">
+              <strong>
+                {PAYMENT_NUMBER}
+              </strong>
+
+              <button
+                type="button"
+                className="mvbd-copy-button"
+                onClick={copyNumber}
+              >
+                {copied
+                  ? "Copied"
+                  : "Copy"}
+              </button>
+            </div>
+
+            <input
+              className="mvbd-input"
+              value={transactionId}
+              onChange={(event) =>
+                setTransactionId(
+                  event.target.value
+                )
+              }
+              placeholder="Enter transaction ID"
+              autoComplete="off"
+            />
+
+            {error && (
+              <div className="mvbd-error">
+                {error}
+              </div>
+            )}
+
+            <button
+              type="button"
+              className="mvbd-submit-button"
+              onClick={submitPayment}
+            >
+              Submit Payment Request
+            </button>
+          </div>
+        </ViewportModal>
+      )}
+
+      {/* ================= PROCESSING ================= */}
 
       {showProcessing && (
         <ViewportModal>
+          <div
+            className="mvbd-modal"
+            role="dialog"
+            aria-modal="true"
+          >
+            <div className="mvbd-processing">
+              <div className="mvbd-loader" />
 
-          <div className="mvbd-sheet mvbd-processing">
+              <div className="mvbd-modal-title">
+                Processing Request
+              </div>
 
-            <div className="mvbd-orb" />
+              <p className="mvbd-modal-subtitle">
+                Your payment request has been
+                submitted. Please wait while the
+                request is being processed.
+              </p>
 
-            <h2>
-              Processing payment…
-            </h2>
+              <div className="mvbd-progress-track">
+                <div
+                  className="mvbd-progress-fill"
+                  style={{
+                    width: `${progress}%`,
+                  }}
+                />
+              </div>
 
-            <p className="mvbd-muted">
-              Please wait while your payment
-              submission is being prepared for
-              admin review.
-            </p>
-
-            <div className="mvbd-progress">
-
-              <div
-                className="mvbd-progress-bar"
-                style={{
-                  width:
-                    `${progress}%`,
-                }}
-              />
-
+              <div className="mvbd-progress-text">
+                {progress}% processing
+              </div>
             </div>
-
-            <div className="mvbd-percent">
-              {progress}%
-            </div>
-
           </div>
-
         </ViewportModal>
       )}
 
-      {/* =====================================================
-          SUCCESS
-      ===================================================== */}
+      {/* ================= SUCCESS ================= */}
 
       {showSuccess && (
-        <ViewportModal
-          onBackdropClick={
-            closeSuccess
-          }
-        >
-
+        <ViewportModal>
           <div
-            className="mvbd-sheet mvbd-processing"
-            onClick={(event) =>
-              event.stopPropagation()
-            }
+            className="mvbd-modal"
+            role="dialog"
+            aria-modal="true"
           >
+            <div className="mvbd-success">
+              <div className="mvbd-success-icon">
+                ✓
+              </div>
 
-            <div className="mvbd-success-icon">
-              ✓
+              <div className="mvbd-modal-title">
+                Request Submitted
+              </div>
+
+              <p className="mvbd-modal-subtitle">
+                Your subscription request has been
+                submitted successfully. Your
+                membership will be updated after
+                verification.
+              </p>
+
+              <button
+                type="button"
+                className="mvbd-submit-button"
+                onClick={closeSuccess}
+              >
+                Done
+              </button>
             </div>
-
-            <h2>
-              Payment sent for review
-            </h2>
-
-            <p className="mvbd-muted">
-
-              Your payment details have been
-              sent to the admin team.
-
-              <br />
-              <br />
-
-              They are currently{" "}
-              <strong>
-                under review
-              </strong>{" "}
-              and will be approved as soon as
-              possible if everything is correct.
-
-              <br />
-              <br />
-
-              Please wait until the review is
-              completed.
-
-            </p>
-
-            <button
-              type="button"
-              className="mvbd-done"
-              onClick={closeSuccess}
-            >
-              Done
-            </button>
-
           </div>
-
         </ViewportModal>
       )}
-
     </>
   )
 }

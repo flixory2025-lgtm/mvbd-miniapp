@@ -24,6 +24,10 @@ interface SeriesSectionProps {
   onOpenMeBook?: () => void
 }
 
+/* =========================================================
+   VIEWPORT MODAL
+========================================================= */
+
 function ViewportModal({
   children,
   onBackdropClick,
@@ -65,9 +69,13 @@ function ViewportModal({
     >
       {children}
     </div>,
-    document.body
+    document.body,
   )
 }
+
+/* =========================================================
+   MAIN
+========================================================= */
 
 export default function SeriesSection({
   onOpenMeBook,
@@ -92,7 +100,8 @@ export default function SeriesSection({
   const [transactionId, setTransactionId] =
     useState("")
 
-  const [progress, setProgress] = useState(0)
+  const [progress, setProgress] =
+    useState(0)
 
   const [copied, setCopied] =
     useState(false)
@@ -106,21 +115,29 @@ export default function SeriesSection({
   const successTimerRef =
     useRef<number | null>(null)
 
+  /* =======================================================
+     CLEANUP
+  ======================================================= */
+
   useEffect(() => {
     return () => {
       if (processingTimerRef.current) {
         window.clearInterval(
-          processingTimerRef.current
+          processingTimerRef.current,
         )
       }
 
       if (successTimerRef.current) {
         window.clearTimeout(
-          successTimerRef.current
+          successTimerRef.current,
         )
       }
     }
   }, [])
+
+  /* =======================================================
+     OPEN PLAN
+  ======================================================= */
 
   const openPlan = (plan: Plan) => {
     setSelectedPlan(plan)
@@ -137,19 +154,31 @@ export default function SeriesSection({
     setShowPayment(true)
   }
 
+  /* =======================================================
+     CLOSE PAYMENT
+  ======================================================= */
+
   const closePayment = () => {
     setShowPayment(false)
     setError("")
   }
 
+  /* =======================================================
+     CLOSE FREE ACCESS
+  ======================================================= */
+
   const closeFreeAccess = () => {
     setShowFreeAccess(false)
   }
 
+  /* =======================================================
+     COPY PAYMENT NUMBER
+  ======================================================= */
+
   const copyNumber = async () => {
     try {
       await navigator.clipboard.writeText(
-        PAYMENT_NUMBER
+        PAYMENT_NUMBER,
       )
 
       setCopied(true)
@@ -162,33 +191,37 @@ export default function SeriesSection({
     }
   }
 
+  /* =======================================================
+     SUBMIT PAYMENT
+  ======================================================= */
+
   const submitPayment = async () => {
     const trx = transactionId.trim()
 
     if (!user || !profile) {
       setError(
-        "Please sign in before submitting a payment request."
+        "Please sign in before submitting a payment request.",
       )
       return
     }
 
     if (!trx || trx.length < 3) {
       setError(
-        "Please enter a valid transaction ID."
+        "Please enter a valid transaction ID.",
       )
       return
     }
 
     if (!selectedPlan) {
       setError(
-        "Please select a subscription plan."
+        "Please select a subscription plan.",
       )
       return
     }
 
     if (selectedPlan.planId === "trial") {
       setError(
-        "The Free Plan does not require payment."
+        "The Free Plan does not require payment.",
       )
       return
     }
@@ -206,7 +239,7 @@ export default function SeriesSection({
       setError(
         requestError instanceof Error
           ? requestError.message
-          : "Unable to submit your payment request."
+          : "Unable to submit your payment request.",
       )
 
       return
@@ -218,13 +251,13 @@ export default function SeriesSection({
 
     if (processingTimerRef.current) {
       window.clearInterval(
-        processingTimerRef.current
+        processingTimerRef.current,
       )
     }
 
     if (successTimerRef.current) {
       window.clearTimeout(
-        successTimerRef.current
+        successTimerRef.current,
       )
     }
 
@@ -239,8 +272,9 @@ export default function SeriesSection({
         const percentage = Math.min(
           100,
           Math.round(
-            (elapsed / processingDuration) * 100
-          )
+            (elapsed / processingDuration) *
+              100,
+          ),
         )
 
         setProgress(percentage)
@@ -248,7 +282,7 @@ export default function SeriesSection({
         if (percentage >= 100) {
           if (processingTimerRef.current) {
             window.clearInterval(
-              processingTimerRef.current
+              processingTimerRef.current,
             )
           }
 
@@ -261,6 +295,10 @@ export default function SeriesSection({
       }, 200)
   }
 
+  /* =======================================================
+     CLOSE SUCCESS
+  ======================================================= */
+
   const closeSuccess = () => {
     setShowSuccess(false)
     setSelectedPlan(null)
@@ -269,8 +307,12 @@ export default function SeriesSection({
     setError("")
   }
 
+  /* =======================================================
+     FREE ACCESS HANDLER
+  ======================================================= */
+
   const handleFreeAccess = (
-    item: FreeAccessItem
+    item: FreeAccessItem,
   ) => {
     if (item.type === "mebook") {
       setShowFreeAccess(false)
@@ -278,16 +320,55 @@ export default function SeriesSection({
     }
   }
 
+  /* =======================================================
+     RESTRICTED ITEM CHECK
+     
+     This prevents age-restricted content from becoming
+     a clickable external link even if the data accidentally
+     contains it as an external item.
+  ======================================================= */
+
+  const isRestrictedFreeItem = (
+    item: FreeAccessItem,
+  ) => {
+    const title =
+      String(item.title || "").toLowerCase()
+
+    const id =
+      String(item.id || "").toLowerCase()
+
+    return (
+      item.type === "restricted" ||
+      title.includes("18+") ||
+      title.includes("18 +") ||
+      title.includes("adult") ||
+      title.includes("age-restricted") ||
+      title.includes("age restricted") ||
+      id.includes("18") ||
+      id.includes("adult")
+    )
+  }
+
+  /* =======================================================
+     RENDER
+  ======================================================= */
+
   return (
     <>
       <main className="mvbd-premium-page">
-        {/* Background */}
+        {/* =================================================
+            BACKGROUND
+        ================================================= */}
+
         <div className="mvbd-page-background" />
 
         <div className="mvbd-page-overlay" />
 
         <div className="mvbd-page-content">
-          {/* HEADER */}
+          {/* =================================================
+              HEADER
+          ================================================= */}
+
           <header className="mvbd-premium-header">
             <div className="mvbd-brand">
               <div className="mvbd-brand-mark">
@@ -311,7 +392,10 @@ export default function SeriesSection({
             </div>
           </header>
 
-          {/* HERO */}
+          {/* =================================================
+              HERO
+          ================================================= */}
+
           <section className="mvbd-premium-hero">
             <div className="mvbd-eyebrow">
               MOVIESVERSEBD
@@ -319,135 +403,314 @@ export default function SeriesSection({
 
             <h1>
               Choose Your
-              <span> Premium Plan</span>
+              <span>
+                Premium Plan
+              </span>
             </h1>
 
             <p>
-              Select a membership plan that works
-              best for you.
+              Select a membership plan that
+              works best for you.
             </p>
           </section>
 
-          {/* PLANS */}
+          {/* =================================================
+              PLANS
+          ================================================= */}
+
           <section className="mvbd-plans-grid">
-            {SUBSCRIPTION_PLANS.map((plan) => (
-              <article
-                key={plan.planId}
-                className={[
-                  "mvbd-plan-card",
-                  `mvbd-plan-${plan.planId}`,
-                  plan.popular
-                    ? "mvbd-plan-popular"
-                    : "",
-                ].join(" ")}
-              >
-                {plan.popular && (
-                  <div className="mvbd-popular-badge">
-                    MOST POPULAR
-                  </div>
-                )}
+            {SUBSCRIPTION_PLANS.map(
+              (plan) => {
+                const isFree =
+                  plan.planId === "trial"
 
-                <div className="mvbd-card-top">
-                  <div className="mvbd-plan-icon">
-                    {plan.planId === "trial"
-                      ? "✦"
-                      : plan.planId === "monthly"
-                        ? "◆"
-                        : plan.planId ===
-                            "two_months"
-                          ? "◇"
-                          : "★"}
-                  </div>
+                const isMonthly =
+                  plan.planId === "monthly"
 
-                  <div className="mvbd-plan-name">
-                    {plan.name}
-                  </div>
-                </div>
+                const isTwoMonths =
+                  plan.planId ===
+                  "two_months"
 
-                <div className="mvbd-price">
-                  {plan.price}
-                </div>
+                const isThreeMonths =
+                  plan.planId ===
+                  "three_months"
 
-                <div className="mvbd-duration">
-                  {plan.duration}
-                </div>
+                /* -------------------------------------------
+                   FREE FEATURES
+                ------------------------------------------- */
 
-                {plan.save ? (
-                  <div className="mvbd-save">
-                    {plan.save}
-                  </div>
-                ) : (
-                  <div className="mvbd-save mvbd-save-empty">
-                    &nbsp;
-                  </div>
-                )}
+                const features = isFree
+                  ? [
+                      {
+                        text:
+                          "MVBD PM Channel Access",
+                        type:
+                          "included",
+                      },
+                      {
+                        text:
+                          "MoviesverseBD Channel Access",
+                        type:
+                          "restricted",
+                      },
+                      {
+                        text:
+                          "Anime Verse BD Channel Access",
+                        type:
+                          "included",
+                      },
+                      {
+                        text:
+                          "MVBD MeBook Access",
+                        type:
+                          "included",
+                      },
+                      {
+                        text:
+                          "Free MVBD Mini App Check Access",
+                        type:
+                          "included",
+                      },
+                      {
+                        text:
+                          "Movie Series Trailer Access",
+                        type:
+                          "included",
+                      },
+                      {
+                        text:
+                          "No Movie Streaming (Subscription Required)",
+                        type:
+                          "locked",
+                      },
+                      {
+                        text:
+                          "No Premium Content",
+                        type:
+                          "locked",
+                      },
+                      {
+                        text:
+                          "No Download Option",
+                        type:
+                          "locked",
+                      },
+                      {
+                        text:
+                          "No Ad-Free Experience",
+                        type:
+                          "locked",
+                      },
+                      {
+                        text:
+                          "Limited Features",
+                        type:
+                          "locked",
+                      },
+                    ]
+                  : [
+                      {
+                        text:
+                          "All Free Plan Features",
+                        type:
+                          "included",
+                      },
+                      {
+                        text:
+                          "Full Movie Streaming (HD Quality)",
+                        type:
+                          "included",
+                      },
+                      {
+                        text:
+                          "Series & Anime Streaming",
+                        type:
+                          "included",
+                      },
+                      {
+                        text:
+                          "Download Option (Select Content)",
+                        type:
+                          "included",
+                      },
+                      {
+                        text:
+                          "Ad-Free Experience",
+                        type:
+                          "included",
+                      },
+                      {
+                        text:
+                          "Premium Content Access",
+                        type:
+                          "included",
+                      },
+                      {
+                        text:
+                          "Regular Updates (New Movies & Series)",
+                        type:
+                          "included",
+                      },
+                      {
+                        text:
+                          "Priority Support",
+                        type:
+                          "included",
+                      },
+                    ]
 
-                <p className="mvbd-plan-description">
-                  {plan.description}
-                </p>
+                return (
+                  <article
+                    key={plan.planId}
+                    className={[
+                      "mvbd-plan-card",
+                      `mvbd-plan-${plan.planId}`,
+                      plan.popular
+                        ? "mvbd-plan-popular"
+                        : "",
+                    ].join(" ")}
+                  >
+                    {/* CARD GLOW */}
 
-                <ul className="mvbd-feature-list">
-                  {plan.planId === "trial" ? (
-                    <>
-                      <li>
-                        <span>✓</span>
-                        Basic MVBD access
-                      </li>
+                    <div className="mvbd-card-glow" />
 
-                      <li>
-                        <span>✓</span>
-                        Selected free features
-                      </li>
+                    {/* POPULAR BADGE */}
 
-                      <li>
-                        <span>✓</span>
-                        Community channels
-                      </li>
+                    {plan.popular && (
+                      <div className="mvbd-popular-badge">
+                        MOST POPULAR
+                      </div>
+                    )}
 
-                      <li className="locked">
-                        <span>×</span>
-                        Premium features locked
-                      </li>
-                    </>
-                  ) : (
-                    <>
-                      <li>
-                        <span>✓</span>
-                        Premium access
-                      </li>
+                    {/* TOP */}
 
-                      <li>
-                        <span>✓</span>
-                        MVBD app access
-                      </li>
+                    <div className="mvbd-card-top">
+                      <div className="mvbd-plan-icon">
+                        {isFree && "♛"}
+                        {isMonthly && "▣"}
+                        {isTwoMonths && "▣"}
+                        {isThreeMonths && "▣"}
+                      </div>
 
-                      <li>
-                        <span>✓</span>
-                        Telegram access included
-                      </li>
+                      <div>
+                        <div className="mvbd-plan-name">
+                          {isFree
+                            ? "FREE PLAN"
+                            : isMonthly
+                              ? "1 MONTH"
+                              : isTwoMonths
+                                ? "2 MONTH"
+                                : "3 MONTH"}
+                        </div>
 
-                      <li>
-                        <span>✓</span>
-                        Fast premium experience
-                      </li>
-                    </>
-                  )}
-                </ul>
+                        <div className="mvbd-plan-subtitle">
+                          {isFree
+                            ? "Enjoy Basic Access"
+                            : "SUBSCRIPTION PLAN"}
+                        </div>
+                      </div>
+                    </div>
 
-                <button
-                  type="button"
-                  className="mvbd-choose-button"
-                  onClick={() => openPlan(plan)}
-                >
-                  {plan.planId === "trial"
-                    ? "View Free Access"
-                    : "Continue"}
-                </button>
-              </article>
-            ))}
+                    {/* PRICE */}
+
+                    <div className="mvbd-price">
+                      {isFree
+                        ? "FREE"
+                        : plan.price}
+                    </div>
+
+                    {/* DURATION */}
+
+                    <div className="mvbd-duration-pill">
+                      {isFree
+                        ? "BASIC ACCESS"
+                        : isMonthly
+                          ? "30 DAYS ACCESS"
+                          : isTwoMonths
+                            ? "60 DAYS ACCESS"
+                            : "90 DAYS ACCESS"}
+                    </div>
+
+                    {/* FEATURES */}
+
+                    <ul className="mvbd-feature-list">
+                      {features.map(
+                        (
+                          feature,
+                          index,
+                        ) => (
+                          <li
+                            key={`${plan.planId}-${index}`}
+                            className={
+                              feature.type ===
+                                "locked" ||
+                              feature.type ===
+                                "restricted"
+                                ? "locked"
+                                : ""
+                            }
+                          >
+                            <span
+                              className={
+                                feature.type ===
+                                "locked"
+                                  ? "feature-cross"
+                                  : feature.type ===
+                                      "restricted"
+                                    ? "feature-restricted"
+                                    : "feature-check"
+                              }
+                            >
+                              {feature.type ===
+                              "locked"
+                                ? "×"
+                                : feature.type ===
+                                    "restricted"
+                                  ? "18"
+                                  : "✓"}
+                            </span>
+
+                            <span className="feature-text">
+                              {feature.text}
+                            </span>
+                          </li>
+                        ),
+                      )}
+                    </ul>
+
+                    {/* BUTTON */}
+
+                    <button
+                      type="button"
+                      className="mvbd-choose-button"
+                      onClick={() =>
+                        openPlan(plan)
+                      }
+                    >
+                      <span>
+                        {isFree
+                          ? "Start Exploring"
+                          : isMonthly
+                            ? "Get 1 Month"
+                            : isTwoMonths
+                              ? "Get 2 Months"
+                              : "Get 3 Months"}
+                      </span>
+
+                      <span className="mvbd-button-arrow">
+                        ›
+                      </span>
+                    </button>
+                  </article>
+                )
+              },
+            )}
           </section>
 
-          {/* INFO */}
+          {/* =================================================
+              PAYMENT INFO
+          ================================================= */}
+
           <section className="mvbd-payment-info">
             <div className="mvbd-info-icon">
               ৳
@@ -459,68 +722,102 @@ export default function SeriesSection({
               </strong>
 
               <span>
-                Paid plans are activated after
-                transaction verification.
+                Paid plans are activated
+                after transaction
+                verification.
               </span>
             </div>
           </section>
 
+          {/* =================================================
+              FOOTER
+          ================================================= */}
+
           <footer className="mvbd-premium-footer">
-            MoviesVerseBD • MVBD Premium Membership
+            MoviesVerseBD • MVBD Premium
+            Membership
           </footer>
         </div>
+
+        {/* =================================================
+            GLOBAL CSS
+        ================================================= */}
 
         <style jsx global>{`
           * {
             box-sizing: border-box;
           }
 
+          /* =================================================
+             PAGE
+          ================================================= */
+
           .mvbd-premium-page {
             position: relative;
+
             min-height: 100svh;
+
             width: 100%;
+
             overflow-x: hidden;
+
             background: #020605;
+
             color: #ffffff;
+
             isolation: isolate;
           }
 
-          /* ---------------- BACKGROUND ---------------- */
+          /* =================================================
+             BACKGROUND
+          ================================================= */
 
           .mvbd-page-background {
             position: fixed;
+
             inset: 0;
+
             z-index: -3;
+
             pointer-events: none;
 
             background-image:
               url("https://i.postimg.cc/43PLHM4Z/file-0000000041908206b4fe692b01e0940b.png");
 
-            background-position: center top;
+            background-position:
+              center top;
+
             background-size: cover;
+
             background-repeat: no-repeat;
 
-            transform: translateZ(0);
+            transform:
+              translateZ(0);
           }
 
           .mvbd-page-overlay {
             position: fixed;
+
             inset: 0;
+
             z-index: -2;
+
             pointer-events: none;
 
             background:
               linear-gradient(
                 180deg,
-                rgba(0, 0, 0, 0.58) 0%,
-                rgba(0, 5, 3, 0.76) 48%,
-                rgba(0, 0, 0, 0.94) 100%
+                rgba(0, 0, 0, 0.48)
+                  0%,
+                rgba(0, 5, 3, 0.72)
+                  48%,
+                rgba(0, 0, 0, 0.95)
+                  100%
               );
           }
 
-          /*
-           Desktop / Tablet background
-          */
+          /* DESKTOP BACKGROUND */
+
           @media (min-width: 761px) {
             .mvbd-page-background {
               background-image:
@@ -528,35 +825,49 @@ export default function SeriesSection({
             }
           }
 
-          /* ---------------- CONTENT ---------------- */
+          /* =================================================
+             CONTENT
+          ================================================= */
 
           .mvbd-page-content {
             position: relative;
+
             z-index: 1;
 
-            width: min(
-              1440px,
-              calc(100% - 32px)
-            );
+            width:
+              min(
+                1440px,
+                calc(100% - 32px)
+              );
 
             margin: 0 auto;
+
             padding:
               22px
               0
               45px;
           }
 
-          /* ---------------- HEADER ---------------- */
+          /* =================================================
+             HEADER
+          ================================================= */
 
           .mvbd-premium-header {
             display: flex;
+
             align-items: center;
-            justify-content: space-between;
+
+            justify-content:
+              space-between;
+
             gap: 16px;
 
-            padding: 14px 18px;
+            padding:
+              14px
+              18px;
 
-            border: 1px solid
+            border:
+              1px solid
               rgba(97, 255, 151, 0.2);
 
             border-radius: 22px;
@@ -573,7 +884,9 @@ export default function SeriesSection({
 
           .mvbd-brand {
             display: flex;
+
             align-items: center;
+
             gap: 12px;
           }
 
@@ -582,11 +895,13 @@ export default function SeriesSection({
             height: 42px;
 
             display: grid;
+
             place-items: center;
 
             border-radius: 13px;
 
             font-size: 24px;
+
             font-weight: 900;
 
             color: #001b0c;
@@ -607,8 +922,11 @@ export default function SeriesSection({
             display: block;
 
             font-size: 15px;
+
             font-weight: 800;
-            letter-spacing: 0.3px;
+
+            letter-spacing:
+              0.3px;
           }
 
           .mvbd-brand span {
@@ -623,10 +941,14 @@ export default function SeriesSection({
 
           .mvbd-status {
             display: flex;
+
             align-items: center;
+
             gap: 7px;
 
-            padding: 8px 12px;
+            padding:
+              8px
+              12px;
 
             border-radius: 999px;
 
@@ -635,12 +957,16 @@ export default function SeriesSection({
             background:
               rgba(0, 255, 106, 0.07);
 
-            border: 1px solid
+            border:
+              1px solid
               rgba(0, 255, 106, 0.16);
 
             font-size: 10px;
+
             font-weight: 800;
-            letter-spacing: 1px;
+
+            letter-spacing:
+              1px;
           }
 
           .mvbd-status-dot {
@@ -655,10 +981,15 @@ export default function SeriesSection({
               0 0 10px #36ff88;
 
             animation:
-              mvbdPulse 1.8s ease-in-out infinite;
+              mvbdPulse
+              1.8s
+              ease-in-out
+              infinite;
           }
 
-          /* ---------------- HERO ---------------- */
+          /* =================================================
+             HERO
+          ================================================= */
 
           .mvbd-premium-hero {
             text-align: center;
@@ -673,8 +1004,11 @@ export default function SeriesSection({
             color: #48ff91;
 
             font-size: 11px;
+
             font-weight: 900;
-            letter-spacing: 3px;
+
+            letter-spacing:
+              3px;
 
             margin-bottom: 12px;
           }
@@ -692,7 +1026,9 @@ export default function SeriesSection({
             line-height: 1.05;
 
             font-weight: 900;
-            letter-spacing: -2px;
+
+            letter-spacing:
+              -2px;
 
             text-shadow:
               0 4px 30px
@@ -720,55 +1056,113 @@ export default function SeriesSection({
             color: #a4b9af;
 
             font-size: 14px;
+
             line-height: 1.7;
           }
 
-          /* ---------------- PLAN GRID ---------------- */
+          /* =================================================
+             PLAN GRID
+          ================================================= */
 
           .mvbd-plans-grid {
             display: grid;
 
             grid-template-columns:
-              repeat(4, minmax(0, 1fr));
+              repeat(
+                4,
+                minmax(0, 1fr)
+              );
 
-            gap: 18px;
+            gap: 16px;
+
+            align-items: stretch;
           }
 
-          /* ---------------- CARD ---------------- */
+          /* =================================================
+             PLAN CARD
+          ================================================= */
 
           .mvbd-plan-card {
+            --plan-main:
+              #47ff8a;
+
+            --plan-glow:
+              #47ff8a;
+
+            --plan-glow-soft:
+              rgba(
+                47,
+                255,
+                119,
+                0.22
+              );
+
+            --plan-shadow:
+              rgba(
+                38,
+                255,
+                115,
+                0.2
+              );
+
             position: relative;
 
             min-width: 0;
 
-            padding: 23px;
+            min-height: 690px;
 
-            border-radius: 27px;
+            display: flex;
+
+            flex-direction: column;
+
+            padding:
+              22px
+              18px
+              18px;
 
             overflow: hidden;
 
-            border: 1px solid
-              rgba(87, 255, 144, 0.22);
+            border-radius: 28px;
 
             background:
               linear-gradient(
                 160deg,
-                rgba(9, 27, 20, 0.94),
-                rgba(2, 8, 6, 0.94)
+                rgba(3, 17, 12, 0.97),
+                rgba(0, 7, 5, 0.98)
+              );
+
+            border:
+              1px solid
+              rgba(
+                82,
+                255,
+                145,
+                0.45
               );
 
             box-shadow:
-              0 18px 50px
-                rgba(0, 0, 0, 0.42),
+              0 20px 55px
+                rgba(0, 0, 0, 0.5),
               inset 0 1px 0
-                rgba(255, 255, 255, 0.06);
+                rgba(
+                  255,
+                  255,
+                  255,
+                  0.07
+                );
 
-            transform: translateZ(0);
+            isolation: isolate;
 
             transition:
-              transform 0.28s ease,
-              border-color 0.28s ease,
-              box-shadow 0.28s ease;
+              transform
+                0.3s
+                ease,
+              box-shadow
+                0.3s
+                ease,
+              border-color
+                0.3s
+                ease;
           }
 
           .mvbd-plan-card::before {
@@ -776,278 +1170,747 @@ export default function SeriesSection({
 
             position: absolute;
 
-            width: 180px;
-            height: 180px;
+            top: -2px;
+
+            left: 8%;
+
+            width: 84%;
+
+            height: 3px;
+
+            border-radius:
+              999px;
+
+            background:
+              var(--plan-glow);
+
+            box-shadow:
+              0 0 12px
+                var(--plan-glow),
+              0 0 30px
+                var(--plan-glow),
+              0 0 55px
+                var(--plan-glow);
+
+            opacity: 0.9;
+
+            z-index: 3;
+          }
+
+          .mvbd-card-glow {
+            position: absolute;
+
+            width: 230px;
+            height: 230px;
 
             top: -100px;
-            right: -70px;
+
+            left: 50%;
+
+            transform:
+              translateX(-50%);
 
             border-radius: 50%;
 
             background:
               radial-gradient(
                 circle,
-                rgba(47, 255, 133, 0.18),
+                var(--plan-glow-soft)
+                  0%,
                 transparent 68%
               );
 
             pointer-events: none;
 
-            animation:
-              mvbdFloat 7s ease-in-out infinite;
-          }
-
-          .mvbd-plan-card::after {
-            content: "";
-
-            position: absolute;
-
-            left: -80px;
-            bottom: -110px;
-
-            width: 220px;
-            height: 220px;
-
-            border-radius: 45% 55% 60% 40%;
-
-            background:
-              radial-gradient(
-                circle,
-                rgba(0, 214, 255, 0.08),
-                transparent 68%
-              );
-
-            pointer-events: none;
+            z-index: -1;
 
             animation:
-              mvbdLiquid 9s ease-in-out infinite;
+              mvbdCardGlow
+              5s
+              ease-in-out
+              infinite;
           }
 
           .mvbd-plan-card:hover {
             transform:
-              translateY(-7px);
+              translateY(-8px);
 
             border-color:
-              rgba(73, 255, 139, 0.55);
+              var(--plan-glow);
 
             box-shadow:
-              0 25px 65px
-                rgba(0, 0, 0, 0.52),
-              0 0 35px
-                rgba(0, 255, 106, 0.11);
+              0 25px 70px
+                rgba(0, 0, 0, 0.58),
+              0 0 30px
+                var(--plan-shadow);
           }
 
-          .mvbd-plan-popular {
+          /* =================================================
+             PLAN COLORS
+          ================================================= */
+
+          .mvbd-plan-trial {
+            --plan-main:
+              #36ff78;
+
+            --plan-glow:
+              #47ff8a;
+
+            --plan-glow-soft:
+              rgba(
+                47,
+                255,
+                119,
+                0.22
+              );
+
+            --plan-shadow:
+              rgba(
+                38,
+                255,
+                115,
+                0.2
+              );
+
             border-color:
-              rgba(0, 240, 255, 0.35);
+              rgba(
+                55,
+                255,
+                125,
+                0.65
+              );
+
+            background:
+              linear-gradient(
+                160deg,
+                rgba(
+                  0,
+                  43,
+                  23,
+                  0.96
+                ),
+                rgba(
+                  0,
+                  12,
+                  7,
+                  0.98
+                )
+              );
+          }
+
+          .mvbd-plan-monthly {
+            --plan-main:
+              #27dfff;
+
+            --plan-glow:
+              #20dfff;
+
+            --plan-glow-soft:
+              rgba(
+                20,
+                218,
+                255,
+                0.23
+              );
+
+            --plan-shadow:
+              rgba(
+                0,
+                210,
+                255,
+                0.2
+              );
+
+            border-color:
+              rgba(
+                20,
+                214,
+                255,
+                0.62
+              );
+
+            background:
+              linear-gradient(
+                160deg,
+                rgba(
+                  0,
+                  28,
+                  51,
+                  0.97
+                ),
+                rgba(
+                  1,
+                  8,
+                  16,
+                  0.98
+                )
+              );
           }
 
           .mvbd-plan-two_months {
+            --plan-main:
+              #d84cff;
+
+            --plan-glow:
+              #ce42ff;
+
+            --plan-glow-soft:
+              rgba(
+                210,
+                55,
+                255,
+                0.24
+              );
+
+            --plan-shadow:
+              rgba(
+                198,
+                42,
+                255,
+                0.22
+              );
+
             border-color:
-              rgba(0, 255, 170, 0.35);
+              rgba(
+                207,
+                55,
+                255,
+                0.65
+              );
+
+            background:
+              linear-gradient(
+                160deg,
+                rgba(
+                  42,
+                  4,
+                  64,
+                  0.97
+                ),
+                rgba(
+                  10,
+                  2,
+                  19,
+                  0.98
+                )
+              );
           }
 
           .mvbd-plan-three_months {
+            --plan-main:
+              #ffd52e;
+
+            --plan-glow:
+              #ffd329;
+
+            --plan-glow-soft:
+              rgba(
+                255,
+                211,
+                38,
+                0.22
+              );
+
+            --plan-shadow:
+              rgba(
+                255,
+                204,
+                30,
+                0.2
+              );
+
             border-color:
-              rgba(255, 215, 85, 0.28);
+              rgba(
+                255,
+                210,
+                40,
+                0.64
+              );
+
+            background:
+              linear-gradient(
+                160deg,
+                rgba(
+                  53,
+                  40,
+                  4,
+                  0.97
+                ),
+                rgba(
+                  15,
+                  10,
+                  1,
+                  0.98
+                )
+              );
           }
 
-          .mvbd-card-top,
-          .mvbd-price,
-          .mvbd-duration,
-          .mvbd-save,
-          .mvbd-plan-description,
-          .mvbd-feature-list,
-          .mvbd-choose-button {
-            position: relative;
-            z-index: 2;
-          }
+          /* =================================================
+             CARD CONTENT
+          ================================================= */
 
           .mvbd-card-top {
+            position: relative;
+
+            z-index: 4;
+
             display: flex;
+
             align-items: center;
-            gap: 10px;
+
+            min-height: 70px;
+
+            gap: 11px;
           }
 
           .mvbd-plan-icon {
-            width: 36px;
-            height: 36px;
+            width: 45px;
+
+            height: 45px;
+
+            flex: 0 0 45px;
 
             display: grid;
+
             place-items: center;
 
-            border-radius: 12px;
+            border-radius: 13px;
 
-            color: #69ffa0;
+            color:
+              var(--plan-main);
 
             background:
-              rgba(0, 255, 111, 0.09);
+              color-mix(
+                in srgb,
+                var(--plan-main)
+                  10%,
+                transparent
+              );
 
-            border: 1px solid
-              rgba(0, 255, 111, 0.18);
+            border:
+              1px solid
+              color-mix(
+                in srgb,
+                var(--plan-main)
+                  30%,
+                transparent
+              );
+
+            box-shadow:
+              0 0 20px
+                color-mix(
+                  in srgb,
+                  var(--plan-main)
+                    18%,
+                  transparent
+                );
+
+            font-size: 23px;
+
+            font-weight: 900;
           }
 
           .mvbd-plan-name {
-            font-size: 13px;
-            font-weight: 900;
-            letter-spacing: 1.2px;
+            color: #ffffff;
+
+            font-size: 17px;
+
+            line-height: 1.1;
+
+            font-weight: 950;
+
+            letter-spacing:
+              0.4px;
           }
 
-          .mvbd-price {
-            margin-top: 25px;
+          .mvbd-plan-subtitle {
+            margin-top: 6px;
 
-            font-size: 38px;
-            line-height: 1;
-
-            font-weight: 900;
-            letter-spacing: -1px;
-          }
-
-          .mvbd-duration {
-            margin-top: 8px;
-
-            color: #7f9a8e;
-
-            font-size: 12px;
-          }
-
-          .mvbd-save {
-            display: inline-flex;
-
-            margin-top: 13px;
-
-            padding: 5px 9px;
-
-            border-radius: 999px;
-
-            color: #63ff9b;
-
-            background:
-              rgba(0, 255, 106, 0.08);
-
-            border: 1px solid
-              rgba(0, 255, 106, 0.15);
+            color: #a8bbb2;
 
             font-size: 10px;
-            font-weight: 800;
+
+            line-height: 1.2;
+
+            font-weight: 700;
+
+            letter-spacing:
+              0.4px;
           }
 
-          .mvbd-save-empty {
-            visibility: hidden;
+          /* =================================================
+             PRICE
+          ================================================= */
+
+          .mvbd-price {
+            position: relative;
+
+            z-index: 4;
+
+            margin-top: 24px;
+
+            min-height: 68px;
+
+            display: flex;
+
+            align-items: center;
+
+            color:
+              var(--plan-main);
+
+            font-size:
+              clamp(
+                35px,
+                3vw,
+                48px
+              );
+
+            line-height: 1;
+
+            font-weight: 950;
+
+            letter-spacing:
+              -1.5px;
+
+            text-shadow:
+              0 0 18px
+                color-mix(
+                  in srgb,
+                  var(--plan-main)
+                    35%,
+                  transparent
+                );
           }
 
-          .mvbd-plan-description {
-            min-height: 48px;
+          /* =================================================
+             DURATION
+          ================================================= */
 
-            margin:
-              17px
-              0
-              18px;
+          .mvbd-duration-pill {
+            position: relative;
 
-            color: #9caf a4;
+            z-index: 4;
 
-            color: #9cafa5;
+            display: flex;
 
-            font-size: 12px;
-            line-height: 1.6;
+            align-items: center;
+
+            justify-content: center;
+
+            width: 100%;
+
+            min-height: 38px;
+
+            margin-top: 8px;
+
+            padding:
+              7px
+              12px;
+
+            border-radius:
+              999px;
+
+            color: #07100b;
+
+            background:
+              linear-gradient(
+                90deg,
+                var(--plan-main),
+                color-mix(
+                  in srgb,
+                  var(--plan-main)
+                    72%,
+                  white
+                )
+              );
+
+            box-shadow:
+              0 0 18px
+                color-mix(
+                  in srgb,
+                  var(--plan-main)
+                    22%,
+                  transparent
+                );
+
+            font-size: 10px;
+
+            font-weight: 950;
+
+            letter-spacing:
+              0.5px;
+
+            text-align: center;
           }
 
-          /* ---------------- FEATURES ---------------- */
+          /* =================================================
+             FEATURES
+          ================================================= */
 
           .mvbd-feature-list {
+            position: relative;
+
+            z-index: 4;
+
             list-style: none;
 
-            margin: 0;
-            padding: 0;
-
             display: grid;
-            gap: 10px;
+
+            gap: 0;
+
+            flex: 1;
+
+            margin:
+              19px
+              0
+              0;
+
+            padding: 0;
           }
 
           .mvbd-feature-list li {
             display: flex;
-            align-items: center;
+
+            align-items:
+              flex-start;
+
             gap: 9px;
 
-            color: #c3d1ca;
+            min-height: 49px;
+
+            padding:
+              8px
+              0;
+
+            border-bottom:
+              1px solid
+              rgba(
+                255,
+                255,
+                255,
+                0.075
+              );
+
+            color: #e1ebe6;
 
             font-size: 11px;
-            line-height: 1.4;
+
+            line-height: 1.35;
           }
 
-          .mvbd-feature-list li span {
-            width: 18px;
-            height: 18px;
+          .mvbd-feature-list li:last-child {
+            border-bottom: 0;
+          }
 
-            flex: 0 0 18px;
+          .mvbd-feature-list
+            li
+            > span:first-child {
+            width: 21px;
+
+            height: 21px;
+
+            flex: 0 0 21px;
 
             display: grid;
+
             place-items: center;
+
+            margin-top: 1px;
 
             border-radius: 50%;
 
-            color: #5cff99;
-
-            background:
-              rgba(0, 255, 106, 0.09);
-
             font-size: 10px;
-            font-weight: 900;
+
+            font-weight: 950;
           }
 
-          .mvbd-feature-list li.locked {
-            color: #697970;
-          }
-
-          .mvbd-feature-list li.locked span {
-            color: #78847e;
+          .feature-check {
+            color: #001d0c;
 
             background:
-              rgba(255, 255, 255, 0.04);
+              #32f879;
+
+            box-shadow:
+              0 0 9px
+                rgba(
+                  42,
+                  255,
+                  117,
+                  0.35
+                );
           }
 
-          /* ---------------- BUTTON ---------------- */
+          .feature-cross {
+            color: #ff5a45;
+
+            background:
+              rgba(
+                255,
+                63,
+                42,
+                0.1
+              );
+
+            border:
+              1px solid
+              rgba(
+                255,
+                63,
+                42,
+                0.25
+              );
+
+            font-size: 14px !important;
+          }
+
+          .feature-restricted {
+            color: #ffffff;
+
+            background:
+              #d82929;
+
+            font-size:
+              8px !important;
+
+            box-shadow:
+              0 0 8px
+                rgba(
+                  255,
+                  30,
+                  30,
+                  0.25
+                );
+          }
+
+          .mvbd-feature-list
+            .feature-text {
+            flex: 1;
+
+            padding-top: 2px;
+          }
+
+          .mvbd-feature-list
+            li.locked {
+            color: #7c8882;
+          }
+
+          /* =================================================
+             CHOOSE BUTTON
+          ================================================= */
 
           .mvbd-choose-button {
+            position: relative;
+
+            z-index: 5;
+
             width: 100%;
 
-            margin-top: 25px;
+            min-height: 57px;
 
-            min-height: 48px;
+            margin-top: 19px;
 
-            border: 0;
-            border-radius: 15px;
+            display: flex;
 
-            color: #001b0c;
+            align-items: center;
+
+            justify-content: center;
+
+            gap: 12px;
+
+            border-radius:
+              999px;
+
+            border:
+              1px solid
+              color-mix(
+                in srgb,
+                var(--plan-main)
+                  80%,
+                white
+              );
+
+            color: #ffffff;
 
             background:
               linear-gradient(
                 135deg,
-                #8affb7,
-                #25ef77
+                color-mix(
+                  in srgb,
+                  var(--plan-main)
+                    35%,
+                  #020605
+                ),
+                color-mix(
+                  in srgb,
+                  var(--plan-main)
+                    15%,
+                  #020605
+                )
               );
 
-            font-size: 12px;
-            font-weight: 900;
+            box-shadow:
+              inset 0 1px 0
+                rgba(
+                  255,
+                  255,
+                  255,
+                  0.15
+                ),
+              0 0 18px
+                color-mix(
+                  in srgb,
+                  var(--plan-main)
+                    18%,
+                  transparent
+                );
 
             cursor: pointer;
 
-            box-shadow:
-              0 8px 25px
-                rgba(0, 255, 106, 0.18);
+            font-size: 12px;
+
+            font-weight: 900;
 
             transition:
-              transform 0.2s ease,
-              box-shadow 0.2s ease;
+              transform
+                0.2s
+                ease,
+              box-shadow
+                0.2s
+                ease,
+              background
+                0.2s
+                ease;
           }
 
           .mvbd-choose-button:hover {
             transform:
               translateY(-2px);
 
+            background:
+              linear-gradient(
+                135deg,
+                color-mix(
+                  in srgb,
+                  var(--plan-main)
+                    55%,
+                  #020605
+                ),
+                color-mix(
+                  in srgb,
+                  var(--plan-main)
+                    25%,
+                  #020605
+                )
+              );
+
             box-shadow:
-              0 12px 32px
-                rgba(0, 255, 106, 0.3);
+              0 0 28px
+                color-mix(
+                  in srgb,
+                  var(--plan-main)
+                    32%,
+                  transparent
+                );
           }
 
           .mvbd-choose-button:active {
@@ -1055,45 +1918,75 @@ export default function SeriesSection({
               scale(0.98);
           }
 
-          /* ---------------- POPULAR ---------------- */
+          .mvbd-button-arrow {
+            color:
+              var(--plan-main);
+
+            font-size: 28px;
+
+            line-height: 0;
+
+            font-weight: 300;
+          }
+
+          /* =================================================
+             POPULAR
+          ================================================= */
 
           .mvbd-popular-badge {
             position: absolute;
 
             top: 0;
+
             right: 0;
+
+            z-index: 10;
 
             padding:
               7px
-              12px;
+              13px;
 
             border-radius:
               0
               0
               0
-              13px;
+              14px;
 
-            color: #001b16;
+            color: #06130d;
 
             background:
               linear-gradient(
                 135deg,
-                #5effd4,
-                #26d9ff
+                #5effdc,
+                #2beaff
               );
 
-            font-size: 8px;
-            font-weight: 900;
-            letter-spacing: 0.7px;
+            box-shadow:
+              0 0 18px
+                rgba(
+                  40,
+                  237,
+                  255,
+                  0.3
+                );
 
-            z-index: 3;
+            font-size: 8px;
+
+            font-weight: 950;
+
+            letter-spacing:
+              0.8px;
           }
 
-          /* ---------------- PAYMENT INFO ---------------- */
+          /* =================================================
+             PAYMENT INFO
+          ================================================= */
 
           .mvbd-payment-info {
             display: flex;
+
             align-items: center;
+
             gap: 13px;
 
             max-width: 650px;
@@ -1110,17 +2003,30 @@ export default function SeriesSection({
             border-radius: 17px;
 
             background:
-              rgba(3, 13, 9, 0.8);
+              rgba(
+                3,
+                13,
+                9,
+                0.8
+              );
 
-            border: 1px solid
-              rgba(255, 255, 255, 0.08);
+            border:
+              1px solid
+              rgba(
+                255,
+                255,
+                255,
+                0.08
+              );
           }
 
           .mvbd-info-icon {
             width: 35px;
+
             height: 35px;
 
             display: grid;
+
             place-items: center;
 
             border-radius: 11px;
@@ -1128,7 +2034,12 @@ export default function SeriesSection({
             color: #62ff9b;
 
             background:
-              rgba(0, 255, 106, 0.08);
+              rgba(
+                0,
+                255,
+                106,
+                0.08
+              );
           }
 
           .mvbd-payment-info strong {
@@ -1147,6 +2058,10 @@ export default function SeriesSection({
             font-size: 10px;
           }
 
+          /* =================================================
+             FOOTER
+          ================================================= */
+
           .mvbd-premium-footer {
             text-align: center;
 
@@ -1157,32 +2072,50 @@ export default function SeriesSection({
             font-size: 10px;
           }
 
-          /* ---------------- MODAL ---------------- */
+          /* =================================================
+             MODAL BACKDROP
+          ================================================= */
 
           .mvbd-modal-backdrop {
             position: fixed;
+
             inset: 0;
 
             z-index: 99999;
 
             display: flex;
+
             align-items: center;
+
             justify-content: center;
 
             padding: 18px;
 
             background:
-              rgba(0, 0, 0, 0.78);
+              rgba(
+                0,
+                0,
+                0,
+                0.78
+              );
 
             animation:
-              mvbdModalIn 0.2s ease both;
+              mvbdModalIn
+              0.2s
+              ease
+              both;
           }
 
+          /* =================================================
+             MODAL
+          ================================================= */
+
           .mvbd-modal {
-            width: min(
-              470px,
-              100%
-            );
+            width:
+              min(
+                470px,
+                100%
+              );
 
             max-height:
               min(
@@ -1196,8 +2129,14 @@ export default function SeriesSection({
 
             border-radius: 25px;
 
-            border: 1px solid
-              rgba(76, 255, 137, 0.28);
+            border:
+              1px solid
+              rgba(
+                76,
+                255,
+                137,
+                0.28
+              );
 
             background:
               linear-gradient(
@@ -1208,12 +2147,23 @@ export default function SeriesSection({
 
             box-shadow:
               0 30px 90px
-                rgba(0, 0, 0, 0.7),
+                rgba(
+                  0,
+                  0,
+                  0,
+                  0.7
+                ),
               0 0 45px
-                rgba(0, 255, 106, 0.08);
+                rgba(
+                  0,
+                  255,
+                  106,
+                  0.08
+                );
 
             animation:
-              mvbdModalScale 0.24s
+              mvbdModalScale
+              0.24s
               cubic-bezier(
                 0.2,
                 0.8,
@@ -1228,12 +2178,15 @@ export default function SeriesSection({
           }
 
           .mvbd-modal::-webkit-scrollbar-thumb {
-            background: #235e3b;
+            background:
+              #235e3b;
+
             border-radius: 99px;
           }
 
           .mvbd-modal-title {
             font-size: 22px;
+
             font-weight: 900;
           }
 
@@ -1243,6 +2196,7 @@ export default function SeriesSection({
             color: #84988e;
 
             font-size: 12px;
+
             line-height: 1.6;
           }
 
@@ -1250,25 +2204,35 @@ export default function SeriesSection({
             float: right;
 
             width: 32px;
+
             height: 32px;
 
             border: 0;
+
             border-radius: 50%;
 
             color: #a9bcb3;
 
             background:
-              rgba(255, 255, 255, 0.06);
+              rgba(
+                255,
+                255,
+                255,
+                0.06
+              );
 
             cursor: pointer;
 
             font-size: 16px;
           }
 
-          /* ---------------- FREE ACCESS ---------------- */
+          /* =================================================
+             FREE ACCESS
+          ================================================= */
 
           .mvbd-free-access-list {
             display: grid;
+
             gap: 10px;
 
             margin-top: 20px;
@@ -1278,18 +2242,31 @@ export default function SeriesSection({
             width: 100%;
 
             display: flex;
+
             align-items: center;
+
             gap: 12px;
 
             padding: 13px;
 
-            border: 1px solid
-              rgba(85, 255, 145, 0.15);
+            border:
+              1px solid
+              rgba(
+                85,
+                255,
+                145,
+                0.15
+              );
 
             border-radius: 16px;
 
             background:
-              rgba(255, 255, 255, 0.035);
+              rgba(
+                255,
+                255,
+                255,
+                0.035
+              );
 
             color: #ffffff;
 
@@ -1298,8 +2275,12 @@ export default function SeriesSection({
             cursor: pointer;
 
             transition:
-              transform 0.2s ease,
-              background 0.2s ease;
+              transform
+                0.2s
+                ease,
+              background
+                0.2s
+                ease;
           }
 
           .mvbd-access-button:hover {
@@ -1307,16 +2288,24 @@ export default function SeriesSection({
               translateY(-2px);
 
             background:
-              rgba(42, 255, 117, 0.07);
+              rgba(
+                42,
+                255,
+                117,
+                0.07
+              );
           }
 
           .mvbd-access-icon {
             width: 38px;
+
             height: 38px;
 
-            flex: 0 0 38px;
+            flex:
+              0 0 38px;
 
             display: grid;
+
             place-items: center;
 
             border-radius: 12px;
@@ -1324,11 +2313,17 @@ export default function SeriesSection({
             color: #67ff9d;
 
             background:
-              rgba(0, 255, 106, 0.09);
+              rgba(
+                0,
+                255,
+                106,
+                0.09
+              );
           }
 
           .mvbd-access-text {
             min-width: 0;
+
             flex: 1;
           }
 
@@ -1346,11 +2341,13 @@ export default function SeriesSection({
             color: #758a80;
 
             font-size: 10px;
+
             line-height: 1.5;
           }
 
           .mvbd-access-arrow {
             color: #56ff94;
+
             font-size: 16px;
           }
 
@@ -1358,11 +2355,28 @@ export default function SeriesSection({
             cursor: default;
           }
 
+          .mvbd-access-info:hover {
+            transform: none;
+
+            background:
+              rgba(
+                255,
+                255,
+                255,
+                0.035
+              );
+          }
+
           .mvbd-access-restricted {
             cursor: not-allowed;
 
             border-color:
-              rgba(255, 255, 255, 0.07);
+              rgba(
+                255,
+                255,
+                255,
+                0.07
+              );
 
             opacity: 0.65;
           }
@@ -1372,15 +2386,27 @@ export default function SeriesSection({
             color: #8d9792;
 
             background:
-              rgba(255, 255, 255, 0.05);
+              rgba(
+                255,
+                255,
+                255,
+                0.05
+              );
           }
 
           .mvbd-not-included {
             margin-top: 22px;
+
             padding-top: 18px;
 
-            border-top: 1px solid
-              rgba(255, 255, 255, 0.07);
+            border-top:
+              1px solid
+              rgba(
+                255,
+                255,
+                255,
+                0.07
+              );
           }
 
           .mvbd-not-included-title {
@@ -1389,18 +2415,24 @@ export default function SeriesSection({
             color: #7c8e86;
 
             font-size: 10px;
+
             font-weight: 900;
+
             letter-spacing: 1px;
-            text-transform: uppercase;
+
+            text-transform:
+              uppercase;
           }
 
           .mvbd-not-included ul {
             margin: 0;
+
             padding: 0;
 
             list-style: none;
 
             display: grid;
+
             gap: 8px;
           }
 
@@ -1418,7 +2450,9 @@ export default function SeriesSection({
             color: #66716d;
           }
 
-          /* ---------------- PAYMENT MODAL ---------------- */
+          /* =================================================
+             PAYMENT MODAL
+          ================================================= */
 
           .mvbd-selected-plan {
             margin-top: 18px;
@@ -1428,10 +2462,21 @@ export default function SeriesSection({
             border-radius: 15px;
 
             background:
-              rgba(0, 255, 106, 0.055);
+              rgba(
+                0,
+                255,
+                106,
+                0.055
+              );
 
-            border: 1px solid
-              rgba(0, 255, 106, 0.12);
+            border:
+              1px solid
+              rgba(
+                0,
+                255,
+                106,
+                0.12
+              );
           }
 
           .mvbd-selected-plan small {
@@ -1454,8 +2499,12 @@ export default function SeriesSection({
             margin-top: 15px;
 
             display: flex;
+
             align-items: center;
-            justify-content: space-between;
+
+            justify-content:
+              space-between;
+
             gap: 10px;
 
             padding: 13px;
@@ -1463,28 +2512,47 @@ export default function SeriesSection({
             border-radius: 14px;
 
             background:
-              rgba(255, 255, 255, 0.045);
+              rgba(
+                255,
+                255,
+                255,
+                0.045
+              );
           }
 
           .mvbd-payment-number strong {
             color: #65ff9c;
 
             font-size: 17px;
+
             letter-spacing: 1px;
           }
 
           .mvbd-copy-button {
-            border: 1px solid
-              rgba(255, 255, 255, 0.1);
+            border:
+              1px solid
+              rgba(
+                255,
+                255,
+                255,
+                0.1
+              );
 
             border-radius: 9px;
 
-            padding: 7px 10px;
+            padding:
+              7px
+              10px;
 
             color: #c8d7d0;
 
             background:
-              rgba(255, 255, 255, 0.05);
+              rgba(
+                255,
+                255,
+                255,
+                0.05
+              );
 
             cursor: pointer;
 
@@ -1506,20 +2574,36 @@ export default function SeriesSection({
 
             border-radius: 13px;
 
-            border: 1px solid
-              rgba(255, 255, 255, 0.1);
+            border:
+              1px solid
+              rgba(
+                255,
+                255,
+                255,
+                0.1
+              );
 
             color: #ffffff;
 
             background:
-              rgba(255, 255, 255, 0.045);
+              rgba(
+                255,
+                255,
+                255,
+                0.045
+              );
 
             font-size: 13px;
           }
 
           .mvbd-input:focus {
             border-color:
-              rgba(63, 255, 136, 0.55);
+              rgba(
+                63,
+                255,
+                136,
+                0.55
+              );
           }
 
           .mvbd-error {
@@ -1532,7 +2616,12 @@ export default function SeriesSection({
             color: #ff9d9d;
 
             background:
-              rgba(255, 50, 50, 0.07);
+              rgba(
+                255,
+                50,
+                50,
+                0.07
+              );
 
             font-size: 10px;
           }
@@ -1545,6 +2634,7 @@ export default function SeriesSection({
             margin-top: 14px;
 
             border: 0;
+
             border-radius: 14px;
 
             color: #001b0c;
@@ -1557,21 +2647,32 @@ export default function SeriesSection({
               );
 
             font-size: 12px;
+
             font-weight: 900;
 
             cursor: pointer;
           }
 
-          /* ---------------- PROCESSING ---------------- */
+          .mvbd-submit-button:hover {
+            filter:
+              brightness(1.05);
+          }
+
+          /* =================================================
+             PROCESSING
+          ================================================= */
 
           .mvbd-processing {
             text-align: center;
 
-            padding: 22px 10px;
+            padding:
+              22px
+              10px;
           }
 
           .mvbd-loader {
             width: 62px;
+
             height: 62px;
 
             margin:
@@ -1583,12 +2684,21 @@ export default function SeriesSection({
 
             border:
               3px solid
-              rgba(255, 255, 255, 0.08);
+              rgba(
+                255,
+                255,
+                255,
+                0.08
+              );
 
-            border-top-color: #52ff95;
+            border-top-color:
+              #52ff95;
 
             animation:
-              mvbdSpin 0.8s linear infinite;
+              mvbdSpin
+              0.8s
+              linear
+              infinite;
           }
 
           .mvbd-progress-track {
@@ -1601,13 +2711,19 @@ export default function SeriesSection({
             border-radius: 99px;
 
             background:
-              rgba(255, 255, 255, 0.07);
+              rgba(
+                255,
+                255,
+                255,
+                0.07
+              );
           }
 
           .mvbd-progress-fill {
             height: 100%;
 
-            border-radius: inherit;
+            border-radius:
+              inherit;
 
             background:
               linear-gradient(
@@ -1617,7 +2733,9 @@ export default function SeriesSection({
               );
 
             transition:
-              width 0.2s linear;
+              width
+              0.2s
+              linear;
           }
 
           .mvbd-progress-text {
@@ -1628,19 +2746,25 @@ export default function SeriesSection({
             font-size: 10px;
           }
 
-          /* ---------------- SUCCESS ---------------- */
+          /* =================================================
+             SUCCESS
+          ================================================= */
 
           .mvbd-success {
             text-align: center;
 
-            padding: 15px 10px;
+            padding:
+              15px
+              10px;
           }
 
           .mvbd-success-icon {
             width: 68px;
+
             height: 68px;
 
             display: grid;
+
             place-items: center;
 
             margin:
@@ -1660,69 +2784,56 @@ export default function SeriesSection({
               );
 
             font-size: 30px;
+
             font-weight: 900;
 
             box-shadow:
               0 0 35px
-                rgba(0, 255, 106, 0.22);
+                rgba(
+                  0,
+                  255,
+                  106,
+                  0.22
+                );
           }
 
-          /* ---------------- ANIMATIONS ---------------- */
+          /* =================================================
+             ANIMATIONS
+          ================================================= */
 
           @keyframes mvbdPulse {
             0%,
             100% {
               opacity: 0.45;
-              transform: scale(0.85);
+
+              transform:
+                scale(0.85);
             }
 
             50% {
               opacity: 1;
-              transform: scale(1);
+
+              transform:
+                scale(1);
             }
           }
 
-          @keyframes mvbdFloat {
+          @keyframes mvbdCardGlow {
             0%,
             100% {
+              opacity: 0.45;
+
               transform:
-                translate3d(
-                  0,
-                  0,
-                  0
-                );
+                translateX(-50%)
+                scale(0.95);
             }
 
             50% {
-              transform:
-                translate3d(
-                  -25px,
-                  18px,
-                  0
-                );
-            }
-          }
+              opacity: 0.85;
 
-          @keyframes mvbdLiquid {
-            0%,
-            100% {
               transform:
-                translate3d(
-                  0,
-                  0,
-                  0
-                )
-                rotate(0deg);
-            }
-
-            50% {
-              transform:
-                translate3d(
-                  22px,
-                  -18px,
-                  0
-                )
-                rotate(8deg);
+                translateX(-50%)
+                scale(1.12);
             }
           }
 
@@ -1739,6 +2850,7 @@ export default function SeriesSection({
           @keyframes mvbdModalScale {
             from {
               opacity: 0;
+
               transform:
                 translateY(12px)
                 scale(0.97);
@@ -1746,6 +2858,7 @@ export default function SeriesSection({
 
             to {
               opacity: 1;
+
               transform:
                 translateY(0)
                 scale(1);
@@ -1754,54 +2867,54 @@ export default function SeriesSection({
 
           @keyframes mvbdSpin {
             to {
-              transform: rotate(360deg);
+              transform:
+                rotate(360deg);
             }
           }
 
-          @media (
-            prefers-reduced-motion: reduce
-          ) {
-            .mvbd-plan-card,
-            .mvbd-access-button,
-            .mvbd-choose-button {
-              transition: none;
-            }
+          /* =================================================
+             TABLET
+          ================================================= */
 
-            .mvbd-plan-card::before,
-            .mvbd-plan-card::after,
-            .mvbd-status-dot,
-            .mvbd-loader {
-              animation: none;
-            }
-          }
-
-          /* ---------------- TABLET ---------------- */
-
-          @media (max-width: 1050px) {
+          @media (max-width: 1100px) {
             .mvbd-plans-grid {
               grid-template-columns:
-                repeat(2, minmax(0, 1fr));
+                repeat(
+                  2,
+                  minmax(0, 1fr)
+                );
+            }
+
+            .mvbd-plan-card {
+              min-height: 660px;
             }
           }
 
-          /* ---------------- MOBILE ---------------- */
+          /* =================================================
+             MOBILE
+          ================================================= */
 
-          @media (max-width: 760px) {
+          @media (max-width: 700px) {
             .mvbd-page-content {
               width:
                 calc(100% - 22px);
 
               padding-top: 11px;
+
               padding-bottom: 30px;
             }
 
             .mvbd-premium-header {
-              padding: 11px 13px;
+              padding:
+                11px
+                13px;
+
               border-radius: 18px;
             }
 
             .mvbd-brand-mark {
               width: 37px;
+
               height: 37px;
 
               border-radius: 11px;
@@ -1818,7 +2931,9 @@ export default function SeriesSection({
             }
 
             .mvbd-status {
-              padding: 7px 9px;
+              padding:
+                7px
+                9px;
 
               font-size: 8px;
             }
@@ -1832,7 +2947,9 @@ export default function SeriesSection({
 
             .mvbd-premium-hero h1 {
               font-size: 36px;
-              letter-spacing: -1.5px;
+
+              letter-spacing:
+                -1.5px;
             }
 
             .mvbd-premium-hero p {
@@ -1840,30 +2957,49 @@ export default function SeriesSection({
             }
 
             .mvbd-plans-grid {
-              grid-template-columns: 1fr;
-              gap: 14px;
+              grid-template-columns:
+                1fr;
+
+              gap: 16px;
             }
 
             .mvbd-plan-card {
-              padding: 20px;
+              min-height: auto;
 
-              border-radius: 23px;
+              padding:
+                21px
+                17px
+                17px;
+
+              border-radius: 25px;
+            }
+
+            .mvbd-plan-name {
+              font-size: 16px;
             }
 
             .mvbd-price {
-              font-size: 35px;
+              margin-top: 20px;
+
+              font-size: 42px;
             }
 
-            .mvbd-plan-description {
-              min-height: auto;
+            .mvbd-feature-list li {
+              min-height: 46px;
+
+              font-size: 11px;
             }
 
             .mvbd-choose-button {
-              min-height: 50px;
+              min-height: 54px;
             }
           }
 
-          @media (max-width: 420px) {
+          /* =================================================
+             SMALL MOBILE
+          ================================================= */
+
+          @media (max-width: 400px) {
             .mvbd-page-content {
               width:
                 calc(100% - 16px);
@@ -1877,6 +3013,37 @@ export default function SeriesSection({
               font-size: 32px;
             }
 
+            .mvbd-plan-card {
+              padding:
+                19px
+                15px
+                15px;
+            }
+
+            .mvbd-plan-icon {
+              width: 41px;
+
+              height: 41px;
+
+              flex-basis: 41px;
+            }
+
+            .mvbd-plan-name {
+              font-size: 15px;
+            }
+
+            .mvbd-plan-subtitle {
+              font-size: 9px;
+            }
+
+            .mvbd-price {
+              font-size: 38px;
+            }
+
+            .mvbd-feature-list li {
+              font-size: 10.5px;
+            }
+
             .mvbd-modal-backdrop {
               padding: 10px;
             }
@@ -1887,122 +3054,205 @@ export default function SeriesSection({
               border-radius: 21px;
             }
           }
+
+          /* =================================================
+             REDUCED MOTION
+          ================================================= */
+
+          @media (
+            prefers-reduced-motion:
+              reduce
+          ) {
+            .mvbd-plan-card,
+            .mvbd-choose-button,
+            .mvbd-access-button {
+              transition: none;
+            }
+
+            .mvbd-card-glow,
+            .mvbd-status-dot,
+            .mvbd-loader {
+              animation: none;
+            }
+          }
         `}</style>
       </main>
 
-      {/* ================= FREE ACCESS MODAL ================= */}
+      {/* =====================================================
+          FREE ACCESS MODAL
+      ===================================================== */}
 
-      {showFreeAccess && selectedPlan && (
-        <ViewportModal
-          onBackdropClick={
-            closeFreeAccess
-          }
-        >
-          <div
-            className="mvbd-modal"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="free-plan-title"
+      {showFreeAccess &&
+        selectedPlan && (
+          <ViewportModal
+            onBackdropClick={
+              closeFreeAccess
+            }
           >
-            <button
-              type="button"
-              className="mvbd-modal-close"
-              onClick={closeFreeAccess}
-              aria-label="Close"
-            >
-              ×
-            </button>
-
             <div
-              id="free-plan-title"
-              className="mvbd-modal-title"
+              className="mvbd-modal"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="free-plan-title"
             >
-              Free Plan
-            </div>
+              <button
+                type="button"
+                className="mvbd-modal-close"
+                onClick={closeFreeAccess}
+                aria-label="Close"
+              >
+                ×
+              </button>
 
-            <p className="mvbd-modal-subtitle">
-              আপনার Free Plan-এ যেসব access
-              available আছে সেগুলো এখান থেকে
-              ব্যবহার করতে পারবেন।
-            </p>
+              <div
+                id="free-plan-title"
+                className="mvbd-modal-title"
+              >
+                Free Plan
+              </div>
 
-            <div className="mvbd-free-access-list">
-              {(
-                selectedPlan.freeAccess || []
-              ).map((item) => {
-                if (item.type === "external") {
-                  return (
-                    <a
-                      key={item.id}
-                      href={item.href}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="mvbd-access-button"
-                    >
-                      <div className="mvbd-access-icon">
-                        ↗
+              <p className="mvbd-modal-subtitle">
+                আপনার Free Plan-এ যেসব
+                access available আছে সেগুলো
+                এখান থেকে ব্যবহার করতে
+                পারবেন।
+              </p>
+
+              <div className="mvbd-free-access-list">
+                {(
+                  selectedPlan.freeAccess ||
+                  []
+                ).map((item) => {
+                  /* ---------------------------------------
+                     RESTRICTED
+                  --------------------------------------- */
+
+                  if (
+                    isRestrictedFreeItem(
+                      item,
+                    )
+                  ) {
+                    return (
+                      <div
+                        key={item.id}
+                        className="mvbd-access-button mvbd-access-restricted"
+                      >
+                        <div className="mvbd-access-icon">
+                          🔒
+                        </div>
+
+                        <div className="mvbd-access-text">
+                          <strong>
+                            {item.title}
+                          </strong>
+
+                          <span>
+                            Age-restricted
+                            content is
+                            unavailable
+                            here.
+                          </span>
+                        </div>
                       </div>
+                    )
+                  }
 
-                      <div className="mvbd-access-text">
-                        <strong>
-                          {item.title}
-                        </strong>
+                  /* ---------------------------------------
+                     EXTERNAL
+                  --------------------------------------- */
 
-                        <span>
-                          {item.description}
-                        </span>
-                      </div>
+                  if (
+                    item.type ===
+                    "external"
+                  ) {
+                    return (
+                      <a
+                        key={item.id}
+                        href={
+                          item.href
+                        }
+                        target="_blank"
+                        rel="noreferrer"
+                        className="mvbd-access-button"
+                      >
+                        <div className="mvbd-access-icon">
+                          ↗
+                        </div>
 
-                      <div className="mvbd-access-arrow">
-                        ›
-                      </div>
-                    </a>
-                  )
-                }
+                        <div className="mvbd-access-text">
+                          <strong>
+                            {item.title}
+                          </strong>
 
-                if (item.type === "mebook") {
-                  return (
-                    <button
-                      key={item.id}
-                      type="button"
-                      className="mvbd-access-button"
-                      onClick={() =>
-                        handleFreeAccess(
-                          item
-                        )
-                      }
-                    >
-                      <div className="mvbd-access-icon">
-                        M
-                      </div>
+                          <span>
+                            {
+                              item.description
+                            }
+                          </span>
+                        </div>
 
-                      <div className="mvbd-access-text">
-                        <strong>
-                          {item.title}
-                        </strong>
+                        <div className="mvbd-access-arrow">
+                          ›
+                        </div>
+                      </a>
+                    )
+                  }
 
-                        <span>
-                          {item.description}
-                        </span>
-                      </div>
+                  /* ---------------------------------------
+                     MEBBOOK
+                  --------------------------------------- */
 
-                      <div className="mvbd-access-arrow">
-                        ›
-                      </div>
-                    </button>
-                  )
-                }
+                  if (
+                    item.type ===
+                    "mebook"
+                  ) {
+                    return (
+                      <button
+                        key={item.id}
+                        type="button"
+                        className="mvbd-access-button"
+                        onClick={() =>
+                          handleFreeAccess(
+                            item,
+                          )
+                        }
+                      >
+                        <div className="mvbd-access-icon">
+                          M
+                        </div>
 
-                if (
-                  item.type === "restricted"
-                ) {
+                        <div className="mvbd-access-text">
+                          <strong>
+                            {
+                              item.title
+                            }
+                          </strong>
+
+                          <span>
+                            {
+                              item.description
+                            }
+                          </span>
+                        </div>
+
+                        <div className="mvbd-access-arrow">
+                          ›
+                        </div>
+                      </button>
+                    )
+                  }
+
+                  /* ---------------------------------------
+                     INFO
+                  --------------------------------------- */
+
                   return (
                     <div
                       key={item.id}
-                      className="mvbd-access-button mvbd-access-restricted"
+                      className="mvbd-access-button mvbd-access-info"
                     >
                       <div className="mvbd-access-icon">
-                        🔒
+                        ✓
                       </div>
 
                       <div className="mvbd-access-text">
@@ -2011,146 +3261,142 @@ export default function SeriesSection({
                         </strong>
 
                         <span>
-                          {item.description}
+                          {
+                            item.description
+                          }
                         </span>
                       </div>
                     </div>
                   )
-                }
-
-                return (
-                  <div
-                    key={item.id}
-                    className="mvbd-access-button mvbd-access-info"
-                  >
-                    <div className="mvbd-access-icon">
-                      ✓
-                    </div>
-
-                    <div className="mvbd-access-text">
-                      <strong>
-                        {item.title}
-                      </strong>
-
-                      <span>
-                        {item.description}
-                      </span>
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-
-            {!!selectedPlan.notIncluded
-              ?.length && (
-              <div className="mvbd-not-included">
-                <div className="mvbd-not-included-title">
-                  Not included
-                </div>
-
-                <ul>
-                  {selectedPlan.notIncluded.map(
-                    (item) => (
-                      <li key={item}>
-                        {item}
-                      </li>
-                    )
-                  )}
-                </ul>
+                })}
               </div>
-            )}
-          </div>
-        </ViewportModal>
-      )}
 
-      {/* ================= PAYMENT MODAL ================= */}
+              {!!selectedPlan
+                .notIncluded
+                ?.length && (
+                <div className="mvbd-not-included">
+                  <div className="mvbd-not-included-title">
+                    Not included
+                  </div>
 
-      {showPayment && selectedPlan && (
-        <ViewportModal
-          onBackdropClick={
-            closePayment
-          }
-        >
-          <div
-            className="mvbd-modal"
-            role="dialog"
-            aria-modal="true"
+                  <ul>
+                    {selectedPlan.notIncluded.map(
+                      (item) => (
+                        <li key={item}>
+                          {item}
+                        </li>
+                      ),
+                    )}
+                  </ul>
+                </div>
+              )}
+            </div>
+          </ViewportModal>
+        )}
+
+      {/* =====================================================
+          PAYMENT MODAL
+      ===================================================== */}
+
+      {showPayment &&
+        selectedPlan && (
+          <ViewportModal
+            onBackdropClick={
+              closePayment
+            }
           >
-            <button
-              type="button"
-              className="mvbd-modal-close"
-              onClick={closePayment}
+            <div
+              className="mvbd-modal"
+              role="dialog"
+              aria-modal="true"
             >
-              ×
-            </button>
+              <button
+                type="button"
+                className="mvbd-modal-close"
+                onClick={closePayment}
+                aria-label="Close"
+              >
+                ×
+              </button>
 
-            <div className="mvbd-modal-title">
-              Complete Payment
-            </div>
+              <div className="mvbd-modal-title">
+                Complete Payment
+              </div>
 
-            <p className="mvbd-modal-subtitle">
-              Send the exact plan amount to the
-              bKash number below and enter your
-              transaction ID.
-            </p>
+              <p className="mvbd-modal-subtitle">
+                Send the exact plan amount to
+                the payment number below and
+                enter your transaction ID.
+              </p>
 
-            <div className="mvbd-selected-plan">
-              <small>
-                SELECTED PLAN
-              </small>
+              <div className="mvbd-selected-plan">
+                <small>
+                  SELECTED PLAN
+                </small>
 
-              <strong>
-                {selectedPlan.planName} •{" "}
-                {selectedPlan.price}
-              </strong>
-            </div>
+                <strong>
+                  {
+                    selectedPlan.planName
+                  }{" "}
+                  •{" "}
+                  {
+                    selectedPlan.price
+                  }
+                </strong>
+              </div>
 
-            <div className="mvbd-payment-number">
-              <strong>
-                {PAYMENT_NUMBER}
-              </strong>
+              <div className="mvbd-payment-number">
+                <strong>
+                  {PAYMENT_NUMBER}
+                </strong>
+
+                <button
+                  type="button"
+                  className="mvbd-copy-button"
+                  onClick={
+                    copyNumber
+                  }
+                >
+                  {copied
+                    ? "Copied"
+                    : "Copy"}
+                </button>
+              </div>
+
+              <input
+                className="mvbd-input"
+                value={transactionId}
+                onChange={(event) =>
+                  setTransactionId(
+                    event.target.value,
+                  )
+                }
+                placeholder="Enter transaction ID"
+                autoComplete="off"
+              />
+
+              {error && (
+                <div className="mvbd-error">
+                  {error}
+                </div>
+              )}
 
               <button
                 type="button"
-                className="mvbd-copy-button"
-                onClick={copyNumber}
+                className="mvbd-submit-button"
+                onClick={
+                  submitPayment
+                }
               >
-                {copied
-                  ? "Copied"
-                  : "Copy"}
+                Submit Payment Request
               </button>
             </div>
+          </ViewportModal>
+        )}
 
-            <input
-              className="mvbd-input"
-              value={transactionId}
-              onChange={(event) =>
-                setTransactionId(
-                  event.target.value
-                )
-              }
-              placeholder="Enter transaction ID"
-              autoComplete="off"
-            />
-
-            {error && (
-              <div className="mvbd-error">
-                {error}
-              </div>
-            )}
-
-            <button
-              type="button"
-              className="mvbd-submit-button"
-              onClick={submitPayment}
-            >
-              Submit Payment Request
-            </button>
-          </div>
-        </ViewportModal>
-      )}
-
-      {/* ================= PROCESSING ================= */}
+      {/* =====================================================
+          PROCESSING
+      ===================================================== */}
 
       {showProcessing && (
         <ViewportModal>
@@ -2168,8 +3414,8 @@ export default function SeriesSection({
 
               <p className="mvbd-modal-subtitle">
                 Your payment request has been
-                submitted. Please wait while the
-                request is being processed.
+                submitted. Please wait while
+                the request is being processed.
               </p>
 
               <div className="mvbd-progress-track">
@@ -2182,14 +3428,17 @@ export default function SeriesSection({
               </div>
 
               <div className="mvbd-progress-text">
-                {progress}% processing
+                {progress}%
+                processing
               </div>
             </div>
           </div>
         </ViewportModal>
       )}
 
-      {/* ================= SUCCESS ================= */}
+      {/* =====================================================
+          SUCCESS
+      ===================================================== */}
 
       {showSuccess && (
         <ViewportModal>
@@ -2208,16 +3457,18 @@ export default function SeriesSection({
               </div>
 
               <p className="mvbd-modal-subtitle">
-                Your subscription request has been
-                submitted successfully. Your
-                membership will be updated after
-                verification.
+                Your subscription request has
+                been submitted successfully.
+                Your membership will be
+                updated after verification.
               </p>
 
               <button
                 type="button"
                 className="mvbd-submit-button"
-                onClick={closeSuccess}
+                onClick={
+                  closeSuccess
+                }
               >
                 Done
               </button>

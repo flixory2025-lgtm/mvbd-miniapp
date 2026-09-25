@@ -4,14 +4,18 @@ export type SubscriptionPlanId =
   | "two_months"
   | "three_months"
 
-export interface PlanAccessItem {
+export type FreeAccessType =
+  | "external"
+  | "mebook"
+  | "info"
+  | "restricted"
+
+export interface FreeAccessItem {
   id: string
   title: string
   description: string
-  available: boolean
-  buttonText?: string
-  action?: string
-  locked?: boolean
+  type: FreeAccessType
+  href?: string
 }
 
 export interface SubscriptionPlan {
@@ -25,143 +29,85 @@ export interface SubscriptionPlan {
   description: string
   popular?: boolean
   save?: string
-
-  /*
-   * Free-plan popup access list.
-   * Paid plans can also use this later if needed.
-   */
-  accessItems?: PlanAccessItem[]
-
-  /*
-   * Things unavailable on the free plan.
-   */
-  lockedItems?: string[]
+  freeAccess?: readonly FreeAccessItem[]
+  notIncluded?: readonly string[]
 }
-
-const FREE_ACCESS_ITEMS: PlanAccessItem[] = [
-  {
-    id: "mvbd-pm",
-    title: "MVBD PM Channel",
-    description: "Access the official MVBD PM channel.",
-    available: true,
-    buttonText: "Open Channel",
-    action: "mvbd-pm",
-  },
-
-  /*
-   * The 18+ channel is intentionally not given a direct
-   * access link here.
-   */
-  {
-    id: "moviesversebd-18",
-    title: "MoviesVerseBD Channel",
-    description: "Age-restricted channel access.",
-    available: false,
-    buttonText: "18+ Restricted",
-    action: "restricted",
-    locked: true,
-  },
-
-  {
-    id: "anime-verse",
-    title: "Anime Verse BD",
-    description: "Access the Anime Verse BD channel.",
-    available: true,
-    buttonText: "Open Channel",
-    action: "anime-verse",
-  },
-
-  {
-    id: "mebook",
-    title: "MVBD MeBook",
-    description: "Open the MVBD MeBook section.",
-    available: true,
-    buttonText: "Open MeBook",
-    action: "mebook",
-  },
-
-  {
-    id: "mini-app",
-    title: "MVBD Mini App",
-    description: "Basic Mini App access is available.",
-    available: true,
-    buttonText: "Check Access",
-    action: "mini-app",
-  },
-
-  {
-    id: "trailers",
-    title: "Movie & Series Trailers",
-    description: "Explore available movie and series trailers.",
-    available: true,
-    buttonText: "Watch Trailers",
-    action: "trailers",
-  },
-]
-
-const FREE_LOCKED_ITEMS = [
-  "Full Movie Streaming",
-  "Premium Content",
-  "Download Option",
-  "Ad-Free Experience",
-  "Premium-only Library",
-  "Priority Support",
-]
 
 export const SUBSCRIPTION_PLANS: readonly SubscriptionPlan[] = [
   {
     planId: "trial",
-
-    /*
-     * Kept as "trial" internally so your existing Firebase/payment
-     * types don't break, but the UI presents it as FREE PLAN.
-     */
     name: "FREE PLAN",
-    planName: "Free Access",
-
-    durationDays: 0,
+    planName: "Free Plan",
+    durationDays: 7,
     duration: "Free",
-
     amount: 0,
     price: "FREE",
+    description: "Basic access for MVBD members.",
 
-    description:
-      "Explore MVBD's available free features and community access.",
+    freeAccess: [
+      {
+        id: "mvbd-pm",
+        title: "MVBD PM Channel",
+        description: "Visit the official MVBD PM channel.",
+        type: "external",
+        href: "https://t.me/mvbdpm2",
+      },
+      {
+        id: "anime",
+        title: "Anime Verse BD Channel",
+        description: "Visit the Anime Verse BD channel.",
+        type: "external",
+        href: "https://t.me/avbdpm",
+      },
+      {
+        id: "mebook",
+        title: "MeBook",
+        description: "Open the MeBook section.",
+        type: "mebook",
+      },
+      {
+        id: "trailers",
+        title: "Movie & Series Trailer Access",
+        description: "Access available movie and series trailers.",
+        type: "info",
+      },
+      {
+        id: "restricted",
+        title: "18+ Content",
+        description: "Age-restricted content is unavailable.",
+        type: "restricted",
+      },
+    ],
 
-    accessItems: FREE_ACCESS_ITEMS,
-
-    lockedItems: FREE_LOCKED_ITEMS,
+    notIncluded: [
+      "Premium subscription features",
+      "Full premium movie access",
+      "Premium series access",
+      "Premium download features",
+      "Full MVBD Mini App premium features",
+    ],
   },
 
   {
     planId: "monthly",
     name: "1 MONTH",
     planName: "1 Month",
-
     durationDays: 30,
     duration: "30 days",
-
     amount: 20,
     price: "৳20",
-
-    description:
-      "Premium access for 30 days with the full authorized premium experience.",
+    description: "Perfect for regular monthly access.",
   },
 
   {
     planId: "two_months",
     name: "2 MONTHS",
     planName: "2 Months",
-
     durationDays: 60,
     duration: "60 days",
-
     amount: 35,
     price: "৳35",
-
-    description:
-      "A balanced 60-day premium membership for regular members.",
-
+    description: "A balanced plan for regular members.",
     popular: true,
     save: "Save ৳5",
   },
@@ -170,16 +116,11 @@ export const SUBSCRIPTION_PLANS: readonly SubscriptionPlan[] = [
     planId: "three_months",
     name: "3 MONTHS",
     planName: "3 Months",
-
     durationDays: 90,
     duration: "90 days",
-
     amount: 50,
     price: "৳50",
-
-    description:
-      "90 days of premium membership for long-term access.",
-
+    description: "Best value for longer premium access.",
     save: "Best value",
   },
 ]
@@ -210,17 +151,17 @@ export interface PaymentRequest {
 }
 
 export function getSubscriptionPlan(
-  planId: string,
+  planId: string
 ): SubscriptionPlan | null {
   return (
     SUBSCRIPTION_PLANS.find(
-      (plan) => plan.planId === planId,
+      (plan) => plan.planId === planId
     ) || null
   )
 }
 
 export function isValidSubscriptionPlan(
-  planId: string,
+  planId: string
 ): planId is SubscriptionPlanId {
   return (
     planId === "monthly" ||
@@ -230,15 +171,13 @@ export function isValidSubscriptionPlan(
 }
 
 export function getPlanPrice(
-  planId: SubscriptionPlanId,
+  planId: SubscriptionPlanId
 ): number {
   return getSubscriptionPlan(planId)?.amount || 0
 }
 
 export function getPlanDurationDays(
-  planId: SubscriptionPlanId,
+  planId: SubscriptionPlanId
 ): number {
-  return (
-    getSubscriptionPlan(planId)?.durationDays || 0
-  )
+  return getSubscriptionPlan(planId)?.durationDays || 0
 }

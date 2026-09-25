@@ -629,7 +629,9 @@ export default function Home() {
 
   const renderSeriesPage = () => (
     <div className="bg-black">
-      <SeriesSection />
+      <SeriesSection
+  onOpenMeBook={() => handleTabChange("mebook")}
+/>
     </div>
   )
 

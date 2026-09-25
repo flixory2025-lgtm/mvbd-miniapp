@@ -6,7 +6,6 @@ import {
   type ReactNode,
 } from "react"
 import { createPortal } from "react-dom"
-
 import { useAuth } from "@/components/auth-provider"
 import { createPendingPaymentRequest } from "@/lib/payment-requests"
 import {
@@ -16,13 +15,10 @@ import {
 } from "@/lib/subscription-plans"
 
 type Plan = SubscriptionPlan
-
 const plans = SUBSCRIPTION_PLANS
 
 /* =========================================================
    VIEWPORT MODAL
-   The modal is rendered directly inside document.body.
-   This prevents parent containers from affecting position.
 ========================================================= */
 
 function ViewportModal({
@@ -37,21 +33,15 @@ function ViewportModal({
   useEffect(() => {
     setMounted(true)
 
-    const previousOverflow =
-      document.body.style.overflow
-
-    const previousTouchAction =
-      document.body.style.touchAction
+    const previousOverflow = document.body.style.overflow
+    const previousTouchAction = document.body.style.touchAction
 
     document.body.style.overflow = "hidden"
     document.body.style.touchAction = "none"
 
     return () => {
-      document.body.style.overflow =
-        previousOverflow
-
-      document.body.style.touchAction =
-        previousTouchAction
+      document.body.style.overflow = previousOverflow
+      document.body.style.touchAction = previousTouchAction
     }
   }, [])
 
@@ -76,37 +66,25 @@ function ViewportModal({
 }
 
 /* =========================================================
-   MAIN COMPONENT
+   MAIN
 ========================================================= */
 
 export default function SeriesSection() {
   const { user, profile } = useAuth()
+
   const [selectedPlan, setSelectedPlan] =
     useState<Plan | null>(null)
 
-  const [transactionId, setTransactionId] =
-    useState("")
-
-  const [showPayment, setShowPayment] =
-    useState(false)
-
-  const [showProcessing, setShowProcessing] =
-    useState(false)
-
-  const [showSuccess, setShowSuccess] =
-    useState(false)
-
-  const [progress, setProgress] =
-    useState(0)
-
-  const [copied, setCopied] =
-    useState(false)
-
-  const [error, setError] =
-    useState("")
+  const [transactionId, setTransactionId] = useState("")
+  const [showPayment, setShowPayment] = useState(false)
+  const [showProcessing, setShowProcessing] = useState(false)
+  const [showSuccess, setShowSuccess] = useState(false)
+  const [progress, setProgress] = useState(0)
+  const [copied, setCopied] = useState(false)
+  const [error, setError] = useState("")
 
   /* =======================================================
-     OPEN PLAN
+     PAYMENT
   ======================================================= */
 
   const openPlan = (plan: Plan) => {
@@ -117,23 +95,14 @@ export default function SeriesSection() {
     setShowPayment(true)
   }
 
-  /* =======================================================
-     CLOSE PAYMENT
-  ======================================================= */
-
   const closePayment = () => {
     setShowPayment(false)
     setError("")
   }
 
-  /* =======================================================
-     COPY PAYMENT NUMBER
-  ======================================================= */
-
   const copyNumber = async () => {
     try {
       await navigator.clipboard.writeText(PAYMENT_NUMBER)
-
       setCopied(true)
 
       setTimeout(() => {
@@ -144,15 +113,13 @@ export default function SeriesSection() {
     }
   }
 
-  /* =======================================================
-     SUBMIT PAYMENT
-  ======================================================= */
-
   const submitPayment = async () => {
     const trx = transactionId.trim()
 
     if (!user || !profile) {
-      setError("Please sign in before submitting a payment request.")
+      setError(
+        "Please sign in before submitting a payment request."
+      )
       return
     }
 
@@ -176,7 +143,11 @@ export default function SeriesSection() {
         transactionId: trx,
       })
     } catch (requestError) {
-      setError(requestError instanceof Error ? requestError.message : "Unable to submit your payment request.")
+      setError(
+        requestError instanceof Error
+          ? requestError.message
+          : "Unable to submit your payment request."
+      )
       return
     }
 
@@ -188,8 +159,7 @@ export default function SeriesSection() {
     const processingDuration = 9000
 
     const timer = window.setInterval(() => {
-      const elapsed =
-        Date.now() - startTime
+      const elapsed = Date.now() - startTime
 
       const percentage = Math.min(
         100,
@@ -211,10 +181,6 @@ export default function SeriesSection() {
     }, 100)
   }
 
-  /* =======================================================
-     CLOSE SUCCESS
-  ======================================================= */
-
   const closeSuccess = () => {
     setShowSuccess(false)
     setSelectedPlan(null)
@@ -229,9 +195,9 @@ export default function SeriesSection() {
 
         <style jsx global>{`
 
-          /* =================================================
-             RESET FOR THIS PAGE
-          ================================================= */
+          /* =====================================================
+             RESET
+          ===================================================== */
 
           .mvbd-premium-page,
           .mvbd-premium-page *,
@@ -240,379 +206,312 @@ export default function SeriesSection() {
             box-sizing: border-box;
           }
 
-          /* =================================================
-             MAIN PREMIUM PAGE
-          ================================================= */
+          /* =====================================================
+             MAIN BACKGROUND
+          ===================================================== */
 
           .mvbd-premium-page {
             position: relative;
-
             min-height: 100vh;
             min-height: 100dvh;
-
             overflow: hidden;
-
-            padding:
-              18px 16px 70px;
-
+            padding: 18px 14px 80px;
             isolation: isolate;
-
             color: white;
 
             background:
               radial-gradient(
-                circle at 50% -10%,
-                rgba(82, 57, 135, 0.16),
-                transparent 32%
+                ellipse at 50% 0%,
+                rgba(0, 255, 90, .13),
+                transparent 35%
               ),
               radial-gradient(
-                circle at 10% 45%,
-                rgba(43, 59, 105, 0.09),
-                transparent 28%
-              ),
-              radial-gradient(
-                circle at 90% 60%,
-                rgba(115, 57, 47, 0.07),
+                ellipse at 0% 35%,
+                rgba(0, 255, 100, .09),
                 transparent 30%
               ),
-              #020204;
+              radial-gradient(
+                ellipse at 100% 65%,
+                rgba(0, 180, 80, .08),
+                transparent 30%
+              ),
+              linear-gradient(
+                180deg,
+                #001006 0%,
+                #000503 35%,
+                #000000 100%
+              );
           }
 
-          /* =================================================
-             LIQUID AURORA
-          ================================================= */
+          /* =====================================================
+             MOVING GREEN AURORA
+          ===================================================== */
 
           .mvbd-premium-page::before {
             content: "";
-
             position: fixed;
-
-            inset: -45%;
-
-            z-index: -2;
-
+            inset: -40%;
+            z-index: -3;
             pointer-events: none;
 
             background:
               radial-gradient(
-                circle at 30% 30%,
-                rgba(95, 65, 160, 0.13),
-                transparent 25%
+                circle at 25% 30%,
+                rgba(0, 255, 94, .16),
+                transparent 24%
               ),
               radial-gradient(
-                circle at 70% 35%,
-                rgba(40, 91, 145, 0.09),
-                transparent 25%
+                circle at 75% 25%,
+                rgba(39, 255, 116, .10),
+                transparent 22%
               ),
               radial-gradient(
                 circle at 50% 75%,
-                rgba(151, 77, 55, 0.07),
-                transparent 23%
+                rgba(0, 180, 72, .14),
+                transparent 25%
               );
 
             filter: blur(75px);
 
             animation:
-              mvbdAurora
-              18s
+              mvbdGreenAurora
+              16s
               ease-in-out
               infinite
               alternate;
           }
 
-          @keyframes mvbdAurora {
+          @keyframes mvbdGreenAurora {
             0% {
               transform:
-                translate3d(-2%, -1%, 0)
+                translate(-3%, -2%)
                 scale(1);
             }
 
             50% {
               transform:
-                translate3d(3%, 2%, 0)
-                scale(1.08);
+                translate(4%, 3%)
+                scale(1.1);
             }
 
             100% {
               transform:
-                translate3d(-1%, 4%, 0)
-                scale(1.03);
+                translate(-2%, 6%)
+                scale(1.04);
             }
           }
 
-          /* =================================================
-             STARS
-          ================================================= */
+          /* =====================================================
+             GREEN PARTICLE FIELD
+          ===================================================== */
 
           .mvbd-stars {
             position: absolute;
-
-            top: 0;
-            left: 0;
-
-            width: 100%;
-            height: 610px;
-
+            inset: 0 0 auto 0;
+            height: 720px;
             overflow: hidden;
-
             pointer-events: none;
-
             z-index: 0;
           }
 
           .mvbd-stars::before {
             content: "";
-
             position: absolute;
-
             inset: 0;
 
             background-image:
               radial-gradient(
                 circle,
-                rgba(166, 139, 255, 0.65)
-                  0 1px,
+                rgba(80,255,130,.75) 0 1px,
                 transparent 1.8px
               ),
               radial-gradient(
                 circle,
-                rgba(116, 153, 255, 0.5)
-                  0 1px,
-                transparent 1.8px
-              ),
-              radial-gradient(
-                circle,
-                rgba(255, 255, 255, 0.4)
-                  0 1px,
+                rgba(190,255,210,.5) 0 1px,
                 transparent 1.7px
               );
 
             background-size:
-              91px 103px,
-              137px 127px,
-              181px 171px;
+              83px 97px,
+              151px 137px;
 
-            background-position:
-              12px 7px,
-              37px 29px,
-              79px 43px;
-
-            opacity: 0.32;
+            opacity: .32;
 
             animation:
-              mvbdStarsDrift
-              30s
+              mvbdParticleDrift
+              24s
               linear
               infinite;
           }
 
-          @keyframes mvbdStarsDrift {
+          @keyframes mvbdParticleDrift {
             from {
               transform: translateY(0);
             }
 
             to {
-              transform: translateY(100px);
+              transform: translateY(120px);
             }
           }
 
           .mvbd-star {
             position: absolute;
-
             width: 4px;
             height: 4px;
-
             border-radius: 50%;
 
-            background: #c7bbff;
+            background: #73ff9c;
 
             box-shadow:
-              0 0 8px rgba(139, 119, 255, 0.75),
-              0 0 18px rgba(139, 119, 255, 0.3);
-
-            opacity: 0.5;
+              0 0 8px #2cff72,
+              0 0 20px rgba(44,255,114,.5);
 
             animation:
-              mvbdStarLiquid
-                var(--duration)
-                ease-in-out
-                infinite
-                alternate,
-              mvbdStarFloat
-                7s
-                ease-in-out
-                infinite;
+              mvbdStarPulse
+              var(--duration)
+              ease-in-out
+              infinite
+              alternate;
           }
 
-          @keyframes mvbdStarLiquid {
-            0% {
-              transform: scale(0.25);
-              opacity: 0.12;
+          @keyframes mvbdStarPulse {
+            from {
+              transform: scale(.3);
+              opacity: .15;
             }
 
-            50% {
-              transform: scale(1);
-              opacity: 0.55;
-            }
-
-            100% {
-              transform: scale(1.6);
-              opacity: 0.85;
+            to {
+              transform: scale(1.7);
+              opacity: .9;
             }
           }
 
-          @keyframes mvbdStarFloat {
-            50% {
-              translate: 0 -5px;
-            }
-          }
-
-          /* =================================================
+          /* =====================================================
              CONTAINER
-          ================================================= */
+          ===================================================== */
 
           .mvbd-container {
             position: relative;
-
             z-index: 2;
-
-            width: min(
-              1120px,
-              100%
-            );
-
+            width: min(1180px, 100%);
             margin: 0 auto;
           }
 
-          /* =================================================
+          /* =====================================================
              NAV
-          ================================================= */
+          ===================================================== */
 
           .mvbd-nav {
             display: flex;
-
             align-items: center;
             justify-content: space-between;
 
-            padding: 11px 13px;
+            padding: 10px 13px;
 
             border:
               1px solid
-              rgba(255, 255, 255, 0.105);
+              rgba(83,255,130,.22);
 
-            border-radius: 28px;
+            border-radius: 22px;
 
             background:
               linear-gradient(
                 135deg,
-                rgba(255, 255, 255, 0.075),
-                rgba(255, 255, 255, 0.025)
+                rgba(0,255,100,.10),
+                rgba(255,255,255,.025)
               );
 
-            backdrop-filter:
-              blur(35px)
-              saturate(150%);
-
-            -webkit-backdrop-filter:
-              blur(35px)
-              saturate(150%);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
 
             box-shadow:
-              0 20px 70px
-                rgba(0, 0, 0, 0.55),
-              inset 0 1px
-                rgba(255, 255, 255, 0.11);
+              0 15px 55px rgba(0,0,0,.55),
+              0 0 30px rgba(0,255,90,.04),
+              inset 0 1px rgba(255,255,255,.12);
           }
 
           .mvbd-brand {
             display: flex;
-
             align-items: center;
-
             gap: 10px;
 
             font-size: 14px;
-
-            font-weight: 800;
+            font-weight: 900;
           }
 
           .mvbd-logo {
-            width: 39px;
-            height: 39px;
+            width: 38px;
+            height: 38px;
 
             display: grid;
-
             place-items: center;
 
-            border-radius: 14px;
+            border-radius: 13px;
+
+            color: #061009;
+
+            font-size: 21px;
+            font-weight: 1000;
 
             background:
               linear-gradient(
                 145deg,
-                rgba(255, 196, 158, 0.9),
-                rgba(169, 103, 255, 0.82)
+                #d8ffdc,
+                #20ff63 48%,
+                #00b93d
               );
 
             box-shadow:
-              0 9px 35px
-                rgba(152, 91, 255, 0.18),
-              inset 0 1px
-                rgba(255, 255, 255, 0.35);
+              0 0 25px rgba(0,255,85,.35),
+              inset 0 1px rgba(255,255,255,.8);
           }
 
           .mvbd-nav-badge {
-            padding: 8px 12px;
-
+            padding: 7px 11px;
             border-radius: 999px;
 
             border:
               1px solid
-              rgba(255, 255, 255, 0.09);
+              rgba(71,255,118,.18);
 
             background:
-              rgba(255, 255, 255, 0.045);
+              rgba(0,255,90,.045);
 
             color:
-              rgba(255, 255, 255, 0.5);
+              rgba(170,255,193,.72);
 
-            font-size: 10px;
-
-            font-weight: 750;
+            font-size: 9px;
+            font-weight: 850;
           }
 
-          /* =================================================
+          /* =====================================================
              HERO
-          ================================================= */
+          ===================================================== */
 
           .mvbd-hero {
             position: relative;
-
-            padding:
-              78px 8px 44px;
-
+            padding: 62px 8px 40px;
             text-align: center;
           }
 
           .mvbd-hero-glow {
             position: absolute;
 
-            width: 360px;
-            height: 220px;
+            width: 500px;
+            height: 280px;
 
             left: 50%;
-            top: 65px;
+            top: 25px;
 
-            transform:
-              translateX(-50%);
+            transform: translateX(-50%);
 
             border-radius: 50%;
 
             background:
               radial-gradient(
                 circle,
-                rgba(147, 103, 255, 0.13),
-                rgba(255, 139, 103, 0.035)
-                  45%,
+                rgba(0,255,93,.17),
+                rgba(0,255,93,.045) 42%,
                 transparent 70%
               );
 
@@ -620,7 +519,7 @@ export default function SeriesSection() {
 
             animation:
               mvbdHeroGlow
-              7s
+              6s
               ease-in-out
               infinite
               alternate;
@@ -630,13 +529,13 @@ export default function SeriesSection() {
             from {
               transform:
                 translateX(-50%)
-                scale(0.95);
+                scale(.9);
             }
 
             to {
               transform:
                 translateX(-50%)
-                scale(1.13);
+                scale(1.18);
             }
           }
 
@@ -644,37 +543,27 @@ export default function SeriesSection() {
             position: relative;
 
             display: inline-flex;
-
             align-items: center;
-
             gap: 7px;
 
-            padding: 8px 13px;
+            padding: 7px 13px;
 
             border-radius: 999px;
 
             border:
               1px solid
-              rgba(255, 255, 255, 0.11);
+              rgba(75,255,120,.22);
 
             background:
-              rgba(255, 255, 255, 0.045);
-
-            backdrop-filter:
-              blur(22px);
+              rgba(0,255,85,.055);
 
             color:
-              rgba(255, 218, 198, 0.82);
+              rgba(182,255,201,.85);
 
-            font-size: 11px;
+            font-size: 10px;
+            font-weight: 800;
 
-            font-weight: 700;
-
-            box-shadow:
-              inset 0 1px
-                rgba(255, 255, 255, 0.08),
-              0 8px 35px
-                rgba(0, 0, 0, 0.25);
+            backdrop-filter: blur(20px);
           }
 
           .mvbd-live-dot {
@@ -683,162 +572,180 @@ export default function SeriesSection() {
 
             border-radius: 50%;
 
-            background: #d5b0ff;
+            background: #39ff73;
 
             box-shadow:
-              0 0 9px #a77aff,
-              0 0 20px
-                rgba(167, 122, 255, 0.45);
+              0 0 8px #32ff70,
+              0 0 18px rgba(50,255,112,.65);
 
             animation:
               mvbdLivePulse
-              1.8s
+              1.6s
               ease-in-out
               infinite;
           }
 
           @keyframes mvbdLivePulse {
             50% {
-              transform: scale(1.6);
-              opacity: 0.45;
+              transform: scale(1.7);
+              opacity: .45;
             }
           }
 
           .mvbd-hero h1 {
             position: relative;
 
-            margin:
-              22px 0 15px;
+            margin: 20px 0 12px;
 
             font-size:
-              clamp(43px, 8vw, 76px);
+              clamp(40px, 7vw, 75px);
 
-            line-height: 0.94;
+            line-height: .95;
 
             letter-spacing: -4px;
 
-            font-weight: 900;
+            font-weight: 1000;
 
             background:
               linear-gradient(
                 100deg,
-                #ffffff 5%,
-                #ded5ff 43%,
-                #ffb99e 90%
+                #ffffff 10%,
+                #caffd4 48%,
+                #27ff67 95%
               );
 
             -webkit-background-clip: text;
-
             background-clip: text;
 
             color: transparent;
+
+            filter:
+              drop-shadow(
+                0 0 25px
+                rgba(0,255,80,.13)
+              );
           }
 
           .mvbd-premium-title {
-            position: relative;
-
-            margin-bottom: 17px;
-
-            color:
-              rgba(255, 255, 255, 0.74);
+            color: #39ff70;
 
             font-size:
-              clamp(13px, 2vw, 18px);
+              clamp(12px, 2vw, 17px);
 
-            font-weight: 850;
+            font-weight: 950;
 
-            letter-spacing: 7px;
+            letter-spacing: 8px;
+
+            text-shadow:
+              0 0 18px
+              rgba(0,255,83,.35);
           }
 
           .mvbd-subtitle {
-            max-width: 640px;
+            max-width: 620px;
 
-            margin: auto;
+            margin: 15px auto 0;
 
             color:
-              rgba(255, 255, 255, 0.43);
+              rgba(255,255,255,.48);
 
-            font-size: 14px;
-
-            line-height: 1.75;
+            font-size: 13px;
+            line-height: 1.7;
           }
 
           .mvbd-trial {
             display: inline-flex;
 
-            margin-top: 20px;
-
-            padding: 9px 14px;
+            margin-top: 17px;
+            padding: 8px 13px;
 
             border-radius: 999px;
 
             border:
               1px solid
-              rgba(191, 255, 214, 0.13);
+              rgba(44,255,108,.22);
 
             background:
-              rgba(191, 255, 214, 0.035);
+              rgba(0,255,80,.045);
 
             color:
-              rgba(204, 255, 220, 0.74);
+              rgba(185,255,203,.8);
 
-            font-size: 11px;
+            font-size: 10px;
+            font-weight: 800;
 
-            font-weight: 750;
+            box-shadow:
+              0 0 25px
+              rgba(0,255,90,.05);
           }
 
-          /* =================================================
-             PLANS
-          ================================================= */
+          /* =====================================================
+             PLAN GRID
+          ===================================================== */
 
           .mvbd-plans {
             display: grid;
 
             grid-template-columns:
-              repeat(3, 1fr);
+              repeat(4, 1fr);
 
-            gap: 15px;
+            gap: 13px;
           }
 
-          .mvbd-card {
-            position: relative;
+          /* =====================================================
+             PLAN CARD
+          ===================================================== */
 
+          .mvbd-card {
+            --plan-color: #25ff66;
+            --plan-soft: rgba(37,255,102,.14);
+
+            position: relative;
             overflow: hidden;
 
-            padding: 24px;
+            min-height: 535px;
 
-            border-radius: 31px;
+            padding: 22px 18px 17px;
+
+            border-radius: 25px;
 
             border:
               1px solid
-              rgba(255, 255, 255, 0.105);
+              color-mix(
+                in srgb,
+                var(--plan-color) 48%,
+                transparent
+              );
 
             background:
               linear-gradient(
-                145deg,
-                rgba(255, 255, 255, 0.075),
-                rgba(255, 255, 255, 0.025)
+                155deg,
+                color-mix(
+                  in srgb,
+                  var(--plan-color) 11%,
+                  rgba(4,10,6,.9)
+                ),
+                rgba(2,7,4,.94) 55%,
+                rgba(0,0,0,.96)
               );
 
             backdrop-filter:
-              blur(34px)
-              saturate(150%);
+              blur(30px)
+              saturate(145%);
 
             -webkit-backdrop-filter:
-              blur(34px)
-              saturate(150%);
+              blur(30px)
+              saturate(145%);
 
             box-shadow:
-              0 28px 90px
-                rgba(0, 0, 0, 0.5),
-              inset 0 1px
-                rgba(255, 255, 255, 0.08);
+              0 20px 70px rgba(0,0,0,.65),
+              0 0 28px var(--plan-soft),
+              inset 0 1px rgba(255,255,255,.1);
 
             transition:
-              transform 0.55s
-                cubic-bezier(0.2, 0.8, 0.2, 1),
-              border-color 0.4s,
-              box-shadow 0.5s;
+              transform .45s cubic-bezier(.2,.8,.2,1),
+              box-shadow .45s,
+              border-color .35s;
           }
 
           .mvbd-card::before {
@@ -846,125 +753,190 @@ export default function SeriesSection() {
 
             position: absolute;
 
-            width: 180px;
-            height: 180px;
+            width: 220px;
+            height: 220px;
 
+            top: -130px;
             right: -100px;
-            top: -100px;
 
-            border-radius:
-              46% 54% 62% 38% /
-              42% 37% 63% 58%;
+            border-radius: 50%;
 
             background:
               radial-gradient(
                 circle,
-                rgba(174, 129, 255, 0.13),
-                transparent 70%
+                var(--plan-soft),
+                transparent 68%
               );
 
-            filter: blur(20px);
+            filter: blur(8px);
 
             animation:
-              mvbdCardBlob
-              8s
+              mvbdCardGlow
+              7s
               ease-in-out
               infinite
               alternate;
           }
 
-          @keyframes mvbdCardBlob {
+          .mvbd-card::after {
+            content: "";
+
+            position: absolute;
+
+            width: 55%;
+            height: 160%;
+
+            top: -30%;
+            left: -90%;
+
+            transform: rotate(25deg);
+
+            background:
+              linear-gradient(
+                90deg,
+                transparent,
+                rgba(255,255,255,.13),
+                transparent
+              );
+
+            filter: blur(8px);
+
+            animation:
+              mvbdCardShine
+              6s
+              ease-in-out
+              infinite;
+          }
+
+          @keyframes mvbdCardGlow {
+            from {
+              transform: translate(0,0) scale(.85);
+            }
+
             to {
-              transform:
-                translate(-45px, 50px)
-                scale(1.3);
+              transform: translate(-45px,55px) scale(1.35);
+            }
+          }
+
+          @keyframes mvbdCardShine {
+            0%,
+            60% {
+              left: -90%;
+            }
+
+            100% {
+              left: 150%;
             }
           }
 
           .mvbd-card:hover {
-            transform:
-              translateY(-7px);
-
-            border-color:
-              rgba(207, 183, 255, 0.24);
+            transform: translateY(-8px) scale(1.012);
 
             box-shadow:
-              0 38px 110px
-                rgba(0, 0, 0, 0.62),
-              0 0 45px
-                rgba(129, 91, 255, 0.06),
+              0 30px 90px rgba(0,0,0,.75),
+              0 0 45px var(--plan-soft),
+              inset 0 1px rgba(255,255,255,.16);
+          }
+
+          /* =====================================================
+             PLAN COLORS
+          ===================================================== */
+
+          .mvbd-card-free {
+            --plan-color: #37ff70;
+            --plan-soft: rgba(37,255,100,.22);
+          }
+
+          .mvbd-card-monthly {
+            --plan-color: #24cfff;
+            --plan-soft: rgba(36,207,255,.20);
+          }
+
+          .mvbd-card-two {
+            --plan-color: #d34cff;
+            --plan-soft: rgba(211,76,255,.20);
+          }
+
+          .mvbd-card-three {
+            --plan-color: #ffd72f;
+            --plan-soft: rgba(255,215,47,.20);
+          }
+
+          /* =====================================================
+             CARD TOP
+          ===================================================== */
+
+          .mvbd-plan-icon {
+            width: 43px;
+            height: 43px;
+
+            display: grid;
+            place-items: center;
+
+            margin-bottom: 13px;
+
+            border-radius: 14px;
+
+            border:
+              1px solid
+              color-mix(
+                in srgb,
+                var(--plan-color) 60%,
+                transparent
+              );
+
+            background:
+              color-mix(
+                in srgb,
+                var(--plan-color) 11%,
+                transparent
+              );
+
+            color: var(--plan-color);
+
+            font-size: 20px;
+
+            box-shadow:
+              0 0 20px
+              var(--plan-soft),
               inset 0 1px
-                rgba(255, 255, 255, 0.12);
-          }
-
-          .mvbd-card-popular {
-            border-color:
-              rgba(255, 174, 140, 0.28);
-
-            background:
-              linear-gradient(
-                145deg,
-                rgba(255, 156, 120, 0.085),
-                rgba(143, 102, 255, 0.035)
-              );
-          }
-
-          .mvbd-ribbon {
-            position: absolute;
-
-            right: 17px;
-            top: 17px;
-
-            padding: 7px 10px;
-
-            border-radius: 999px;
-
-            background:
-              linear-gradient(
-                135deg,
-                rgba(255, 215, 173, 0.95),
-                rgba(255, 139, 112, 0.9)
-              );
-
-            color: #2c120c;
-
-            font-size: 9px;
-
-            font-weight: 900;
-
-            box-shadow:
-              0 8px 30px
-                rgba(255, 125, 91, 0.13);
+              rgba(255,255,255,.12);
           }
 
           .mvbd-plan-name {
             color:
-              rgba(255, 210, 190, 0.72);
+              color-mix(
+                in srgb,
+                var(--plan-color) 90%,
+                white
+              );
 
             font-size: 11px;
-
-            font-weight: 850;
-
-            letter-spacing: 0.8px;
+            font-weight: 950;
+            letter-spacing: 1px;
           }
 
           .mvbd-price {
-            margin: 14px 0 2px;
+            margin-top: 10px;
 
-            font-size: 46px;
+            color: white;
 
-            font-weight: 900;
+            font-size: 37px;
+            font-weight: 1000;
 
             letter-spacing: -2px;
+
+            text-shadow:
+              0 0 18px
+              var(--plan-soft);
           }
 
           .mvbd-price small {
             color:
-              rgba(255, 255, 255, 0.4);
+              rgba(255,255,255,.43);
 
-            font-size: 12px;
-
-            font-weight: 600;
+            font-size: 10px;
+            font-weight: 700;
 
             letter-spacing: 0;
           }
@@ -972,93 +944,179 @@ export default function SeriesSection() {
           .mvbd-save {
             min-height: 17px;
 
-            color:
-              rgba(200, 255, 217, 0.72);
+            margin-top: 2px;
 
-            font-size: 10px;
+            color:
+              color-mix(
+                in srgb,
+                var(--plan-color) 80%,
+                white
+              );
+
+            font-size: 9px;
+            font-weight: 800;
           }
 
           .mvbd-description {
-            margin-top: 12px;
+            min-height: 48px;
 
-            min-height: 39px;
+            margin-top: 10px;
 
             color:
-              rgba(255, 255, 255, 0.39);
+              rgba(255,255,255,.48);
 
-            font-size: 12px;
-
-            line-height: 1.6;
+            font-size: 10px;
+            line-height: 1.55;
           }
+
+          /* =====================================================
+             FEATURES
+          ===================================================== */
 
           .mvbd-features {
             list-style: none;
 
-            margin: 12px 0 16px;
-
+            margin: 11px 0 17px;
             padding: 0;
 
             color:
-              rgba(255, 255, 255, 0.48);
+              rgba(255,255,255,.70);
 
-            font-size: 12px;
+            font-size: 10px;
+            line-height: 1.5;
+          }
 
-            line-height: 2;
+          .mvbd-features li {
+            display: flex;
+            align-items: flex-start;
+            gap: 7px;
+
+            padding: 7px 0;
+
+            border-bottom:
+              1px solid
+              rgba(255,255,255,.055);
           }
 
           .mvbd-features li::before {
             content: "✓";
 
-            margin-right: 8px;
+            flex-shrink: 0;
 
-            color:
-              rgba(201, 255, 218, 0.8);
+            display: grid;
+            place-items: center;
 
-            font-weight: 900;
+            width: 17px;
+            height: 17px;
+
+            margin-top: -1px;
+
+            border-radius: 50%;
+
+            color: #001b08;
+
+            background:
+              var(--plan-color);
+
+            font-size: 9px;
+            font-weight: 1000;
+
+            box-shadow:
+              0 0 10px
+              var(--plan-soft);
           }
 
-          /* =================================================
-             LIQUID BUTTON
-          ================================================= */
+          /* =====================================================
+             POPULAR
+          ===================================================== */
 
-          .mvbd-choose {
-            position: relative;
+          .mvbd-ribbon {
+            position: absolute;
 
-            overflow: hidden;
+            top: 15px;
+            right: 13px;
 
-            width: 100%;
+            padding: 5px 8px;
 
-            border: 0;
-
-            border-radius: 17px;
-
-            padding: 14px;
-
-            cursor: pointer;
-
-            color: #21100b;
+            border-radius: 999px;
 
             background:
               linear-gradient(
                 135deg,
-                #ffe0c0,
-                #ff9c7c 48%,
-                #d6b5ff
+                #ffdf72,
+                #ffad32
               );
 
+            color: #201400;
+
+            font-size: 7px;
+            font-weight: 1000;
+
             box-shadow:
-              0 13px 35px
-                rgba(255, 126, 92, 0.12),
+              0 0 18px
+              rgba(255,190,50,.25);
+          }
+
+          /* =====================================================
+             BUTTON
+          ===================================================== */
+
+          .mvbd-choose {
+            position: relative;
+            overflow: hidden;
+
+            width: 100%;
+
+            margin-top: auto;
+
+            padding: 13px 12px;
+
+            border:
+              1px solid
+              color-mix(
+                in srgb,
+                var(--plan-color) 70%,
+                transparent
+              );
+
+            border-radius: 15px;
+
+            background:
+              linear-gradient(
+                135deg,
+                color-mix(
+                  in srgb,
+                  var(--plan-color) 22%,
+                  transparent
+                ),
+                color-mix(
+                  in srgb,
+                  var(--plan-color) 8%,
+                  black
+                )
+              );
+
+            color:
+              color-mix(
+                in srgb,
+                var(--plan-color) 90%,
+                white
+              );
+
+            cursor: pointer;
+
+            font-size: 11px;
+            font-weight: 950;
+
+            box-shadow:
+              0 0 22px
+              var(--plan-soft),
               inset 0 1px
-                rgba(255, 255, 255, 0.65);
-
-            font-size: 13px;
-
-            font-weight: 900;
+              rgba(255,255,255,.14);
 
             transition:
-              transform 0.3s,
-              filter 0.3s;
+              transform .25s,
+              filter .25s;
           }
 
           .mvbd-choose::after {
@@ -1067,7 +1125,7 @@ export default function SeriesSection() {
             position: absolute;
 
             top: -80%;
-            left: -60%;
+            left: -70%;
 
             width: 35%;
             height: 260%;
@@ -1075,13 +1133,13 @@ export default function SeriesSection() {
             transform: rotate(25deg);
 
             background:
-              rgba(255, 255, 255, 0.38);
+              rgba(255,255,255,.35);
 
-            filter: blur(10px);
+            filter: blur(8px);
 
             animation:
               mvbdButtonShine
-              4.8s
+              4.5s
               ease-in-out
               infinite;
           }
@@ -1093,137 +1151,241 @@ export default function SeriesSection() {
             }
 
             100% {
-              left: 145%;
+              left: 150%;
             }
           }
 
           .mvbd-choose:hover {
-            filter: brightness(1.07);
-
-            transform: scale(1.015);
+            transform: scale(1.025);
+            filter: brightness(1.15);
           }
 
           .mvbd-choose:active {
-            transform: scale(0.97);
+            transform: scale(.96);
           }
 
-          /* =================================================
-             INFO
-          ================================================= */
+          /* =====================================================
+             WHY MVBD
+          ===================================================== */
 
-          .mvbd-info {
-            margin-top: 16px;
+          .mvbd-why {
+            margin-top: 18px;
 
-            padding: 18px;
+            padding: 24px 18px;
 
             border:
               1px solid
-              rgba(255, 255, 255, 0.075);
+              rgba(45,255,106,.18);
 
             border-radius: 25px;
 
             background:
-              rgba(255, 255, 255, 0.028);
+              linear-gradient(
+                145deg,
+                rgba(0,255,85,.055),
+                rgba(255,255,255,.018)
+              );
 
-            backdrop-filter:
-              blur(25px);
+            backdrop-filter: blur(25px);
 
-            text-align: center;
-
-            color:
-              rgba(255, 255, 255, 0.38);
-
-            font-size: 11px;
-
-            line-height: 1.7;
+            box-shadow:
+              0 20px 70px rgba(0,0,0,.5),
+              inset 0 1px rgba(255,255,255,.08);
           }
 
-          .mvbd-info strong {
-            color:
-              rgba(255, 237, 224, 0.8);
-          }
-
-          .mvbd-footer {
-            padding:
-              27px 0 0;
-
+          .mvbd-why-title {
             text-align: center;
 
+            margin-bottom: 20px;
+
+            font-size: 20px;
+            font-weight: 1000;
+          }
+
+          .mvbd-why-title span {
+            color: #32ff6b;
+
+            text-shadow:
+              0 0 20px
+              rgba(0,255,90,.3);
+          }
+
+          .mvbd-benefits {
+            display: grid;
+
+            grid-template-columns:
+              repeat(5, 1fr);
+
+            gap: 12px;
+          }
+
+          .mvbd-benefit {
+            text-align: center;
+
+            padding: 8px;
+          }
+
+          .mvbd-benefit-icon {
+            width: 48px;
+            height: 48px;
+
+            display: grid;
+            place-items: center;
+
+            margin: 0 auto 9px;
+
+            border-radius: 50%;
+
+            border:
+              1px solid
+              rgba(47,255,105,.45);
+
+            background:
+              rgba(0,255,90,.07);
+
+            color: #39ff73;
+
+            font-size: 20px;
+
+            box-shadow:
+              0 0 20px
+              rgba(0,255,90,.12),
+              inset 0 1px
+              rgba(255,255,255,.1);
+          }
+
+          .mvbd-benefit strong {
+            display: block;
+
             color:
-              rgba(255, 255, 255, 0.2);
+              rgba(255,255,255,.86);
 
             font-size: 10px;
           }
 
-          /* =================================================
-             =================================================
-             CRITICAL VIEWPORT MODAL
-             =================================================
-          ================================================= */
+          .mvbd-benefit span {
+            display: block;
+
+            margin-top: 4px;
+
+            color:
+              rgba(255,255,255,.36);
+
+            font-size: 8px;
+            line-height: 1.4;
+          }
+
+          /* =====================================================
+             FOOTER
+          ===================================================== */
+
+          .mvbd-footer {
+            position: relative;
+
+            margin-top: 28px;
+
+            padding: 28px 10px 0;
+
+            text-align: center;
+
+            color:
+              rgba(255,255,255,.35);
+
+            font-size: 10px;
+          }
+
+          .mvbd-footer-logo {
+            color: #39ff70;
+
+            font-size: 27px;
+            font-weight: 1000;
+
+            text-shadow:
+              0 0 25px
+              rgba(0,255,90,.35);
+          }
+
+          .mvbd-footer-line {
+            margin-top: 7px;
+
+            color:
+              rgba(255,255,255,.28);
+
+            font-size: 9px;
+            letter-spacing: 1px;
+          }
+
+          /* =====================================================
+             INFO
+          ===================================================== */
+
+          .mvbd-info {
+            margin-top: 14px;
+
+            padding: 14px 16px;
+
+            border:
+              1px solid
+              rgba(255,255,255,.07);
+
+            border-radius: 18px;
+
+            background:
+              rgba(255,255,255,.018);
+
+            text-align: center;
+
+            color:
+              rgba(255,255,255,.34);
+
+            font-size: 9px;
+            line-height: 1.65;
+          }
+
+          .mvbd-info strong {
+            color: #43ff79;
+          }
+
+          /* =====================================================
+             MODAL
+          ===================================================== */
 
           .mvbd-viewport-modal {
             position: fixed !important;
-
             inset: 0 !important;
 
             width: 100vw !important;
             height: 100vh !important;
             height: 100dvh !important;
 
-            min-width: 100vw !important;
-            min-height: 100dvh !important;
-
-            margin: 0 !important;
-
-            padding:
-              max(
-                16px,
-                env(safe-area-inset-top)
-              )
-              max(
-                16px,
-                env(safe-area-inset-right)
-              )
-              max(
-                16px,
-                env(safe-area-inset-bottom)
-              )
-              max(
-                16px,
-                env(safe-area-inset-left)
-              ) !important;
-
             display: flex !important;
 
             align-items: center !important;
-
             justify-content: center !important;
+
+            padding: 16px !important;
 
             overflow: hidden !important;
 
             z-index: 2147483647 !important;
 
-            isolation: isolate;
-
             background:
               radial-gradient(
                 circle at 50% 45%,
-                rgba(96, 65, 150, 0.08),
+                rgba(0,255,80,.09),
                 transparent 34%
               ),
-              rgba(0, 0, 0, 0.84);
+              rgba(0,0,0,.86);
 
             backdrop-filter:
-              blur(28px)
-              saturate(120%);
+              blur(28px);
 
             -webkit-backdrop-filter:
-              blur(28px)
-              saturate(120%);
+              blur(28px);
 
             animation:
               mvbdOverlayIn
-              0.38s
+              .35s
               ease
               forwards;
           }
@@ -1231,258 +1393,81 @@ export default function SeriesSection() {
           @keyframes mvbdOverlayIn {
             from {
               opacity: 0;
-
-              backdrop-filter:
-                blur(0)
-                saturate(100%);
-
-              -webkit-backdrop-filter:
-                blur(0)
-                saturate(100%);
+              backdrop-filter: blur(0);
             }
 
             to {
               opacity: 1;
-
-              backdrop-filter:
-                blur(28px)
-                saturate(120%);
-
-              -webkit-backdrop-filter:
-                blur(28px)
-                saturate(120%);
+              backdrop-filter: blur(28px);
             }
           }
-
-          /* =================================================
-             MODAL SHEET
-          ================================================= */
 
           .mvbd-sheet {
             position: relative !important;
 
-            inset: auto !important;
-
-            top: auto !important;
-            right: auto !important;
-            bottom: auto !important;
-            left: auto !important;
-
-            float: none !important;
-
-            flex: 0 0 auto !important;
-
             width:
-              min(
-                470px,
-                calc(100vw - 32px)
-              ) !important;
+              min(470px, calc(100vw - 32px)) !important;
 
             max-width:
               calc(100vw - 32px) !important;
 
-            height: auto !important;
-
             max-height:
-              min(
-                88dvh,
-                720px
-              ) !important;
+              min(88dvh, 720px) !important;
 
-            margin: 0 !important;
+            overflow-x: hidden;
+            overflow-y: auto;
 
             padding: 24px;
 
-            overflow-x: hidden;
-
-            overflow-y: auto;
-
             border:
               1px solid
-              rgba(255, 255, 255, 0.14);
+              rgba(50,255,105,.18);
 
-            border-radius: 34px;
+            border-radius: 30px;
 
             background:
               linear-gradient(
                 145deg,
-                rgba(28, 26, 35, 0.92),
-                rgba(7, 7, 11, 0.96)
+                rgba(5,24,11,.96),
+                rgba(3,7,4,.98)
               );
 
             backdrop-filter:
-              blur(45px)
-              saturate(145%);
+              blur(40px)
+              saturate(150%);
 
             -webkit-backdrop-filter:
-              blur(45px)
-              saturate(145%);
+              blur(40px)
+              saturate(150%);
 
             box-shadow:
-              0 45px 150px
-                rgba(0, 0, 0, 0.78),
-              0 0 80px
-                rgba(111, 79, 180, 0.08),
-              inset 0 1px
-                rgba(255, 255, 255, 0.13);
-
-            transform-origin:
-              center center;
+              0 40px 140px rgba(0,0,0,.8),
+              0 0 70px rgba(0,255,80,.08),
+              inset 0 1px rgba(255,255,255,.12);
 
             animation:
               mvbdSheetIn
-              0.58s
-              cubic-bezier(
-                0.16,
-                1,
-                0.3,
-                1
-              )
-              forwards;
-
-            isolation: isolate;
+              .55s
+              cubic-bezier(.16,1,.3,1);
           }
 
           @keyframes mvbdSheetIn {
-            0% {
+            from {
               opacity: 0;
-
               transform:
-                translate3d(0, 25px, 0)
-                scale(0.91);
-
-              filter: blur(14px);
+                translateY(25px)
+                scale(.91);
+              filter: blur(12px);
             }
 
-            55% {
+            to {
               opacity: 1;
-
               transform:
-                translate3d(0, -4px, 0)
-                scale(1.015);
-
-              filter: blur(0);
-            }
-
-            100% {
-              opacity: 1;
-
-              transform:
-                translate3d(0, 0, 0)
+                translateY(0)
                 scale(1);
-
               filter: blur(0);
             }
           }
-
-          /* =================================================
-             LIQUID BLOBS INSIDE POPUP
-          ================================================= */
-
-          .mvbd-sheet::before {
-            content: "";
-
-            position: absolute;
-
-            z-index: -1;
-
-            width: 230px;
-            height: 230px;
-
-            right: -100px;
-            top: -110px;
-
-            border-radius:
-              46% 54% 62% 38% /
-              42% 37% 63% 58%;
-
-            background:
-              radial-gradient(
-                circle at 30% 30%,
-                rgba(174, 130, 255, 0.18),
-                rgba(112, 78, 190, 0.055)
-                  50%,
-                transparent 70%
-              );
-
-            filter: blur(12px);
-
-            animation:
-              mvbdModalBlobOne
-              8s
-              ease-in-out
-              infinite
-              alternate;
-          }
-
-          .mvbd-sheet::after {
-            content: "";
-
-            position: absolute;
-
-            z-index: -1;
-
-            width: 190px;
-            height: 190px;
-
-            left: -100px;
-            bottom: -110px;
-
-            border-radius:
-              61% 39% 43% 57% /
-              51% 62% 38% 49%;
-
-            background:
-              radial-gradient(
-                circle,
-                rgba(255, 142, 108, 0.09),
-                transparent 68%
-              );
-
-            filter: blur(18px);
-
-            animation:
-              mvbdModalBlobTwo
-              9s
-              ease-in-out
-              infinite
-              alternate;
-          }
-
-          @keyframes mvbdModalBlobOne {
-            0% {
-              transform:
-                translate(0, 0)
-                rotate(0deg)
-                scale(1);
-            }
-
-            100% {
-              transform:
-                translate(-45px, 55px)
-                rotate(25deg)
-                scale(1.22);
-            }
-          }
-
-          @keyframes mvbdModalBlobTwo {
-            0% {
-              transform:
-                translate(0, 0)
-                rotate(0deg);
-            }
-
-            100% {
-              transform:
-                translate(50px, -30px)
-                rotate(-20deg)
-                scale(1.25);
-            }
-          }
-
-          /* =================================================
-             CLOSE BUTTON
-          ================================================= */
 
           .mvbd-close {
             float: right;
@@ -1492,349 +1477,230 @@ export default function SeriesSection() {
 
             border:
               1px solid
-              rgba(255, 255, 255, 0.08);
+              rgba(55,255,110,.16);
 
             border-radius: 50%;
 
             background:
-              rgba(255, 255, 255, 0.055);
+              rgba(0,255,80,.045);
 
             color:
-              rgba(255, 255, 255, 0.8);
+              rgba(255,255,255,.85);
 
             font-size: 20px;
 
             cursor: pointer;
 
             transition:
-              transform 0.3s,
-              background 0.3s;
+              transform .3s,
+              background .3s;
           }
 
           .mvbd-close:hover {
             transform:
               rotate(90deg)
-              scale(1.05);
+              scale(1.06);
 
             background:
-              rgba(255, 255, 255, 0.1);
+              rgba(0,255,80,.10);
           }
 
           .mvbd-sheet h2 {
             margin:
               3px 42px 7px 0;
 
-            font-size: 24px;
-
-            letter-spacing: -1px;
+            font-size: 23px;
+            letter-spacing: -.8px;
           }
 
           .mvbd-muted {
             color:
-              rgba(255, 255, 255, 0.46);
+              rgba(255,255,255,.45);
 
             font-size: 12px;
-
             line-height: 1.7;
           }
 
-          /* =================================================
-             SELECTED PLAN
-          ================================================= */
-
           .mvbd-selected {
             display: flex;
-
             align-items: center;
-
             justify-content: space-between;
 
-            gap: 15px;
-
             margin: 17px 0;
-
-            padding: 15px;
+            padding: 14px;
 
             border:
               1px solid
-              rgba(255, 255, 255, 0.08);
+              rgba(50,255,100,.12);
 
-            border-radius: 20px;
+            border-radius: 18px;
 
             background:
-              rgba(255, 255, 255, 0.045);
-
-            box-shadow:
-              inset 0 1px
-                rgba(255, 255, 255, 0.06);
+              rgba(0,255,80,.035);
           }
 
           .mvbd-selected-price {
-            color: #ffd0b9;
-
-            font-weight: 900;
+            color: #4cff7a;
+            font-weight: 950;
           }
 
-          /* =================================================
-             PAYMENT BOX
-          ================================================= */
-
           .mvbd-payment-box {
-            margin-top: 13px;
+            margin-top: 12px;
 
-            padding: 17px;
+            padding: 16px;
 
             border:
               1px solid
-              rgba(255, 255, 255, 0.08);
+              rgba(255,255,255,.07);
 
-            border-radius: 21px;
+            border-radius: 19px;
 
             background:
-              rgba(255, 255, 255, 0.04);
-
-            box-shadow:
-              inset 0 1px
-                rgba(255, 255, 255, 0.05);
+              rgba(255,255,255,.035);
           }
 
           .mvbd-label {
             color:
-              rgba(255, 255, 255, 0.4);
+              rgba(255,255,255,.4);
 
             font-size: 9px;
-
             font-weight: 800;
-
-            letter-spacing: 0.8px;
-
+            letter-spacing: .8px;
             text-transform: uppercase;
           }
 
           .mvbd-number-row {
             display: flex;
-
             align-items: center;
-
             justify-content: space-between;
 
             gap: 8px;
-
             margin-top: 8px;
           }
 
           .mvbd-number {
+            color: #49ff78;
+
             font-size: 19px;
-
-            font-weight: 900;
-
-            letter-spacing: 0.2px;
+            font-weight: 950;
           }
 
           .mvbd-copy {
-            flex-shrink: 0;
+            padding: 9px 11px;
 
             border:
               1px solid
-              rgba(255, 255, 255, 0.08);
+              rgba(70,255,120,.18);
 
-            border-radius: 12px;
-
-            padding: 9px 11px;
+            border-radius: 11px;
 
             background:
-              rgba(255, 255, 255, 0.06);
+              rgba(0,255,80,.055);
 
             color:
-              rgba(255, 255, 255, 0.82);
+              rgba(255,255,255,.85);
 
             font-size: 10px;
-
             cursor: pointer;
-
-            transition:
-              transform 0.25s,
-              background 0.25s;
           }
-
-          .mvbd-copy:hover {
-            transform: scale(1.04);
-
-            background:
-              rgba(255, 255, 255, 0.1);
-          }
-
-          /* =================================================
-             INPUT
-          ================================================= */
 
           .mvbd-input {
             display: block;
-
             width: 100%;
 
-            box-sizing: border-box;
-
             margin-top: 12px;
-
             padding: 14px 15px;
 
             border:
               1px solid
-              rgba(255, 255, 255, 0.09);
+              rgba(255,255,255,.09);
 
-            border-radius: 17px;
+            border-radius: 16px;
 
             outline: none;
 
             background:
-              rgba(0, 0, 0, 0.27);
+              rgba(0,0,0,.35);
 
             color: white;
 
             font-size: 14px;
-
-            transition:
-              border-color 0.3s,
-              box-shadow 0.3s;
           }
 
           .mvbd-input::placeholder {
             color:
-              rgba(255, 255, 255, 0.27);
+              rgba(255,255,255,.27);
           }
 
           .mvbd-input:focus {
             border-color:
-              rgba(191, 157, 255, 0.38);
+              rgba(53,255,111,.45);
 
             box-shadow:
               0 0 0 4px
-                rgba(141, 104, 255, 0.055),
-              inset 0 1px
-                rgba(255, 255, 255, 0.06);
+              rgba(0,255,80,.05);
           }
 
           .mvbd-error {
             margin-top: 8px;
-
-            color: #ffaaa1;
-
+            color: #ff9e96;
             font-size: 10px;
           }
 
-          /* =================================================
-             SEND BUTTON
-          ================================================= */
-
           .mvbd-send {
             position: relative;
-
             overflow: hidden;
 
             width: 100%;
 
             margin-top: 12px;
-
             padding: 14px;
 
             border: 0;
-
-            border-radius: 17px;
+            border-radius: 16px;
 
             background:
               linear-gradient(
                 135deg,
-                #ffe0bd,
-                #ff9877,
-                #c4a6ff
+                #d8ffdf,
+                #34ff72,
+                #00bd45
               );
 
-            color: #25110b;
+            color: #001b08;
 
-            font-weight: 900;
+            font-weight: 1000;
 
             cursor: pointer;
 
             box-shadow:
-              0 15px 38px
-                rgba(255, 124, 93, 0.11),
+              0 15px 40px
+              rgba(0,255,80,.15),
               inset 0 1px
-                rgba(255, 255, 255, 0.6);
-
-            transition:
-              transform 0.25s,
-              filter 0.25s;
-          }
-
-          .mvbd-send:hover {
-            filter: brightness(1.06);
-
-            transform: scale(1.012);
+              rgba(255,255,255,.7);
           }
 
           .mvbd-send:active {
-            transform: scale(0.975);
-          }
-
-          .mvbd-send::after {
-            content: "";
-
-            position: absolute;
-
-            width: 25%;
-            height: 220%;
-
-            top: -60%;
-            left: -40%;
-
-            transform: rotate(25deg);
-
-            background:
-              rgba(255, 255, 255, 0.35);
-
-            filter: blur(8px);
-
-            animation:
-              mvbdSendShine
-              4s
-              ease-in-out
-              infinite;
-          }
-
-          @keyframes mvbdSendShine {
-            0%,
-            58% {
-              left: -45%;
-            }
-
-            100% {
-              left: 140%;
-            }
+            transform: scale(.97);
           }
 
           .mvbd-note {
-            margin-top: 10px;
+            margin-top: 9px;
 
             color:
-              rgba(255, 255, 255, 0.24);
+              rgba(255,255,255,.23);
 
             font-size: 9px;
-
-            line-height: 1.5;
-
             text-align: center;
           }
 
-          /* =================================================
+          /* =====================================================
              PROCESSING
-          ================================================= */
+          ===================================================== */
 
           .mvbd-processing {
             text-align: center;
-
-            padding:
-              25px 8px 8px;
+            padding: 28px 10px;
           }
 
           .mvbd-orb {
@@ -1844,42 +1710,41 @@ export default function SeriesSection() {
             height: 92px;
 
             margin:
-              6px auto 22px;
+              5px auto 22px;
 
             border-radius:
-              44% 56% 62% 38% /
-              55% 43% 57% 45%;
+              45% 55% 62% 38% /
+              55% 42% 58% 45%;
 
             background:
               conic-gradient(
                 from 0deg,
-                #ff9b79,
-                #b07cff,
-                #6eaaff,
-                #ff9b79
+                #20ff62,
+                #0ab94c,
+                #8affab,
+                #20ff62
               );
+
+            box-shadow:
+              0 0 60px
+              rgba(0,255,80,.2);
 
             animation:
               mvbdOrbSpin
-                3s
-                linear
-                infinite,
+              3s
+              linear
+              infinite,
               mvbdOrbMorph
-                4.5s
-                ease-in-out
-                infinite
-                alternate;
-
-            box-shadow:
-              0 0 55px
-                rgba(141, 101, 255, 0.19);
+              4.5s
+              ease-in-out
+              infinite
+              alternate;
           }
 
           .mvbd-orb::after {
             content: "";
 
             position: absolute;
-
             inset: 8px;
 
             border-radius: inherit;
@@ -1887,72 +1752,24 @@ export default function SeriesSection() {
             background:
               radial-gradient(
                 circle at 35% 25%,
-                rgba(255, 255, 255, 0.07),
-                #08080c 62%
+                rgba(255,255,255,.08),
+                #031008 62%
               );
-
-            box-shadow:
-              inset 0 0 25px
-                rgba(255, 255, 255, 0.06);
-          }
-
-          .mvbd-orb::before {
-            content: "";
-
-            position: absolute;
-
-            inset: -12px;
-
-            border:
-              1px solid
-              rgba(255, 255, 255, 0.09);
-
-            border-radius:
-              48% 52% 40% 60% /
-              55% 38% 62% 45%;
-
-            animation:
-              mvbdLiquidRing
-              2.5s
-              ease-in-out
-              infinite
-              alternate;
           }
 
           @keyframes mvbdOrbSpin {
             to {
-              transform:
-                rotate(360deg);
+              transform: rotate(360deg);
             }
           }
 
           @keyframes mvbdOrbMorph {
-            from {
-              border-radius:
-                44% 56% 62% 38% /
-                55% 43% 57% 45%;
-            }
-
             to {
               border-radius:
                 62% 38% 44% 56% /
                 38% 59% 41% 62%;
             }
           }
-
-          @keyframes mvbdLiquidRing {
-            to {
-              transform:
-                scale(1.12)
-                rotate(-20deg);
-
-              opacity: 0.28;
-            }
-          }
-
-          /* =================================================
-             PROGRESS
-          ================================================= */
 
           .mvbd-progress {
             height: 5px;
@@ -1965,7 +1782,7 @@ export default function SeriesSection() {
             border-radius: 999px;
 
             background:
-              rgba(255, 255, 255, 0.07);
+              rgba(255,255,255,.07);
           }
 
           .mvbd-progress-bar {
@@ -1976,36 +1793,35 @@ export default function SeriesSection() {
             background:
               linear-gradient(
                 90deg,
-                #ff9d79,
-                #a77cff,
-                #69b5ff
+                #0cff57,
+                #5aff89,
+                #baffca
               );
 
             box-shadow:
-              0 0 14px
-                rgba(167, 124, 255, 0.4);
+              0 0 15px
+              rgba(0,255,80,.45);
 
             transition:
-              width 0.12s linear;
+              width .12s linear;
           }
 
           .mvbd-percent {
             color:
-              rgba(255, 255, 255, 0.28);
+              rgba(255,255,255,.3);
 
             font-size: 10px;
           }
 
-          /* =================================================
+          /* =====================================================
              SUCCESS
-          ================================================= */
+          ===================================================== */
 
           .mvbd-success-icon {
             width: 74px;
             height: 74px;
 
             display: grid;
-
             place-items: center;
 
             margin:
@@ -2013,156 +1829,117 @@ export default function SeriesSection() {
 
             border:
               1px solid
-              rgba(180, 255, 208, 0.18);
+              rgba(70,255,120,.25);
 
             border-radius: 50%;
 
             background:
-              radial-gradient(
-                circle,
-                rgba(180, 255, 208, 0.09),
-                rgba(180, 255, 208, 0.025)
-              );
+              rgba(0,255,80,.06);
 
-            color: #bfffd3;
+            color: #65ff8c;
 
             font-size: 34px;
 
             box-shadow:
               0 0 50px
-                rgba(105, 255, 160, 0.08),
-              inset 0 1px
-                rgba(255, 255, 255, 0.08);
-
-            animation:
-              mvbdSuccess
-              0.65s
-              cubic-bezier(
-                0.16,
-                1,
-                0.3,
-                1
-              );
-          }
-
-          @keyframes mvbdSuccess {
-            0% {
-              opacity: 0;
-
-              transform:
-                scale(0.5)
-                rotate(-12deg);
-            }
-
-            70% {
-              transform:
-                scale(1.08)
-                rotate(3deg);
-            }
-
-            100% {
-              opacity: 1;
-
-              transform:
-                scale(1)
-                rotate(0);
-            }
+              rgba(0,255,80,.12);
           }
 
           .mvbd-done {
             width: 100%;
 
             margin-top: 18px;
-
             padding: 13px;
 
             border:
               1px solid
-              rgba(255, 255, 255, 0.08);
+              rgba(65,255,115,.15);
 
-            border-radius: 16px;
+            border-radius: 15px;
 
             background:
-              rgba(255, 255, 255, 0.055);
+              rgba(0,255,80,.055);
 
             color: white;
 
             font-weight: 800;
 
             cursor: pointer;
-
-            transition:
-              background 0.3s,
-              transform 0.3s;
           }
 
-          .mvbd-done:hover {
-            background:
-              rgba(255, 255, 255, 0.09);
+          /* =====================================================
+             TABLET
+          ===================================================== */
 
-            transform: scale(1.01);
+          @media (max-width: 900px) {
+            .mvbd-plans {
+              grid-template-columns:
+                repeat(2, 1fr);
+            }
+
+            .mvbd-benefits {
+              grid-template-columns:
+                repeat(3, 1fr);
+            }
           }
 
-          /* =================================================
+          /* =====================================================
              MOBILE
-          ================================================= */
+          ===================================================== */
 
-          @media (max-width: 760px) {
-
+          @media (max-width: 600px) {
             .mvbd-premium-page {
-              padding-left: 12px;
-              padding-right: 12px;
+              padding:
+                10px 10px 65px;
+            }
+
+            .mvbd-nav {
+              border-radius: 19px;
+            }
+
+            .mvbd-nav-badge {
+              display: none;
+            }
+
+            .mvbd-hero {
+              padding:
+                52px 5px 30px;
+            }
+
+            .mvbd-hero h1 {
+              letter-spacing: -2.5px;
+              font-size: 43px;
+            }
+
+            .mvbd-premium-title {
+              letter-spacing: 5px;
             }
 
             .mvbd-plans {
               grid-template-columns: 1fr;
+              gap: 14px;
+            }
+
+            .mvbd-card {
+              min-height: auto;
+              padding: 21px;
             }
 
             .mvbd-card-popular {
               order: -1;
             }
 
-            .mvbd-hero {
-              padding-top: 58px;
+            .mvbd-benefits {
+              grid-template-columns:
+                repeat(2, 1fr);
             }
 
-            .mvbd-hero h1 {
-              letter-spacing: -2.7px;
+            .mvbd-benefit:last-child {
+              grid-column: 1 / -1;
             }
-
-            .mvbd-stars {
-              height: 570px;
-            }
-
-            /*
-              MOBILE MODAL:
-              Always centered inside viewport.
-            */
 
             .mvbd-viewport-modal {
-              width: 100vw !important;
-              height: 100dvh !important;
-
-              min-width: 100vw !important;
-              min-height: 100dvh !important;
-
-              padding:
-                max(
-                  12px,
-                  env(safe-area-inset-top)
-                )
-                max(
-                  12px,
-                  env(safe-area-inset-right)
-                )
-                max(
-                  12px,
-                  env(safe-area-inset-bottom)
-                )
-                max(
-                  12px,
-                  env(safe-area-inset-left)
-                ) !important;
+              padding: 12px !important;
             }
 
             .mvbd-sheet {
@@ -2175,21 +1952,23 @@ export default function SeriesSection() {
               max-height:
                 86dvh !important;
 
-              padding: 21px;
-
-              border-radius: 30px;
-            }
-
-            .mvbd-number {
-              font-size: 17px;
+              padding: 20px;
+              border-radius: 27px;
             }
           }
 
-          /* =================================================
-             SMALL PHONES
-          ================================================= */
+          /* =====================================================
+             SMALL PHONE
+          ===================================================== */
 
           @media (max-width: 380px) {
+            .mvbd-hero h1 {
+              font-size: 38px;
+            }
+
+            .mvbd-card {
+              padding: 18px;
+            }
 
             .mvbd-sheet {
               width:
@@ -2199,74 +1978,59 @@ export default function SeriesSection() {
                 calc(100vw - 18px) !important;
 
               padding: 18px;
-
-              border-radius: 27px;
-            }
-
-            .mvbd-sheet h2 {
-              font-size: 21px;
-            }
-
-            .mvbd-number {
-              font-size: 15px;
             }
           }
 
-          /* =================================================
+          /* =====================================================
              REDUCED MOTION
-          ================================================= */
+          ===================================================== */
 
           @media (prefers-reduced-motion: reduce) {
-
             .mvbd-premium-page *,
             .mvbd-premium-page *::before,
             .mvbd-premium-page *::after,
             .mvbd-viewport-modal *,
             .mvbd-viewport-modal *::before,
             .mvbd-viewport-modal *::after {
-              animation-duration:
-                0.01ms !important;
-
-              animation-iteration-count:
-                1 !important;
-
+              animation-duration: .01ms !important;
+              animation-iteration-count: 1 !important;
               transition: none !important;
             }
           }
 
         `}</style>
 
-        {/* ===================================================
-            LIVE STARS
-        =================================================== */}
+        {/* =====================================================
+            PARTICLES
+        ===================================================== */}
 
         <div
           className="mvbd-stars"
           aria-hidden="true"
         >
-          {Array.from({
-            length: 34,
-          }).map((_, index) => (
-            <span
-              key={index}
-              className="mvbd-star"
-              style={
-                {
-                  left:
-                    `${(index * 31.7) % 100}%`,
+          {Array.from({ length: 42 }).map(
+            (_, index) => (
+              <span
+                key={index}
+                className="mvbd-star"
+                style={
+                  {
+                    left:
+                      `${(index * 31.7) % 100}%`,
 
-                  top:
-                    `${(index * 67.3) % 570}px`,
+                    top:
+                      `${(index * 67.3) % 700}px`,
 
-                  ["--duration" as string]:
-                    `${1.7 + (index % 5) * 0.7}s`,
+                    ["--duration" as string]:
+                      `${1.8 + (index % 5) * .65}s`,
 
-                  animationDelay:
-                    `${-(index % 6) * 0.55}s`,
-                } as React.CSSProperties
-              }
-            />
-          ))}
+                    animationDelay:
+                      `${-(index % 6) * .55}s`,
+                  } as React.CSSProperties
+                }
+              />
+            )
+          )}
         </div>
 
         <div className="mvbd-container">
@@ -2278,7 +2042,6 @@ export default function SeriesSection() {
           <nav className="mvbd-nav">
 
             <div className="mvbd-brand">
-
               <div className="mvbd-logo">
                 M
               </div>
@@ -2286,11 +2049,10 @@ export default function SeriesSection() {
               <span>
                 MoviesVerseBD
               </span>
-
             </div>
 
             <div className="mvbd-nav-badge">
-              Premium Access
+              ✦ PREMIUM ACCESS
             </div>
 
           </nav>
@@ -2304,11 +2066,9 @@ export default function SeriesSection() {
             <div className="mvbd-hero-glow" />
 
             <div className="mvbd-eyebrow">
-
               <span className="mvbd-live-dot" />
 
               Unlock your premium experience
-
             </div>
 
             <h1>
@@ -2322,9 +2082,9 @@ export default function SeriesSection() {
             </div>
 
             <p className="mvbd-subtitle">
-              Enjoy a beautiful premium experience
-              with uninterrupted access to your
-              authorized MVBD library.
+              Enjoy premium movies, series and anime
+              with a smooth entertainment experience
+              across your devices.
             </p>
 
             <div className="mvbd-trial">
@@ -2339,77 +2099,241 @@ export default function SeriesSection() {
 
           <section className="mvbd-plans">
 
-            {plans.map((plan) => (
-              <article
-                key={plan.name}
-                className={
-                  `mvbd-card ${
-                    plan.popular
-                      ? "mvbd-card-popular"
-                      : ""
-                  }`
-                }
-              >
+            {plans.map((plan) => {
 
-                {plan.popular && (
-                  <div className="mvbd-ribbon">
-                    MOST POPULAR
-                  </div>
-                )}
+              const cardClass =
+                plan.planId === "trial"
+                  ? "mvbd-card-free"
+                  : plan.planId === "monthly"
+                    ? "mvbd-card-monthly"
+                    : plan.planId === "two_months"
+                      ? "mvbd-card-two"
+                      : "mvbd-card-three"
 
-                <div className="mvbd-plan-name">
-                  {plan.name}
-                </div>
-
-                <div className="mvbd-price">
-                  {plan.price}
-
-                  <small>
-                    {" "}
-                    / {plan.duration}
-                  </small>
-                </div>
-
-                <div className="mvbd-save">
-                  {plan.save || "\u00a0"}
-                </div>
-
-                <div className="mvbd-description">
-                  {plan.description}
-                </div>
-
-                <ul className="mvbd-features">
-
-                  <li>
-                    Premium access
-                  </li>
-
-                  <li>
-                    MVBD app access
-                  </li>
-
-                  <li>
-                    Telegram access included
-                  </li>
-
-                  <li>
-                    Fast premium experience
-                  </li>
-
-                </ul>
-
-                <button
-                  type="button"
-                  className="mvbd-choose"
-                  onClick={() =>
-                    openPlan(plan)
-                  }
+              return (
+                <article
+                  key={plan.planId}
+                  className={`mvbd-card ${cardClass}`}
                 >
-                  Continue
-                </button>
 
-              </article>
-            ))}
+                  {plan.popular && (
+                    <div className="mvbd-ribbon">
+                      MOST POPULAR
+                    </div>
+                  )}
+
+                  <div className="mvbd-plan-icon">
+                    {plan.planId === "trial"
+                      ? "♛"
+                      : plan.planId === "monthly"
+                        ? "▣"
+                        : plan.planId === "two_months"
+                          ? "◆"
+                          : "▦"}
+                  </div>
+
+                  <div className="mvbd-plan-name">
+                    {plan.planId === "trial"
+                      ? "FREE PLAN"
+                      : plan.name}
+                  </div>
+
+                  <div className="mvbd-price">
+                    {plan.price}
+
+                    {plan.planId !== "trial" && (
+                      <small>
+                        {" "}
+                        / {plan.duration}
+                      </small>
+                    )}
+                  </div>
+
+                  <div className="mvbd-save">
+                    {plan.planId === "trial"
+                      ? "Enjoy basic access"
+                      : plan.save || "\u00a0"}
+                  </div>
+
+                  <div className="mvbd-description">
+                    {plan.description}
+                  </div>
+
+                  <ul className="mvbd-features">
+
+                    {plan.planId === "trial" ? (
+                      <>
+                        <li>
+                          MVBD PM Channel Access
+                        </li>
+
+                        <li>
+                          MoviesVerseBD Channel Access
+                        </li>
+
+                        <li>
+                          Anime Verse BD Channel Access
+                        </li>
+
+                        <li>
+                          MVBD MeBook Access
+                        </li>
+
+                        <li>
+                          Free MVBD Mini App Access
+                        </li>
+
+                        <li>
+                          Movie & Series Trailer Access
+                        </li>
+
+                        <li>
+                          Basic entertainment access
+                        </li>
+                      </>
+                    ) : (
+                      <>
+                        <li>
+                          All Free Plan Features
+                        </li>
+
+                        <li>
+                          Full Movie Streaming
+                        </li>
+
+                        <li>
+                          Series & Anime Streaming
+                        </li>
+
+                        <li>
+                          Download Option
+                        </li>
+
+                        <li>
+                          Ad-Free Experience
+                        </li>
+
+                        <li>
+                          Premium Content Access
+                        </li>
+
+                        <li>
+                          Regular Updates
+                        </li>
+
+                        <li>
+                          Priority Support
+                        </li>
+                      </>
+                    )}
+
+                  </ul>
+
+                  <button
+                    type="button"
+                    className="mvbd-choose"
+                    onClick={() =>
+                      openPlan(plan)
+                    }
+                  >
+                    {plan.planId === "trial"
+                      ? "Start Exploring →"
+                      : plan.planId === "monthly"
+                        ? "Get 1 Month Access →"
+                        : plan.planId === "two_months"
+                          ? "Get 2 Months Access →"
+                          : "Get 3 Months Access →"}
+                  </button>
+
+                </article>
+              )
+            })}
+
+          </section>
+
+          {/* =================================================
+              WHY CHOOSE MVBD
+          ================================================= */}
+
+          <section className="mvbd-why">
+
+            <div className="mvbd-why-title">
+              WHY CHOOSE <span>MVBD?</span>
+            </div>
+
+            <div className="mvbd-benefits">
+
+              <div className="mvbd-benefit">
+                <div className="mvbd-benefit-icon">
+                  ⚡
+                </div>
+
+                <strong>
+                  Fast & Smooth
+                </strong>
+
+                <span>
+                  Streaming experience
+                </span>
+              </div>
+
+              <div className="mvbd-benefit">
+                <div className="mvbd-benefit-icon">
+                  🛡
+                </div>
+
+                <strong>
+                  Safe & Secure
+                </strong>
+
+                <span>
+                  Secure platform
+                </span>
+              </div>
+
+              <div className="mvbd-benefit">
+                <div className="mvbd-benefit-icon">
+                  ▣
+                </div>
+
+                <strong>
+                  All Devices
+                </strong>
+
+                <span>
+                  Works across devices
+                </span>
+              </div>
+
+              <div className="mvbd-benefit">
+                <div className="mvbd-benefit-icon">
+                  ★
+                </div>
+
+                <strong>
+                  Premium Quality
+                </strong>
+
+                <span>
+                  Quality entertainment
+                </span>
+              </div>
+
+              <div className="mvbd-benefit">
+                <div className="mvbd-benefit-icon">
+                  ♥
+                </div>
+
+                <strong>
+                  Movie Lovers
+                </strong>
+
+                <span>
+                  Your entertainment partner
+                </span>
+              </div>
+
+            </div>
 
           </section>
 
@@ -2436,134 +2360,143 @@ export default function SeriesSection() {
 
           </div>
 
-          <div className="mvbd-footer">
-            MoviesVerseBD • MVBD Premium Membership
-          </div>
+          {/* =================================================
+              FOOTER
+          ================================================= */}
+
+          <footer className="mvbd-footer">
+
+            <div className="mvbd-footer-logo">
+              M ◉ MovieVerseBD
+            </div>
+
+            <div className="mvbd-footer-line">
+              SUBSCRIBE NOW & ENJOY PREMIUM ENTERTAINMENT
+            </div>
+
+            <div style={{ marginTop: "10px" }}>
+              Movies • Series • Anime
+            </div>
+
+          </footer>
 
         </div>
-
       </main>
 
       {/* =====================================================
           PAYMENT MODAL
-          IMPORTANT:
-          Rendered directly to document.body
       ===================================================== */}
 
-      {showPayment &&
-        selectedPlan && (
-          <ViewportModal
-            onBackdropClick={
-              closePayment
+      {showPayment && selectedPlan && (
+        <ViewportModal
+          onBackdropClick={closePayment}
+        >
+
+          <div
+            className="mvbd-sheet"
+            onClick={(event) =>
+              event.stopPropagation()
             }
           >
 
-            <div
-              className="mvbd-sheet"
-              onClick={(event) =>
-                event.stopPropagation()
-              }
+            <button
+              type="button"
+              className="mvbd-close"
+              onClick={closePayment}
+              aria-label="Close"
             >
+              ×
+            </button>
 
-              <button
-                type="button"
-                className="mvbd-close"
-                onClick={closePayment}
-                aria-label="Close"
-              >
-                ×
-              </button>
+            <h2>
+              Complete your payment
+            </h2>
 
-              <h2>
-                Complete your payment
-              </h2>
+            <p className="mvbd-muted">
+              Send Money to the payment number
+              and then paste your transaction ID
+              below.
+            </p>
 
-              <p className="mvbd-muted">
-                Send Money to the payment number
-                and then paste your transaction ID
-                below.
-              </p>
+            <div className="mvbd-selected">
 
-              <div className="mvbd-selected">
+              <span>
+                {selectedPlan.name}
+              </span>
 
-                <span>
-                  {selectedPlan.name}
-                </span>
+              <span className="mvbd-selected-price">
+                {selectedPlan.price}
+              </span>
 
-                <span className="mvbd-selected-price">
-                  {selectedPlan.price}
-                </span>
+            </div>
 
+            <div className="mvbd-payment-box">
+
+              <div className="mvbd-label">
+                Send Money — bKash
               </div>
 
-              <div className="mvbd-payment-box">
+              <div className="mvbd-number-row">
 
-                <div className="mvbd-label">
-                  Send Money — bKash
-                </div>
+                <span className="mvbd-number">
+                  {PAYMENT_NUMBER}
+                </span>
 
-                <div className="mvbd-number-row">
+                <button
+                  type="button"
+                  className="mvbd-copy"
+                  onClick={copyNumber}
+                >
+                  {copied
+                    ? "Copied ✓"
+                    : "Copy"}
+                </button>
 
-                  <span className="mvbd-number">
-                    01865522275
-                  </span>
-
-                  <button
-                    type="button"
-                    className="mvbd-copy"
-                    onClick={copyNumber}
-                  >
-                    {copied
-                      ? "Copied ✓"
-                      : "Copy"}
-                  </button>
-
-                </div>
-
-              </div>
-
-              <input
-                className="mvbd-input"
-                type="text"
-                inputMode="text"
-                autoComplete="off"
-                placeholder="Paste transaction ID here"
-                value={transactionId}
-                onChange={(event) => {
-                  setTransactionId(
-                    event.target.value
-                  )
-
-                  setError("")
-                }}
-              />
-
-              {error && (
-                <div className="mvbd-error">
-                  {error}
-                </div>
-              )}
-
-              <button
-                type="button"
-                className="mvbd-send"
-                onClick={submitPayment}
-              >
-                Send for Review →
-              </button>
-
-              <div className="mvbd-note">
-                Please make sure your transaction ID
-                is correct before submitting.
               </div>
 
             </div>
 
-          </ViewportModal>
-        )}
+            <input
+              className="mvbd-input"
+              type="text"
+              inputMode="text"
+              autoComplete="off"
+              placeholder="Paste transaction ID here"
+              value={transactionId}
+              onChange={(event) => {
+                setTransactionId(
+                  event.target.value
+                )
+                setError("")
+              }}
+            />
+
+            {error && (
+              <div className="mvbd-error">
+                {error}
+              </div>
+            )}
+
+            <button
+              type="button"
+              className="mvbd-send"
+              onClick={submitPayment}
+            >
+              Send for Review →
+            </button>
+
+            <div className="mvbd-note">
+              Please make sure your transaction ID
+              is correct before submitting.
+            </div>
+
+          </div>
+
+        </ViewportModal>
+      )}
 
       {/* =====================================================
-          PROCESSING MODAL
+          PROCESSING
       ===================================================== */}
 
       {showProcessing && (
@@ -2605,14 +2538,12 @@ export default function SeriesSection() {
       )}
 
       {/* =====================================================
-          SUCCESS MODAL
+          SUCCESS
       ===================================================== */}
 
       {showSuccess && (
         <ViewportModal
-          onBackdropClick={
-            closeSuccess
-          }
+          onBackdropClick={closeSuccess}
         >
 
           <div

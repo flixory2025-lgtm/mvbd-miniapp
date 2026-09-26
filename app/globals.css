@@ -1908,7 +1908,7 @@
 
 
 /* =========================================================
-   🎬 LANDING PAGE — DARK CINEMATIC THEME (NEW)
+   🎬 LANDING PAGE — WITH REAL BACKGROUND IMAGES
    ========================================================= */
 
 .landing-wrap {
@@ -1924,13 +1924,7 @@
   overflow-x: hidden;
   scrollbar-width: none;
   color: #fff;
-
   background: #050505;
-  background-image:
-    radial-gradient(circle at 15% 10%, rgba(229, 9, 20, 0.18), transparent 45%),
-    radial-gradient(circle at 85% 80%, rgba(229, 9, 20, 0.12), transparent 50%),
-    linear-gradient(180deg, #0a0202 0%, #050505 50%, #000 100%);
-
   animation: landingFadeIn 0.6s ease-out;
 }
 
@@ -1938,32 +1932,69 @@
   display: none;
 }
 
-.landing-grid-overlay {
+/* =========================================================
+   BACKGROUND IMAGE LAYERS
+   ========================================================= */
+
+.landing-bg {
   position: fixed;
   inset: 0;
   z-index: 0;
-  pointer-events: none;
-  background-image:
-    linear-gradient(rgba(229, 9, 20, 0.06) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(229, 9, 20, 0.06) 1px, transparent 1px);
-  background-size: 60px 60px;
-  mask-image: radial-gradient(ellipse at center, black 30%, transparent 75%);
-  -webkit-mask-image: radial-gradient(ellipse at center, black 30%, transparent 75%);
-  animation: gridPulse 6s ease-in-out infinite alternate;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  animation: bgZoom 20s ease-in-out infinite alternate;
+  will-change: transform;
 }
 
-@keyframes gridPulse {
-  from { opacity: 0.4; }
-  to { opacity: 0.85; }
+@keyframes bgZoom {
+  0% { transform: scale(1); }
+  100% { transform: scale(1.08); }
 }
+
+/* Mobile background — hidden by default, shown on mobile */
+.landing-bg-mobile {
+  background-image: url('https://i.postimg.cc/VNdfBMRZ/Screenshot-20260926-134833-Chrome.jpg');
+  display: block;
+}
+
+/* Desktop background — hidden by default, shown on desktop */
+.landing-bg-desktop {
+  background-image: url('https://i.postimg.cc/28rC9gGj/Screenshot-2026-09-26-134807.jpg');
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .landing-bg-mobile {
+    display: none;
+  }
+  .landing-bg-desktop {
+    display: block;
+  }
+}
+
+/* Dark overlay for readability */
+.landing-bg-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 50% 30%, rgba(0, 0, 0, 0.65), rgba(0, 0, 0, 0.92)),
+    linear-gradient(180deg, rgba(0, 0, 0, 0.75) 0%, rgba(0, 0, 0, 0.55) 50%, rgba(0, 0, 0, 0.9) 100%);
+}
+
+/* =========================================================
+   RED GLOW ORBS
+   ========================================================= */
 
 .landing-glow {
   position: fixed;
   border-radius: 50%;
   pointer-events: none;
-  z-index: 0;
-  filter: blur(90px);
-  opacity: 0.55;
+  z-index: 1;
+  filter: blur(100px);
+  opacity: 0.5;
 }
 
 .landing-glow-1 {
@@ -1984,17 +2015,6 @@
   animation: glowFloat2 15s ease-in-out infinite alternate;
 }
 
-.landing-glow-3 {
-  width: 300px;
-  height: 300px;
-  top: 45%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background: radial-gradient(circle, rgba(229, 9, 20, 0.5), transparent 70%);
-  opacity: 0.25;
-  animation: glowFloat3 10s ease-in-out infinite alternate;
-}
-
 @keyframes glowFloat1 {
   0% { transform: translate(0, 0) scale(1); }
   100% { transform: translate(60px, 80px) scale(1.15); }
@@ -2005,31 +2025,14 @@
   100% { transform: translate(-70px, -60px) scale(1.2); }
 }
 
-@keyframes glowFloat3 {
-  0% { transform: translate(-50%, -50%) scale(1); opacity: 0.2; }
-  100% { transform: translate(-50%, -50%) scale(1.3); opacity: 0.35; }
-}
-
-@media (min-width: 768px) {
-  .landing-wrap {
-    background: #030303;
-    background-image:
-      radial-gradient(circle at 50% 40%, rgba(229, 9, 20, 0.22), transparent 55%),
-      radial-gradient(circle at 10% 90%, rgba(229, 9, 20, 0.15), transparent 45%),
-      linear-gradient(180deg, #0a0202 0%, #050505 50%, #000 100%);
-    justify-content: center;
-  }
-}
-
-@keyframes landingFadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
+/* =========================================================
+   PARTICLES
+   ========================================================= */
 
 .landing-particles {
   position: fixed;
   inset: 0;
-  z-index: 1;
+  z-index: 2;
   pointer-events: none;
   overflow: hidden;
 }
@@ -2048,19 +2051,33 @@
   100% { transform: translateY(-100px) scale(1.2); opacity: 0; }
 }
 
+/* =========================================================
+   CONTAINER
+   ========================================================= */
+
 .landing-container {
   position: relative;
-  z-index: 2;
+  z-index: 3;
   text-align: center;
   max-width: 1000px;
   width: 100%;
+  margin: 0 auto;
   animation: landingFadeInUp 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes landingFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 @keyframes landingFadeInUp {
   from { opacity: 0; transform: translateY(60px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+/* =========================================================
+   LOGO
+   ========================================================= */
 
 .landing-logo-wrap {
   display: inline-block;
@@ -2091,6 +2108,10 @@
   to { filter: drop-shadow(0 0 45px rgba(229, 9, 20, 1)); }
 }
 
+/* =========================================================
+   TITLE
+   ========================================================= */
+
 .landing-title {
   font-size: clamp(1.75rem, 5.5vw, 3.5rem);
   font-weight: 800;
@@ -2102,15 +2123,20 @@
   background-clip: text;
   -webkit-text-fill-color: transparent;
   animation: landingShine 4s linear infinite;
+  text-shadow: 0 4px 30px rgba(0, 0, 0, 0.8);
 }
 
 @keyframes landingShine {
   to { background-position: 300% center; }
 }
 
+/* =========================================================
+   SUBTITLE
+   ========================================================= */
+
 .landing-subtitle {
   font-size: clamp(0.85rem, 2.2vw, 1.1rem);
-  color: #b8b8b8;
+  color: #e0e0e0;
   margin-bottom: 30px;
   line-height: 1.7;
   max-width: 650px;
@@ -2118,12 +2144,18 @@
   margin-right: auto;
   opacity: 0;
   animation: landingFadeInUp 1.2s ease 0.4s forwards;
+  text-shadow: 0 2px 15px rgba(0, 0, 0, 0.9);
 }
 
 .landing-subtitle span {
   color: #ff1a1a;
   font-weight: 600;
+  text-shadow: 0 0 15px rgba(229, 9, 20, 0.7);
 }
+
+/* =========================================================
+   CTA BUTTON
+   ========================================================= */
 
 .landing-cta-btn {
   display: inline-flex;
@@ -2189,6 +2221,10 @@
   transform: translateX(6px);
 }
 
+/* =========================================================
+   🖥️ DEVICE SHOWCASE
+   ========================================================= */
+
 .landing-device-showcase {
   position: relative;
   margin-top: 55px;
@@ -2200,6 +2236,7 @@
   perspective: 1500px;
 }
 
+/* ============ LAPTOP MOCKUP ============ */
 .landing-laptop {
   position: relative;
   width: 100%;
@@ -2224,9 +2261,9 @@
   overflow: hidden;
   box-shadow:
     0 0 0 1px rgba(255, 255, 255, 0.08) inset,
-    0 -10px 50px rgba(229, 9, 20, 0.35),
-    0 30px 80px rgba(0, 0, 0, 0.8),
-    0 0 100px rgba(229, 9, 20, 0.25);
+    0 -10px 50px rgba(229, 9, 20, 0.45),
+    0 30px 80px rgba(0, 0, 0, 0.9),
+    0 0 120px rgba(229, 9, 20, 0.35);
 }
 
 .landing-laptop-camera {
@@ -2258,8 +2295,8 @@
   background: linear-gradient(180deg, #2a2a2a 0%, #1a1a1a 50%, #0d0d0d 100%);
   border-radius: 0 0 12px 12px;
   box-shadow:
-    0 20px 40px rgba(0, 0, 0, 0.9),
-    0 30px 80px rgba(229, 9, 20, 0.15);
+    0 20px 40px rgba(0, 0, 0, 0.95),
+    0 30px 80px rgba(229, 9, 20, 0.25);
 }
 
 .landing-laptop-notch {
@@ -2273,6 +2310,7 @@
   border-radius: 0 0 8px 8px;
 }
 
+/* ============ MOBILE MOCKUP ============ */
 .landing-mobile {
   display: none;
   position: relative;
@@ -2285,9 +2323,9 @@
   overflow: hidden;
   box-shadow:
     0 0 0 1px rgba(255, 255, 255, 0.1) inset,
-    0 0 60px rgba(229, 9, 20, 0.4),
-    0 30px 80px rgba(0, 0, 0, 0.9),
-    0 0 100px rgba(229, 9, 20, 0.3);
+    0 0 60px rgba(229, 9, 20, 0.5),
+    0 30px 80px rgba(0, 0, 0, 0.95),
+    0 0 120px rgba(229, 9, 20, 0.4);
   animation: mobileFloat 5s ease-in-out infinite;
   z-index: 2;
 }
@@ -2337,16 +2375,16 @@
   z-index: 3;
 }
 
+/* ============ RESPONSIVE DEVICE SWITCHING ============ */
+
 @media (max-width: 767px) {
   .landing-laptop {
     display: none;
   }
-
   .landing-mobile {
     display: block;
     margin: 0 auto;
   }
-
   .landing-device-showcase {
     margin-top: 40px;
   }
@@ -2356,11 +2394,14 @@
   .landing-laptop {
     display: block;
   }
-
   .landing-mobile {
     display: none;
   }
 }
+
+/* =========================================================
+   FEATURES
+   ========================================================= */
 
 .landing-features {
   display: flex;
@@ -2373,10 +2414,10 @@
 }
 
 .landing-feature {
-  background: rgba(229, 9, 20, 0.08);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(229, 9, 20, 0.25);
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(229, 9, 20, 0.35);
   padding: 14px 22px;
   border-radius: 14px;
   font-size: 0.88rem;
@@ -2386,30 +2427,36 @@
   display: flex;
   align-items: center;
   gap: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
 }
 
 .landing-feature:hover {
-  background: rgba(229, 9, 20, 0.22);
+  background: rgba(229, 9, 20, 0.3);
   border-color: #e50914;
   transform: translateY(-5px);
-  box-shadow: 0 10px 35px rgba(229, 9, 20, 0.5);
+  box-shadow: 0 10px 35px rgba(229, 9, 20, 0.6);
 }
 
 .landing-icon {
   font-size: 1.2rem;
 }
 
+/* =========================================================
+   FOOTER
+   ========================================================= */
+
 .landing-footer {
   position: relative;
-  z-index: 2;
+  z-index: 3;
   margin-top: 50px;
   padding-bottom: 20px;
   text-align: center;
   font-size: 0.8rem;
-  color: #666;
+  color: #999;
   opacity: 0;
   animation: landingFadeInUp 1.2s ease 1.6s forwards;
   width: 100%;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.9);
 }
 
 .landing-footer a {
@@ -2422,6 +2469,10 @@
   color: #ff6b6b;
   text-shadow: 0 0 15px rgba(229, 9, 20, 0.9);
 }
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
 
 @media (max-width: 600px) {
   .landing-wrap {

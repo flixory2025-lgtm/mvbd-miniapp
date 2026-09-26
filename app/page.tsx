@@ -23,6 +23,7 @@ import AboutUsPage from "@/components/about-us-page"
 import SettingsPage from "@/components/settings-page"
 import MeBookPage from "@/components/mebook-page"
 import { MvbdAiAssistant } from "@/components/mvbd-ai/mvbd-ai-assistant"
+import LandingPage from "@/components/landing-page"
 
 import { movies, genres } from "@/lib/movie-data"
 import { animes } from "@/lib/anime-data"
@@ -83,12 +84,13 @@ export default function Home() {
     >("main")
 
   /* =========================================================
+     LANDING PAGE STATE
+  ========================================================= */
+
+  const [showLanding, setShowLanding] = useState(true)
+
+  /* =========================================================
      SCROLL POSITION
-
-     Movie / Anime detail page-এ যাওয়ার আগে
-     current scroll position save হবে।
-
-     Back করলে সেই position restore হবে।
   ========================================================= */
 
   const homeScrollPositionRef = useRef(0)
@@ -99,12 +101,6 @@ export default function Home() {
 
   /* =========================================================
      HORIZONTAL SWIPE BLOCKING
-
-     Left / Right swipe:
-       → page/tab change করবে না
-
-     Up / Down:
-       → normal scrolling কাজ করবে
   ========================================================= */
 
   const touchStartXRef = useRef<number | null>(null)
@@ -144,13 +140,6 @@ export default function Home() {
     const deltaY =
       touch.clientY - touchStartYRef.current
 
-    /*
-      শুধুমাত্র horizontal movement হলে
-      horizontal gesture block হবে।
-
-      Vertical movement হলে preventDefault হবে না।
-    */
-
     if (
       Math.abs(deltaX) >
       Math.abs(deltaY)
@@ -170,10 +159,7 @@ export default function Home() {
   }
 
   /* =========================================================
-     SCROLL RESTORE
-
-     Home Movie Detail থেকে Back করলে
-     আগের position-এ ফিরে যাবে।
+     SCROLL RESTORE — Home
   ========================================================= */
 
   useEffect(() => {
@@ -193,10 +179,7 @@ export default function Home() {
   }, [showDetailPage])
 
   /* =========================================================
-     SCROLL RESTORE
-
-     Anime Detail থেকে Back করলে
-     আগের position-এ ফিরে যাবে।
+     SCROLL RESTORE — Anime
   ========================================================= */
 
   useEffect(() => {
@@ -251,9 +234,6 @@ export default function Home() {
 
   /* =========================================================
      BROWSER BACK BUTTON
-
-     Browser history থাকবে।
-     Swipe navigation নেই।
   ========================================================= */
 
   useEffect(() => {
@@ -393,9 +373,6 @@ export default function Home() {
 
   /* =========================================================
      PAGINATION
-
-     Home page pagination change করলে
-     automatically top-এ যাবে।
   ========================================================= */
 
   const handleMoviePageChange = (
@@ -411,9 +388,6 @@ export default function Home() {
 
   /* =========================================================
      HOME MOVIE OPEN
-
-     Movie open করার আগে current scroll position
-     save করা হচ্ছে।
   ========================================================= */
 
   const handleHomeMovieClick = (
@@ -430,9 +404,6 @@ export default function Home() {
 
   /* =========================================================
      ANIME OPEN
-
-     Anime detail-এ যাওয়ার আগে current scroll position
-     save করা হচ্ছে।
   ========================================================= */
 
   const handleAnimeClick = (
@@ -449,9 +420,6 @@ export default function Home() {
 
   /* =========================================================
      PAGE / TAB NAVIGATION
-
-     Page/tab change ONLY through this function.
-     Horizontal swipe কোনো page change করবে না।
   ========================================================= */
 
   const handleTabChange = (
@@ -506,11 +474,11 @@ export default function Home() {
   const renderHomePage = () => (
     <div className="bg-black">
       <Header
-  onSearch={handleSearch}
-  searchQuery={searchQuery}
-  pageType="home"
-  searchData={movies}
-/>
+        onSearch={handleSearch}
+        searchQuery={searchQuery}
+        pageType="home"
+        searchData={movies}
+      />
 
       {searchQuery.trim() &&
       filteredMovies.length === 0 ? (
@@ -630,8 +598,8 @@ export default function Home() {
   const renderSeriesPage = () => (
     <div className="bg-black">
       <SeriesSection
-  onOpenMeBook={() => handleTabChange("mebook")}
-/>
+        onOpenMeBook={() => handleTabChange("mebook")}
+      />
     </div>
   )
 
@@ -791,10 +759,18 @@ export default function Home() {
   }
 
   /* =========================================================
-     MAIN RENDER
+     LANDING PAGE
+     
+     Prothom bar website e ashle landing page dekhabe.
+     "Enter Website" e click korle main app e jabe.
+  ========================================================= */
 
-     Horizontal swipe block থাকবে।
-     Vertical scrolling স্বাভাবিক থাকবে।
+  if (showLanding) {
+    return <LandingPage onEnter={() => setShowLanding(false)} />
+  }
+
+  /* =========================================================
+     MAIN RENDER
   ========================================================= */
 
   return (

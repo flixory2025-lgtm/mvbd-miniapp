@@ -12,7 +12,7 @@ export default function LandingPage({ onEnter }: LandingPageProps) {
     if (!container) return;
 
     container.innerHTML = '';
-    const PARTICLE_COUNT = 40;
+    const PARTICLE_COUNT = 30;
 
     for (let i = 0; i < PARTICLE_COUNT; i++) {
       const p = document.createElement('div');
@@ -33,15 +33,24 @@ export default function LandingPage({ onEnter }: LandingPageProps) {
 
   return (
     <div className="landing-wrap">
-      <div className="landing-grid-overlay"></div>
+      {/* 🎬 Background Image Layer — Mobile */}
+      <div className="landing-bg landing-bg-mobile"></div>
 
+      {/* 🎬 Background Image Layer — Desktop */}
+      <div className="landing-bg landing-bg-desktop"></div>
+
+      {/* Dark gradient overlay for readability */}
+      <div className="landing-bg-overlay"></div>
+
+      {/* Red glow orbs */}
       <div className="landing-glow landing-glow-1"></div>
       <div className="landing-glow landing-glow-2"></div>
-      <div className="landing-glow landing-glow-3"></div>
 
+      {/* Floating particles */}
       <div className="landing-particles" id="landing-particles"></div>
 
       <div className="landing-container">
+        {/* Logo */}
         <a
           href="https://mvbds.xyz"
           className="landing-logo-wrap"
@@ -63,13 +72,16 @@ export default function LandingPage({ onEnter }: LandingPageProps) {
           No ads. No limits. Just pure entertainment.
         </p>
 
+        {/* Enter Button */}
         <button onClick={onEnter} className="landing-cta-btn">
           <span className="landing-btn-icon">🚀</span>
           <span>Enter Website</span>
           <span className="landing-arrow">→</span>
         </button>
 
+        {/* 🖥️ DEVICE MOCKUPS */}
         <div className="landing-device-showcase">
+          {/* Laptop Mockup — Desktop view */}
           <div className="landing-laptop">
             <div className="landing-laptop-screen">
               <div className="landing-laptop-camera"></div>
@@ -84,6 +96,7 @@ export default function LandingPage({ onEnter }: LandingPageProps) {
             </div>
           </div>
 
+          {/* Mobile Mockup — Mobile view */}
           <div className="landing-mobile">
             <div className="landing-mobile-notch"></div>
             <div className="landing-mobile-screen">
@@ -97,6 +110,7 @@ export default function LandingPage({ onEnter }: LandingPageProps) {
           </div>
         </div>
 
+        {/* Features */}
         <div className="landing-features">
           <div className="landing-feature">
             <span className="landing-icon">🎬</span> HD Quality

@@ -1908,7 +1908,7 @@
 
 
 /* =========================================================
-   🎬 LANDING PAGE — WITH REAL BACKGROUND IMAGES
+   🎬 LANDING PAGE — DARK CINEMATIC THEME
    ========================================================= */
 
 .landing-wrap {
@@ -1918,13 +1918,20 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-start;
+  justify-content: center;
   padding: 30px 20px 40px;
   overflow-y: auto;
   overflow-x: hidden;
   scrollbar-width: none;
   color: #fff;
+
+  /* 🔥 DARK BACKGROUND — Mobile default */
   background: #050505;
+  background-image:
+    radial-gradient(circle at 15% 10%, rgba(229, 9, 20, 0.18), transparent 45%),
+    radial-gradient(circle at 85% 80%, rgba(229, 9, 20, 0.12), transparent 50%),
+    linear-gradient(180deg, #0a0202 0%, #050505 50%, #000 100%);
+
   animation: landingFadeIn 0.6s ease-out;
 }
 
@@ -1932,107 +1939,43 @@
   display: none;
 }
 
-/* =========================================================
-   BACKGROUND IMAGE LAYERS
-   ========================================================= */
-
-.landing-bg {
+.landing-wrap::before {
+  content: '';
   position: fixed;
   inset: 0;
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0.85), rgba(20, 0, 40, 0.9));
   z-index: 0;
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  animation: bgZoom 20s ease-in-out infinite alternate;
-  will-change: transform;
+  animation: overlayPulse 8s ease-in-out infinite alternate;
+  pointer-events: none;
 }
 
-@keyframes bgZoom {
-  0% { transform: scale(1); }
-  100% { transform: scale(1.08); }
+@keyframes overlayPulse {
+  0% { opacity: 0.9; }
+  100% { opacity: 0.75; }
 }
 
-/* Mobile background — hidden by default, shown on mobile */
-.landing-bg-mobile {
-  background-image: url('https://i.postimg.cc/VNdfBMRZ/Screenshot-20260926-134833-Chrome.jpg');
-  display: block;
-}
-
-/* Desktop background — hidden by default, shown on desktop */
-.landing-bg-desktop {
-  background-image: url('https://i.postimg.cc/28rC9gGj/Screenshot-2026-09-26-134807.jpg');
-  display: none;
-}
-
+/* Desktop — darker background */
 @media (min-width: 768px) {
-  .landing-bg-mobile {
-    display: none;
+  .landing-wrap {
+    background: #030303;
+    background-image:
+      radial-gradient(circle at 50% 40%, rgba(229, 9, 20, 0.22), transparent 55%),
+      radial-gradient(circle at 10% 90%, rgba(229, 9, 20, 0.15), transparent 45%),
+      linear-gradient(180deg, #0a0202 0%, #050505 50%, #000 100%);
+    justify-content: center;
   }
-  .landing-bg-desktop {
-    display: block;
-  }
 }
 
-/* Dark overlay for readability */
-.landing-bg-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 1;
-  pointer-events: none;
-  background:
-    radial-gradient(circle at 50% 30%, rgba(0, 0, 0, 0.65), rgba(0, 0, 0, 0.92)),
-    linear-gradient(180deg, rgba(0, 0, 0, 0.75) 0%, rgba(0, 0, 0, 0.55) 50%, rgba(0, 0, 0, 0.9) 100%);
+@keyframes landingFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
-/* =========================================================
-   RED GLOW ORBS
-   ========================================================= */
-
-.landing-glow {
-  position: fixed;
-  border-radius: 50%;
-  pointer-events: none;
-  z-index: 1;
-  filter: blur(100px);
-  opacity: 0.5;
-}
-
-.landing-glow-1 {
-  width: 500px;
-  height: 500px;
-  top: -150px;
-  left: -150px;
-  background: radial-gradient(circle, #e50914, transparent 70%);
-  animation: glowFloat1 12s ease-in-out infinite alternate;
-}
-
-.landing-glow-2 {
-  width: 400px;
-  height: 400px;
-  bottom: -120px;
-  right: -120px;
-  background: radial-gradient(circle, #b20710, transparent 70%);
-  animation: glowFloat2 15s ease-in-out infinite alternate;
-}
-
-@keyframes glowFloat1 {
-  0% { transform: translate(0, 0) scale(1); }
-  100% { transform: translate(60px, 80px) scale(1.15); }
-}
-
-@keyframes glowFloat2 {
-  0% { transform: translate(0, 0) scale(1); }
-  100% { transform: translate(-70px, -60px) scale(1.2); }
-}
-
-/* =========================================================
-   PARTICLES
-   ========================================================= */
-
+/* Particles */
 .landing-particles {
   position: fixed;
   inset: 0;
-  z-index: 2;
+  z-index: 1;
   pointer-events: none;
   overflow: hidden;
 }
@@ -2051,23 +1994,15 @@
   100% { transform: translateY(-100px) scale(1.2); opacity: 0; }
 }
 
-/* =========================================================
-   CONTAINER
-   ========================================================= */
-
+/* Container */
 .landing-container {
   position: relative;
-  z-index: 3;
+  z-index: 2;
   text-align: center;
   max-width: 1000px;
   width: 100%;
-  margin: 0 auto;
   animation: landingFadeInUp 1.2s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-@keyframes landingFadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  transition: transform 0.15s ease-out;
 }
 
 @keyframes landingFadeInUp {
@@ -2075,13 +2010,10 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* =========================================================
-   LOGO
-   ========================================================= */
-
+/* Logo */
 .landing-logo-wrap {
   display: inline-block;
-  margin-bottom: 15px;
+  margin-bottom: 25px;
   animation: landingLogoFloat 4s ease-in-out infinite;
   cursor: pointer;
   transition: transform 0.4s ease;
@@ -2092,101 +2024,83 @@
 }
 
 .landing-logo {
-  max-width: 240px;
-  width: 65vw;
-  filter: drop-shadow(0 0 30px rgba(229, 9, 20, 0.9));
+  max-width: 280px;
+  width: 70vw;
+  filter: drop-shadow(0 0 25px rgba(229, 9, 20, 0.8));
   animation: landingLogoGlow 3s ease-in-out infinite alternate;
 }
 
 @keyframes landingLogoFloat {
   0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-12px); }
+  50% { transform: translateY(-15px); }
 }
 
 @keyframes landingLogoGlow {
-  from { filter: drop-shadow(0 0 20px rgba(229, 9, 20, 0.7)); }
-  to { filter: drop-shadow(0 0 45px rgba(229, 9, 20, 1)); }
+  from { filter: drop-shadow(0 0 20px rgba(229, 9, 20, 0.6)); }
+  to { filter: drop-shadow(0 0 40px rgba(229, 9, 20, 1)); }
 }
 
-/* =========================================================
-   TITLE
-   ========================================================= */
-
+/* Title */
 .landing-title {
-  font-size: clamp(1.75rem, 5.5vw, 3.5rem);
+  font-size: clamp(2rem, 6vw, 4rem);
   font-weight: 800;
-  letter-spacing: 1.5px;
-  margin-bottom: 12px;
+  letter-spacing: 2px;
+  margin-bottom: 15px;
   background: linear-gradient(90deg, #fff, #e50914, #ff6b6b, #fff);
   background-size: 300% auto;
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
   animation: landingShine 4s linear infinite;
-  text-shadow: 0 4px 30px rgba(0, 0, 0, 0.8);
 }
 
 @keyframes landingShine {
   to { background-position: 300% center; }
 }
 
-/* =========================================================
-   SUBTITLE
-   ========================================================= */
-
+/* Subtitle */
 .landing-subtitle {
-  font-size: clamp(0.85rem, 2.2vw, 1.1rem);
-  color: #e0e0e0;
-  margin-bottom: 30px;
-  line-height: 1.7;
-  max-width: 650px;
-  margin-left: auto;
-  margin-right: auto;
+  font-size: clamp(0.95rem, 2.5vw, 1.25rem);
+  color: #ddd;
+  margin-bottom: 40px;
+  line-height: 1.6;
   opacity: 0;
   animation: landingFadeInUp 1.2s ease 0.4s forwards;
-  text-shadow: 0 2px 15px rgba(0, 0, 0, 0.9);
+  max-width: 700px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .landing-subtitle span {
-  color: #ff1a1a;
+  color: #e50914;
   font-weight: 600;
-  text-shadow: 0 0 15px rgba(229, 9, 20, 0.7);
 }
 
-/* =========================================================
-   CTA BUTTON
-   ========================================================= */
-
+/* CTA Button */
 .landing-cta-btn {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
-  padding: 16px 42px;
-  font-size: clamp(0.95rem, 2.3vw, 1.15rem);
+  gap: 12px;
+  padding: 18px 45px;
+  font-size: clamp(1rem, 2.5vw, 1.2rem);
   font-weight: 700;
   color: #fff;
   text-decoration: none;
-  background: linear-gradient(135deg, #e50914, #8b0309);
+  background: linear-gradient(135deg, #e50914, #b20710);
   border-radius: 50px;
-  border: 2px solid rgba(255, 26, 26, 0.4);
-  box-shadow:
-    0 10px 30px rgba(229, 9, 20, 0.6),
-    0 0 60px rgba(229, 9, 20, 0.3);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 10px 30px rgba(229, 9, 20, 0.5);
   position: relative;
   overflow: hidden;
   transition: all 0.4s ease;
-  cursor: pointer;
   opacity: 0;
-  animation: landingFadeInUp 1.2s ease 0.7s forwards, landingPulseBtn 2.5s ease-in-out 2s infinite;
+  animation: landingFadeInUp 1.2s ease 0.7s forwards, landingPulseBtn 2s ease-in-out 2s infinite;
+  cursor: pointer;
 }
 
 @keyframes landingPulseBtn {
-  0%, 100% {
-    box-shadow: 0 10px 30px rgba(229, 9, 20, 0.6), 0 0 60px rgba(229, 9, 20, 0.3);
-  }
-  50% {
-    box-shadow: 0 10px 50px rgba(229, 9, 20, 1), 0 0 90px rgba(229, 9, 20, 0.6);
-  }
+  0%, 100% { box-shadow: 0 10px 30px rgba(229, 9, 20, 0.5); }
+  50% { box-shadow: 0 10px 50px rgba(229, 9, 20, 0.9), 0 0 40px rgba(229, 9, 20, 0.5); }
 }
 
 .landing-cta-btn::before {
@@ -2196,8 +2110,8 @@
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.35), transparent);
-  transition: left 0.7s ease;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  transition: left 0.6s ease;
 }
 
 .landing-cta-btn:hover::before {
@@ -2206,10 +2120,10 @@
 
 .landing-cta-btn:hover {
   transform: translateY(-4px) scale(1.05);
-  box-shadow: 0 15px 60px rgba(229, 9, 20, 1), 0 0 100px rgba(229, 9, 20, 0.7);
+  box-shadow: 0 15px 50px rgba(229, 9, 20, 1);
 }
 
-.landing-btn-icon {
+.landing-icon-btn {
   font-size: 1.15em;
 }
 
@@ -2236,16 +2150,16 @@
   perspective: 1500px;
 }
 
-/* ============ LAPTOP MOCKUP ============ */
+/* ============ LAPTOP ============ */
 .landing-laptop {
   position: relative;
   width: 100%;
   max-width: 720px;
-  animation: laptopFloat 6s ease-in-out infinite;
+  animation: landingLaptopFloat 6s ease-in-out infinite;
   z-index: 2;
 }
 
-@keyframes laptopFloat {
+@keyframes landingLaptopFloat {
   0%, 100% { transform: translateY(0) rotateX(0deg); }
   50% { transform: translateY(-10px) rotateX(2deg); }
 }
@@ -2261,9 +2175,9 @@
   overflow: hidden;
   box-shadow:
     0 0 0 1px rgba(255, 255, 255, 0.08) inset,
-    0 -10px 50px rgba(229, 9, 20, 0.45),
-    0 30px 80px rgba(0, 0, 0, 0.9),
-    0 0 120px rgba(229, 9, 20, 0.35);
+    0 -10px 50px rgba(229, 9, 20, 0.35),
+    0 30px 80px rgba(0, 0, 0, 0.8),
+    0 0 100px rgba(229, 9, 20, 0.25);
 }
 
 .landing-laptop-camera {
@@ -2295,8 +2209,8 @@
   background: linear-gradient(180deg, #2a2a2a 0%, #1a1a1a 50%, #0d0d0d 100%);
   border-radius: 0 0 12px 12px;
   box-shadow:
-    0 20px 40px rgba(0, 0, 0, 0.95),
-    0 30px 80px rgba(229, 9, 20, 0.25);
+    0 20px 40px rgba(0, 0, 0, 0.9),
+    0 30px 80px rgba(229, 9, 20, 0.15);
 }
 
 .landing-laptop-notch {
@@ -2310,7 +2224,7 @@
   border-radius: 0 0 8px 8px;
 }
 
-/* ============ MOBILE MOCKUP ============ */
+/* ============ MOBILE ============ */
 .landing-mobile {
   display: none;
   position: relative;
@@ -2323,14 +2237,14 @@
   overflow: hidden;
   box-shadow:
     0 0 0 1px rgba(255, 255, 255, 0.1) inset,
-    0 0 60px rgba(229, 9, 20, 0.5),
-    0 30px 80px rgba(0, 0, 0, 0.95),
-    0 0 120px rgba(229, 9, 20, 0.4);
-  animation: mobileFloat 5s ease-in-out infinite;
+    0 0 60px rgba(229, 9, 20, 0.4),
+    0 30px 80px rgba(0, 0, 0, 0.9),
+    0 0 100px rgba(229, 9, 20, 0.3);
+  animation: landingMobileFloat 5s ease-in-out infinite;
   z-index: 2;
 }
 
-@keyframes mobileFloat {
+@keyframes landingMobileFloat {
   0%, 100% { transform: translateY(0) rotate(0deg); }
   50% { transform: translateY(-8px) rotate(-1deg); }
 }
@@ -2375,28 +2289,19 @@
   z-index: 3;
 }
 
-/* ============ RESPONSIVE DEVICE SWITCHING ============ */
-
+/* Responsive switch */
 @media (max-width: 767px) {
-  .landing-laptop {
-    display: none;
-  }
+  .landing-laptop { display: none; }
   .landing-mobile {
     display: block;
     margin: 0 auto;
   }
-  .landing-device-showcase {
-    margin-top: 40px;
-  }
+  .landing-device-showcase { margin-top: 40px; }
 }
 
 @media (min-width: 768px) {
-  .landing-laptop {
-    display: block;
-  }
-  .landing-mobile {
-    display: none;
-  }
+  .landing-laptop { display: block; }
+  .landing-mobile { display: none; }
 }
 
 /* =========================================================
@@ -2407,38 +2312,36 @@
   display: flex;
   justify-content: center;
   flex-wrap: wrap;
-  gap: 14px;
-  margin-top: 55px;
+  gap: 20px;
+  margin-top: 60px;
   opacity: 0;
   animation: landingFadeInUp 1.2s ease 1.3s forwards;
 }
 
 .landing-feature {
-  background: rgba(0, 0, 0, 0.55);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(229, 9, 20, 0.35);
-  padding: 14px 22px;
-  border-radius: 14px;
-  font-size: 0.88rem;
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  padding: 18px 28px;
+  border-radius: 16px;
+  font-size: 0.95rem;
   font-weight: 500;
-  color: #f5f5f5;
   transition: all 0.4s ease;
   display: flex;
   align-items: center;
-  gap: 8px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  gap: 10px;
 }
 
 .landing-feature:hover {
-  background: rgba(229, 9, 20, 0.3);
+  background: rgba(229, 9, 20, 0.2);
   border-color: #e50914;
   transform: translateY(-5px);
-  box-shadow: 0 10px 35px rgba(229, 9, 20, 0.6);
+  box-shadow: 0 10px 30px rgba(229, 9, 20, 0.4);
 }
 
 .landing-icon {
-  font-size: 1.2rem;
+  font-size: 1.3rem;
 }
 
 /* =========================================================
@@ -2447,16 +2350,14 @@
 
 .landing-footer {
   position: relative;
-  z-index: 3;
-  margin-top: 50px;
+  z-index: 2;
+  margin-top: 60px;
   padding-bottom: 20px;
-  text-align: center;
-  font-size: 0.8rem;
-  color: #999;
+  font-size: 0.85rem;
+  color: #888;
   opacity: 0;
   animation: landingFadeInUp 1.2s ease 1.6s forwards;
-  width: 100%;
-  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.9);
+  text-align: center;
 }
 
 .landing-footer a {
@@ -2467,22 +2368,15 @@
 
 .landing-footer a:hover {
   color: #ff6b6b;
-  text-shadow: 0 0 15px rgba(229, 9, 20, 0.9);
+  text-shadow: 0 0 15px rgba(229, 9, 20, 0.8);
 }
 
-/* =========================================================
-   RESPONSIVE
-   ========================================================= */
-
+/* Mobile tweaks */
 @media (max-width: 600px) {
-  .landing-wrap {
-    padding: 20px 16px 30px;
-  }
-
-  .landing-logo { max-width: 200px; }
-  .landing-cta-btn { padding: 14px 32px; }
-  .landing-features { gap: 10px; margin-top: 40px; }
-  .landing-feature { padding: 11px 16px; font-size: 0.78rem; }
-  .landing-device-showcase { margin-top: 35px; }
+  .landing-logo { max-width: 220px; }
+  .landing-cta-btn { padding: 15px 35px; }
+  .landing-features { gap: 12px; margin-top: 40px; }
+  .landing-feature { padding: 14px 20px; font-size: 0.85rem; }
+  .landing-footer { margin-top: 40px; }
   .landing-mobile { max-width: 220px; }
 }

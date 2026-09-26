@@ -42,6 +42,12 @@ const tabs = [
 
 type TabId = (typeof tabs)[number]
 
+/* =========================================================
+   WELCOME POPUP LOCAL STORAGE KEY
+========================================================= */
+
+const WELCOME_POPUP_SEEN_KEY = "mvbd_welcome_popup_seen"
+
 export default function Home() {
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedGenre, setSelectedGenre] =
@@ -298,20 +304,49 @@ export default function Home() {
 
   /* =========================================================
      WELCOME POPUP
+     
+     শুধুমাত্র নতুন ইউজারের প্রথম ভিজিটে দেখাবে।
+     localStorage-এ "seen" flag সেভ থাকলে আর দেখাবে না।
   ========================================================= */
 
   useEffect(() => {
-    const timer = window.setTimeout(() => {
-      setShowWelcomePopup(true)
-    }, 450)
+    // চেক করুন ইউজার আগে দেখেছে কিনা
+    let hasSeenPopup = false
 
-    return () => {
-      window.clearTimeout(timer)
+    try {
+      hasSeenPopup =
+        localStorage.getItem(
+          WELCOME_POPUP_SEEN_KEY
+        ) === "true"
+    } catch (error) {
+      // localStorage unavailable (private mode ইত্যাদি)
+      hasSeenPopup = false
+    }
+
+    // যদি আগে না দেখে থাকে, তাহলে popup দেখান
+    if (!hasSeenPopup) {
+      const timer = window.setTimeout(() => {
+        setShowWelcomePopup(true)
+      }, 450)
+
+      return () => {
+        window.clearTimeout(timer)
+      }
     }
   }, [])
 
   const handleClosePopup = () => {
     setShowWelcomePopup(false)
+
+    // localStorage-এ সেভ করুন যাতে পরের বার আর না আসে
+    try {
+      localStorage.setItem(
+        WELCOME_POPUP_SEEN_KEY,
+        "true"
+      )
+    } catch (error) {
+      // localStorage unavailable হলে silently ignore
+    }
   }
 
   /* =========================================================

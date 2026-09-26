@@ -43,6 +43,12 @@ const tabs = [
 
 type TabId = (typeof tabs)[number]
 
+/* =========================================================
+   LOCAL STORAGE KEYS
+========================================================= */
+
+const STORAGE_KEY_WELCOME = "mvbd_welcome_seen"
+
 export default function Home() {
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedGenre, setSelectedGenre] =
@@ -277,12 +283,35 @@ export default function Home() {
   }, [])
 
   /* =========================================================
-     WELCOME POPUP
+     WELCOME POPUP — ONLY FIRST VISIT
+
+     Prothom bar user ashle popup dekhabe.
+     localStorage e "seen" flag save hobe.
+     Porবর্তী bar theke ar dekhabe na।
   ========================================================= */
 
   useEffect(() => {
+    // SSR guard — window access only on client
+    if (typeof window === "undefined") return
+
+    // Check if user already saw the popup
+    const hasSeenWelcome =
+      window.localStorage.getItem(STORAGE_KEY_WELCOME)
+
+    // Already seen → don't show popup
+    if (hasSeenWelcome === "true") {
+      return
+    }
+
+    // First visit → show popup after 450ms
     const timer = window.setTimeout(() => {
       setShowWelcomePopup(true)
+
+      // Mark as seen immediately (even if user closes via X)
+      window.localStorage.setItem(
+        STORAGE_KEY_WELCOME,
+        "true"
+      )
     }, 450)
 
     return () => {
@@ -760,13 +789,14 @@ export default function Home() {
 
   /* =========================================================
      LANDING PAGE
-     
-     Prothom bar website e ashle landing page dekhabe.
-     "Enter Website" e click korle main app e jabe.
   ========================================================= */
 
   if (showLanding) {
-    return <LandingPage onEnter={() => setShowLanding(false)} />
+    return (
+      <LandingPage
+        onEnter={() => setShowLanding(false)}
+      />
+    )
   }
 
   /* =========================================================
@@ -835,7 +865,7 @@ export default function Home() {
       </div>
 
       {/* =====================================================
-          WELCOME POPUP
+          WELCOME POPUP — ONLY FIRST VISIT
       ===================================================== */}
 
       {showWelcomePopup && (

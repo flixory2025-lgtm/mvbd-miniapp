@@ -36,15 +36,16 @@ export default function LandingPage() {
         <nav className="landing-nav" aria-label="Main navigation">
           <a href="#top" className="landing-brand"><span className="brand-mark">M</span><span>MVBD<span className="brand-dot">.</span></span></a>
           <div className="landing-nav-links"><a href="#features">Features</a><a href="#preview">Preview</a><a href="#catalog">Library</a></div>
-          <a href="#catalog" className="landing-nav-cta">Open MVBD <ArrowRight aria-hidden="true" /></a>
+          <a href="https://mvbds.xyz" className="landing-nav-cta">Visit main site <ArrowRight aria-hidden="true" /></a>
         </nav>
 
         <div className="landing-hero-content" id="top">
           <Reveal className="hero-copy">
             <div className="eyebrow"><Sparkles aria-hidden="true" /> Your world of cinema</div>
-            <h1>Every story.<br /><em>One home.</em></h1>
+            <h1>Welcome to<br /><em>MoviesVerseBD</em></h1>
+            <p className="hero-domain">mvbds.xyz</p>
             <p>Discover the movies, series and anime you love — curated beautifully for the way you watch.</p>
-            <div className="hero-actions"><a href="#catalog" className="landing-primary"><Play fill="currentColor" aria-hidden="true" /> Start exploring</a><a href="#preview" className="landing-ghost">See how it works <ArrowDown aria-hidden="true" /></a></div>
+            <div className="hero-actions"><a href="https://mvbds.xyz" className="landing-primary"><Play fill="currentColor" aria-hidden="true" /> Visit main site</a><a href="#preview" className="landing-ghost">See how it works <ArrowDown aria-hidden="true" /></a></div>
             <div className="hero-proof"><span className="proof-dots"><i /><i /><i /><i /></span><span>Built for movie lovers</span><span className="proof-divider" /><span>mvbds.xyz</span></div>
           </Reveal>
           <Reveal className="hero-side-note"><span className="vertical-line" /><span>WATCH<br />WITHOUT<br />LIMITS</span></Reveal>
@@ -74,7 +75,7 @@ export default function LandingPage() {
           </div>
         </Reveal>
 
-        <Reveal className="landing-cta"><div><p className="section-kicker">YOUR NEXT WATCH IS WAITING</p><h2>Make tonight<br /><span>movie night.</span></h2></div><a href="#top" className="landing-primary">Enter MVBD <ArrowRight aria-hidden="true" /></a></Reveal>
+        <Reveal className="landing-cta"><div><p className="section-kicker">YOUR NEXT WATCH IS WAITING</p><h2>Make tonight<br /><span>movie night.</span></h2></div><a href="https://mvbds.xyz" className="landing-primary">Visit main site <ArrowRight aria-hidden="true" /></a></Reveal>
         <footer className="landing-footer"><a href="#top" className="landing-brand"><span className="brand-mark">M</span><span>MVBD<span className="brand-dot">.</span></span></a><span>© 2026 MVBD. Made for the stories.</span><span>mvbds.xyz</span></footer>
       </div>
     </section>

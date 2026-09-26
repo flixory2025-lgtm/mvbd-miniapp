@@ -14,8 +14,8 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://mvbds.xyz"),
 
   title: {
-    default: "MoviesVerseBD",
-    template: "%s | MoviesVerseBD",
+    default: "MVBD — Every story. One home.",
+    template: "%s | MVBD",
   },
 
   description:

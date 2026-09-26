@@ -23,6 +23,7 @@ import AboutUsPage from "@/components/about-us-page"
 import SettingsPage from "@/components/settings-page"
 import MeBookPage from "@/components/mebook-page"
 import { MvbdAiAssistant } from "@/components/mvbd-ai/mvbd-ai-assistant"
+import LandingPage from "@/components/landing-page"
 
 import { movies, genres } from "@/lib/movie-data"
 import { animes } from "@/lib/anime-data"
@@ -822,7 +823,9 @@ export default function Home() {
           overscrollBehaviorX: "none",
         }}
       >
+        <LandingPage />
         <div
+          id="catalog"
           className="relative w-full"
           style={{
             width: "100%",

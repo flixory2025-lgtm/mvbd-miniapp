@@ -39,7 +39,6 @@ const tabs = [
   "exclusive",
   "profile",
 ] as const
-
 type TabId = (typeof tabs)[number]
 
 /* =========================================================
@@ -91,7 +90,7 @@ export default function Home() {
   /* =========================================================
      SCROLL POSITION
 
-     Movie / Anime detail page-এ যাওয়ার আগে
+     Movie / Anime detail page-এ যাওয়ার আগে
      current scroll position save হবে।
 
      Back করলে সেই position restore হবে।
@@ -102,7 +101,6 @@ export default function Home() {
 
   const restoreHomeScrollRef = useRef(false)
   const restoreAnimeScrollRef = useRef(false)
-
   /* =========================================================
      HORIZONTAL SWIPE BLOCKING
 
@@ -304,7 +302,7 @@ export default function Home() {
 
   /* =========================================================
      WELCOME POPUP
-
+     
      শুধুমাত্র নতুন ইউজারের প্রথম ভিজিটে দেখাবে।
      localStorage-এ "seen" flag সেভ থাকলে আর দেখাবে না।
   ========================================================= */
@@ -312,7 +310,6 @@ export default function Home() {
   useEffect(() => {
     // চেক করুন ইউজার আগে দেখেছে কিনা
     let hasSeenPopup = false
-
     try {
       hasSeenPopup =
         localStorage.getItem(
@@ -466,7 +463,7 @@ export default function Home() {
   /* =========================================================
      ANIME OPEN
 
-     Anime detail-এ যাওয়ার আগে current scroll position
+     Anime detail-এ যাওয়ার আগে current scroll position
      save করা হচ্ছে।
   ========================================================= */
 
@@ -541,11 +538,11 @@ export default function Home() {
   const renderHomePage = () => (
     <div className="bg-black">
       <Header
-        onSearch={handleSearch}
-        searchQuery={searchQuery}
-        pageType="home"
-        searchData={movies}
-      />
+  onSearch={handleSearch}
+  searchQuery={searchQuery}
+  pageType="home"
+  searchData={movies}
+/>
 
       {searchQuery.trim() &&
       filteredMovies.length === 0 ? (
@@ -564,7 +561,6 @@ export default function Home() {
             >
               Facebook Group
             </a>
-
             <a
               href="https://t.me/moviesversebdreq"
               target="_blank"
@@ -665,11 +661,10 @@ export default function Home() {
   const renderSeriesPage = () => (
     <div className="bg-black">
       <SeriesSection
-        onOpenMeBook={() => handleTabChange("mebook")}
-      />
+  onOpenMeBook={() => handleTabChange("mebook")}
+/>
     </div>
   )
-
   /* =========================================================
      MEBOOK PAGE
   ========================================================= */
@@ -711,7 +706,6 @@ export default function Home() {
           }
         />
       )}
-
       {profileSubPage ===
         "about" && (
         <AboutUsPage

@@ -7,11 +7,6 @@ type LandingPageProps = {
 };
 
 export default function LandingPage({ onEnterSite }: LandingPageProps = {}) {
-  const slidesRef = useRef<HTMLDivElement>(null);
-  const dotsRef = useRef<HTMLDivElement>(null);
-  const typingRef = useRef<HTMLSpanElement>(null);
-
-  // সব inline HTML inject করার জন্য (dangerouslySetInnerHTML approach)
   const htmlContent = `
     <div class="zoom-vignette"></div>
     <div class="zoom-flash"></div>
@@ -311,6 +306,11 @@ export default function LandingPage({ onEnterSite }: LandingPageProps = {}) {
     </footer>
   `;
 
+  const onEnterSiteRef = useRef(onEnterSite);
+  useEffect(() => {
+    onEnterSiteRef.current = onEnterSite;
+  }, [onEnterSite]);
+
   useEffect(() => {
     // ==================== DATA ====================
     const posters = [
@@ -342,28 +342,31 @@ export default function LandingPage({ onEnterSite }: LandingPageProps = {}) {
     const heroDotsContainer = document.getElementById('heroDots');
 
     if (heroSlidesContainer && heroDotsContainer) {
-      slideData.forEach((slide, i) => {
-        const slideEl = document.createElement('div');
-        slideEl.className = 'hero-slide' + (i === 0 ? ' active' : '');
-        slideEl.dataset.slide = String(i);
-        slideEl.style.backgroundImage = `
-          linear-gradient(to top, #0b0b0f 0%, rgba(11,11,15,0.75) 18%, rgba(11,11,15,0.35) 55%, rgba(11,11,15,0.75) 100%),
-          linear-gradient(to right, rgba(11,11,15,0.88) 0%, rgba(11,11,15,0.4) 45%, transparent 75%),
-          url('${posters[i]}')
-        `;
-        slideEl.style.backgroundSize = 'cover, cover, cover';
-        slideEl.style.backgroundPosition = 'center, center, center 20%';
-        heroSlidesContainer.appendChild(slideEl);
+      // prevent duplicate build if effect runs twice (React 18 strict)
+      if (heroSlidesContainer.children.length === 0) {
+        slideData.forEach((slide, i) => {
+          const slideEl = document.createElement('div');
+          slideEl.className = 'hero-slide' + (i === 0 ? ' active' : '');
+          slideEl.dataset.slide = String(i);
+          slideEl.style.backgroundImage = `
+            linear-gradient(to top, #0b0b0f 0%, rgba(11,11,15,0.75) 18%, rgba(11,11,15,0.35) 55%, rgba(11,11,15,0.75) 100%),
+            linear-gradient(to right, rgba(11,11,15,0.88) 0%, rgba(11,11,15,0.4) 45%, transparent 75%),
+            url('${posters[i]}')
+          `;
+          slideEl.style.backgroundSize = 'cover, cover, cover';
+          slideEl.style.backgroundPosition = 'center, center, center 20%';
+          heroSlidesContainer.appendChild(slideEl);
 
-        const dotEl = document.createElement('div');
-        dotEl.className = 'dot' + (i === 0 ? ' active' : '');
-        dotEl.dataset.dot = String(i);
-        dotEl.addEventListener('click', () => {
-          goToSlide(i);
-          startTimer();
+          const dotEl = document.createElement('div');
+          dotEl.className = 'dot' + (i === 0 ? ' active' : '');
+          dotEl.dataset.dot = String(i);
+          dotEl.addEventListener('click', () => {
+            goToSlide(i);
+            startTimer();
+          });
+          heroDotsContainer.appendChild(dotEl);
         });
-        heroDotsContainer.appendChild(dotEl);
-      });
+      }
     }
 
     const slides = document.querySelectorAll('.hero-slide');
@@ -486,48 +489,39 @@ export default function LandingPage({ onEnterSite }: LandingPageProps = {}) {
 
     typingTimeout = setTimeout(typeLoop, 1600);
 
-    // ==================== ZOOM TRANSITION ====================
-    function performZoomTransition(sourceElement?: HTMLElement | null) {
-      if (document.documentElement.classList.contains('zooming')) return;
+    // ==================== SMOOTH TRANSITION (NO ZOOM) ====================
+    function handleEnterSiteClick(e: Event) {
+      e.preventDefault();
+      if (document.documentElement.classList.contains("zooming")) return;
 
-      let clickX = window.innerWidth / 2;
-      let clickY = window.innerHeight / 2;
-      if (sourceElement) {
-        const rect = sourceElement.getBoundingClientRect();
-        clickX = rect.left + rect.width / 2;
-        clickY = rect.top + rect.height / 2;
+      // Save flag
+      try {
+        localStorage.setItem("mvbd_landing_seen", "true");
+      } catch (err) {
+        // ignore
       }
 
-      const ripple = document.createElement('div');
-      ripple.className = 'click-ripple';
-      const size = 40;
-      ripple.style.width = size + 'px';
-      ripple.style.height = size + 'px';
-      ripple.style.left = clickX + 'px';
-      ripple.style.top = clickY + 'px';
-      document.body.appendChild(ripple);
-
-      document.documentElement.classList.add('zooming');
+      // Smooth fade-out then call onEnterSite
+      const root = document.querySelector(".landing-page-root") as HTMLElement | null;
+      if (root) {
+        root.style.transition = "opacity 400ms ease, transform 400ms ease";
+        root.style.opacity = "0";
+        root.style.transform = "scale(0.98)";
+      }
 
       setTimeout(() => {
-  // Notify parent to show streaming site
-  if (onEnterSite) {
-    onEnterSite();
-  } else {
-    // Fallback — reload page (after setting localStorage)
-    try {
-      localStorage.setItem("mvbd_landing_seen", "true");
-    } catch (e) {}
-    window.location.reload();
-  }
-}, 720);
+        if (onEnterSiteRef.current) {
+          onEnterSiteRef.current();
+        } else {
+          // Fallback — reload the page (parent will re-check localStorage)
+          window.location.reload();
+        }
+      }, 420);
     }
 
+    // Attach to all [data-site-link] elements
     document.querySelectorAll('[data-site-link]').forEach((link) => {
-      link.addEventListener('click', (e) => {
-        e.preventDefault();
-        performZoomTransition(link as HTMLElement);
-      });
+      link.addEventListener('click', handleEnterSiteClick);
     });
 
     // ==================== NAV SCROLL ====================
@@ -612,16 +606,17 @@ export default function LandingPage({ onEnterSite }: LandingPageProps = {}) {
         </div>
       `;
 
-      card.addEventListener('click', () => {
-        performZoomTransition(card);
-      });
+      card.addEventListener('click', handleEnterSiteClick);
 
       return card;
     }
 
-    document.getElementById('slider1')?.append(...row1.map(buildCard));
-    document.getElementById('slider2')?.append(...row2.map(buildCard));
-    document.getElementById('slider3')?.append(...row3.map(buildCard));
+    const s1 = document.getElementById('slider1');
+    const s2 = document.getElementById('slider2');
+    const s3 = document.getElementById('slider3');
+    if (s1 && s1.children.length === 0) s1.append(...row1.map(buildCard));
+    if (s2 && s2.children.length === 0) s2.append(...row2.map(buildCard));
+    if (s3 && s3.children.length === 0) s3.append(...row3.map(buildCard));
 
     // ==================== DRAG TO SCROLL ====================
     document.querySelectorAll('.slider').forEach((slider) => {
@@ -683,6 +678,9 @@ export default function LandingPage({ onEnterSite }: LandingPageProps = {}) {
       clearTimeout(typingTimeout);
       window.removeEventListener('scroll', handleScroll);
       revealObs.disconnect();
+      document.querySelectorAll('[data-site-link]').forEach((link) => {
+        link.removeEventListener('click', handleEnterSiteClick);
+      });
     };
   }, []);
 

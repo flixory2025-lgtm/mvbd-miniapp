@@ -2,7 +2,11 @@
 
 import React, { useEffect, useRef } from "react";
 
-export default function LandingPage() {
+type LandingPageProps = {
+  onEnterSite?: () => void;
+};
+
+export default function LandingPage({ onEnterSite }: LandingPageProps = {}) {
   const slidesRef = useRef<HTMLDivElement>(null);
   const dotsRef = useRef<HTMLDivElement>(null);
   const typingRef = useRef<HTMLSpanElement>(null);
@@ -506,9 +510,17 @@ export default function LandingPage() {
       document.documentElement.classList.add('zooming');
 
       setTimeout(() => {
-        // Navigate to actual home page
-        window.location.href = "/home";
-      }, 720);
+  // Notify parent to show streaming site
+  if (onEnterSite) {
+    onEnterSite();
+  } else {
+    // Fallback — reload page (after setting localStorage)
+    try {
+      localStorage.setItem("mvbd_landing_seen", "true");
+    } catch (e) {}
+    window.location.reload();
+  }
+}, 720);
     }
 
     document.querySelectorAll('[data-site-link]').forEach((link) => {

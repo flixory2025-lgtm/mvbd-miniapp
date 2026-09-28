@@ -24,6 +24,8 @@ import SettingsPage from "@/components/settings-page"
 import MeBookPage from "@/components/mebook-page"
 import { MvbdAiAssistant } from "@/components/mvbd-ai/mvbd-ai-assistant"
 
+import LandingPage from "@/components/landing-page"
+
 import { movies, genres } from "@/lib/movie-data"
 import { animes } from "@/lib/anime-data"
 import type { Anime } from "@/lib/anime-data"
@@ -39,6 +41,7 @@ const tabs = [
   "exclusive",
   "profile",
 ] as const
+
 type TabId = (typeof tabs)[number]
 
 /* =========================================================
@@ -47,7 +50,73 @@ type TabId = (typeof tabs)[number]
 
 const WELCOME_POPUP_SEEN_KEY = "mvbd_welcome_popup_seen"
 
-export default function Home() {
+/* =========================================================
+   LANDING PAGE LOCAL STORAGE KEY
+
+   ইউজার একবার "Visit Main Site" click করলে
+   এই key সেভ হবে — পরের বার আর landing page দেখাবে না।
+========================================================= */
+
+const LANDING_SEEN_KEY = "mvbd_landing_seen"
+
+export default function Page() {
+  /* =========================================================
+     LANDING PAGE STATE
+
+     default = true (প্রথমে landing page দেখাবে)
+     user click করলে false হবে → Home (streaming site) show
+  ========================================================= */
+
+  const [showLanding, setShowLanding] = useState(true)
+  const [landingReady, setLandingReady] = useState(false)
+
+  /* =========================================================
+     LANDING PAGE CHECK (localStorage)
+
+     Component mount হলে check করবো —
+     user আগে landing page দেখেছে কিনা।
+  ========================================================= */
+
+  useEffect(() => {
+    let hasSeenLanding = false
+
+    try {
+      hasSeenLanding =
+        localStorage.getItem(LANDING_SEEN_KEY) === "true"
+    } catch (error) {
+      // localStorage unavailable (private mode ইত্যাদি)
+      hasSeenLanding = false
+    }
+
+    if (hasSeenLanding) {
+      setShowLanding(false)
+    }
+
+    setLandingReady(true)
+  }, [])
+
+  /* =========================================================
+     HANDLE LANDING → HOME TRANSITION
+
+     Landing page থেকে আসার পর:
+     1. localStorage এ flag save করবো
+     2. showLanding = false করবো (Home show হবে)
+  ========================================================= */
+
+  const handleEnterSite = () => {
+    try {
+      localStorage.setItem(LANDING_SEEN_KEY, "true")
+    } catch (error) {
+      // silently ignore
+    }
+
+    setShowLanding(false)
+  }
+
+  /* =========================================================
+     EXISTING STREAMING STATE
+  ========================================================= */
+
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedGenre, setSelectedGenre] =
     useState<string | null>(null)
@@ -89,11 +158,6 @@ export default function Home() {
 
   /* =========================================================
      SCROLL POSITION
-
-     Movie / Anime detail page-এ যাওয়ার আগে
-     current scroll position save হবে।
-
-     Back করলে সেই position restore হবে।
   ========================================================= */
 
   const homeScrollPositionRef = useRef(0)
@@ -101,14 +165,9 @@ export default function Home() {
 
   const restoreHomeScrollRef = useRef(false)
   const restoreAnimeScrollRef = useRef(false)
+
   /* =========================================================
      HORIZONTAL SWIPE BLOCKING
-
-     Left / Right swipe:
-       → page/tab change করবে না
-
-     Up / Down:
-       → normal scrolling কাজ করবে
   ========================================================= */
 
   const touchStartXRef = useRef<number | null>(null)
@@ -148,13 +207,6 @@ export default function Home() {
     const deltaY =
       touch.clientY - touchStartYRef.current
 
-    /*
-      শুধুমাত্র horizontal movement হলে
-      horizontal gesture block হবে।
-
-      Vertical movement হলে preventDefault হবে না।
-    */
-
     if (
       Math.abs(deltaX) >
       Math.abs(deltaY)
@@ -174,10 +226,7 @@ export default function Home() {
   }
 
   /* =========================================================
-     SCROLL RESTORE
-
-     Home Movie Detail থেকে Back করলে
-     আগের position-এ ফিরে যাবে।
+     SCROLL RESTORE — Home Movie Detail
   ========================================================= */
 
   useEffect(() => {
@@ -197,10 +246,7 @@ export default function Home() {
   }, [showDetailPage])
 
   /* =========================================================
-     SCROLL RESTORE
-
-     Anime Detail থেকে Back করলে
-     আগের position-এ ফিরে যাবে।
+     SCROLL RESTORE — Anime Detail
   ========================================================= */
 
   useEffect(() => {
@@ -255,9 +301,6 @@ export default function Home() {
 
   /* =========================================================
      BROWSER BACK BUTTON
-
-     Browser history থাকবে।
-     Swipe navigation নেই।
   ========================================================= */
 
   useEffect(() => {
@@ -302,25 +345,23 @@ export default function Home() {
 
   /* =========================================================
      WELCOME POPUP
-     
-     শুধুমাত্র নতুন ইউজারের প্রথম ভিজিটে দেখাবে।
-     localStorage-এ "seen" flag সেভ থাকলে আর দেখাবে না।
   ========================================================= */
 
   useEffect(() => {
-    // চেক করুন ইউজার আগে দেখেছে কিনা
+    // landing page দেখাচ্ছে তখন welcome popup দেখাবো না
+    if (showLanding) return
+
     let hasSeenPopup = false
+
     try {
       hasSeenPopup =
         localStorage.getItem(
           WELCOME_POPUP_SEEN_KEY
         ) === "true"
     } catch (error) {
-      // localStorage unavailable (private mode ইত্যাদি)
       hasSeenPopup = false
     }
 
-    // যদি আগে না দেখে থাকে, তাহলে popup দেখান
     if (!hasSeenPopup) {
       const timer = window.setTimeout(() => {
         setShowWelcomePopup(true)
@@ -330,19 +371,18 @@ export default function Home() {
         window.clearTimeout(timer)
       }
     }
-  }, [])
+  }, [showLanding])
 
   const handleClosePopup = () => {
     setShowWelcomePopup(false)
 
-    // localStorage-এ সেভ করুন যাতে পরের বার আর না আসে
     try {
       localStorage.setItem(
         WELCOME_POPUP_SEEN_KEY,
         "true"
       )
     } catch (error) {
-      // localStorage unavailable হলে silently ignore
+      // silently ignore
     }
   }
 
@@ -425,9 +465,6 @@ export default function Home() {
 
   /* =========================================================
      PAGINATION
-
-     Home page pagination change করলে
-     automatically top-এ যাবে।
   ========================================================= */
 
   const handleMoviePageChange = (
@@ -443,9 +480,6 @@ export default function Home() {
 
   /* =========================================================
      HOME MOVIE OPEN
-
-     Movie open করার আগে current scroll position
-     save করা হচ্ছে।
   ========================================================= */
 
   const handleHomeMovieClick = (
@@ -462,9 +496,6 @@ export default function Home() {
 
   /* =========================================================
      ANIME OPEN
-
-     Anime detail-এ যাওয়ার আগে current scroll position
-     save করা হচ্ছে।
   ========================================================= */
 
   const handleAnimeClick = (
@@ -481,9 +512,6 @@ export default function Home() {
 
   /* =========================================================
      PAGE / TAB NAVIGATION
-
-     Page/tab change ONLY through this function.
-     Horizontal swipe কোনো page change করবে না।
   ========================================================= */
 
   const handleTabChange = (
@@ -538,11 +566,11 @@ export default function Home() {
   const renderHomePage = () => (
     <div className="bg-black">
       <Header
-  onSearch={handleSearch}
-  searchQuery={searchQuery}
-  pageType="home"
-  searchData={movies}
-/>
+        onSearch={handleSearch}
+        searchQuery={searchQuery}
+        pageType="home"
+        searchData={movies}
+      />
 
       {searchQuery.trim() &&
       filteredMovies.length === 0 ? (
@@ -561,6 +589,7 @@ export default function Home() {
             >
               Facebook Group
             </a>
+
             <a
               href="https://t.me/moviesversebdreq"
               target="_blank"
@@ -661,10 +690,11 @@ export default function Home() {
   const renderSeriesPage = () => (
     <div className="bg-black">
       <SeriesSection
-  onOpenMeBook={() => handleTabChange("mebook")}
-/>
+        onOpenMeBook={() => handleTabChange("mebook")}
+      />
     </div>
   )
+
   /* =========================================================
      MEBOOK PAGE
   ========================================================= */
@@ -706,6 +736,7 @@ export default function Home() {
           }
         />
       )}
+
       {profileSubPage ===
         "about" && (
         <AboutUsPage
@@ -821,9 +852,6 @@ export default function Home() {
 
   /* =========================================================
      MAIN RENDER
-
-     Horizontal swipe block থাকবে।
-     Vertical scrolling স্বাভাবিক থাকবে।
   ========================================================= */
 
   return (
@@ -858,14 +886,37 @@ export default function Home() {
             overflowX: "clip",
           }}
         >
-          {renderPage(activeTab)}
+          {/* =================================================
+              LANDING PAGE or STREAMING SITE
+              
+              - যদি user নতুন হয় → Landing Page দেখাবে
+              - Visit Main Site click করলে → Streaming Site
+              - পরের বার আসলে direct Streaming Site দেখাবে
+          ================================================= */}
+
+          {!landingReady ? (
+            // Landing check চলছে (কয়েক মিলিসেকেন্ড)
+            // → blank black screen, flicker এড়ানোর জন্য
+            <div
+              style={{
+                minHeight: "100vh",
+                background: "#000",
+              }}
+            />
+          ) : showLanding ? (
+            <LandingPage onEnterSite={handleEnterSite} />
+          ) : (
+            renderPage(activeTab)
+          )}
         </div>
 
         {/* =====================================================
             BOTTOM NAVIGATION
+
+            শুধু streaming site এ দেখাবে, landing page এ না।
         ===================================================== */}
 
-        {activeTab !== "mebook" && (
+        {!showLanding && activeTab !== "mebook" && (
           <div
             className="relative z-[50]"
             style={{
@@ -889,9 +940,11 @@ export default function Home() {
 
       {/* =====================================================
           WELCOME POPUP
+
+          শুধু streaming site এ দেখাবে, landing page এ না।
       ===================================================== */}
 
-      {showWelcomePopup && (
+      {!showLanding && showWelcomePopup && (
         <WelcomePopup
           onClose={
             handleClosePopup
@@ -901,9 +954,11 @@ export default function Home() {
 
       {/* =====================================================
           MVBD AI ASSISTANT
+
+          শুধু streaming site এ দেখাবে।
       ===================================================== */}
 
-      {activeTab === "home" && (
+      {!showLanding && activeTab === "home" && (
         <MvbdAiAssistant />
       )}
     </div>

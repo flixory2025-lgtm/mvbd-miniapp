@@ -494,12 +494,7 @@ export default function LandingPage({ onEnterSite }: LandingPageProps = {}) {
       e.preventDefault();
       if (document.documentElement.classList.contains("zooming")) return;
 
-      // Save flag
-      try {
-        localStorage.setItem("mvbd_landing_seen", "true");
-      } catch (err) {
-        // ignore
-      }
+            // localStorage save করছি না — যাতে প্রতিবার landing দেখায়
 
       // Smooth fade-out then call onEnterSite
       const root = document.querySelector(".landing-page-root") as HTMLElement | null;

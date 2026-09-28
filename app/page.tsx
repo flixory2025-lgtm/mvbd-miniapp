@@ -77,21 +77,8 @@ export default function Page() {
      user আগে landing page দেখেছে কিনা।
   ========================================================= */
 
-  useEffect(() => {
-    let hasSeenLanding = false
-
-    try {
-      hasSeenLanding =
-        localStorage.getItem(LANDING_SEEN_KEY) === "true"
-    } catch (error) {
-      // localStorage unavailable (private mode ইত্যাদি)
-      hasSeenLanding = false
-    }
-
-    if (hasSeenLanding) {
-      setShowLanding(false)
-    }
-
+    useEffect(() => {
+    // সবসময় landing page দেখাবো — প্রতিবার নতুন visit এ
     setLandingReady(true)
   }, [])
 
@@ -103,13 +90,9 @@ export default function Page() {
      2. showLanding = false করবো (Home show হবে)
   ========================================================= */
 
-  const handleEnterSite = () => {
-    try {
-      localStorage.setItem(LANDING_SEEN_KEY, "true")
-    } catch (error) {
-      // silently ignore
-    }
-
+    const handleEnterSite = () => {
+    // শুধু state change করবো — localStorage এ কিছু save করবো না
+    // যাতে পরের বার reload করলে আবার landing page দেখা যায়
     setShowLanding(false)
   }
 

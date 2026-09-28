@@ -6,6 +6,7 @@ import { Analytics } from "@vercel/analytics/next"
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
 import { AuthProvider } from "@/components/auth-provider"
+import MVBDTracker from "@/components/MVBDTracker"
 
 const geist = Geist({ subsets: ["latin"] })
 const geistMono = Geist_Mono({ subsets: ["latin"] })
@@ -89,6 +90,7 @@ export default function RootLayout({
         >
           <AuthProvider>
             {children}
+            <MVBDTracker />
           </AuthProvider>
 
           <Analytics />

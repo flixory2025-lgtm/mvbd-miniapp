@@ -150,6 +150,15 @@ export default function SubscriptionPanel({
 
   const freeFeatures = [
     {
+      id: "free-movies",
+      icon: Play,
+      title: "Free 480P–720P Movie Watch",
+      description: "Start exploring করুন—সব movie 480P–720P পর্যন্ত ফ্রিতে দেখুন ও Normal Download করুন।",
+      type: "link" as const,
+      href: "/",
+    },
+
+    {
       id: "mvbd-pm",
       icon: Send,
       title: "MVBD PM Channel",
@@ -288,7 +297,7 @@ export default function SubscriptionPanel({
                     </p>
 
                     <p className="mt-2 text-xs leading-5 text-lime-100/70">
-                      ফ্রি প্ল্যানে Normal Download-এ 480P–720P পর্যন্ত ভিডিও ডাউনলোড করা যাবে। 1080P–4K ডাউনলোডের জন্য Premium Plan প্রয়োজন।
+                      ফ্রি প্ল্যানে সব movie 480P–720P পর্যন্ত দেখা ও Normal Download করা যাবে। এই সাইটে কোনো বিজ্ঞাপন নেই—তাই Free Plan-এই পাবেন সম্পূর্ণ ad-free experience। 1080P–4K movie access ও premium download-এর জন্য Premium Plan প্রয়োজন।
                     </p>
                   </div>
                 </div>
@@ -428,8 +437,7 @@ export default function SubscriptionPanel({
 
               <div className="relative mt-4 rounded-2xl border border-white/10 bg-black/20 px-4 py-3">
                 <p className="text-xs leading-5 text-zinc-500">
-                  Want more access? Choose a premium plan below to unlock
-                  the paid features available on MVBD.
+                      Free Plan-এ 480P–720P movie watch ও Normal Download উপভোগ করুন। 1, 2 অথবা 3 মাসের Premium Plan নিলে 1080P–4K movie access, premium download এবং একই বিজ্ঞাপনমুক্ত অভিজ্ঞতা আরও সম্পূর্ণভাবে ব্যবহার করতে পারবেন।
                 </p>
               </div>
             </div>

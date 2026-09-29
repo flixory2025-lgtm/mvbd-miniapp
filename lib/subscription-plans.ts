@@ -42,7 +42,7 @@ export const SUBSCRIPTION_PLANS: readonly SubscriptionPlan[] = [
     duration: "Free",
     amount: 0,
     price: "FREE",
-    description: "Basic access for MVBD members.",
+    description: "বিজ্ঞাপনমুক্ত অভিজ্ঞতায় MVBD Mini App-এর সব movie 480P–720P পর্যন্ত ফ্রিতে দেখুন ও Normal Download করুন।",
 
     freeAccess: [
       {
@@ -72,10 +72,18 @@ export const SUBSCRIPTION_PLANS: readonly SubscriptionPlan[] = [
         type: "info",
       },
       {
+        id: "free-movies",
+        title: "Free 480P–720P Movie Watch",
+        description: "Start exploring করুন—সব movie 480P–720P পর্যন্ত ফ্রিতে দেখুন, Normal Download করুন এবং বিজ্ঞাপনমুক্ত অভিজ্ঞতা উপভোগ করুন।",
+        type: "external",
+        href: "/",
+      },
+      {
         id: "restricted",
-        title: "18+ Content",
-        description: "Age-restricted content is unavailable.",
-        type: "restricted",
+        title: "18+ Channel",
+        description: "18+ channel খুলতে ক্লিক করুন।",
+        type: "external",
+        href: "https://t.me/MoviesVerseBD",
       },
     ],
 
@@ -96,7 +104,7 @@ export const SUBSCRIPTION_PLANS: readonly SubscriptionPlan[] = [
     duration: "30 days",
     amount: 20,
     price: "৳20",
-    description: "Perfect for regular monthly access.",
+    description: "বিজ্ঞাপনমুক্ত অভিজ্ঞতায় 1080P–4K movie access ও premium download সুবিধা।",
   },
 
   {
@@ -107,7 +115,7 @@ export const SUBSCRIPTION_PLANS: readonly SubscriptionPlan[] = [
     duration: "60 days",
     amount: 35,
     price: "৳35",
-    description: "A balanced plan for regular members.",
+    description: "জনপ্রিয় প্যাকেজ: 1080P–4K movie access, premium download ও ad-free experience।",
     popular: true,
     save: "Save ৳5",
   },
@@ -120,7 +128,7 @@ export const SUBSCRIPTION_PLANS: readonly SubscriptionPlan[] = [
     duration: "90 days",
     amount: 50,
     price: "৳50",
-    description: "Best value for longer premium access.",
+    description: "সেরা ভ্যালু: 1080P–4K movie access, premium download ও বিজ্ঞাপনমুক্ত অভিজ্ঞতা।",
     save: "Best value",
   },
 ]

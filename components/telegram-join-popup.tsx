@@ -23,7 +23,8 @@ export default function TelegramJoinPopup({ movieTitle, telegramLink, telegram4k
     return () => { document.body.style.overflow = previousOverflow }
   }, [])
   const openTelegram = (destination?: string) => {
-    const target = destination || telegramLink || "https://t.me/mvbd_cloud_bot"
+    const target = destination?.trim()
+    if (!target) return
     window.open(target, "_blank", "noopener,noreferrer")
     setHasOpenedTelegram(true)
   }
@@ -49,7 +50,7 @@ export default function TelegramJoinPopup({ movieTitle, telegramLink, telegram4k
             <p>1080P–4K Download বেছে নিলে সেরা কোয়ালিটিতে ডাউনলোড করতে পারবেন; এর জন্য active subscription লাগবে।</p>
           </div>
           <div className="watch-actions">
-            <button type="button" onClick={() => openTelegram()} className="watch-primary"><ExternalLink className="size-4" /> Download Normal <span className="text-xs opacity-75">(480P–720P)</span></button>
+            <button type="button" onClick={() => openTelegram(telegramLink)} className="watch-primary"><ExternalLink className="size-4" /> Download Normal <span className="text-xs opacity-75">(480P–720P)</span></button>
             <button type="button" onClick={() => hasPremiumAccess ? openTelegram(telegram4kLink) : requestSubscription()} className="watch-secondary"><ExternalLink className="size-4" /> Download 1080P–4K</button>
           </div>
           {!hasPremiumAccess && <button type="button" onClick={requestSubscription} className="mt-3 w-full text-center text-sm font-semibold text-amber-200 underline underline-offset-4">1080P–4K পেতে subscription plan দেখুন</button>}

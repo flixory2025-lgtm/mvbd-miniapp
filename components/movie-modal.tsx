@@ -17,6 +17,7 @@ interface MovieModalProps {
     genre: string
     trailer?: string
     telegramLink?: string
+    telegram4kLink?: string
     language?: string
   }
   onClose: () => void
@@ -296,6 +297,7 @@ export default function MovieModal({ movie, onClose, onMovieClick, showAdultCont
         <TelegramJoinPopup
           movieTitle={movie.title}
           telegramLink={movie.telegramLink}
+          telegram4kLink={movie.telegram4kLink}
           onClose={() => setShowJoinPopup(false)}
         />
       )}

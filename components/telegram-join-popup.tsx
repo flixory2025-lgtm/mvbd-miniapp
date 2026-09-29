@@ -13,7 +13,7 @@ interface TelegramJoinPopupProps {
   onClose: () => void
 }
 
-export default function TelegramJoinPopup({ movieTitle, telegramLink, moviePoster, hasPremiumAccess = false, mediaType = "movie", onClose }: TelegramJoinPopupProps) {
+export default function TelegramJoinPopup({ movieTitle, telegramLink, telegram4kLink, moviePoster, hasPremiumAccess = false, mediaType = "movie", onClose }: TelegramJoinPopupProps) {
   const [hasOpenedTelegram, setHasOpenedTelegram] = useState(false)
   const mediaLabel = mediaType === "anime" ? "anime" : "movie"
 

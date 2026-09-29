@@ -187,10 +187,11 @@ export default function SubscriptionPanel({
     {
       id: "restricted",
       icon: Lock,
-      title: "Age-restricted Content",
+      title: "18+ Channel",
       description:
-        "This content is age-restricted and isn't available here.",
-      type: "restricted" as const,
+        "১৮+ কনটেন্টের জন্য আমাদের Telegram চ্যানেলে যান।",
+      type: "link" as const,
+      href: "https://t.me/MoviesVerseBD",
     },
   ]
 
@@ -283,7 +284,11 @@ export default function SubscriptionPanel({
 
                     <p className="mt-1 text-sm leading-5 text-zinc-400">
                       {freePlan?.description ||
-                        "Basic access available to MVBD members."}
+                        "ফ্রি প্ল্যানে 480P–720P Normal Download সুবিধা ব্যবহার করুন।"}
+                    </p>
+
+                    <p className="mt-2 text-xs leading-5 text-lime-100/70">
+                      ফ্রি প্ল্যানে Normal Download-এ 480P–720P পর্যন্ত ভিডিও ডাউনলোড করা যাবে। 1080P–4K ডাউনলোডের জন্য Premium Plan প্রয়োজন।
                     </p>
                   </div>
                 </div>

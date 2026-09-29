@@ -26,7 +26,7 @@ export const movies1 = [
     poster: "/244id.jpg",
     trailer: "https://www.youtube.com/embed/lDEN2F7w-Nw?si",
     telegramLink: "https://t.me/mvbdstore_bot?start=f_NDEsNTc",
-    telegram4kLink: "https://t.me/+gerJUkv5KS85YzM1",
+    telegram4kLink: "http://t.me/mvbdstore_bot?start=f_MTU1NTMsMTU1NTQ",
     genre: "Action | kdrama | Thriller",
     year: "2021",
     rating: "7.8",

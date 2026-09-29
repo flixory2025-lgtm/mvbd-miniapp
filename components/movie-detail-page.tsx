@@ -18,6 +18,7 @@ type DetailItem = {
   genre: string
   trailer?: string
   telegramLink?: string
+  telegram4kLink?: string
   language?: string
 }
 
@@ -56,10 +57,6 @@ export default function MovieDetailPage({ movie, onBack, onMovieClick, showAdult
   const handleWatchNow = () => {
     if (!user) {
       setShowAuthModal(true)
-      return
-    }
-    if (!entitlement.hasWatchAccess) {
-      setShowSubscriptions(true)
       return
     }
     setShowTelegramPopup(true)
@@ -350,7 +347,17 @@ export default function MovieDetailPage({ movie, onBack, onMovieClick, showAdult
       {showAuthModal && <AuthModal open={showAuthModal} onOpenChange={setShowAuthModal} />}
 
       {/* Telegram Popup */}
-      {showTelegramPopup && entitlement.hasWatchAccess && <TelegramJoinPopup hasPremiumAccess movieTitle={movie.title} mediaType={mediaType} onClose={() => setShowTelegramPopup(false)} telegramLink={movie.telegramLink} moviePoster={movie.poster} />}
+      {showTelegramPopup && user && (
+        <TelegramJoinPopup
+          movieTitle={movie.title}
+          mediaType={mediaType}
+          onClose={() => setShowTelegramPopup(false)}
+          telegramLink={movie.telegramLink}
+          telegram4kLink={movie.telegram4kLink}
+          moviePoster={movie.poster}
+          hasPremiumAccess={entitlement.isPremiumActive}
+        />
+      )}
       <SubscriptionPanel open={showSubscriptions} onOpenChange={setShowSubscriptions} />
     </div>
   )

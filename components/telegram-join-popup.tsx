@@ -6,13 +6,14 @@ import { useEffect, useState } from "react"
 interface TelegramJoinPopupProps {
   movieTitle: string
   telegramLink?: string
+  telegram4kLink?: string
   moviePoster?: string
   hasPremiumAccess?: boolean
   mediaType?: "movie" | "anime"
   onClose: () => void
 }
 
-export default function TelegramJoinPopup({ movieTitle, telegramLink, moviePoster, hasPremiumAccess = false, mediaType = "movie", onClose }: TelegramJoinPopupProps) {
+export default function TelegramJoinPopup({ movieTitle, telegramLink, telegram4kLink, moviePoster, hasPremiumAccess = false, mediaType = "movie", onClose }: TelegramJoinPopupProps) {
   const [hasOpenedTelegram, setHasOpenedTelegram] = useState(false)
   const mediaLabel = mediaType === "anime" ? "anime" : "movie"
 
@@ -21,11 +22,15 @@ export default function TelegramJoinPopup({ movieTitle, telegramLink, moviePoste
     document.body.style.overflow = "hidden"
     return () => { document.body.style.overflow = previousOverflow }
   }, [])
-  const openTelegram = () => {
-    if (!hasPremiumAccess) return
-    const destination = telegramLink || "https://t.me/mvbd_cloud_bot"
-    window.open(destination, "_blank", "noopener,noreferrer")
+  const openTelegram = (destination?: string) => {
+    const target = destination || telegramLink || "https://t.me/mvbd_cloud_bot"
+    window.open(target, "_blank", "noopener,noreferrer")
     setHasOpenedTelegram(true)
+  }
+
+  const requestSubscription = () => {
+    window.dispatchEvent(new CustomEvent("mvbd:open-subscriptions"))
+    onClose()
   }
 
   return (
@@ -37,17 +42,17 @@ export default function TelegramJoinPopup({ movieTitle, telegramLink, moviePoste
           <div className="watch-logo" aria-hidden="true"><span>M</span><Play className="size-4 fill-current" /></div>
           <p className="watch-kicker">MVBD CLOUD BOT</p>
           <h2>{movieTitle}</h2>
-          {!hasPremiumAccess && <div className="mb-4 rounded-2xl border border-red-300/20 bg-red-300/[.08] p-3 text-sm leading-6 text-red-100"><strong>Premium Subscription Required</strong><p className="mt-1">আপনার active premium subscription নেই। আগে একটি subscription plan নিন, তারপর {mediaLabel}টি দেখতে পারবেন।</p></div>}
+          {!hasPremiumAccess && <div className="mb-4 rounded-2xl border border-amber-300/20 bg-amber-300/[.08] p-3 text-sm leading-6 text-amber-50"><strong>প্রিমিয়াম ডাউনলোডের জন্য সাবস্ক্রিপশন প্রয়োজন</strong><p className="mt-1">আপনি ফ্রি প্ল্যানে Normal Download করতে পারবেন। 1080P–4K কোয়ালিটির জন্য একটি subscription plan নিন।</p></div>}
           <div className="watch-copy">
-            <p>এই {mediaLabel} টি দেখতে হলে আগে নিশ্চিত করুন যে আপনি premium subscription কিনেছেন।</p>
-            <p>যদি premium subscription না নিয়ে থাকেন, তাহলে নিচের Buy Subscription button-এ click করুন।</p>
-            <p>আর যদি আপনি premium user হয়ে থাকেন, তাহলে Watch Now-তে click করুন।</p>
-            <p>Watch Now-তে click করলে আপনাকে Telegram-এর mvbd cloud bot-এ নিয়ে যাবে। সেখানে bot-টি Start করলেই আপনি {mediaLabel} পেয়ে যাবেন।</p>
+            <p>আপনার পছন্দের {mediaLabel}টি Telegram থেকে ডাউনলোড করুন। নিচের অপশন থেকে quality বেছে নিন।</p>
+            <p>Normal Download-এ 480P–720P পর্যন্ত কোয়ালিটি পাওয়া যাবে এবং এটি ফ্রি প্ল্যানেই ব্যবহার করা যাবে।</p>
+            <p>1080P–4K Download বেছে নিলে সেরা কোয়ালিটিতে ডাউনলোড করতে পারবেন; এর জন্য active subscription লাগবে।</p>
           </div>
           <div className="watch-actions">
-            <button type="button" onClick={() => { window.dispatchEvent(new CustomEvent("mvbd:open-subscriptions")); onClose() }} className="watch-secondary">Buy Subscription</button>
-            <button type="button" onClick={openTelegram} className="watch-primary"><ExternalLink className="size-4" /> Watch Now</button>
+            <button type="button" onClick={() => openTelegram()} className="watch-primary"><ExternalLink className="size-4" /> Download Normal <span className="text-xs opacity-75">(480P–720P)</span></button>
+            <button type="button" onClick={() => hasPremiumAccess ? openTelegram(telegram4kLink) : requestSubscription()} className="watch-secondary"><ExternalLink className="size-4" /> Download 1080P–4K</button>
           </div>
+          {!hasPremiumAccess && <button type="button" onClick={requestSubscription} className="mt-3 w-full text-center text-sm font-semibold text-amber-200 underline underline-offset-4">1080P–4K পেতে subscription plan দেখুন</button>}
           {hasOpenedTelegram && <p className="watch-success"><Check className="size-4" /> Telegram opened in a new tab</p>}
         </div>
       </section>

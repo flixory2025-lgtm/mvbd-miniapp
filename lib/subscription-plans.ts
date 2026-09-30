@@ -16,6 +16,7 @@ export interface FreeAccessItem {
   description: string
   type: FreeAccessType
   href?: string
+  sticker?: string
 }
 
 export interface SubscriptionPlan {
@@ -29,8 +30,15 @@ export interface SubscriptionPlan {
   description: string
   popular?: boolean
   save?: string
+  videoQuality: string
+  sticker: string
   freeAccess?: readonly FreeAccessItem[]
   notIncluded?: readonly string[]
+  features?: readonly {
+    text: string
+    type: "included" | "locked" | "restricted" | "quality"
+    sticker?: string
+  }[]
 }
 
 export const SUBSCRIPTION_PLANS: readonly SubscriptionPlan[] = [
@@ -43,6 +51,8 @@ export const SUBSCRIPTION_PLANS: readonly SubscriptionPlan[] = [
     amount: 0,
     price: "FREE",
     description: "Basic access for MVBD members.",
+    videoQuality: "480p – 720p",
+    sticker: "🎁",
 
     freeAccess: [
       {
@@ -51,6 +61,7 @@ export const SUBSCRIPTION_PLANS: readonly SubscriptionPlan[] = [
         description: "Visit the official MVBD PM channel.",
         type: "external",
         href: "https://t.me/mvbdpm2",
+        sticker: "📢",
       },
       {
         id: "anime",
@@ -58,29 +69,92 @@ export const SUBSCRIPTION_PLANS: readonly SubscriptionPlan[] = [
         description: "Visit the Anime Verse BD channel.",
         type: "external",
         href: "https://t.me/avbdpm",
+        sticker: "🎌",
       },
       {
         id: "mebook",
         title: "MeBook",
         description: "Open the MeBook section.",
         type: "mebook",
+        sticker: "📚",
       },
       {
         id: "trailers",
         title: "Movie & Series Trailer Access",
         description: "Access available movie and series trailers.",
         type: "info",
+        sticker: "🎬",
       },
       {
         id: "restricted",
-        title: "18+ Content",
-        description: "Age-restricted content is unavailable.",
-        type: "restricted",
+        title: "18+ Channel",
+        description: "Visit our Telegram channel for 18+ content.",
+        type: "external",
+        href: "https://t.me/MoviesVerseBD",
+        sticker: "🔞",
+      },
+    ],
+
+    features: [
+      {
+        text: "MVBD PM Channel Access",
+        type: "included",
+        sticker: "✅",
+      },
+      {
+        text: "Anime Verse BD Channel Access",
+        type: "included",
+        sticker: "✅",
+      },
+      {
+        text: "MVBD MeBook Access",
+        type: "included",
+        sticker: "✅",
+      },
+      {
+        text: "Movie & Series Trailer Access",
+        type: "included",
+        sticker: "✅",
+      },
+      {
+        text: "480p – 720p Movie Streaming (Free)",
+        type: "quality",
+        sticker: "📺",
+      },
+      {
+        text: "18+ Channel Access",
+        type: "included",
+        sticker: "🔞",
+      },
+      {
+        text: "No 1080p – 4K Streaming",
+        type: "locked",
+        sticker: "🔒",
+      },
+      {
+        text: "No Premium Content",
+        type: "locked",
+        sticker: "🔒",
+      },
+      {
+        text: "No Download Option",
+        type: "locked",
+        sticker: "🔒",
+      },
+      {
+        text: "No Ad-Free Experience",
+        type: "locked",
+        sticker: "🔒",
+      },
+      {
+        text: "Limited Features",
+        type: "locked",
+        sticker: "🔒",
       },
     ],
 
     notIncluded: [
-      "Premium subscription features",
+      "1080p & 4K premium streaming",
       "Full premium movie access",
       "Premium series access",
       "Premium download features",
@@ -97,6 +171,50 @@ export const SUBSCRIPTION_PLANS: readonly SubscriptionPlan[] = [
     amount: 20,
     price: "৳20",
     description: "Perfect for regular monthly access.",
+    videoQuality: "1080p – 4K",
+    sticker: "🥈",
+    features: [
+      {
+        text: "All Free Plan Features",
+        type: "included",
+        sticker: "✅",
+      },
+      {
+        text: "1080p – 4K Full HD Streaming",
+        type: "quality",
+        sticker: "🎥",
+      },
+      {
+        text: "Series & Anime Streaming",
+        type: "included",
+        sticker: "✅",
+      },
+      {
+        text: "Download Option (Select Content)",
+        type: "included",
+        sticker: "✅",
+      },
+      {
+        text: "Ad-Free Experience",
+        type: "included",
+        sticker: "✅",
+      },
+      {
+        text: "Premium Content Access",
+        type: "included",
+        sticker: "✅",
+      },
+      {
+        text: "Regular Updates (New Movies & Series)",
+        type: "included",
+        sticker: "✅",
+      },
+      {
+        text: "Priority Support",
+        type: "included",
+        sticker: "✅",
+      },
+    ],
   },
 
   {
@@ -110,6 +228,55 @@ export const SUBSCRIPTION_PLANS: readonly SubscriptionPlan[] = [
     description: "A balanced plan for regular members.",
     popular: true,
     save: "Save ৳5",
+    videoQuality: "1080p – 4K",
+    sticker: "🥇",
+    features: [
+      {
+        text: "All Free Plan Features",
+        type: "included",
+        sticker: "✅",
+      },
+      {
+        text: "1080p – 4K Full HD Streaming",
+        type: "quality",
+        sticker: "🎥",
+      },
+      {
+        text: "Series & Anime Streaming",
+        type: "included",
+        sticker: "✅",
+      },
+      {
+        text: "Download Option (Select Content)",
+        type: "included",
+        sticker: "✅",
+      },
+      {
+        text: "Ad-Free Experience",
+        type: "included",
+        sticker: "✅",
+      },
+      {
+        text: "Premium Content Access",
+        type: "included",
+        sticker: "✅",
+      },
+      {
+        text: "Regular Updates (New Movies & Series)",
+        type: "included",
+        sticker: "✅",
+      },
+      {
+        text: "Priority Support",
+        type: "included",
+        sticker: "✅",
+      },
+      {
+        text: "Early Access to New Releases",
+        type: "included",
+        sticker: "⚡",
+      },
+    ],
   },
 
   {
@@ -122,6 +289,60 @@ export const SUBSCRIPTION_PLANS: readonly SubscriptionPlan[] = [
     price: "৳50",
     description: "Best value for longer premium access.",
     save: "Best value",
+    videoQuality: "1080p – 4K",
+    sticker: "👑",
+    features: [
+      {
+        text: "All Free Plan Features",
+        type: "included",
+        sticker: "✅",
+      },
+      {
+        text: "1080p – 4K Full HD Streaming",
+        type: "quality",
+        sticker: "🎥",
+      },
+      {
+        text: "Series & Anime Streaming",
+        type: "included",
+        sticker: "✅",
+      },
+      {
+        text: "Download Option (Select Content)",
+        type: "included",
+        sticker: "✅",
+      },
+      {
+        text: "Ad-Free Experience",
+        type: "included",
+        sticker: "✅",
+      },
+      {
+        text: "Premium Content Access",
+        type: "included",
+        sticker: "✅",
+      },
+      {
+        text: "Regular Updates (New Movies & Series)",
+        type: "included",
+        sticker: "✅",
+      },
+      {
+        text: "Priority Support",
+        type: "included",
+        sticker: "✅",
+      },
+      {
+        text: "Early Access to New Releases",
+        type: "included",
+        sticker: "⚡",
+      },
+      {
+        text: "Exclusive VIP Badge",
+        type: "included",
+        sticker: "💎",
+      },
+    ],
   },
 ]
 

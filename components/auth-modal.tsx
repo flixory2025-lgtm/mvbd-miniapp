@@ -18,6 +18,7 @@ import { Input } from "@/components/ui/input"
  * =========================================
  * SHIMMER ORB LOADER COMPONENT
  * =========================================
+ * শুধু CSS দিয়ে তৈরি, কোনো লাইব্রেরি লাগবে না।
  */
 function ShimmerOrbLoader() {
   return (
@@ -245,19 +246,19 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
                 "url('https://i.postimg.cc/gkRTC0Mg/9934115925457a81b67404e741f62ffc.jpg')",
             }}
           />
-          {/* 👇 হালকা Gradient Overlay */}
-          <div className="absolute inset-0 bg-gradient-to-br from-black/30 via-black/45 to-black/60" />
-          {/* 👇 হালকা Radial Overlay */}
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(0,0,0,0.1)_0%,rgba(0,0,0,0.55)_75%)]" />
+          {/* 👇 হালকা Gradient Overlay (আগের মতো কালো নয়) */}
+          <div className="absolute inset-0 bg-gradient-to-br from-black/40 via-black/60 to-black/75" />
+          {/* 👇 হালকা Radial Overlay (আগের মতো কালো নয়) */}
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(0,0,0,0.15)_0%,rgba(0,0,0,0.7)_75%)]" />
         </div>
 
-        {/* === ✕ CLOSE BUTTON (NEW) === */}
+        {/* === Close button === */}
         <button
           type="button"
           onClick={() => onOpenChange(false)}
           aria-label="Close"
           style={{ zIndex: 9999 }}
-          className="absolute right-3 top-3 flex size-9 items-center justify-center rounded-full border border-white/20 bg-black/60 text-white shadow-lg backdrop-blur-md transition-all duration-200 hover:scale-110 hover:border-[#B7FF00]/50 hover:bg-black/80 hover:shadow-[0_0_15px_rgba(183,255,0,0.5)] active:scale-95"
+          className="absolute right-3 top-3 flex size-9 items-center justify-center rounded-full border border-white/25 bg-black/70 text-white shadow-lg transition-colors hover:bg-black/90 active:scale-95"
         >
           <X className="size-4" strokeWidth={2.5} />
         </button>

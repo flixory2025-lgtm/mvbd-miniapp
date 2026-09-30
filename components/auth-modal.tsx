@@ -1,7 +1,8 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
-import { Eye, EyeOff, Loader2, Mail, Lock, User, Calendar, Gift, X } from "lucide-react"
+import { Eye, EyeOff, Mail, Lock, User, Calendar, Gift, X } from "lucide-react"
+import dynamic from "next/dynamic" // Lottie ডাইনামিক ইমপোর্টের জন্য
 
 import { useAuth } from "@/components/auth-provider"
 import {
@@ -13,6 +14,15 @@ import {
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+
+// === Lottie Player ডাইনামিক ইমপোর্ট (SSR এড়ানোর জন্য) ===
+const LottiePlayer = dynamic(
+  () => import("@lottiefiles/react-lottie-player").then((mod) => mod.Player),
+  { ssr: false }
+)
+
+// === আপনার Lottie অ্যানিমেশনের লিংক ===
+const LOTTIE_URL = "https://lottie.host/8a215834-6979-4dbf-8545-f5301fea1d7d/fFW4jEp53d.lottie"
 
 function getAuthErrorMessage(error: unknown) {
   if (typeof error !== "object" || error === null || !("code" in error)) {
@@ -76,15 +86,13 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
     if (typeof window === "undefined") return
 
     const handleResize = () => {
-      // Force scroll container to recalculate height on keyboard open
       if (scrollRef.current) {
-        scrollRef.current.style.height = "" // reset
+        scrollRef.current.style.height = ""
       }
     }
 
     window.addEventListener("resize", handleResize)
 
-    // Telegram WebApp API — expand to full height
     const tg = (window as any).Telegram?.WebApp
     if (tg) {
       try {
@@ -147,16 +155,14 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
         onOpenAutoFocus={(e) => e.preventDefault()}
         onCloseAutoFocus={(e) => e.preventDefault()}
         onPointerDownOutside={(e) => {
-          // Telegram webview e outside click e close korte dio na
           e.preventDefault()
         }}
         className="fixed left-1/2 top-1/2 max-h-[92vh] w-[calc(100vw-2rem)] max-w-[420px] -translate-x-1/2 -translate-y-1/2 gap-0 overflow-hidden rounded-3xl border border-white/10 bg-[#0b0f14] p-0 text-white shadow-2xl [&>button]:hidden"
         style={{
-          // Telegram WebView e z-index explicit set korte hobe
           zIndex: 2147483647,
         }}
       >
-        {/* === Background (avoid backdrop-blur for Telegram compat) === */}
+        {/* === Background === */}
         <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden rounded-3xl">
           <div
             className="absolute inset-0 bg-cover bg-center"
@@ -165,12 +171,11 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
                 "url('https://i.postimg.cc/gkRTC0Mg/9934115925457a81b67404e741f62ffc.jpg')",
             }}
           />
-          {/* Solid gradient overlay — no blur dependency */}
           <div className="absolute inset-0 bg-gradient-to-br from-black/70 via-black/85 to-black/98" />
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(0,0,0,0.3)_0%,rgba(0,0,0,0.98)_75%)]" />
         </div>
 
-        {/* === Close button — Telegram-safe === */}
+        {/* === Close button === */}
         <button
           type="button"
           onClick={() => onOpenChange(false)}
@@ -180,6 +185,26 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
         >
           <X className="size-4" strokeWidth={2.5} />
         </button>
+
+        {/* === LOTTIE OVERLAY — শুধু লোডিং অবস্থায় দেখাবে === */}
+        {isSubmitting && (
+          <div 
+            className="absolute inset-0 z-[9998] flex flex-col items-center justify-center gap-4 bg-black/80 backdrop-blur-sm"
+            style={{ zIndex: 9998 }}
+          >
+            <div className="size-32">
+              <LottiePlayer
+                autoplay
+                loop
+                src={LOTTIE_URL}
+                style={{ width: "100%", height: "100%" }}
+              />
+            </div>
+            <p className="text-sm font-medium text-emerald-400 animate-pulse">
+              {mode === "sign-in" ? "Signing you in..." : "Creating your account..."}
+            </p>
+          </div>
+        )}
 
         {/* === Scrollable content === */}
         <div
@@ -369,7 +394,6 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
               disabled={isSubmitting}
               className="mt-1 h-11 w-full rounded-xl bg-gradient-to-br from-emerald-400 to-emerald-600 font-semibold text-black shadow-[0_8px_24px_-6px_rgba(16,185,129,0.6)] transition-all duration-200 hover:brightness-110 active:scale-[0.99] disabled:opacity-60"
             >
-              {isSubmitting ? <Loader2 className="mr-2 size-4 animate-spin" /> : null}
               {mode === "sign-in" ? "Sign in" : "Create account"}
             </Button>
 
@@ -418,7 +442,6 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
           .auth-scroll::-webkit-scrollbar {
             display: none;
           }
-          /* Prevent iOS/Telegram auto-zoom on input focus */
           .auth-scroll input,
           .auth-scroll button,
           .auth-scroll select,

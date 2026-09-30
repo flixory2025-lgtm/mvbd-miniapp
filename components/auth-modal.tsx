@@ -50,16 +50,16 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isZoomed, setIsZoomed] = useState(false)
 
-  // Uncontrolled inputs — prevents re-render on every keystroke,
-  // which was dismissing the mobile keyboard.
+  // Uncontrolled inputs — no re-render on keystroke (fixes mobile keyboard dismissal)
   const emailRef = useRef<HTMLInputElement>(null)
   const passwordRef = useRef<HTMLInputElement>(null)
   const nameRef = useRef<HTMLInputElement>(null)
   const dobRef = useRef<HTMLInputElement>(null)
   const referralRef = useRef<HTMLInputElement>(null)
 
-  // Reset everything when the modal closes
+  // Reset everything when modal closes
   useEffect(() => {
     if (!open) {
       if (emailRef.current) emailRef.current.value = ""
@@ -70,6 +70,7 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
       setError("")
       setMode("sign-in")
       setShowPassword(false)
+      setIsZoomed(false)
     }
   }, [open])
 
@@ -117,6 +118,9 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
     if (next === mode) return
     setMode(next)
     setError("")
+    // Soft iOS-style tap zoom pulse
+    setIsZoomed(true)
+    window.setTimeout(() => setIsZoomed(false), 260)
   }
 
   return (
@@ -126,8 +130,8 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
         onCloseAutoFocus={(e) => e.preventDefault()}
         className="max-h-[92vh] w-[calc(100vw-2rem)] max-w-[420px] gap-0 overflow-hidden rounded-3xl border border-white/10 bg-[#0b0f14] p-0 text-white shadow-2xl [&>button]:hidden"
       >
-        {/* === Background image + dark overlay (fixed, non-scrolling) === */}
-        <div className="pointer-events-none absolute inset-0 -z-10 rounded-3xl overflow-hidden">
+        {/* === Fixed background layer === */}
+        <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden rounded-3xl">
           <div
             className="absolute inset-0 bg-cover bg-center"
             style={{
@@ -135,19 +139,17 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
                 "url('https://i.postimg.cc/gkRTC0Mg/9934115925457a81b67404e741f62ffc.jpg')",
             }}
           />
-          {/* Top-left lighter → bottom-right very dark */}
           <div className="absolute inset-0 bg-gradient-to-br from-black/60 via-black/80 to-black/95" />
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(0,0,0,0.2)_0%,rgba(0,0,0,0.95)_75%)]" />
-          {/* Subtle glass tint */}
           <div className="absolute inset-0 bg-white/[0.02] backdrop-blur-xl" />
         </div>
 
-        {/* Close button */}
+        {/* === Close button — always visible, above scroll === */}
         <button
           type="button"
           onClick={() => onOpenChange(false)}
           aria-label="Close"
-          className="absolute right-3 top-3 z-30 flex size-8 items-center justify-center rounded-full border border-white/15 bg-white/10 text-slate-300 backdrop-blur-md transition-colors hover:bg-white/20 hover:text-white"
+          className="absolute right-3 top-3 z-40 flex size-8 items-center justify-center rounded-full border border-white/15 bg-black/40 text-slate-300 backdrop-blur-md transition-all duration-200 hover:scale-105 hover:bg-black/60 hover:text-white active:scale-95"
         >
           <X className="size-4" />
         </button>
@@ -155,7 +157,6 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
         {/* === Scrollable body === */}
         <div className="auth-scroll relative z-10 max-h-[92vh] overflow-y-auto overscroll-contain px-6 pb-6 pt-6">
           <DialogHeader className="space-y-3 text-left">
-            {/* Branding */}
             <div className="flex items-center gap-3">
               <img
                 src="https://i.postimg.cc/V6GHC8yG/17773-removebg-preview.png"
@@ -185,27 +186,33 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
             </DialogDescription>
           </DialogHeader>
 
-          {/* === Mode toggle (simple, reliable) === */}
-          <div className="relative mt-5 mb-4 grid grid-cols-2 gap-1 rounded-2xl border border-white/10 bg-white/[0.04] p-1">
+          {/* === iOS liquid segmented control === */}
+          <div className="relative mt-5 mb-4 grid grid-cols-2 rounded-2xl border border-white/10 bg-white/[0.04] p-1">
+            {/* Liquid sliding pill */}
+            <div
+              className={`pointer-events-none absolute top-1 bottom-1 left-1 w-[calc(50%-4px)] rounded-xl bg-gradient-to-br from-emerald-400 to-emerald-600 shadow-[0_4px_20px_-4px_rgba(16,185,129,0.7)] transition-transform duration-[420ms] [transition-timing-function:cubic-bezier(0.22,1.4,0.36,1)] ${
+                mode === "sign-up" ? "translate-x-[calc(100%+4px)]" : "translate-x-0"
+              }`}
+            />
             <button
               type="button"
               onClick={() => switchMode("sign-in")}
-              className={`rounded-xl px-4 py-2 text-sm font-semibold transition-all duration-200 ${
+              className={`relative z-10 rounded-xl px-4 py-2 text-sm font-semibold transition-transform duration-200 ease-out ${
                 mode === "sign-in"
-                  ? "bg-gradient-to-br from-emerald-400 to-emerald-600 text-black shadow-[0_0_18px_-4px_rgba(16,185,129,0.7)]"
-                  : "text-slate-400 hover:text-white"
-              }`}
+                  ? "text-black"
+                  : "text-slate-400 hover:text-white active:scale-95"
+              } ${isZoomed && mode === "sign-in" ? "scale-[1.06]" : "scale-100"}`}
             >
               Sign In
             </button>
             <button
               type="button"
               onClick={() => switchMode("sign-up")}
-              className={`rounded-xl px-4 py-2 text-sm font-semibold transition-all duration-200 ${
+              className={`relative z-10 rounded-xl px-4 py-2 text-sm font-semibold transition-transform duration-200 ease-out ${
                 mode === "sign-up"
-                  ? "bg-gradient-to-br from-emerald-400 to-emerald-600 text-black shadow-[0_0_18px_-4px_rgba(16,185,129,0.7)]"
-                  : "text-slate-400 hover:text-white"
-              }`}
+                  ? "text-black"
+                  : "text-slate-400 hover:text-white active:scale-95"
+              } ${isZoomed && mode === "sign-up" ? "scale-[1.06]" : "scale-100"}`}
             >
               Sign Up
             </button>
@@ -405,4 +412,4 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
       </DialogContent>
     </Dialog>
   )
-                }
+}

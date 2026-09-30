@@ -1,7 +1,7 @@
 "use client"
 
 import { createPortal } from "react-dom"
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { toast } from "sonner"
 import {
   Bell,
@@ -51,6 +51,59 @@ import {
   subscribeToSupportMessages,
   type SupportMessage,
 } from "@/lib/support-chat"
+
+/*
+ * =========================================
+ * LOTTIE LOADER COMPONENT
+ * =========================================
+ * Skypack CDN থেকে lottie-web লোড করে।
+ * কোনো npm install লাগবে না।
+ */
+function LottieLoader({ size = 150 }: { size?: number }) {
+  const containerRef = useRef<HTMLDivElement>(null)
+  const animRef = useRef<any>(null)
+
+  useEffect(() => {
+    let isMounted = true
+
+    import(/* webpackIgnore: true */ "https://cdn.skypack.dev/lottie-web")
+      .then((lottieModule) => {
+        const lottie = lottieModule.default || lottieModule
+
+        if (!isMounted || !containerRef.current) return
+
+        if (animRef.current) {
+          animRef.current.destroy()
+        }
+
+        animRef.current = lottie.loadAnimation({
+          container: containerRef.current,
+          renderer: "svg",
+          loop: true,
+          autoplay: true,
+          path: "https://lottie.host/8a215834-6979-4dbf-8545-f5301fea1d7d/fFW4jEp53d.lottie",
+        })
+      })
+      .catch((err) => {
+        console.error("Lottie load error:", err)
+      })
+
+    return () => {
+      isMounted = false
+      if (animRef.current) {
+        animRef.current.destroy()
+        animRef.current = null
+      }
+    }
+  }, [])
+
+  return (
+    <div
+      ref={containerRef}
+      style={{ width: size, height: size }}
+    />
+  )
+}
 
 interface ProfilePageProps {
   onNavigate?: (page: "contact" | "about" | "settings") => void
@@ -196,20 +249,6 @@ export default function ProfilePage(
    * =========================================
    * REFERRAL COUNT
    * =========================================
-   *
-   * Firebase থেকে realtime হিসাব হবে।
-   *
-   * Successful referral বলতে এখানে বোঝানো হচ্ছে:
-   *
-   * 1. referredBy === current user's UID
-   * 2. accessType === "subscription"
-   * 3. subscriptionStatus === "active"
-   *
-   * অর্থাৎ শুধু signup করলেই successful referral
-   * হিসেবে count হবে না।
-   *
-   * Referred user-এর paid subscription active
-   * হলেই count হবে।
    */
   const [successfulReferrals, setSuccessfulReferrals] =
     useState(0)
@@ -242,12 +281,6 @@ export default function ProfilePage(
    * =========================================
    * REALTIME REFERRAL SYSTEM
    * =========================================
-   *
-   * Current user's UID দিয়ে users collection
-   * থেকে referred users খোঁজা হচ্ছে।
-   *
-   * তারপর শুধুমাত্র যাদের paid subscription
-   * বর্তমানে active, তাদের count করা হচ্ছে।
    */
   useEffect(() => {
     if (!user?.uid) {
@@ -499,14 +532,6 @@ export default function ProfilePage(
    * =========================================
    * REFERRAL CODE
    * =========================================
-   *
-   * নিজের referralCode-ই primary source।
-   *
-   * পুরোনো database থাকলে promoCode/refCode
-   * fallback হিসেবে থাকবে।
-   *
-   * successfulReferrals এখানে Firebase realtime
-   * listener থেকে আসছে।
    */
   const profileData =
     profile as
@@ -651,8 +676,12 @@ export default function ProfilePage(
 
   if (loading) {
     return (
-      <main className="flex min-h-[60vh] items-center justify-center bg-[#07090d] text-zinc-400">
-        <Loader2 className="size-6 animate-spin" />
+      <main className="flex min-h-[60vh] flex-col items-center justify-center gap-4 bg-[#07090d] text-zinc-400">
+        {/* 👇 এখানে Lottie অ্যানিমেশন বসানো হলো */}
+        <LottieLoader size={150} />
+        <p className="text-sm font-medium text-lime-300 animate-pulse">
+          Loading your profile...
+        </p>
       </main>
     )
   }
@@ -1361,4 +1390,4 @@ export default function ProfilePage(
         : null}
     </main>
   )
-}
+              }

@@ -54,88 +54,110 @@ import {
 
 /*
  * =========================================
- * SUPABASE STYLE M LOADER COMPONENT
+ * GREEN ORB LOADER COMPONENT
  * =========================================
- * শুধু CSS দিয়ে তৈরি, কোনো লাইব্রেরি বা npm install লাগবে না।
+ * আপনার পছন্দের "A · Green Orb" ভার্সন।
+ * শুধু CSS দিয়ে তৈরি, কোনো লাইব্রেরি লাগবে না।
  */
-function SupabaseMLoader({ size = 90 }: { size?: number }) {
+function GreenOrbLoader() {
   return (
     <>
-      <div
-        className="m-loader"
-        style={{ width: size, height: size }}
-      >
-        <span className="m-letter" style={{ fontSize: size * 0.38 }}>
-          M
-        </span>
+      <div className="green-orb-loader">
+        <span className="green-orb" />
+        <span className="green-orb-inner" />
+        <span className="green-orb-letter">M</span>
       </div>
-      <div className="loading-text">Loading</div>
+      <p className="green-orb-text">Loading profile page</p>
 
       <style jsx>{`
-        .m-loader {
+        .green-orb-loader {
           position: relative;
+          width: 90px;
+          height: 90px;
           display: flex;
           align-items: center;
           justify-content: center;
         }
 
-        .m-loader::before {
-          content: '';
+        .green-orb {
           position: absolute;
           inset: 0;
           border-radius: 50%;
-          border: 4px solid rgba(183, 255, 0, 0.15);
-          border-top-color: #B7FF00;
-          border-right-color: #20E000;
-          animation: mSpin 0.9s linear infinite;
+          background: conic-gradient(
+            from 0deg,
+            #B7FF00,
+            #20E000,
+            #0a3d0a,
+            #B7FF00
+          );
+          animation: greenOrbSpin 2.5s linear infinite;
+          filter: blur(6px);
+          opacity: 0.7;
         }
 
-        .m-loader::after {
-          content: '';
+        .green-orb-inner {
           position: absolute;
-          inset: -8px;
+          inset: 6px;
           border-radius: 50%;
-          border: 2px solid transparent;
-          border-top-color: rgba(183, 255, 0, 0.4);
-          animation: mSpin 1.6s linear infinite reverse;
+          background: #07090d;
+          z-index: 1;
         }
 
-        .m-letter {
+        .green-orb-letter {
+          position: relative;
+          z-index: 3;
+          font-size: 32px;
           font-weight: 900;
-          letter-spacing: -1px;
-          background: linear-gradient(135deg, #B7FF00 0%, #20E000 100%);
+          background: linear-gradient(
+            135deg,
+            #fff 0%,
+            #B7FF00 50%,
+            #20E000 100%
+          );
           -webkit-background-clip: text;
           background-clip: text;
           color: transparent;
-          position: relative;
-          z-index: 2;
-          animation: mPulse 1.4s ease-in-out infinite;
-          user-select: none;
-          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+          animation: greenOrbPulse 2.5s ease-in-out infinite;
+          text-shadow: 0 0 30px rgba(183, 255, 0, 0.6);
+          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+            system-ui, sans-serif;
         }
 
-        .loading-text {
+        .green-orb-text {
           font-size: 12px;
           font-weight: 600;
           letter-spacing: 3px;
           text-transform: uppercase;
           color: #9ca3af;
-          animation: mTextBlink 1.6s ease-in-out infinite;
-          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+          animation: greenOrbTextBlink 1.6s ease-in-out infinite;
+          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+            system-ui, sans-serif;
         }
 
-        @keyframes mSpin {
-          to { transform: rotate(360deg); }
+        @keyframes greenOrbSpin {
+          to {
+            transform: rotate(360deg);
+          }
         }
 
-        @keyframes mPulse {
-          0%, 100% { opacity: 1; transform: scale(1); }
-          50% { opacity: 0.7; transform: scale(0.95); }
+        @keyframes greenOrbPulse {
+          0%,
+          100% {
+            transform: scale(1);
+          }
+          50% {
+            transform: scale(1.1);
+          }
         }
 
-        @keyframes mTextBlink {
-          0%, 100% { opacity: 0.4; }
-          50% { opacity: 1; }
+        @keyframes greenOrbTextBlink {
+          0%,
+          100% {
+            opacity: 0.4;
+          }
+          50% {
+            opacity: 1;
+          }
         }
       `}</style>
     </>
@@ -667,9 +689,9 @@ export default function ProfilePage(
 
   if (loading) {
     return (
-      <main className="flex min-h-[60vh] flex-col items-center justify-center gap-5 bg-[#07090d]">
-        {/* 👇 Supabase Style M Loader */}
-        <SupabaseMLoader size={90} />
+      <main className="flex min-h-[60vh] flex-col items-center justify-center gap-6 bg-[#07090d]">
+        {/* 👇 Green Orb Loader + "Loading profile page" */}
+        <GreenOrbLoader />
       </main>
     )
   }
@@ -1355,4 +1377,4 @@ export default function ProfilePage(
         : null}
     </main>
   )
-            }
+                    }

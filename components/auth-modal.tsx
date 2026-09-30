@@ -55,7 +55,9 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
   const nameRef = useRef<HTMLInputElement>(null)
   const dobRef = useRef<HTMLInputElement>(null)
   const referralRef = useRef<HTMLInputElement>(null)
+  const scrollRef = useRef<HTMLDivElement>(null)
 
+  // Reset on close
   useEffect(() => {
     if (!open) {
       if (emailRef.current) emailRef.current.value = ""
@@ -68,6 +70,31 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
       setShowPassword(false)
     }
   }, [open])
+
+  // Telegram Mini App: handle viewport resize (keyboard open/close)
+  useEffect(() => {
+    if (typeof window === "undefined") return
+
+    const handleResize = () => {
+      // Force scroll container to recalculate height on keyboard open
+      if (scrollRef.current) {
+        scrollRef.current.style.height = "" // reset
+      }
+    }
+
+    window.addEventListener("resize", handleResize)
+
+    // Telegram WebApp API — expand to full height
+    const tg = (window as any).Telegram?.WebApp
+    if (tg) {
+      try {
+        tg.expand?.()
+        tg.enableClosingConfirmation?.()
+      } catch {}
+    }
+
+    return () => window.removeEventListener("resize", handleResize)
+  }, [])
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -115,14 +142,21 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange} modal={false}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         onOpenAutoFocus={(e) => e.preventDefault()}
         onCloseAutoFocus={(e) => e.preventDefault()}
-        onInteractOutside={(e) => e.preventDefault()}
-        className="max-h-[92vh] w-[calc(100vw-2rem)] max-w-[420px] gap-0 overflow-hidden rounded-3xl border border-white/10 bg-[#0b0f14] p-0 text-white shadow-2xl duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 [&>button]:hidden"
+        onPointerDownOutside={(e) => {
+          // Telegram webview e outside click e close korte dio na
+          e.preventDefault()
+        }}
+        className="fixed left-1/2 top-1/2 max-h-[92vh] w-[calc(100vw-2rem)] max-w-[420px] -translate-x-1/2 -translate-y-1/2 gap-0 overflow-hidden rounded-3xl border border-white/10 bg-[#0b0f14] p-0 text-white shadow-2xl [&>button]:hidden"
+        style={{
+          // Telegram WebView e z-index explicit set korte hobe
+          zIndex: 2147483647,
+        }}
       >
-        {/* === Background layers (fixed) === */}
+        {/* === Background (avoid backdrop-blur for Telegram compat) === */}
         <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden rounded-3xl">
           <div
             className="absolute inset-0 bg-cover bg-center"
@@ -131,25 +165,29 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
                 "url('https://i.postimg.cc/gkRTC0Mg/9934115925457a81b67404e741f62ffc.jpg')",
             }}
           />
-          <div className="absolute inset-0 bg-gradient-to-br from-black/60 via-black/80 to-black/95" />
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(0,0,0,0.2)_0%,rgba(0,0,0,0.95)_75%)]" />
-          <div className="absolute inset-0 bg-white/[0.02] backdrop-blur-xl" />
+          {/* Solid gradient overlay — no blur dependency */}
+          <div className="absolute inset-0 bg-gradient-to-br from-black/70 via-black/85 to-black/98" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(0,0,0,0.3)_0%,rgba(0,0,0,0.98)_75%)]" />
         </div>
 
-        {/* === Close button — top-right corner, always visible === */}
+        {/* === Close button — Telegram-safe === */}
         <button
           type="button"
           onClick={() => onOpenChange(false)}
           aria-label="Close"
-          className="absolute right-3.5 top-3.5 z-[60] flex size-9 items-center justify-center rounded-full border border-white/20 bg-black/50 text-white shadow-lg backdrop-blur-md transition-all duration-200 hover:scale-110 hover:bg-black/70 hover:border-white/40 active:scale-95"
+          style={{ zIndex: 9999 }}
+          className="absolute right-3 top-3 flex size-9 items-center justify-center rounded-full border border-white/25 bg-black/70 text-white shadow-lg transition-colors hover:bg-black/90 active:scale-95"
         >
           <X className="size-4" strokeWidth={2.5} />
         </button>
 
         {/* === Scrollable content === */}
-        <div className="auth-scroll relative z-10 max-h-[92vh] overflow-y-auto overscroll-contain px-6 pb-6 pt-6">
+        <div
+          ref={scrollRef}
+          className="auth-scroll relative z-10 max-h-[92vh] overflow-y-auto overscroll-contain px-6 pb-6 pt-6"
+        >
           <DialogHeader className="space-y-3 text-left">
-            <div className="flex items-center gap-3 pr-10">
+            <div className="flex items-center gap-3 pr-12">
               <img
                 src="https://i.postimg.cc/V6GHC8yG/17773-removebg-preview.png"
                 alt="MoviesVerseBD"
@@ -274,7 +312,11 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
                   id="auth-email"
                   ref={emailRef}
                   type="email"
+                  inputMode="email"
                   autoComplete="email"
+                  autoCorrect="off"
+                  autoCapitalize="off"
+                  spellCheck={false}
                   required
                   placeholder="you@example.com"
                   className="h-11 rounded-xl border-white/10 bg-white/[0.05] pl-10 text-white placeholder:text-slate-600 transition-colors focus-visible:border-emerald-400/60 focus-visible:bg-white/[0.08] focus-visible:ring-2 focus-visible:ring-emerald-400/25"
@@ -293,6 +335,9 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
                   ref={passwordRef}
                   type={showPassword ? "text" : "password"}
                   autoComplete={mode === "sign-in" ? "current-password" : "new-password"}
+                  autoCorrect="off"
+                  autoCapitalize="off"
+                  spellCheck={false}
                   required
                   minLength={6}
                   placeholder="••••••••"
@@ -309,22 +354,15 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
               </div>
             </div>
 
-            {/* Error — reserve space to prevent layout shift */}
-            <div
-              className={`overflow-hidden transition-all duration-200 ${
-                error ? "max-h-20 opacity-100" : "max-h-0 opacity-0"
-              }`}
-            >
-              {error ? (
-                <div
-                  className="flex items-start gap-2 rounded-xl border border-red-500/25 bg-red-500/10 px-3 py-2.5 text-xs text-red-300"
-                  role="alert"
-                >
-                  <span className="mt-0.5 size-1.5 shrink-0 rounded-full bg-red-400" />
-                  {error}
-                </div>
-              ) : null}
-            </div>
+            {error ? (
+              <div
+                className="flex items-start gap-2 rounded-xl border border-red-500/25 bg-red-500/10 px-3 py-2.5 text-xs text-red-300"
+                role="alert"
+              >
+                <span className="mt-0.5 size-1.5 shrink-0 rounded-full bg-red-400" />
+                {error}
+              </div>
+            ) : null}
 
             <Button
               type="submit"
@@ -374,21 +412,18 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
           .auth-scroll {
             -webkit-overflow-scrolling: touch;
             overscroll-behavior: contain;
-            scrollbar-width: thin;
-            scrollbar-color: rgba(16, 185, 129, 0.4) transparent;
+            scrollbar-width: none;
+            touch-action: pan-y;
           }
-          .auth-scroll::-webkit-scrollbar { width: 6px; }
-          .auth-scroll::-webkit-scrollbar-track { background: transparent; }
-          .auth-scroll::-webkit-scrollbar-thumb {
-            background: rgba(16, 185, 129, 0.35);
-            border-radius: 999px;
+          .auth-scroll::-webkit-scrollbar {
+            display: none;
           }
-          .auth-scroll::-webkit-scrollbar-thumb:hover {
-            background: rgba(16, 185, 129, 0.6);
-          }
-          @media (max-width: 640px) {
-            .auth-scroll::-webkit-scrollbar { display: none; }
-            .auth-scroll { scrollbar-width: none; }
+          /* Prevent iOS/Telegram auto-zoom on input focus */
+          .auth-scroll input,
+          .auth-scroll button,
+          .auth-scroll select,
+          .auth-scroll textarea {
+            font-size: 16px !important;
           }
         `}</style>
       </DialogContent>

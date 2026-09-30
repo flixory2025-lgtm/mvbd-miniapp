@@ -437,7 +437,7 @@ export default function SeriesSection({
                   "three_months"
 
                 /* -------------------------------------------
-                   FEATURES
+                   FEATURES FROM PLAN DATA
                 ------------------------------------------- */
 
                 const features =
@@ -516,7 +516,9 @@ export default function SeriesSection({
 
                     <div className="mvbd-quality-badge">
                       <span>🎥</span>
-                      <span>{plan.videoQuality}</span>
+                      <span>
+                        {plan.videoQuality}
+                      </span>
                     </div>
 
                     {/* FEATURES */}
@@ -3516,4 +3518,4 @@ export default function SeriesSection({
       )}
     </>
   )
-}
+                        }

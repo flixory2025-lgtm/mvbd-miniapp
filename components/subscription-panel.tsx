@@ -156,6 +156,7 @@ export default function SubscriptionPanel({
       description: "Access the official MVBD PM channel.",
       type: "link" as const,
       href: "https://t.me/mvbdpm2",
+      sticker: "📢",
     },
 
     {
@@ -165,6 +166,7 @@ export default function SubscriptionPanel({
       description: "Access the Anime Verse BD channel.",
       type: "link" as const,
       href: "https://t.me/avbdpm",
+      sticker: "🎌",
     },
 
     {
@@ -173,25 +175,35 @@ export default function SubscriptionPanel({
       title: "MeBook",
       description: "Explore the MeBook section from MVBD.",
       type: "mebook" as const,
+      sticker: "📚",
     },
 
     {
       id: "trailers",
       icon: Film,
       title: "Movie & Series Trailer Access",
-      description:
-        "Watch available movie and series trailers.",
+      description: "Watch available movie and series trailers.",
       type: "info" as const,
+      sticker: "🎬",
+    },
+
+    {
+      id: "free-quality",
+      icon: Play,
+      title: "480p – 720p Movie Streaming",
+      description: "Free plan এ 480p–720p পর্যন্ত movie দেখতে পারবেন।",
+      type: "info" as const,
+      sticker: "📺",
     },
 
     {
       id: "restricted",
       icon: Lock,
       title: "18+ Channel",
-      description:
-        "১৮+ কনটেন্টের জন্য আমাদের Telegram চ্যানেলে যান।",
+      description: "১৮+ কনটেন্টের জন্য আমাদের Telegram চ্যানেলে যান।",
       type: "link" as const,
       href: "https://t.me/MoviesVerseBD",
+      sticker: "🔞",
     },
   ]
 
@@ -267,8 +279,8 @@ export default function SubscriptionPanel({
 
               <div className="relative flex items-start justify-between gap-4">
                 <div className="flex items-start gap-3">
-                  <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl border border-lime-300/20 bg-lime-300/10">
-                    <Check className="size-5 text-lime-300" />
+                  <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl border border-lime-300/20 bg-lime-300/10 text-xl">
+                    🎁
                   </div>
 
                   <div>
@@ -288,7 +300,7 @@ export default function SubscriptionPanel({
                     </p>
 
                     <p className="mt-2 text-xs leading-5 text-lime-100/70">
-                      ফ্রি প্ল্যানে Normal Download-এ 480P–720P পর্যন্ত ভিডিও ডাউনলোড করা যাবে। 1080P–4K ডাউনলোডের জন্য Premium Plan প্রয়োজন।
+                      ফ্রি প্ল্যানে 480P–720P পর্যন্ত মুভি স্ট্রিমিং এবং ডাউনলোড করা যাবে। 1080P–4K ডাউনলোডের জন্য Premium Plan প্রয়োজন।
                     </p>
                   </div>
                 </div>
@@ -313,8 +325,8 @@ export default function SubscriptionPanel({
                         rel="noreferrer"
                         className="group flex items-center gap-3 rounded-2xl border border-white/10 bg-black/20 p-3.5 transition duration-200 hover:border-lime-300/25 hover:bg-lime-300/[.06]"
                       >
-                        <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-white/[.06] text-lime-300">
-                          <Icon className="size-4" />
+                        <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-white/[.06] text-base">
+                          {feature.sticker}
                         </div>
 
                         <div className="min-w-0 flex-1">
@@ -347,8 +359,8 @@ export default function SubscriptionPanel({
                         }}
                         className="group flex w-full items-center gap-3 rounded-2xl border border-white/10 bg-black/20 p-3.5 text-left transition duration-200 hover:border-lime-300/25 hover:bg-lime-300/[.06]"
                       >
-                        <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-white/[.06] text-lime-300">
-                          <Icon className="size-4" />
+                        <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-white/[.06] text-base">
+                          {feature.sticker}
                         </div>
 
                         <div className="min-w-0 flex-1">
@@ -376,8 +388,8 @@ export default function SubscriptionPanel({
                         key={feature.id}
                         className="flex items-center gap-3 rounded-2xl border border-white/10 bg-black/20 p-3.5 opacity-70"
                       >
-                        <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-white/[.05] text-zinc-500">
-                          <Lock className="size-4" />
+                        <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-white/[.05] text-base">
+                          {feature.sticker}
                         </div>
 
                         <div className="min-w-0 flex-1">
@@ -406,8 +418,8 @@ export default function SubscriptionPanel({
                       key={feature.id}
                       className="flex items-center gap-3 rounded-2xl border border-white/10 bg-black/20 p-3.5"
                     >
-                      <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-white/[.06] text-lime-300">
-                        <Icon className="size-4" />
+                      <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-white/[.06] text-base">
+                        {feature.sticker}
                       </div>
 
                       <div className="min-w-0 flex-1">
@@ -429,7 +441,7 @@ export default function SubscriptionPanel({
               <div className="relative mt-4 rounded-2xl border border-white/10 bg-black/20 px-4 py-3">
                 <p className="text-xs leading-5 text-zinc-500">
                   Want more access? Choose a premium plan below to unlock
-                  the paid features available on MVBD.
+                  1080p–4K streaming, downloads, and ad-free experience.
                 </p>
               </div>
             </div>
@@ -490,6 +502,8 @@ export default function SubscriptionPanel({
                         </span>
                       )}
 
+                      <div className="mb-2 text-2xl">{plan.sticker}</div>
+
                       <p className="text-xs text-zinc-500">
                         {plan.duration}
                       </p>
@@ -501,6 +515,14 @@ export default function SubscriptionPanel({
                       <p className="mt-1 text-xs leading-5 text-zinc-500">
                         {plan.description}
                       </p>
+
+                      {/* Quality Badge */}
+                      <div className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-lime-300/20 bg-lime-300/[.08] px-2.5 py-1">
+                        <span className="text-[10px]">🎥</span>
+                        <span className="text-[10px] font-semibold text-lime-300">
+                          {plan.videoQuality}
+                        </span>
+                      </div>
 
                       {plan.popular && (
                         <span className="mt-3 inline-flex rounded-full bg-lime-300 px-2.5 py-1 text-[9px] font-bold uppercase tracking-wider text-[#11150d]">
@@ -527,8 +549,8 @@ export default function SubscriptionPanel({
               <div className="rounded-[22px] border border-white/10 bg-white/[.025] p-4 sm:p-5">
 
                 <div className="flex items-start gap-3">
-                  <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-lime-300/10">
-                    <Send className="size-4 text-lime-300" />
+                  <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-lime-300/10 text-base">
+                    💳
                   </div>
 
                   <div className="min-w-0">
@@ -622,4 +644,4 @@ export default function SubscriptionPanel({
     </div>,
     portalNode,
   )
-}
+                      }

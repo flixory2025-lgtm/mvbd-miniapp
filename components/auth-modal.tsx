@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
-import { Eye, EyeOff, Loader2, Mail, Lock, User, Calendar, Gift, X } from "lucide-react"
+import { Eye, EyeOff, Mail, Lock, User, Calendar, Gift, X } from "lucide-react"
 
 import { useAuth } from "@/components/auth-provider"
 import {
@@ -14,42 +14,49 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 
-// === Lottie Player কম্পোনেন্ট (CDN থেকে লোড হবে, কোনো প্যাকেজ লাগবে না) ===
-function LottiePlayer({ src, className }: { src: string; className?: string }) {
+// === Lottie Player কম্পোনেন্ট (Skypack CDN থেকে লোড হবে, কোনো npm install লাগবে না) ===
+function LottieAnimation() {
   const containerRef = useRef<HTMLDivElement>(null)
-  const [isLoaded, setIsLoaded] = useState(false)
+  const animRef = useRef<any>(null)
 
   useEffect(() => {
-    // Lottie Player স্ক্রিপ্ট CDN থেকে লোড করা
-    const script = document.createElement("script")
-    script.src = "https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"
-    script.async = true
-    script.onload = () => setIsLoaded(true)
-    document.body.appendChild(script)
+    let isMounted = true
+
+    // Skypack CDN থেকে lottie-web ডাইনামিকালি ইমপোর্ট করা
+    import(/* webpackIgnore: true */ "https://cdn.skypack.dev/lottie-web")
+      .then((lottieModule) => {
+        const lottie = lottieModule.default || lottieModule
+
+        if (!isMounted || !containerRef.current) return
+
+        // আগের অ্যানিমেশন থাকলে ডিস্ট্রয় করা
+        if (animRef.current) {
+          animRef.current.destroy()
+        }
+
+        // নতুন অ্যানিমেশন লোড করা
+        animRef.current = lottie.loadAnimation({
+          container: containerRef.current,
+          renderer: "svg",
+          loop: true,
+          autoplay: true,
+          path: "https://lottie.host/8a215834-6979-4dbf-8545-f5301fea1d7d/fFW4jEp53d.lottie",
+        })
+      })
+      .catch((err) => {
+        console.error("Lottie load error:", err)
+      })
 
     return () => {
-      // ক্লিনআপ
-      if (document.body.contains(script)) {
-        document.body.removeChild(script)
+      isMounted = false
+      if (animRef.current) {
+        animRef.current.destroy()
+        animRef.current = null
       }
     }
   }, [])
 
-  if (!isLoaded) return null
-
-  return (
-    <div ref={containerRef} className={className}>
-      {/* @ts-ignore - lottie-player একটি কাস্টম এলিমেন্ট */}
-      <lottie-player
-        src={src}
-        background="transparent"
-        speed="1"
-        loop
-        autoplay
-        style={{ width: "100%", height: "100%" }}
-      />
-    </div>
-  )
+  return <div ref={containerRef} className="size-full" />
 }
 
 function getAuthErrorMessage(error: unknown) {
@@ -220,8 +227,8 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
             className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-black/80 backdrop-blur-sm"
             style={{ zIndex: 9998 }}
           >
-            <div className="size-32">
-              <LottiePlayer src="https://lottie.host/8a215834-6979-4dbf-8545-f5301fea1d7d/fFW4jEp53d.lottie" />
+            <div className="size-36">
+              <LottieAnimation />
             </div>
             <p className="animate-pulse text-sm font-medium text-emerald-400">
               {mode === "sign-in" ? "Signing you in..." : "Creating your account..."}

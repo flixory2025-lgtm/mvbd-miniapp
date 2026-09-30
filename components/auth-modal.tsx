@@ -18,7 +18,6 @@ function getAuthErrorMessage(error: unknown) {
   if (typeof error !== "object" || error === null || !("code" in error)) {
     return "Something went wrong. Please try again."
   }
-
   switch (error.code) {
     case "auth/invalid-credential":
     case "auth/user-not-found":
@@ -50,16 +49,13 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [isZoomed, setIsZoomed] = useState(false)
 
-  // Uncontrolled inputs — no re-render on keystroke (fixes mobile keyboard dismissal)
   const emailRef = useRef<HTMLInputElement>(null)
   const passwordRef = useRef<HTMLInputElement>(null)
   const nameRef = useRef<HTMLInputElement>(null)
   const dobRef = useRef<HTMLInputElement>(null)
   const referralRef = useRef<HTMLInputElement>(null)
 
-  // Reset everything when modal closes
   useEffect(() => {
     if (!open) {
       if (emailRef.current) emailRef.current.value = ""
@@ -70,7 +66,6 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
       setError("")
       setMode("sign-in")
       setShowPassword(false)
-      setIsZoomed(false)
     }
   }, [open])
 
@@ -103,7 +98,6 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
   const handleGoogleSignIn = async () => {
     setError("")
     setIsSubmitting(true)
-
     try {
       await signInWithGoogle()
       onOpenChange(false)
@@ -118,20 +112,18 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
     if (next === mode) return
     setMode(next)
     setError("")
-    // Soft iOS-style tap zoom pulse
-    setIsZoomed(true)
-    window.setTimeout(() => setIsZoomed(false), 260)
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={onOpenChange} modal={false}>
       <DialogContent
         onOpenAutoFocus={(e) => e.preventDefault()}
         onCloseAutoFocus={(e) => e.preventDefault()}
-        className="max-h-[92vh] w-[calc(100vw-2rem)] max-w-[420px] gap-0 overflow-hidden rounded-3xl border border-white/10 bg-[#0b0f14] p-0 text-white shadow-2xl [&>button]:hidden"
+        onInteractOutside={(e) => e.preventDefault()}
+        className="max-h-[92vh] w-[calc(100vw-2rem)] max-w-[420px] gap-0 overflow-hidden rounded-3xl border border-white/10 bg-[#0b0f14] p-0 text-white shadow-2xl duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 [&>button]:hidden"
       >
-        {/* === Fixed background layer === */}
-        <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden rounded-3xl">
+        {/* === Background layers (fixed) === */}
+        <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden rounded-3xl">
           <div
             className="absolute inset-0 bg-cover bg-center"
             style={{
@@ -144,20 +136,20 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
           <div className="absolute inset-0 bg-white/[0.02] backdrop-blur-xl" />
         </div>
 
-        {/* === Close button — always visible, above scroll === */}
+        {/* === Close button — top-right corner, always visible === */}
         <button
           type="button"
           onClick={() => onOpenChange(false)}
           aria-label="Close"
-          className="absolute right-3 top-3 z-40 flex size-8 items-center justify-center rounded-full border border-white/15 bg-black/40 text-slate-300 backdrop-blur-md transition-all duration-200 hover:scale-105 hover:bg-black/60 hover:text-white active:scale-95"
+          className="absolute right-3.5 top-3.5 z-[60] flex size-9 items-center justify-center rounded-full border border-white/20 bg-black/50 text-white shadow-lg backdrop-blur-md transition-all duration-200 hover:scale-110 hover:bg-black/70 hover:border-white/40 active:scale-95"
         >
-          <X className="size-4" />
+          <X className="size-4" strokeWidth={2.5} />
         </button>
 
-        {/* === Scrollable body === */}
+        {/* === Scrollable content === */}
         <div className="auth-scroll relative z-10 max-h-[92vh] overflow-y-auto overscroll-contain px-6 pb-6 pt-6">
           <DialogHeader className="space-y-3 text-left">
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 pr-10">
               <img
                 src="https://i.postimg.cc/V6GHC8yG/17773-removebg-preview.png"
                 alt="MoviesVerseBD"
@@ -186,40 +178,38 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
             </DialogDescription>
           </DialogHeader>
 
-          {/* === iOS liquid segmented control === */}
+          {/* === Liquid segmented control === */}
           <div className="relative mt-5 mb-4 grid grid-cols-2 rounded-2xl border border-white/10 bg-white/[0.04] p-1">
-            {/* Liquid sliding pill */}
             <div
-              className={`pointer-events-none absolute top-1 bottom-1 left-1 w-[calc(50%-4px)] rounded-xl bg-gradient-to-br from-emerald-400 to-emerald-600 shadow-[0_4px_20px_-4px_rgba(16,185,129,0.7)] transition-transform duration-[420ms] [transition-timing-function:cubic-bezier(0.22,1.4,0.36,1)] ${
+              className={`pointer-events-none absolute top-1 bottom-1 left-1 w-[calc(50%-4px)] rounded-xl bg-gradient-to-br from-emerald-400 to-emerald-600 shadow-[0_4px_20px_-4px_rgba(16,185,129,0.7)] transition-transform duration-[450ms] [transition-timing-function:cubic-bezier(0.22,1.4,0.36,1)] ${
                 mode === "sign-up" ? "translate-x-[calc(100%+4px)]" : "translate-x-0"
               }`}
             />
             <button
               type="button"
               onClick={() => switchMode("sign-in")}
-              className={`relative z-10 rounded-xl px-4 py-2 text-sm font-semibold transition-transform duration-200 ease-out ${
+              className={`relative z-10 rounded-xl px-4 py-2 text-sm font-semibold transition-all duration-300 ${
                 mode === "sign-in"
-                  ? "text-black"
-                  : "text-slate-400 hover:text-white active:scale-95"
-              } ${isZoomed && mode === "sign-in" ? "scale-[1.06]" : "scale-100"}`}
+                  ? "scale-105 text-black"
+                  : "scale-100 text-slate-400 hover:text-white"
+              }`}
             >
               Sign In
             </button>
             <button
               type="button"
               onClick={() => switchMode("sign-up")}
-              className={`relative z-10 rounded-xl px-4 py-2 text-sm font-semibold transition-transform duration-200 ease-out ${
+              className={`relative z-10 rounded-xl px-4 py-2 text-sm font-semibold transition-all duration-300 ${
                 mode === "sign-up"
-                  ? "text-black"
-                  : "text-slate-400 hover:text-white active:scale-95"
-              } ${isZoomed && mode === "sign-up" ? "scale-[1.06]" : "scale-100"}`}
+                  ? "scale-105 text-black"
+                  : "scale-100 text-slate-400 hover:text-white"
+              }`}
             >
               Sign Up
             </button>
           </div>
 
           <form className="flex flex-col gap-3.5" onSubmit={handleSubmit}>
-            {/* Sign-up extra fields */}
             {mode === "sign-up" && (
               <div className="flex flex-col gap-3.5">
                 <div className="flex flex-col gap-1.5">
@@ -274,7 +264,6 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
               </div>
             )}
 
-            {/* Email */}
             <div className="flex flex-col gap-1.5">
               <label className="text-xs font-medium text-slate-400" htmlFor="auth-email">
                 Email address
@@ -293,7 +282,6 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
               </div>
             </div>
 
-            {/* Password */}
             <div className="flex flex-col gap-1.5">
               <label className="text-xs font-medium text-slate-400" htmlFor="auth-password">
                 Password
@@ -321,18 +309,23 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
               </div>
             </div>
 
-            {/* Error */}
-            {error ? (
-              <div
-                className="flex items-start gap-2 rounded-xl border border-red-500/25 bg-red-500/10 px-3 py-2.5 text-xs text-red-300"
-                role="alert"
-              >
-                <span className="mt-0.5 size-1.5 shrink-0 rounded-full bg-red-400" />
-                {error}
-              </div>
-            ) : null}
+            {/* Error — reserve space to prevent layout shift */}
+            <div
+              className={`overflow-hidden transition-all duration-200 ${
+                error ? "max-h-20 opacity-100" : "max-h-0 opacity-0"
+              }`}
+            >
+              {error ? (
+                <div
+                  className="flex items-start gap-2 rounded-xl border border-red-500/25 bg-red-500/10 px-3 py-2.5 text-xs text-red-300"
+                  role="alert"
+                >
+                  <span className="mt-0.5 size-1.5 shrink-0 rounded-full bg-red-400" />
+                  {error}
+                </div>
+              ) : null}
+            </div>
 
-            {/* Submit */}
             <Button
               type="submit"
               disabled={isSubmitting}
@@ -342,14 +335,12 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
               {mode === "sign-in" ? "Sign in" : "Create account"}
             </Button>
 
-            {/* Divider */}
             <div className="relative flex items-center gap-3 py-1 text-[10px] uppercase tracking-[0.2em] text-slate-600">
               <div className="h-px flex-1 bg-gradient-to-r from-transparent via-white/15 to-transparent" />
               <span>or</span>
               <div className="h-px flex-1 bg-gradient-to-r from-transparent via-white/15 to-transparent" />
             </div>
 
-            {/* Google */}
             <Button
               type="button"
               variant="outline"
@@ -366,7 +357,6 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
               Continue with Google
             </Button>
 
-            {/* Switch mode */}
             <p className="pt-1 text-center text-xs text-slate-500">
               {mode === "sign-in" ? "New to MVBD?" : "Already have an account?"}{" "}
               <button
@@ -387,12 +377,8 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
             scrollbar-width: thin;
             scrollbar-color: rgba(16, 185, 129, 0.4) transparent;
           }
-          .auth-scroll::-webkit-scrollbar {
-            width: 6px;
-          }
-          .auth-scroll::-webkit-scrollbar-track {
-            background: transparent;
-          }
+          .auth-scroll::-webkit-scrollbar { width: 6px; }
+          .auth-scroll::-webkit-scrollbar-track { background: transparent; }
           .auth-scroll::-webkit-scrollbar-thumb {
             background: rgba(16, 185, 129, 0.35);
             border-radius: 999px;
@@ -401,12 +387,8 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
             background: rgba(16, 185, 129, 0.6);
           }
           @media (max-width: 640px) {
-            .auth-scroll::-webkit-scrollbar {
-              display: none;
-            }
-            .auth-scroll {
-              scrollbar-width: none;
-            }
+            .auth-scroll::-webkit-scrollbar { display: none; }
+            .auth-scroll { scrollbar-width: none; }
           }
         `}</style>
       </DialogContent>

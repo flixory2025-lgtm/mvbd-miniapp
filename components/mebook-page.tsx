@@ -1731,6 +1731,98 @@ background:var(--hover);
 .mebook-root .cmt-row-avatar{width:32px;height:32px;}
 .mebook-root .msgr-list{width:100%;}
 }
+
+/* ============================================================
+   FACEBOOK-STYLE SPLASH SCREEN (1 · Classic Dots)
+   ============================================================ */
+.mebook-splash{
+position:fixed;inset:0;z-index:9999;
+background:#0b0f1a;
+display:flex;flex-direction:column;
+align-items:center;justify-content:center;
+gap:28px;
+padding:20px;
+}
+.mebook-splash::before{
+content:'';position:absolute;inset:0;
+background:
+radial-gradient(circle at 30% 20%,rgba(34,197,94,.10) 0%,transparent 50%),
+radial-gradient(circle at 70% 80%,rgba(34,197,94,.08) 0%,transparent 50%);
+pointer-events:none;
+}
+.mebook-splash-logo-wrap{
+display:flex;flex-direction:column;
+align-items:center;gap:12px;
+position:relative;z-index:2;
+}
+.mebook-splash-logo-img{
+width:68px;height:68px;object-fit:contain;
+filter:drop-shadow(0 4px 20px rgba(34,197,94,.55));
+animation:splashFloat 3s ease-in-out infinite;
+}
+@keyframes splashFloat{
+0%,100%{transform:translateY(0) scale(1);}
+50%{transform:translateY(-4px) scale(1.03);}
+}
+.mebook-splash-logo-text{
+font-size:34px;font-weight:900;
+letter-spacing:-1.2px;line-height:1;
+display:flex;align-items:baseline;
+}
+.mebook-splash-logo-text .me{
+background:linear-gradient(135deg,#22c55e 0%,#86efac 50%,#4ade80 100%);
+-webkit-background-clip:text;background-clip:text;
+color:transparent;
+text-shadow:0 0 30px rgba(34,197,94,.4);
+}
+.mebook-splash-logo-text .book{
+color:#ffffff;
+text-shadow:0 0 20px rgba(255,255,255,.3);
+}
+.mebook-splash-dots{
+display:flex;gap:8px;
+position:relative;z-index:2;
+margin-top:8px;
+}
+.mebook-splash-dots span{
+width:10px;height:10px;border-radius:50%;
+background:#22c55e;
+box-shadow:0 0 12px rgba(34,197,94,.7);
+animation:splashBounce 1.4s ease-in-out infinite;
+}
+.mebook-splash-dots span:nth-child(1){animation-delay:0s;}
+.mebook-splash-dots span:nth-child(2){animation-delay:.15s;}
+.mebook-splash-dots span:nth-child(3){animation-delay:.3s;}
+.mebook-splash-dots span:nth-child(4){animation-delay:.45s;}
+@keyframes splashBounce{
+0%,60%,100%{transform:translateY(0);opacity:.5;}
+30%{transform:translateY(-12px);opacity:1;}
+}
+.mebook-splash-from{
+position:absolute;bottom:28px;left:50%;
+transform:translateX(-50%);
+display:flex;flex-direction:column;
+align-items:center;gap:4px;
+z-index:2;
+animation:splashFromFade 3s ease-in-out infinite;
+}
+@keyframes splashFromFade{
+0%,100%{opacity:.85;}
+50%{opacity:1;}
+}
+.mebook-splash-from .from-label{
+font-size:10px;font-weight:500;
+color:#94a3b8;letter-spacing:.12em;
+text-transform:uppercase;
+}
+.mebook-splash-from .from-name{
+font-size:14px;font-weight:800;
+letter-spacing:.05em;
+background:linear-gradient(135deg,#22c55e 0%,#86efac 100%);
+-webkit-background-clip:text;background-clip:text;
+color:transparent;
+text-shadow:0 0 15px rgba(34,197,94,.35);
+}
 `
 
 /* ============================================================
@@ -2042,6 +2134,40 @@ function ChatReactionPicker({
 }
 
 /* ============================================================
+   SPLASH SCREEN COMPONENT
+   ============================================================ */
+
+function MeBookSplash() {
+  return (
+    <div className="mebook-splash">
+      <div className="mebook-splash-logo-wrap">
+        <img
+          className="mebook-splash-logo-img"
+          src="https://i.postimg.cc/rsBBsQWF/17832-removebg-preview.png"
+          alt="MeBook"
+        />
+        <div className="mebook-splash-logo-text">
+          <span className="me">Me</span>
+          <span className="book">Book</span>
+        </div>
+      </div>
+
+      <div className="mebook-splash-dots">
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+
+      <div className="mebook-splash-from">
+        <span className="from-label">from</span>
+        <span className="from-name">ELIX INDUSTRY</span>
+      </div>
+    </div>
+  )
+}
+
+/* ============================================================
 MAIN COMPONENT
 ============================================================ */
 
@@ -2052,6 +2178,7 @@ interface MeBookPageProps {
 export default function MeBookPage({ onExit }: MeBookPageProps) {
   const rootRef = useRef<HTMLDivElement>(null)
   const [ready, setReady] = useState(false)
+  const [showSplash, setShowSplash] = useState(true)
 
   const [theme, setTheme] = useState<"light" | "dark">("light")
   const [authMode, setAuthMode] = useState<"signin" | "signup">("signin")
@@ -2482,6 +2609,15 @@ const handleChatTyping = (value: string) => {
     }
     setReady(true)
   }, [])
+
+  /* ============================================================
+     SPLASH SCREEN — show for 2 seconds
+     ============================================================ */
+  useEffect(() => {
+    if (!ready) return
+    const t = setTimeout(() => setShowSplash(false), 2000)
+    return () => clearTimeout(t)
+  }, [ready])
 
   useEffect(() => {
     const saved = localStorage.getItem("mebook-theme")
@@ -4155,6 +4291,17 @@ const handleChatTyping = (value: string) => {
   }
 
   if (!ready) return null
+
+  // ============================================================
+  // SPLASH SCREEN — show first, then auto-hide
+  // ============================================================
+  if (showSplash) {
+    return (
+      <div className="mebook-root dark-mode" ref={rootRef}>
+        <MeBookSplash />
+      </div>
+    )
+  }
 
   const avatarUrl = (u: any) =>
     u?.photoURL ||
@@ -7053,4 +7200,4 @@ function SideItem({
       {badge && badge > 0 ? <span className="mb-side-badge">{badge}</span> : null}
     </button>
   )
-    }
+          }

@@ -1,8 +1,7 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
-import { Eye, EyeOff, Mail, Lock, User, Calendar, Gift, X } from "lucide-react"
-import dynamic from "next/dynamic" // Lottie ডাইনামিক ইমপোর্টের জন্য
+import { Eye, EyeOff, Loader2, Mail, Lock, User, Calendar, Gift, X } from "lucide-react"
 
 import { useAuth } from "@/components/auth-provider"
 import {
@@ -15,14 +14,43 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 
-// === Lottie Player ডাইনামিক ইমপোর্ট (SSR এড়ানোর জন্য) ===
-const LottiePlayer = dynamic(
-  () => import("@lottiefiles/react-lottie-player").then((mod) => mod.Player),
-  { ssr: false }
-)
+// === Lottie Player কম্পোনেন্ট (CDN থেকে লোড হবে, কোনো প্যাকেজ লাগবে না) ===
+function LottiePlayer({ src, className }: { src: string; className?: string }) {
+  const containerRef = useRef<HTMLDivElement>(null)
+  const [isLoaded, setIsLoaded] = useState(false)
 
-// === আপনার Lottie অ্যানিমেশনের লিংক ===
-const LOTTIE_URL = "https://lottie.host/8a215834-6979-4dbf-8545-f5301fea1d7d/fFW4jEp53d.lottie"
+  useEffect(() => {
+    // Lottie Player স্ক্রিপ্ট CDN থেকে লোড করা
+    const script = document.createElement("script")
+    script.src = "https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"
+    script.async = true
+    script.onload = () => setIsLoaded(true)
+    document.body.appendChild(script)
+
+    return () => {
+      // ক্লিনআপ
+      if (document.body.contains(script)) {
+        document.body.removeChild(script)
+      }
+    }
+  }, [])
+
+  if (!isLoaded) return null
+
+  return (
+    <div ref={containerRef} className={className}>
+      {/* @ts-ignore - lottie-player একটি কাস্টম এলিমেন্ট */}
+      <lottie-player
+        src={src}
+        background="transparent"
+        speed="1"
+        loop
+        autoplay
+        style={{ width: "100%", height: "100%" }}
+      />
+    </div>
+  )
+}
 
 function getAuthErrorMessage(error: unknown) {
   if (typeof error !== "object" || error === null || !("code" in error)) {
@@ -186,21 +214,16 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
           <X className="size-4" strokeWidth={2.5} />
         </button>
 
-        {/* === LOTTIE OVERLAY — শুধু লোডিং অবস্থায় দেখাবে === */}
+        {/* === LOTTIE OVERLAY — লোডিং অবস্থায় দেখাবে === */}
         {isSubmitting && (
-          <div 
-            className="absolute inset-0 z-[9998] flex flex-col items-center justify-center gap-4 bg-black/80 backdrop-blur-sm"
+          <div
+            className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-black/80 backdrop-blur-sm"
             style={{ zIndex: 9998 }}
           >
             <div className="size-32">
-              <LottiePlayer
-                autoplay
-                loop
-                src={LOTTIE_URL}
-                style={{ width: "100%", height: "100%" }}
-              />
+              <LottiePlayer src="https://lottie.host/8a215834-6979-4dbf-8545-f5301fea1d7d/fFW4jEp53d.lottie" />
             </div>
-            <p className="text-sm font-medium text-emerald-400 animate-pulse">
+            <p className="animate-pulse text-sm font-medium text-emerald-400">
               {mode === "sign-in" ? "Signing you in..." : "Creating your account..."}
             </p>
           </div>

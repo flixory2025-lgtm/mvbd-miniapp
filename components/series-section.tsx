@@ -322,10 +322,6 @@ export default function SeriesSection({
 
   /* =======================================================
      RESTRICTED ITEM CHECK
-     
-     This prevents age-restricted content from becoming
-     a clickable external link even if the data accidentally
-     contains it as an external item.
   ======================================================= */
 
   const isRestrictedFreeItem = (
@@ -339,13 +335,18 @@ export default function SeriesSection({
 
     return (
       item.type === "restricted" ||
-      title.includes("18+") ||
-      title.includes("18 +") ||
-      title.includes("adult") ||
-      title.includes("age-restricted") ||
-      title.includes("age restricted") ||
-      id.includes("18") ||
-      id.includes("adult")
+      (title.includes("18+") &&
+        !item.href) ||
+      (title.includes("18 +") &&
+        !item.href) ||
+      (title.includes("adult") &&
+        !item.href) ||
+      (title.includes("age-restricted") &&
+        !item.href) ||
+      (title.includes("age restricted") &&
+        !item.href) ||
+      (id.includes("18") && !item.href) ||
+      (id.includes("adult") && !item.href)
     )
   }
 
@@ -436,128 +437,11 @@ export default function SeriesSection({
                   "three_months"
 
                 /* -------------------------------------------
-                   FREE FEATURES
+                   FEATURES
                 ------------------------------------------- */
 
-                const features = isFree
-                  ? [
-                      {
-                        text:
-                          "MVBD PM Channel Access",
-                        type:
-                          "included",
-                      },
-                      {
-                        text:
-                          "MoviesverseBD Channel Access",
-                        type:
-                          "restricted",
-                      },
-                      {
-                        text:
-                          "Anime Verse BD Channel Access",
-                        type:
-                          "included",
-                      },
-                      {
-                        text:
-                          "MVBD MeBook Access",
-                        type:
-                          "included",
-                      },
-                      {
-                        text:
-                          "Free MVBD Mini App Check Access",
-                        type:
-                          "included",
-                      },
-                      {
-                        text:
-                          "Movie Series Trailer Access",
-                        type:
-                          "included",
-                      },
-                      {
-                        text:
-                          "No Movie Streaming (Subscription Required)",
-                        type:
-                          "locked",
-                      },
-                      {
-                        text:
-                          "No Premium Content",
-                        type:
-                          "locked",
-                      },
-                      {
-                        text:
-                          "No Download Option",
-                        type:
-                          "locked",
-                      },
-                      {
-                        text:
-                          "No Ad-Free Experience",
-                        type:
-                          "locked",
-                      },
-                      {
-                        text:
-                          "Limited Features",
-                        type:
-                          "locked",
-                      },
-                    ]
-                  : [
-                      {
-                        text:
-                          "All Free Plan Features",
-                        type:
-                          "included",
-                      },
-                      {
-                        text:
-                          "Full Movie Streaming (HD Quality)",
-                        type:
-                          "included",
-                      },
-                      {
-                        text:
-                          "Series & Anime Streaming",
-                        type:
-                          "included",
-                      },
-                      {
-                        text:
-                          "Download Option (Select Content)",
-                        type:
-                          "included",
-                      },
-                      {
-                        text:
-                          "Ad-Free Experience",
-                        type:
-                          "included",
-                      },
-                      {
-                        text:
-                          "Premium Content Access",
-                        type:
-                          "included",
-                      },
-                      {
-                        text:
-                          "Regular Updates (New Movies & Series)",
-                        type:
-                          "included",
-                      },
-                      {
-                        text:
-                          "Priority Support",
-                        type:
-                          "included",
-                      },
-                    ]
+                const features =
+                  plan.features || []
 
                 return (
                   <article
@@ -578,7 +462,7 @@ export default function SeriesSection({
 
                     {plan.popular && (
                       <div className="mvbd-popular-badge">
-                        MOST POPULAR
+                        ⭐ MOST POPULAR
                       </div>
                     )}
 
@@ -586,10 +470,7 @@ export default function SeriesSection({
 
                     <div className="mvbd-card-top">
                       <div className="mvbd-plan-icon">
-                        {isFree && "♛"}
-                        {isMonthly && "▣"}
-                        {isTwoMonths && "▣"}
-                        {isThreeMonths && "▣"}
+                        {plan.sticker || "📦"}
                       </div>
 
                       <div>
@@ -631,6 +512,13 @@ export default function SeriesSection({
                             : "90 DAYS ACCESS"}
                     </div>
 
+                    {/* QUALITY BADGE */}
+
+                    <div className="mvbd-quality-badge">
+                      <span>🎥</span>
+                      <span>{plan.videoQuality}</span>
+                    </div>
+
                     {/* FEATURES */}
 
                     <ul className="mvbd-feature-list">
@@ -658,16 +546,22 @@ export default function SeriesSection({
                                   : feature.type ===
                                       "restricted"
                                     ? "feature-restricted"
-                                    : "feature-check"
+                                    : feature.type ===
+                                        "quality"
+                                      ? "feature-quality"
+                                      : "feature-check"
                               }
                             >
                               {feature.type ===
                               "locked"
-                                ? "×"
+                                ? "🔒"
                                 : feature.type ===
                                     "restricted"
-                                  ? "18"
-                                  : "✓"}
+                                  ? "🔞"
+                                  : feature.type ===
+                                      "quality"
+                                    ? "🎥"
+                                    : "✅"}
                             </span>
 
                             <span className="feature-text">
@@ -1644,6 +1538,62 @@ export default function SeriesSection({
           }
 
           /* =================================================
+             QUALITY BADGE
+          ================================================= */
+
+          .mvbd-quality-badge {
+            position: relative;
+
+            z-index: 4;
+
+            display: inline-flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            gap: 6px;
+
+            align-self: center;
+
+            margin-top: 10px;
+
+            padding:
+              6px
+              14px;
+
+            border-radius:
+              999px;
+
+            border:
+              1px solid
+              color-mix(
+                in srgb,
+                var(--plan-main)
+                  40%,
+                transparent
+              );
+
+            background:
+              color-mix(
+                in srgb,
+                var(--plan-main)
+                  10%,
+                transparent
+              );
+
+            color:
+              var(--plan-main);
+
+            font-size: 10px;
+
+            font-weight: 900;
+
+            letter-spacing:
+              0.5px;
+          }
+
+          /* =================================================
              FEATURES
           ================================================= */
 
@@ -1740,6 +1690,26 @@ export default function SeriesSection({
                 );
           }
 
+          .feature-quality {
+            color: #001d0c;
+
+            background:
+              linear-gradient(
+                135deg,
+                #ffe66d,
+                #ffb800
+              );
+
+            box-shadow:
+              0 0 10px
+                rgba(
+                  255,
+                  184,
+                  0,
+                  0.35
+                );
+          }
+
           .feature-cross {
             color: #ff5a45;
 
@@ -1760,7 +1730,7 @@ export default function SeriesSection({
                 0.25
               );
 
-            font-size: 14px !important;
+            font-size: 11px !important;
           }
 
           .feature-restricted {
@@ -1770,7 +1740,7 @@ export default function SeriesSection({
               #d82929;
 
             font-size:
-              8px !important;
+              10px !important;
 
             box-shadow:
               0 0 8px
@@ -1976,6 +1946,12 @@ export default function SeriesSection({
 
             letter-spacing:
               0.8px;
+
+            animation:
+              mvbdBadgePulse
+              2s
+              ease-in-out
+              infinite;
           }
 
           /* =================================================
@@ -2302,7 +2278,9 @@ export default function SeriesSection({
             height: 38px;
 
             flex:
-              0 0 38px;
+              0
+              0
+              38px;
 
             display: grid;
 
@@ -2310,7 +2288,7 @@ export default function SeriesSection({
 
             border-radius: 12px;
 
-            color: #67ff9d;
+            font-size: 18px;
 
             background:
               rgba(
@@ -2795,6 +2773,17 @@ export default function SeriesSection({
                   106,
                   0.22
                 );
+
+            animation:
+              mvbdSuccessPop
+              0.5s
+              cubic-bezier(
+                0.2,
+                0.8,
+                0.2,
+                1
+              )
+              both;
           }
 
           /* =================================================
@@ -2837,6 +2826,31 @@ export default function SeriesSection({
             }
           }
 
+          @keyframes mvbdBadgePulse {
+            0%,
+            100% {
+              box-shadow:
+                0 0 18px
+                  rgba(
+                    40,
+                    237,
+                    255,
+                    0.3
+                  );
+            }
+
+            50% {
+              box-shadow:
+                0 0 30px
+                  rgba(
+                    40,
+                    237,
+                    255,
+                    0.6
+                  );
+            }
+          }
+
           @keyframes mvbdModalIn {
             from {
               opacity: 0;
@@ -2869,6 +2883,27 @@ export default function SeriesSection({
             to {
               transform:
                 rotate(360deg);
+            }
+          }
+
+          @keyframes mvbdSuccessPop {
+            from {
+              opacity: 0;
+
+              transform:
+                scale(0.5);
+            }
+
+            60% {
+              transform:
+                scale(1.1);
+            }
+
+            to {
+              opacity: 1;
+
+              transform:
+                scale(1);
             }
           }
 
@@ -3071,7 +3106,9 @@ export default function SeriesSection({
 
             .mvbd-card-glow,
             .mvbd-status-dot,
-            .mvbd-loader {
+            .mvbd-loader,
+            .mvbd-popular-badge,
+            .mvbd-success-icon {
               animation: none;
             }
           }
@@ -3108,7 +3145,7 @@ export default function SeriesSection({
                 id="free-plan-title"
                 className="mvbd-modal-title"
               >
-                Free Plan
+                🎁 Free Plan
               </div>
 
               <p className="mvbd-modal-subtitle">
@@ -3124,7 +3161,7 @@ export default function SeriesSection({
                   []
                 ).map((item) => {
                   /* ---------------------------------------
-                     RESTRICTED
+                     RESTRICTED (no link)
                   --------------------------------------- */
 
                   if (
@@ -3176,7 +3213,7 @@ export default function SeriesSection({
                         className="mvbd-access-button"
                       >
                         <div className="mvbd-access-icon">
-                          ↗
+                          {item.sticker || "↗"}
                         </div>
 
                         <div className="mvbd-access-text">
@@ -3218,7 +3255,7 @@ export default function SeriesSection({
                         }
                       >
                         <div className="mvbd-access-icon">
-                          M
+                          {item.sticker || "M"}
                         </div>
 
                         <div className="mvbd-access-text">
@@ -3252,7 +3289,7 @@ export default function SeriesSection({
                       className="mvbd-access-button mvbd-access-info"
                     >
                       <div className="mvbd-access-icon">
-                        ✓
+                        {item.sticker || "✓"}
                       </div>
 
                       <div className="mvbd-access-text">
@@ -3320,7 +3357,7 @@ export default function SeriesSection({
               </button>
 
               <div className="mvbd-modal-title">
-                Complete Payment
+                💳 Complete Payment
               </div>
 
               <p className="mvbd-modal-subtitle">
@@ -3335,6 +3372,7 @@ export default function SeriesSection({
                 </small>
 
                 <strong>
+                  {selectedPlan.sticker}{" "}
                   {
                     selectedPlan.planName
                   }{" "}
@@ -3409,7 +3447,7 @@ export default function SeriesSection({
               <div className="mvbd-loader" />
 
               <div className="mvbd-modal-title">
-                Processing Request
+                ⏳ Processing Request
               </div>
 
               <p className="mvbd-modal-subtitle">
@@ -3453,7 +3491,7 @@ export default function SeriesSection({
               </div>
 
               <div className="mvbd-modal-title">
-                Request Submitted
+                🎉 Request Submitted
               </div>
 
               <p className="mvbd-modal-subtitle">

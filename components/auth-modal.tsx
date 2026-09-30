@@ -252,13 +252,15 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(0,0,0,0.15)_0%,rgba(0,0,0,0.7)_75%)]" />
         </div>
 
-        {/* === Close button === */}
+        {/* ========================================= */}
+        {/* === CLOSE BUTTON (CORNER CROSS ICON) === */}
+        {/* ========================================= */}
         <button
           type="button"
           onClick={() => onOpenChange(false)}
           aria-label="Close"
           style={{ zIndex: 9999 }}
-          className="absolute right-3 top-3 flex size-9 items-center justify-center rounded-full border border-white/25 bg-black/70 text-white shadow-lg transition-colors hover:bg-black/90 active:scale-95"
+          className="absolute right-3 top-3 flex size-9 items-center justify-center rounded-full border border-white/25 bg-black/70 text-white shadow-lg backdrop-blur-sm transition-all duration-200 hover:scale-105 hover:border-emerald-400/60 hover:bg-emerald-500/20 hover:text-emerald-300 active:scale-95"
         >
           <X className="size-4" strokeWidth={2.5} />
         </button>

@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
-import { Eye, EyeOff, Mail, Lock, User, Calendar, Gift, X } from "lucide-react"
+import { Eye, EyeOff, Loader2, Mail, Lock, User, Calendar, Gift, X } from "lucide-react"
 
 import { useAuth } from "@/components/auth-provider"
 import {
@@ -14,49 +14,89 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 
-// === Lottie Player কম্পোনেন্ট (Skypack CDN থেকে লোড হবে, কোনো npm install লাগবে না) ===
-function LottieAnimation() {
-  const containerRef = useRef<HTMLDivElement>(null)
-  const animRef = useRef<any>(null)
+/*
+ * =========================================
+ * SHIMMER ORB LOADER COMPONENT
+ * =========================================
+ * শুধু CSS দিয়ে তৈরি, কোনো লাইব্রেরি লাগবে না।
+ */
+function ShimmerOrbLoader() {
+  return (
+    <div className="shimmer-orb-wrapper">
+      <div className="shimmer-orb">
+        <span className="shimmer-letter">M</span>
+      </div>
 
-  useEffect(() => {
-    let isMounted = true
-
-    // Skypack CDN থেকে lottie-web ডাইনামিকালি ইমপোর্ট করা
-    import(/* webpackIgnore: true */ "https://cdn.skypack.dev/lottie-web")
-      .then((lottieModule) => {
-        const lottie = lottieModule.default || lottieModule
-
-        if (!isMounted || !containerRef.current) return
-
-        // আগের অ্যানিমেশন থাকলে ডিস্ট্রয় করা
-        if (animRef.current) {
-          animRef.current.destroy()
+      <style jsx>{`
+        .shimmer-orb-wrapper {
+          position: relative;
+          width: 100px;
+          height: 100px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
         }
 
-        // নতুন অ্যানিমেশন লোড করা
-        animRef.current = lottie.loadAnimation({
-          container: containerRef.current,
-          renderer: "svg",
-          loop: true,
-          autoplay: true,
-          path: "https://lottie.host/8a215834-6979-4dbf-8545-f5301fea1d7d/fFW4jEp53d.lottie",
-        })
-      })
-      .catch((err) => {
-        console.error("Lottie load error:", err)
-      })
+        .shimmer-orb {
+          position: relative;
+          width: 100%;
+          height: 100%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
 
-    return () => {
-      isMounted = false
-      if (animRef.current) {
-        animRef.current.destroy()
-        animRef.current = null
-      }
-    }
-  }, [])
+        .shimmer-orb::before {
+          content: '';
+          position: absolute;
+          inset: 0;
+          border-radius: 50%;
+          background: conic-gradient(
+            from 0deg,
+            transparent 0deg,
+            rgba(183, 255, 0, 0.8) 90deg,
+            transparent 180deg,
+            transparent 360deg
+          );
+          animation: shimmerSpin 1.8s linear infinite;
+          filter: blur(8px);
+        }
 
-  return <div ref={containerRef} className="size-full" />
+        .shimmer-orb::after {
+          content: '';
+          position: absolute;
+          inset: 6px;
+          border-radius: 50%;
+          background: #0b0f14;
+        }
+
+        .shimmer-letter {
+          position: relative;
+          z-index: 3;
+          font-size: 34px;
+          font-weight: 900;
+          background: linear-gradient(
+            135deg,
+            #fff 0%,
+            #B7FF00 50%,
+            #20E000 100%
+          );
+          -webkit-background-clip: text;
+          background-clip: text;
+          color: transparent;
+          text-shadow: 0 0 20px rgba(183, 255, 0, 0.8);
+          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+            system-ui, sans-serif;
+        }
+
+        @keyframes shimmerSpin {
+          to {
+            transform: rotate(360deg);
+          }
+        }
+      `}</style>
+    </div>
+  )
 }
 
 function getAuthErrorMessage(error: unknown) {
@@ -192,12 +232,12 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
         onPointerDownOutside={(e) => {
           e.preventDefault()
         }}
-        className="fixed left-1/2 top-1/2 max-h-[92vh] w-[calc(100vw-2rem)] max-w-[420px] -translate-x-1/2 -translate-y-1/2 gap-0 overflow-hidden rounded-3xl border border-white/10 bg-[#0b0f14] p-0 text-white shadow-2xl [&>button]:hidden"
+        className="fixed left-1/2 top-1/2 max-h-[92vh] w-[calc(100vw-2rem)] max-w-[420px] -translate-x-1/2 -translate-y-1/2 gap-0 overflow-hidden rounded-3xl border border-white/10 bg-[#0b0f14]/70 p-0 text-white shadow-2xl backdrop-blur-md [&>button]:hidden"
         style={{
           zIndex: 2147483647,
         }}
       >
-        {/* === Background === */}
+        {/* === Background (LIGHT VERSION) === */}
         <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden rounded-3xl">
           <div
             className="absolute inset-0 bg-cover bg-center"
@@ -206,8 +246,10 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
                 "url('https://i.postimg.cc/gkRTC0Mg/9934115925457a81b67404e741f62ffc.jpg')",
             }}
           />
-          <div className="absolute inset-0 bg-gradient-to-br from-black/70 via-black/85 to-black/98" />
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(0,0,0,0.3)_0%,rgba(0,0,0,0.98)_75%)]" />
+          {/* 👇 হালকা Gradient Overlay (আগের মতো কালো নয়) */}
+          <div className="absolute inset-0 bg-gradient-to-br from-black/40 via-black/60 to-black/75" />
+          {/* 👇 হালকা Radial Overlay (আগের মতো কালো নয়) */}
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(0,0,0,0.15)_0%,rgba(0,0,0,0.7)_75%)]" />
         </div>
 
         {/* === Close button === */}
@@ -221,17 +263,17 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
           <X className="size-4" strokeWidth={2.5} />
         </button>
 
-        {/* === LOTTIE OVERLAY — লোডিং অবস্থায় দেখাবে === */}
+        {/* === SHIMMER ORB LOADING OVERLAY === */}
         {isSubmitting && (
           <div
-            className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-black/80 backdrop-blur-sm"
+            className="absolute inset-0 flex flex-col items-center justify-center gap-6 bg-black/85 backdrop-blur-sm"
             style={{ zIndex: 9998 }}
           >
-            <div className="size-36">
-              <LottieAnimation />
-            </div>
-            <p className="animate-pulse text-sm font-medium text-emerald-400">
-              {mode === "sign-in" ? "Signing you in..." : "Creating your account..."}
+            <ShimmerOrbLoader />
+            <p className="shimmer-loading-text">
+              {mode === "sign-in"
+                ? "Signing you in..."
+                : "Creating MVBD account..."}
             </p>
           </div>
         )}
@@ -478,8 +520,32 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
           .auth-scroll textarea {
             font-size: 16px !important;
           }
+
+          .shimmer-loading-text {
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: #B7FF00;
+            text-shadow: 0 0 15px rgba(183, 255, 0, 0.5);
+            animation: shimmerTextBlink 1.6s ease-in-out infinite;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+              system-ui, sans-serif;
+            text-align: center;
+            padding: 0 20px;
+          }
+
+          @keyframes shimmerTextBlink {
+            0%,
+            100% {
+              opacity: 0.6;
+            }
+            50% {
+              opacity: 1;
+            }
+          }
         `}</style>
       </DialogContent>
     </Dialog>
   )
-}
+            }

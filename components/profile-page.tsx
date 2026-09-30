@@ -1,7 +1,7 @@
 "use client"
 
 import { createPortal } from "react-dom"
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useState } from "react"
 import { toast } from "sonner"
 import {
   Bell,
@@ -54,54 +54,91 @@ import {
 
 /*
  * =========================================
- * LOTTIE LOADER COMPONENT
+ * SUPABASE STYLE M LOADER COMPONENT
  * =========================================
- * Skypack CDN থেকে lottie-web লোড করে।
- * কোনো npm install লাগবে না।
+ * শুধু CSS দিয়ে তৈরি, কোনো লাইব্রেরি বা npm install লাগবে না।
  */
-function LottieLoader({ size = 150 }: { size?: number }) {
-  const containerRef = useRef<HTMLDivElement>(null)
-  const animRef = useRef<any>(null)
+function SupabaseMLoader({ size = 90 }: { size?: number }) {
+  return (
+    <>
+      <div
+        className="m-loader"
+        style={{ width: size, height: size }}
+      >
+        <span className="m-letter" style={{ fontSize: size * 0.38 }}>
+          M
+        </span>
+      </div>
+      <div className="loading-text">Loading</div>
 
-  useEffect(() => {
-    let isMounted = true
-
-    import(/* webpackIgnore: true */ "https://cdn.skypack.dev/lottie-web")
-      .then((lottieModule) => {
-        const lottie = lottieModule.default || lottieModule
-
-        if (!isMounted || !containerRef.current) return
-
-        if (animRef.current) {
-          animRef.current.destroy()
+      <style jsx>{`
+        .m-loader {
+          position: relative;
+          display: flex;
+          align-items: center;
+          justify-content: center;
         }
 
-        animRef.current = lottie.loadAnimation({
-          container: containerRef.current,
-          renderer: "svg",
-          loop: true,
-          autoplay: true,
-          path: "https://lottie.host/8a215834-6979-4dbf-8545-f5301fea1d7d/fFW4jEp53d.lottie",
-        })
-      })
-      .catch((err) => {
-        console.error("Lottie load error:", err)
-      })
+        .m-loader::before {
+          content: '';
+          position: absolute;
+          inset: 0;
+          border-radius: 50%;
+          border: 4px solid rgba(183, 255, 0, 0.15);
+          border-top-color: #B7FF00;
+          border-right-color: #20E000;
+          animation: mSpin 0.9s linear infinite;
+        }
 
-    return () => {
-      isMounted = false
-      if (animRef.current) {
-        animRef.current.destroy()
-        animRef.current = null
-      }
-    }
-  }, [])
+        .m-loader::after {
+          content: '';
+          position: absolute;
+          inset: -8px;
+          border-radius: 50%;
+          border: 2px solid transparent;
+          border-top-color: rgba(183, 255, 0, 0.4);
+          animation: mSpin 1.6s linear infinite reverse;
+        }
 
-  return (
-    <div
-      ref={containerRef}
-      style={{ width: size, height: size }}
-    />
+        .m-letter {
+          font-weight: 900;
+          letter-spacing: -1px;
+          background: linear-gradient(135deg, #B7FF00 0%, #20E000 100%);
+          -webkit-background-clip: text;
+          background-clip: text;
+          color: transparent;
+          position: relative;
+          z-index: 2;
+          animation: mPulse 1.4s ease-in-out infinite;
+          user-select: none;
+          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+        }
+
+        .loading-text {
+          font-size: 12px;
+          font-weight: 600;
+          letter-spacing: 3px;
+          text-transform: uppercase;
+          color: #9ca3af;
+          animation: mTextBlink 1.6s ease-in-out infinite;
+          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+        }
+
+        @keyframes mSpin {
+          to { transform: rotate(360deg); }
+        }
+
+        @keyframes mPulse {
+          0%, 100% { opacity: 1; transform: scale(1); }
+          50% { opacity: 0.7; transform: scale(0.95); }
+        }
+
+        @keyframes mTextBlink {
+          0%, 100% { opacity: 0.4; }
+          50% { opacity: 1; }
+        }
+      `}</style>
+    </>
   )
 }
 
@@ -233,23 +270,12 @@ export default function ProfilePage(
   const [sending, setSending] =
     useState(false)
 
-  /*
-   * Countdown-এর জন্য প্রতি 1 second-এ update হবে।
-   */
   const [now, setNow] =
     useState(Date.now())
 
-  /*
-   * Portal modal-এর জন্য mount state।
-   */
   const [mounted, setMounted] =
     useState(false)
 
-  /*
-   * =========================================
-   * REFERRAL COUNT
-   * =========================================
-   */
   const [successfulReferrals, setSuccessfulReferrals] =
     useState(0)
 
@@ -261,9 +287,6 @@ export default function ProfilePage(
     }
   }, [])
 
-  /*
-   * Profile information sync
-   */
   useEffect(() => {
     setName(
       profile?.name ??
@@ -277,11 +300,6 @@ export default function ProfilePage(
     )
   }, [profile, user])
 
-  /*
-   * =========================================
-   * REALTIME REFERRAL SYSTEM
-   * =========================================
-   */
   useEffect(() => {
     if (!user?.uid) {
       setSuccessfulReferrals(0)
@@ -308,9 +326,7 @@ export default function ProfilePage(
               data.subscriptionStatus ===
                 "active"
 
-            if (
-              isPaidSubscription
-            ) {
+            if (isPaidSubscription) {
               activePaidReferrals += 1
             }
           })
@@ -334,9 +350,6 @@ export default function ProfilePage(
     }
   }, [user?.uid])
 
-  /*
-   * Notifications realtime listener
-   */
   useEffect(() => {
     if (!user) {
       setNotifications([])
@@ -357,9 +370,6 @@ export default function ProfilePage(
       unsubscribeNotifications()
   }, [user])
 
-  /*
-   * Support realtime listener
-   */
   useEffect(() => {
     if (
       !user ||
@@ -390,9 +400,6 @@ export default function ProfilePage(
     }
   }, [modal, user])
 
-  /*
-   * Modal open থাকলে background scroll বন্ধ।
-   */
   useEffect(() => {
     if (!modal) return
 
@@ -417,10 +424,6 @@ export default function ProfilePage(
     }
   }, [modal])
 
-  /*
-   * IMPORTANT:
-   * প্রতি 1 second-এ countdown update হবে।
-   */
   useEffect(() => {
     const timer =
       window.setInterval(() => {
@@ -445,10 +448,6 @@ export default function ProfilePage(
     }
   }, [])
 
-  /*
-   * Premium হলে subscription expiry,
-   * trial হলে trial expiry।
-   */
   const expiry =
     entitlement.isPremiumActive
       ? entitlement.subscriptionExpiresAt
@@ -474,9 +473,6 @@ export default function ProfilePage(
           ? "text-amber-300"
           : "text-lime-300"
 
-  /*
-   * Countdown-এর ছোট text।
-   */
   const countdownText =
     remaining.expired
       ? "Expired"
@@ -528,11 +524,6 @@ export default function ProfilePage(
     .slice(0, 2)
     .toUpperCase()
 
-  /*
-   * =========================================
-   * REFERRAL CODE
-   * =========================================
-   */
   const profileData =
     profile as
       | (
@@ -676,12 +667,9 @@ export default function ProfilePage(
 
   if (loading) {
     return (
-      <main className="flex min-h-[60vh] flex-col items-center justify-center gap-4 bg-[#07090d] text-zinc-400">
-        {/* 👇 এখানে Lottie অ্যানিমেশন বসানো হলো */}
-        <LottieLoader size={150} />
-        <p className="text-sm font-medium text-lime-300 animate-pulse">
-          Loading your profile...
-        </p>
+      <main className="flex min-h-[60vh] flex-col items-center justify-center gap-5 bg-[#07090d]">
+        {/* 👇 Supabase Style M Loader */}
+        <SupabaseMLoader size={90} />
       </main>
     )
   }
@@ -730,9 +718,7 @@ export default function ProfilePage(
     <main className="min-h-0 bg-[#07090d] px-4 pt-5 text-white sm:px-6 lg:px-8">
       <div className="mx-auto max-w-6xl">
 
-        {/* =========================
-            PROFILE HERO
-        ========================== */}
+        {/* PROFILE HERO */}
         <section className="relative isolate overflow-hidden rounded-[2rem] border border-white/10 bg-[#11151b] px-5 py-8 text-center shadow-2xl sm:px-10 sm:py-12">
           <div
             className="profile-atmosphere"
@@ -804,9 +790,6 @@ export default function ProfilePage(
             )}
           </div>
 
-          {/* =========================
-              LIVE VALID TIME
-          ========================== */}
           {expiry && (
             <div className="relative z-10 mx-auto mt-7 max-w-xs border-t border-white/10 pt-5">
               <p className="text-[11px] uppercase tracking-[.24em] text-zinc-500">
@@ -845,9 +828,7 @@ export default function ProfilePage(
           )}
         </section>
 
-        {/* =========================
-            ACCOUNT DETAILS + ACCESS
-        ========================== */}
+        {/* ACCOUNT DETAILS + ACCESS */}
         <div className="mt-5 grid gap-5 lg:grid-cols-[1.4fr_.8fr]">
 
           <section className="rounded-[1.5rem] border border-white/10 bg-white/[.04] p-5 sm:p-7">
@@ -1027,9 +1008,7 @@ export default function ProfilePage(
           </section>
         </div>
 
-        {/* =========================
-            REFERRAL
-        ========================== */}
+        {/* REFERRAL */}
         <section className="mt-5 grid gap-5 md:grid-cols-2">
 
           <div className="rounded-[1.5rem] border border-lime-200/20 bg-lime-300/[.07] p-5 sm:p-7">
@@ -1078,9 +1057,7 @@ export default function ProfilePage(
             </p>
           </div>
 
-          {/* =========================
-              ACTIONS
-          ========================== */}
+          {/* ACTIONS */}
           <div className="flex flex-col gap-3">
 
             <button
@@ -1172,9 +1149,7 @@ export default function ProfilePage(
         </section>
       </div>
 
-      {/* =========================
-          SUBSCRIPTION PANEL
-      ========================== */}
+      {/* SUBSCRIPTION PANEL */}
       <SubscriptionPanel
         open={
           showSubscriptions
@@ -1184,10 +1159,7 @@ export default function ProfilePage(
         }
       />
 
-      {/* =========================
-          NOTIFICATION / SUPPORT
-          PORTAL MODAL
-      ========================== */}
+      {/* NOTIFICATION / SUPPORT PORTAL MODAL */}
       {mounted && modal
         ? createPortal(
             <div
@@ -1234,9 +1206,6 @@ export default function ProfilePage(
                   </button>
                 </div>
 
-                {/* =====================
-                    NOTIFICATIONS
-                ====================== */}
                 {modal ===
                 "notifications" ? (
                   <div className="overflow-visible p-4">
@@ -1281,10 +1250,6 @@ export default function ProfilePage(
                     )}
                   </div>
                 ) : (
-
-                  /* =====================
-                     SUPPORT CHAT
-                  ====================== */
                   <>
                     <div className="flex flex-col gap-3 overflow-visible p-4">
 
@@ -1390,4 +1355,4 @@ export default function ProfilePage(
         : null}
     </main>
   )
-              }
+            }

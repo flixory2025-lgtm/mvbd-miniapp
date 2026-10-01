@@ -52,9 +52,6 @@ const WELCOME_POPUP_SEEN_KEY = "mvbd_welcome_popup_seen"
 
 /* =========================================================
    LANDING PAGE LOCAL STORAGE KEY
-
-   ইউজার একবার "Visit Main Site" click করলে
-   এই key সেভ হবে — পরের বার আর landing page দেখাবে না।
 ========================================================= */
 
 const LANDING_SEEN_KEY = "mvbd_landing_seen"
@@ -63,36 +60,61 @@ export default function Page() {
   /* =========================================================
      LANDING PAGE STATE
 
-     default = true (প্রথমে landing page দেখাবে)
-     user click করলে false হবে → Home (streaming site) show
+     Default: true (প্রথমে landing page দেখাবে)
+     কিন্তু যদি URL-এ ?from=person থাকে,
+     তাহলে landing page skip করবে (user person page থেকে ফিরছে)
   ========================================================= */
 
-  const [showLanding, setShowLanding] = useState(true)
+  const [showLanding, setShowLanding] = useState(() => {
+    if (typeof window === "undefined") return true
+    try {
+      const urlParams = new URLSearchParams(window.location.search)
+      if (urlParams.get("from") === "person") {
+        return false // Skip landing
+      }
+    } catch {}
+    return true
+  })
+
   const [landingReady, setLandingReady] = useState(false)
 
   /* =========================================================
-     LANDING PAGE CHECK (localStorage)
-
-     Component mount হলে check করবো —
-     user আগে landing page দেখেছে কিনা।
+     LANDING PAGE READY CHECK
   ========================================================= */
 
-    useEffect(() => {
-    // সবসময় landing page দেখাবো — প্রতিবার নতুন visit এ
+  useEffect(() => {
     setLandingReady(true)
   }, [])
 
   /* =========================================================
-     HANDLE LANDING → HOME TRANSITION
+     HANDLE URL PARAM CHANGE
 
-     Landing page থেকে আসার পর:
-     1. localStorage এ flag save করবো
-     2. showLanding = false করবো (Home show হবে)
+     যদি user /person/[id] থেকে /?from=person এ আসে,
+     তাহলে landing skip করে streaming site দেখাবে।
   ========================================================= */
 
-    const handleEnterSite = () => {
-    // শুধু state change করবো — localStorage এ কিছু save করবো না
-    // যাতে পরের বার reload করলে আবার landing page দেখা যায়
+  useEffect(() => {
+    if (typeof window === "undefined") return
+
+    const checkUrlParam = () => {
+      try {
+        const urlParams = new URLSearchParams(window.location.search)
+        if (urlParams.get("from") === "person") {
+          setShowLanding(false)
+          // URL থেকে ?from=person সরিয়ে ফেলি, যাতে refresh-এ clean URL থাকে
+          window.history.replaceState(null, "", "/")
+        }
+      } catch {}
+    }
+
+    checkUrlParam()
+  }, [])
+
+  /* =========================================================
+     HANDLE LANDING → HOME TRANSITION
+  ========================================================= */
+
+  const handleEnterSite = () => {
     setShowLanding(false)
   }
 
@@ -207,6 +229,37 @@ export default function Page() {
     touchStartXRef.current = null
     touchStartYRef.current = null
   }
+
+  /* =========================================================
+     OPEN MOVIE FROM PERSON PAGE
+
+     /person/[id] থেকে user কোনো মুভিতে ক্লিক করলে
+     sessionStorage-এ movie id সেভ হয়। এখানে সেটা পড়ে
+     সেই মুভির details page খুলবো।
+  ========================================================= */
+
+  useEffect(() => {
+    if (typeof window === "undefined") return
+    if (showLanding) return
+
+    try {
+      const movieIdStr = sessionStorage.getItem("mvbd_open_movie_id")
+      if (!movieIdStr) return
+
+      sessionStorage.removeItem("mvbd_open_movie_id")
+
+      const movieId = parseInt(movieIdStr)
+      if (isNaN(movieId)) return
+
+      const target = movies.find((m) => m.id === movieId)
+      if (target) {
+        setSelectedMovie(target)
+        setShowDetailPage(true)
+      }
+    } catch (err) {
+      console.error("Failed to open requested movie:", err)
+    }
+  }, [showLanding])
 
   /* =========================================================
      SCROLL RESTORE — Home Movie Detail
@@ -871,15 +924,9 @@ export default function Page() {
         >
           {/* =================================================
               LANDING PAGE or STREAMING SITE
-              
-              - যদি user নতুন হয় → Landing Page দেখাবে
-              - Visit Main Site click করলে → Streaming Site
-              - পরের বার আসলে direct Streaming Site দেখাবে
           ================================================= */}
 
           {!landingReady ? (
-            // Landing check চলছে (কয়েক মিলিসেকেন্ড)
-            // → blank black screen, flicker এড়ানোর জন্য
             <div
               style={{
                 minHeight: "100vh",
@@ -895,8 +942,6 @@ export default function Page() {
 
         {/* =====================================================
             BOTTOM NAVIGATION
-
-            শুধু streaming site এ দেখাবে, landing page এ না।
         ===================================================== */}
 
         {!showLanding && activeTab !== "mebook" && (
@@ -923,8 +968,6 @@ export default function Page() {
 
       {/* =====================================================
           WELCOME POPUP
-
-          শুধু streaming site এ দেখাবে, landing page এ না।
       ===================================================== */}
 
       {!showLanding && showWelcomePopup && (
@@ -937,8 +980,6 @@ export default function Page() {
 
       {/* =====================================================
           MVBD AI ASSISTANT
-
-          শুধু streaming site এ দেখাবে।
       ===================================================== */}
 
       {!showLanding && activeTab === "home" && (

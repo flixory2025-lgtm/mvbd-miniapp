@@ -111,10 +111,24 @@ export default function PersonPage() {
   }
 
   /**
-   * আগের পেজে ফিরে যাই (movie details page).
-   * history না থাকলে হোম পেজে যাই।
+   * Back/X ক্লিক করলে:
+   * 1) যদি user কোনো মুভি থেকে এসে থাকে (mvbd_return_movie_id আছে),
+   *    তাহলে সেই মুভির ID কে mvbd_open_movie_id তে সেট করে
+   *    হোম পেজে যাই — হোম page সেটা পড়ে সরাসরি movie details page খুলবে।
+   * 2) নাহলে ব্রাউজার history ব্যবহার করি।
    */
   function goBack() {
+    try {
+      const returnMovieId = sessionStorage.getItem("mvbd_return_movie_id")
+      if (returnMovieId) {
+        sessionStorage.setItem("mvbd_open_movie_id", returnMovieId)
+        sessionStorage.removeItem("mvbd_return_movie_id")
+        router.push("/?from=person")
+        return
+      }
+    } catch {}
+
+    // fallback
     if (typeof window !== "undefined" && window.history.length > 1) {
       router.back()
     } else {
@@ -127,9 +141,10 @@ export default function PersonPage() {
     if (found) {
       try {
         sessionStorage.setItem("mvbd_open_movie_id", String(found.id))
+        // এই person page এর return movie id আর দরকার নেই
+        sessionStorage.removeItem("mvbd_return_movie_id")
       } catch {}
 
-      // সাইটে থাকা মুভিতে ক্লিক করলে সোজা হোম পেজে গিয়ে সেই মুভি খুলব
       router.push("/?from=person")
     } else {
       setRequestedTitle(credit.title)

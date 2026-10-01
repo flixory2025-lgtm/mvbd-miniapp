@@ -7,13 +7,7 @@ export async function GET(request: NextRequest) {
   const title = searchParams.get("title")
   const year = searchParams.get("year")
   const mediaType = searchParams.get("mediaType") || "movie"
-
-  if (!title) {
-    return NextResponse.json(
-      { error: "Title is required" },
-      { status: 400 }
-    )
-  }
+  const tmdbId = searchParams.get("tmdbId")
 
   const token = process.env.TMDB_TOKEN
 
@@ -29,60 +23,119 @@ export async function GET(request: NextRequest) {
     accept: "application/json",
   }
 
-  // Clean the title — remove year in parentheses, brackets, etc.
-  const cleanTitle = title
-    .replace(/\(\d{4}\)/g, "")
-    .replace(/\[\d{4}\]/g, "")
-    .replace(/\{[^}]*\}/g, "")
-    .replace(/\s+/g, " ")
-    .trim()
-
   try {
-    // Determine TMDB endpoint based on media type
-    const searchEndpoint =
-      mediaType === "anime" ? "search/tv" : "search/movie"
+    let matchedId: number | null = null
+    let matchedMediaType: "movie" | "tv" = mediaType === "anime" ? "tv" : "movie"
 
-    // Build search URL
-    let searchUrl = `https://api.themoviedb.org/3/${searchEndpoint}?query=${encodeURIComponent(
-      cleanTitle
-    )}&language=en-US&page=1`
+    /* =====================================================
+       MODE 1: tmdbId দেওয়া আছে → সরাসরি fetch
+    ===================================================== */
 
-    // Add year filter if available and it's a movie
-    if (year && mediaType !== "anime") {
-      const yearNum = String(year).match(/\d{4}/)?.[0]
-      if (yearNum) {
-        searchUrl += `&year=${yearNum}`
+    if (tmdbId) {
+      const parsedId = parseInt(tmdbId)
+      if (!isNaN(parsedId)) {
+        matchedId = parsedId
+        // tmdbId দেওয়ার সময় user নিজেই জানেন এটা movie না tv,
+        // তাই mediaType ব্যবহার করি
       }
     }
 
-    const searchRes = await fetch(searchUrl, {
-      headers,
-      next: { revalidate: 86400 }, // cache for 24 hours
-    })
+    /* =====================================================
+       MODE 2: tmdbId নেই → title দিয়ে search
+    ===================================================== */
 
-    if (!searchRes.ok) {
-      return NextResponse.json(
-        { error: "TMDB search failed", cast: [] },
-        { status: 200 }
-      )
+    if (!matchedId) {
+      if (!title) {
+        return NextResponse.json(
+          { error: "Title or tmdbId is required" },
+          { status: 400 }
+        )
+      }
+
+      // Clean the title
+      const cleanTitle = title
+        .replace(/\(\d{4}\)/g, "")
+        .replace(/\[\d{4}\]/g, "")
+        .replace(/\{[^}]*\}/g, "")
+        .replace(/[\u{1D7CE}-\u{1D7FF}]/gu, "") // Mathematical bold digits
+        .replace(/[^\p{L}\p{N}\s:.\-&'!?]/gu, " ")
+        .replace(/\s+/g, " ")
+        .trim()
+
+      const searchEndpoint =
+        mediaType === "anime" ? "search/tv" : "search/movie"
+
+      let searchUrl = `https://api.themoviedb.org/3/${searchEndpoint}?query=${encodeURIComponent(
+        cleanTitle
+      )}&language=en-US&page=1`
+
+      // Year filter (শুধু movie-র জন্য)
+      if (year && mediaType !== "anime") {
+        const yearNum = String(year).match(/\d{4}/)?.[0]
+        if (yearNum) {
+          searchUrl += `&year=${yearNum}`
+        }
+      }
+
+      const searchRes = await fetch(searchUrl, {
+        headers,
+        next: { revalidate: 86400 },
+      })
+
+      if (!searchRes.ok) {
+        return NextResponse.json({ cast: [] })
+      }
+
+      const searchData = await searchRes.json()
+      const results = searchData.results || []
+
+      if (results.length === 0) {
+        return NextResponse.json({ cast: [] })
+      }
+
+      // Year tolerance চেক করে best match নিই
+      const yearNum = year ? parseInt(String(year).match(/\d{4}/)?.[0] || "0") : 0
+
+      let bestMatch = results[0]
+
+      if (yearNum) {
+        // Exact year match খুঁজি
+        const exactMatch = results.find((r: any) => {
+          const releaseDate = r.release_date || r.first_air_date || ""
+          const rYear = parseInt(releaseDate.slice(0, 4)) || 0
+          return rYear === yearNum
+        })
+
+        if (exactMatch) {
+          bestMatch = exactMatch
+        } else {
+          // ±1 বছর tolerance
+          const closeMatch = results.find((r: any) => {
+            const releaseDate = r.release_date || r.first_air_date || ""
+            const rYear = parseInt(releaseDate.slice(0, 4)) || 0
+            return rYear && Math.abs(rYear - yearNum) <= 1
+          })
+
+          if (closeMatch) bestMatch = closeMatch
+        }
+      }
+
+      matchedId = bestMatch.id
+      matchedMediaType = mediaType === "anime" ? "tv" : "movie"
     }
 
-    const searchData = await searchRes.json()
-    const results = searchData.results || []
+    /* =====================================================
+       Credits fetch
+    ===================================================== */
 
-    if (results.length === 0) {
+    if (!matchedId) {
       return NextResponse.json({ cast: [] })
     }
 
-    // Pick the best match — first result
-    const bestMatch = results[0]
-    const tmdbId = bestMatch.id
-
-    // Fetch credits
     const creditsEndpoint =
-      mediaType === "anime"
-        ? `tv/${tmdbId}/credits`
-        : `movie/${tmdbId}/credits`
+      matchedMediaType === "tv"
+        ? `tv/${matchedId}/credits`
+        : `movie/${matchedId}/credits`
 
     const creditsRes = await fetch(
       `https://api.themoviedb.org/3/${creditsEndpoint}?language=en-US`,
@@ -97,7 +150,7 @@ export async function GET(request: NextRequest) {
     }
 
     const creditsData = await creditsRes.json()
-    const castList = (creditsData.cast || []).slice(0, 15).map(
+    const castList = (creditsData.cast || []).slice(0, 20).map(
       (actor: any) => ({
         id: actor.id,
         name: actor.name,
@@ -111,8 +164,8 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       cast: castList,
-      tmdbTitle: bestMatch.title || bestMatch.name,
-      tmdbId,
+      tmdbId: matchedId,
+      source: tmdbId ? "direct" : "search",
     })
   } catch (error) {
     console.error("Cast fetch error:", error)

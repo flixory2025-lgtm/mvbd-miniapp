@@ -66,12 +66,10 @@ export default function PersonPage() {
     }
   }, [personId])
 
-  // Scroll to top on mount
   useEffect(() => {
     window.scrollTo(0, 0)
   }, [])
 
-  /** Normalize a title for matching */
   function normalizeTitle(t: string): string {
     return t
       .toLowerCase()
@@ -83,7 +81,6 @@ export default function PersonPage() {
       .trim()
   }
 
-  /** Find matching movie in our site's database */
   function findInSite(
     credit: Credit
   ): { id: number; title: string; year: number | string } | null {
@@ -113,28 +110,27 @@ export default function PersonPage() {
     return null
   }
 
+  /** এখানেই আসল পরিবর্তন — সব navigate করার সময় ?from=person যোগ */
+  function goHome() {
+    router.push("/?from=person")
+  }
+
   function handleCreditClick(credit: Credit) {
     const found = findInSite(credit)
     if (found) {
-      // Navigate back to home page with this movie selected
-      // We use sessionStorage to tell the home page which movie to open
       try {
         sessionStorage.setItem("mvbd_open_movie_id", String(found.id))
       } catch {}
-      router.push("/?from=person")
+      goHome()
     } else {
       setRequestedTitle(credit.title)
       setShowRequestPopup(true)
     }
   }
 
-  const handleBack = () => {
-  if (window.history.length > 1) {
-    router.back()
-  } else {
-    router.push("/?from=person")
+  function handleBack() {
+    goHome()
   }
-}
 
   return (
     <div className="min-h-screen bg-black">
@@ -149,7 +145,7 @@ export default function PersonPage() {
             Back
           </button>
           <button
-            onClick={() => router.push("/")}
+            onClick={handleBack}
             className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition border border-white/20"
             aria-label="Close"
           >

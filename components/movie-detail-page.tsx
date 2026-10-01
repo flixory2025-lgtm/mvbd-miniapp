@@ -7,6 +7,7 @@ import TelegramJoinPopup from "./telegram-join-popup"
 import AuthModal from "./auth-modal"
 import SubscriptionPanel from "./subscription-panel"
 import { useAuth } from "./auth-provider"
+import MovieCast from "./movie-cast"
 
 type DetailItem = {
   id: number
@@ -238,6 +239,13 @@ export default function MovieDetailPage({ movie, onBack, onMovieClick, showAdult
                 </div>
               </div>
             </div>
+
+            {/* Cast List — Automatic from TMDB */}
+            <MovieCast
+              title={movie.title}
+              year={movie.year}
+              mediaType={mediaType}
+            />
           </div>
         </div>
       </div>

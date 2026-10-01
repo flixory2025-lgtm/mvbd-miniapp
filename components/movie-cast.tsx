@@ -15,8 +15,11 @@ interface MovieCastProps {
   title: string
   year?: string | number
   mediaType?: "movie" | "anime"
-  /** এই মুভির ID — person page থেকে ফিরে আসার জন্য লাগবে */
   movieId?: number
+  /** TMDB-র নিজস্ব ID — থাকলে ১০০% নির্ভুল cast আসবে */
+  tmdbId?: number
+  /** mediaType টা movie না tv (anime হলে tv) */
+  tmdbType?: "movie" | "tv"
 }
 
 export default function MovieCast({
@@ -24,6 +27,8 @@ export default function MovieCast({
   year,
   mediaType = "movie",
   movieId,
+  tmdbId,
+  tmdbType,
 }: MovieCastProps) {
   const router = useRouter()
   const [cast, setCast] = useState<CastMember[]>([])
@@ -38,13 +43,18 @@ export default function MovieCast({
       setError(false)
 
       try {
-        const params = new URLSearchParams({
-          title: title,
-          mediaType: mediaType,
-        })
+        const params = new URLSearchParams()
 
-        if (year) {
-          params.set("year", String(year))
+        if (tmdbId) {
+          params.set("tmdbId", String(tmdbId))
+          // tmdbId থাকলে mediaType = tmdbType || movie
+          params.set("mediaType", tmdbType || "movie")
+        } else {
+          params.set("title", title)
+          params.set("mediaType", mediaType)
+          if (year) {
+            params.set("year", String(year))
+          }
         }
 
         const res = await fetch(`/api/cast?${params.toString()}`)
@@ -70,16 +80,15 @@ export default function MovieCast({
       }
     }
 
-    if (title) {
+    if (title || tmdbId) {
       fetchCast()
     }
 
     return () => {
       cancelled = true
     }
-  }, [title, year, mediaType])
+  }, [title, year, mediaType, tmdbId, tmdbType])
 
-  /** Person page-এ যাওয়ার আগে movie ID সেভ করি যাতে ফিরে আসা যায় */
   const handleActorClick = (actorId: number) => {
     try {
       if (movieId) {
@@ -103,10 +112,7 @@ export default function MovieCast({
       {loading ? (
         <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
           {[...Array(6)].map((_, i) => (
-            <div
-              key={i}
-              className="flex-shrink-0 w-32 animate-pulse"
-            >
+            <div key={i} className="flex-shrink-0 w-32 animate-pulse">
               <div className="w-32 h-32 rounded-full bg-white/10 mb-3"></div>
               <div className="h-3 bg-white/10 rounded mb-2"></div>
               <div className="h-2 bg-white/10 rounded w-3/4"></div>

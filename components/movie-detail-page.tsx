@@ -21,6 +21,10 @@ type DetailItem = {
   telegramLink?: string
   telegram4kLink?: string
   language?: string
+  /** TMDB এর নিজস্ব movie/tv ID — থাকলে ১০০% accurate cast আসবে */
+  tmdbId?: number
+  /** TMDB-তে movie না tv */
+  tmdbType?: "movie" | "tv"
 }
 
 interface MovieDetailPageProps {
@@ -115,13 +119,10 @@ export default function MovieDetailPage({ movie, onBack, onMovieClick, showAdult
           backgroundAttachment: "fixed",
         }}
       >
-        {/* Background Overlay */}
         <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
 
-        {/* Movie Details Section */}
         <div className="relative z-10 px-4 py-12">
           <div className="max-w-5xl mx-auto">
-            {/* Main Layout - Poster + Details */}
             <div className="flex flex-col md:flex-row gap-8 items-start">
               {/* Left - Poster */}
               <div className="w-44 md:w-64 lg:w-72 flex-shrink-0">
@@ -148,11 +149,9 @@ export default function MovieDetailPage({ movie, onBack, onMovieClick, showAdult
 
               {/* Middle - Details */}
               <div className="flex-1 space-y-6 text-white">
-                {/* Title */}
                 <div>
                   <h1 className="text-4xl md:text-5xl font-bold mb-4 text-balance">{movie.title}</h1>
 
-                  {/* Meta Info */}
                   <div className="flex flex-wrap gap-6 text-base md:text-lg text-slate-200">
                     <div>
                       <span className="font-semibold text-slate-300">Year:</span> {movie.year}
@@ -167,19 +166,16 @@ export default function MovieDetailPage({ movie, onBack, onMovieClick, showAdult
                     )}
                   </div>
 
-                  {/* Views */}
                   <div className="flex items-center gap-2 text-green-400 text-base mt-4 font-semibold">
                     <Eye className="w-5 h-5" />
                     {viewCount.toLocaleString()} views
                   </div>
                 </div>
 
-                {/* Description */}
                 <div className="border-t border-white/20 pt-6">
                   <p className="text-base leading-relaxed text-slate-200">{movie.description}</p>
                 </div>
 
-                {/* Action Buttons */}
                 <div className="flex flex-col md:flex-row gap-3 pt-6">
                   <style>{`
                     @keyframes fireGlassAnimation {
@@ -240,12 +236,14 @@ export default function MovieDetailPage({ movie, onBack, onMovieClick, showAdult
               </div>
             </div>
 
-            {/* Cast List — Automatic from TMDB */}
+            {/* Cast List — TMDB ID থাকলে ১০০% accurate */}
             <MovieCast
               title={movie.title}
               year={movie.year}
               mediaType={mediaType}
               movieId={movie.id}
+              tmdbId={movie.tmdbId}
+              tmdbType={movie.tmdbType}
             />
           </div>
         </div>
@@ -262,7 +260,6 @@ export default function MovieDetailPage({ movie, onBack, onMovieClick, showAdult
             backgroundAttachment: "fixed",
           }}
         >
-          {/* Background Overlay - same as top section */}
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
           
           <div className="relative z-10 max-w-6xl mx-auto px-4 py-12 border-t border-white/20">
@@ -355,7 +352,6 @@ export default function MovieDetailPage({ movie, onBack, onMovieClick, showAdult
 
       {showAuthModal && <AuthModal open={showAuthModal} onOpenChange={setShowAuthModal} />}
 
-      {/* Telegram Popup */}
       {showTelegramPopup && user && (
         <TelegramJoinPopup
           movieTitle={movie.title}

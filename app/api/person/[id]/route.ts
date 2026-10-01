@@ -4,8 +4,9 @@ export const runtime = "nodejs"
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
+  const params = await context.params
   const personId = params.id
 
   if (!personId) {
@@ -68,6 +69,8 @@ export async function GET(
               : null,
             biography: details.biography || "",
             knownFor: details.known_for_department || "",
+            birthday: details.birthday || null,
+            placeOfBirth: details.place_of_birth || null,
           },
           credits: [],
         },
@@ -77,7 +80,7 @@ export async function GET(
 
     const creditsData = await creditsRes.json()
 
-    // Combine cast + crew, dedupe, sort by popularity
+    // Combine cast + crew, dedupe
     const allCredits = [
       ...(creditsData.cast || []),
       ...(creditsData.crew || []),
@@ -90,14 +93,14 @@ export async function GET(
       return true
     })
 
-    // Sort by popularity (highest first), then by release date
+    // Sort by popularity
     uniqueCredits.sort((a: any, b: any) => {
       const aPop = a.popularity || 0
       const bPop = b.popularity || 0
       return bPop - aPop
     })
 
-    // Take top 30, map to clean objects
+    // Top 30, map to clean objects
     const credits = uniqueCredits.slice(0, 30).map((item: any) => {
       const isTV = item.media_type === "tv"
       const title = item.title || item.name || "Untitled"

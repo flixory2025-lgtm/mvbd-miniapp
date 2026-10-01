@@ -34,7 +34,6 @@ export async function GET(request: NextRequest) {
     .replace(/\(\d{4}\)/g, "")
     .replace(/\[\d{4}\]/g, "")
     .replace(/\{[^}]*\}/g, "")
-    .replace(/[𝟎-𝟗]/g, "")
     .replace(/\s+/g, " ")
     .trim()
 

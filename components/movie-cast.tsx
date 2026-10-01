@@ -15,12 +15,15 @@ interface MovieCastProps {
   title: string
   year?: string | number
   mediaType?: "movie" | "anime"
+  /** এই মুভির ID — person page থেকে ফিরে আসার জন্য লাগবে */
+  movieId?: number
 }
 
 export default function MovieCast({
   title,
   year,
   mediaType = "movie",
+  movieId,
 }: MovieCastProps) {
   const router = useRouter()
   const [cast, setCast] = useState<CastMember[]>([])
@@ -76,6 +79,16 @@ export default function MovieCast({
     }
   }, [title, year, mediaType])
 
+  /** Person page-এ যাওয়ার আগে movie ID সেভ করি যাতে ফিরে আসা যায় */
+  const handleActorClick = (actorId: number) => {
+    try {
+      if (movieId) {
+        sessionStorage.setItem("mvbd_return_movie_id", String(movieId))
+      }
+    } catch {}
+    router.push(`/person/${actorId}`)
+  }
+
   if (error || (!loading && cast.length === 0)) {
     return null
   }
@@ -105,7 +118,7 @@ export default function MovieCast({
           {cast.map((actor) => (
             <button
               key={actor.id}
-              onClick={() => router.push(`/person/${actor.id}`)}
+              onClick={() => handleActorClick(actor.id)}
               className="flex-shrink-0 w-32 text-center group focus:outline-none"
             >
               <div className="w-32 h-32 rounded-full overflow-hidden bg-white/10 mb-3 ring-2 ring-white/10 group-hover:ring-green-400/60 transition-all duration-300 group-hover:scale-105">

@@ -90,6 +90,60 @@ export default function MovieDetailPage({ movie, onBack, onMovieClick, showAdult
     })
     .slice(0, 10)
 
+  /**
+   * Normalize a title for matching — removes year in parens/brackets,
+   * collapses whitespace, lowercases.
+   */
+  const normalizeTitle = (t: string): string =>
+    t
+      .toLowerCase()
+      .replace(/\(\d{4}\)/g, "")
+      .replace(/\[\d{4}\]/g, "")
+      .replace(/\{[^}]*\}/g, "")
+      .replace(/[^\w\s]/g, " ")
+      .replace(/\s+/g, " ")
+      .trim()
+
+  /**
+   * Called when user clicks a movie inside the PersonModal.
+   * Tries to find a matching movie in our full database.
+   * If found → open its details page.
+   * If not found → PersonModal already shows the request popup.
+   */
+  const handlePersonMovieFound = (title: string, year: string) => {
+    const cleanT = normalizeTitle(title)
+    const tYear = parseInt(year) || 0
+
+    const target = movies.find((m) => {
+      const cleanM = normalizeTitle(m.title)
+      const mYear = parseInt(String(m.year)) || 0
+
+      const titleMatch =
+        cleanM === cleanT ||
+        cleanM.includes(cleanT) ||
+        cleanT.includes(cleanM)
+
+      if (!titleMatch) return false
+
+      // If both years present, allow ±1 year tolerance
+      if (tYear && mYear) {
+        return Math.abs(tYear - mYear) <= 1
+      }
+      return true
+    })
+
+    if (target && onMovieClick) {
+      onMovieClick(target)
+    }
+  }
+
+  /** Site movie list for availability check inside PersonModal */
+  const siteMoviesList = movies.map((m) => ({
+    id: m.id,
+    title: m.title,
+    year: m.year,
+  }))
+
   return (
     <div className="min-h-screen bg-black">
       {/* Header */}
@@ -245,6 +299,8 @@ export default function MovieDetailPage({ movie, onBack, onMovieClick, showAdult
               title={movie.title}
               year={movie.year}
               mediaType={mediaType}
+              siteMovies={siteMoviesList}
+              onMovieFound={handlePersonMovieFound}
             />
           </div>
         </div>

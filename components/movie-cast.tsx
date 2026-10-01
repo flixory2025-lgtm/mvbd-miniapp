@@ -4,22 +4,27 @@ import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 
 type CastMember = {
-  id: number
+  id: number | string
   name: string
   character: string
   profilePath: string | null
-  order: number
+  order?: number
 }
 
 interface MovieCastProps {
   title: string
   year?: string | number
   mediaType?: "movie" | "anime"
+  /** এই মুভির ID — person page থেকে ফিরে আসার জন্য */
   movieId?: number
-  /** TMDB-র নিজস্ব ID — থাকলে ১০০% নির্ভুল cast আসবে */
+  /** TMDB ID — থাকলে ১০০% নির্ভুল cast আসবে */
   tmdbId?: number
-  /** mediaType টা movie না tv (anime হলে tv) */
+  /** TMDB media type — movie না tv */
   tmdbType?: "movie" | "tv"
+  /** IMDb ID (tt...) — TMDB-তে না পেলে ব্যবহার হবে */
+  imdbId?: string
+  /** MyDramaList slug — K-Drama-র জন্য */
+  mdlId?: string
 }
 
 export default function MovieCast({
@@ -29,6 +34,8 @@ export default function MovieCast({
   movieId,
   tmdbId,
   tmdbType,
+  imdbId,
+  mdlId,
 }: MovieCastProps) {
   const router = useRouter()
   const [cast, setCast] = useState<CastMember[]>([])
@@ -45,9 +52,9 @@ export default function MovieCast({
       try {
         const params = new URLSearchParams()
 
+        // TMDB ID থাকলে সেটা পাঠাই
         if (tmdbId) {
           params.set("tmdbId", String(tmdbId))
-          // tmdbId থাকলে mediaType = tmdbType || movie
           params.set("mediaType", tmdbType || "movie")
         } else {
           params.set("title", title)
@@ -57,11 +64,12 @@ export default function MovieCast({
           }
         }
 
-        const res = await fetch(`/api/cast?${params.toString()}`)
+        // IMDb এবং MDL ID থাকলে পাঠাই
+        if (imdbId) params.set("imdbId", imdbId)
+        if (mdlId) params.set("mdlId", mdlId)
 
-        if (!res.ok) {
-          throw new Error("Failed to fetch cast")
-        }
+        const res = await fetch(`/api/cast?${params.toString()}`)
+        if (!res.ok) throw new Error("Failed to fetch cast")
 
         const data = await res.json()
 
@@ -70,26 +78,22 @@ export default function MovieCast({
         }
       } catch (err) {
         console.error("Cast fetch error:", err)
-        if (!cancelled) {
-          setError(true)
-        }
+        if (!cancelled) setError(true)
       } finally {
-        if (!cancelled) {
-          setLoading(false)
-        }
+        if (!cancelled) setLoading(false)
       }
     }
 
-    if (title || tmdbId) {
+    if (title || tmdbId || imdbId || mdlId) {
       fetchCast()
     }
 
     return () => {
       cancelled = true
     }
-  }, [title, year, mediaType, tmdbId, tmdbType])
+  }, [title, year, mediaType, tmdbId, tmdbType, imdbId, mdlId])
 
-  const handleActorClick = (actorId: number) => {
+  const handleActorClick = (actorId: number | string) => {
     try {
       if (movieId) {
         sessionStorage.setItem("mvbd_return_movie_id", String(movieId))
@@ -123,7 +127,7 @@ export default function MovieCast({
         <div className="flex gap-5 overflow-x-auto pb-4 scrollbar-hide">
           {cast.map((actor) => (
             <button
-              key={actor.id}
+              key={`${actor.id}-${actor.name}`}
               onClick={() => handleActorClick(actor.id)}
               className="flex-shrink-0 w-32 text-center group focus:outline-none"
             >

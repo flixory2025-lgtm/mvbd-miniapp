@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { X, Star, Calendar, ExternalLink } from "lucide-react"
+import { X, Star, Calendar, ExternalLink, ArrowLeft } from "lucide-react"
 
 type Credit = {
   id: number
@@ -27,9 +27,7 @@ type Person = {
 interface PersonModalProps {
   personId: number | null
   onClose: () => void
-  /** Called when user clicks a movie that exists on our site */
   onMovieFound: (title: string, year: string) => void
-  /** Optional: our site's movie database to check availability */
   siteMovies?: Array<{ id: number; title: string; year: number | string }>
 }
 
@@ -45,7 +43,6 @@ export default function PersonModal({
   const [showRequestPopup, setShowRequestPopup] = useState(false)
   const [requestedTitle, setRequestedTitle] = useState("")
 
-  // Fetch person data when modal opens
   useEffect(() => {
     if (!personId) return
 
@@ -75,19 +72,35 @@ export default function PersonModal({
     }
   }, [personId])
 
-  // Lock body scroll while modal is open
+  // Lock background scroll while modal is open
   useEffect(() => {
     if (personId) {
+      const prevOverflow = document.body.style.overflow
       document.body.style.overflow = "hidden"
-    }
-    return () => {
-      document.body.style.overflow = ""
+      return () => {
+        document.body.style.overflow = prevOverflow
+      }
     }
   }, [personId])
 
+  // Handle browser back button to close modal
+  useEffect(() => {
+    if (!personId) return
+
+    window.history.pushState({ personModal: true }, "")
+
+    const handlePop = () => {
+      onClose()
+    }
+
+    window.addEventListener("popstate", handlePop)
+    return () => {
+      window.removeEventListener("popstate", handlePop)
+    }
+  }, [personId, onClose])
+
   if (!personId) return null
 
-  /** Try to find this credit in our local movie database */
   function findInSite(credit: Credit): { id: number; title: string; year: number | string } | null {
     const cleanTmdbTitle = credit.title
       .toLowerCase()
@@ -104,7 +117,6 @@ export default function PersonModal({
         .replace(/\s+/g, " ")
         .trim()
 
-      // Match by title
       const titleMatch =
         cleanSiteTitle === cleanTmdbTitle ||
         cleanSiteTitle.includes(cleanTmdbTitle) ||
@@ -112,7 +124,6 @@ export default function PersonModal({
 
       if (!titleMatch) continue
 
-      // If both have year, check they're within 1 year
       const tmdbYear = parseInt(credit.year) || 0
       const siteYear = parseInt(String(m.year)) || 0
 
@@ -121,7 +132,6 @@ export default function PersonModal({
           return m
         }
       } else {
-        // No year on one side, accept title match
         return m
       }
     }
@@ -141,172 +151,171 @@ export default function PersonModal({
   }
 
   return (
-    <>
-      {/* Main Modal */}
-      <div
-        className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-md flex items-start md:items-center justify-center p-0 md:p-4 overflow-y-auto"
-        onClick={onClose}
-      >
-        <div
-          className="relative w-full max-w-5xl bg-gradient-to-b from-slate-900 to-black md:rounded-2xl border border-white/10 shadow-2xl my-0 md:my-8 overflow-hidden"
-          onClick={(e) => e.stopPropagation()}
-        >
-          {/* Close button */}
+    <div className="fixed inset-0 z-[100] bg-black flex flex-col">
+      {/* Sticky top bar with back button */}
+      <div className="sticky top-0 z-30 bg-black/90 backdrop-blur-lg border-b border-white/10">
+        <div className="flex items-center justify-between px-4 py-3 max-w-5xl mx-auto">
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 z-20 w-10 h-10 rounded-full bg-black/60 hover:bg-black/90 text-white flex items-center justify-center transition border border-white/20"
+            className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-semibold transition border border-white/20 hover:border-white/40"
+            aria-label="Back"
+          >
+            <ArrowLeft className="w-5 h-5" />
+            <span className="text-sm">Back</span>
+          </button>
+
+          <button
+            onClick={onClose}
+            className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition border border-white/20"
             aria-label="Close"
           >
             <X className="w-5 h-5" />
           </button>
+        </div>
+      </div>
 
-          {loading ? (
-            <div className="p-12 flex flex-col items-center justify-center min-h-[400px]">
-              <div className="w-12 h-12 border-4 border-white/20 border-t-green-400 rounded-full animate-spin mb-4" />
-              <p className="text-white/60">লোড হচ্ছে...</p>
-            </div>
-          ) : person ? (
-            <div>
-              {/* Person Header */}
-              <div className="relative p-6 md:p-8 bg-gradient-to-br from-green-500/10 via-blue-500/5 to-transparent border-b border-white/10">
-                <div className="flex flex-col md:flex-row gap-6 items-start">
-                  {/* Profile Image */}
-                  <div className="w-32 h-32 md:w-40 md:h-40 rounded-full overflow-hidden bg-white/10 flex-shrink-0 ring-4 ring-white/10 shadow-2xl">
-                    {person.profilePath ? (
-                      <img
-                        src={person.profilePath}
-                        alt={person.name}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-white/40 text-5xl font-bold">
-                        {person.name.charAt(0)}
+      {/* Scrollable content */}
+      <div className="flex-1 overflow-y-auto overscroll-contain">
+        {loading ? (
+          <div className="p-12 flex flex-col items-center justify-center min-h-[400px]">
+            <div className="w-12 h-12 border-4 border-white/20 border-t-green-400 rounded-full animate-spin mb-4" />
+            <p className="text-white/60">লোড হচ্ছে...</p>
+          </div>
+        ) : person ? (
+          <div className="pb-20">
+            {/* Person Header */}
+            <div className="relative p-6 md:p-8 bg-gradient-to-br from-green-500/10 via-blue-500/5 to-transparent border-b border-white/10">
+              <div className="max-w-5xl mx-auto flex flex-col md:flex-row gap-6 items-start">
+                <div className="w-32 h-32 md:w-40 md:h-40 rounded-full overflow-hidden bg-white/10 flex-shrink-0 ring-4 ring-white/10 shadow-2xl mx-auto md:mx-0">
+                  {person.profilePath ? (
+                    <img
+                      src={person.profilePath}
+                      alt={person.name}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-white/40 text-5xl font-bold">
+                      {person.name.charAt(0)}
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex-1 min-w-0 text-center md:text-left">
+                  <h2 className="text-3xl md:text-4xl font-bold text-white mb-2">
+                    {person.name}
+                  </h2>
+
+                  {person.knownFor && (
+                    <p className="text-green-400 text-sm font-semibold uppercase tracking-wider mb-3">
+                      {person.knownFor}
+                    </p>
+                  )}
+
+                  <div className="flex flex-wrap gap-4 text-sm text-slate-300 mb-4 justify-center md:justify-start">
+                    {person.birthday && (
+                      <div className="flex items-center gap-1.5">
+                        <Calendar className="w-4 h-4 text-slate-400" />
+                        {person.birthday}
+                      </div>
+                    )}
+                    {person.placeOfBirth && (
+                      <div className="flex items-center gap-1.5">
+                        📍 {person.placeOfBirth}
                       </div>
                     )}
                   </div>
 
-                  {/* Person Info */}
-                  <div className="flex-1 min-w-0">
-                    <h2 className="text-3xl md:text-4xl font-bold text-white mb-2">
-                      {person.name}
-                    </h2>
-
-                    {person.knownFor && (
-                      <p className="text-green-400 text-sm font-semibold uppercase tracking-wider mb-3">
-                        {person.knownFor}
-                      </p>
-                    )}
-
-                    <div className="flex flex-wrap gap-4 text-sm text-slate-300 mb-4">
-                      {person.birthday && (
-                        <div className="flex items-center gap-1.5">
-                          <Calendar className="w-4 h-4 text-slate-400" />
-                          {person.birthday}
-                        </div>
-                      )}
-                      {person.placeOfBirth && (
-                        <div className="flex items-center gap-1.5">
-                          📍 {person.placeOfBirth}
-                        </div>
-                      )}
-                    </div>
-
-                    {person.biography && (
-                      <p className="text-slate-300 text-sm leading-relaxed line-clamp-4 md:line-clamp-5">
-                        {person.biography}
-                      </p>
-                    )}
-                  </div>
+                  {person.biography && (
+                    <p className="text-slate-300 text-sm leading-relaxed line-clamp-4 md:line-clamp-5">
+                      {person.biography}
+                    </p>
+                  )}
                 </div>
               </div>
+            </div>
 
-              {/* Credits Grid */}
-              <div className="p-6 md:p-8">
-                <h3 className="text-xl md:text-2xl font-bold text-white mb-5 flex items-center gap-2">
-                  <span className="w-1 h-6 bg-gradient-to-b from-green-400 to-blue-500 rounded-full"></span>
-                  মুভি ও সিরিজ ({credits.length})
-                </h3>
+            {/* Credits Grid */}
+            <div className="p-6 md:p-8 max-w-5xl mx-auto">
+              <h3 className="text-xl md:text-2xl font-bold text-white mb-5 flex items-center gap-2">
+                <span className="w-1 h-6 bg-gradient-to-b from-green-400 to-blue-500 rounded-full"></span>
+                মুভি ও সিরিজ ({credits.length})
+              </h3>
 
-                {credits.length === 0 ? (
-                  <p className="text-slate-400 text-center py-8">
-                    কোনো কাজ পাওয়া যায়নি
-                  </p>
-                ) : (
-                  <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3 md:gap-4">
-                    {credits.map((credit) => {
-                      const inSite = findInSite(credit) !== null
-                      return (
-                        <button
-                          key={`${credit.mediaType}-${credit.id}`}
-                          onClick={() => handleCreditClick(credit)}
-                          className="text-left group relative"
-                        >
-                          <div className="aspect-[2/3] rounded-lg overflow-hidden bg-white/5 relative ring-1 ring-white/10 group-hover:ring-green-400/60 transition-all duration-300 group-hover:scale-[1.03] shadow-lg">
-                            {credit.posterPath ? (
-                              <img
-                                src={credit.posterPath}
-                                alt={credit.title}
-                                className="w-full h-full object-cover"
-                                loading="lazy"
-                              />
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center text-white/30 text-xs p-2 text-center">
-                                {credit.title}
-                              </div>
-                            )}
-
-                            {/* Available on site badge */}
-                            {inSite && (
-                              <div className="absolute top-1.5 left-1.5 bg-green-500 text-black text-[9px] font-bold px-2 py-0.5 rounded-full shadow-lg z-10">
-                                ✓ সাইটে আছে
-                              </div>
-                            )}
-
-                            {/* Media type badge */}
-                            <div className="absolute top-1.5 right-1.5 bg-black/70 backdrop-blur-sm text-white text-[9px] font-bold px-2 py-0.5 rounded uppercase z-10">
-                              {credit.mediaType === "tv" ? "TV" : "Movie"}
+              {credits.length === 0 ? (
+                <p className="text-slate-400 text-center py-8">
+                  কোনো কাজ পাওয়া যায়নি
+                </p>
+              ) : (
+                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3 md:gap-4">
+                  {credits.map((credit) => {
+                    const inSite = findInSite(credit) !== null
+                    return (
+                      <button
+                        key={`${credit.mediaType}-${credit.id}`}
+                        onClick={() => handleCreditClick(credit)}
+                        className="text-left group relative"
+                      >
+                        <div className="aspect-[2/3] rounded-lg overflow-hidden bg-white/5 relative ring-1 ring-white/10 group-hover:ring-green-400/60 transition-all duration-300 group-hover:scale-[1.03] shadow-lg">
+                          {credit.posterPath ? (
+                            <img
+                              src={credit.posterPath}
+                              alt={credit.title}
+                              className="w-full h-full object-cover"
+                              loading="lazy"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-white/30 text-xs p-2 text-center">
+                              {credit.title}
                             </div>
+                          )}
 
-                            {/* Rating badge */}
-                            {credit.rating > 0 && (
-                              <div className="absolute bottom-1.5 right-1.5 bg-yellow-500/90 text-black text-[9px] font-bold px-1.5 py-0.5 rounded flex items-center gap-0.5 z-10">
-                                <Star className="w-2.5 h-2.5 fill-black" />
-                                {credit.rating.toFixed(1)}
-                              </div>
-                            )}
+                          {inSite && (
+                            <div className="absolute top-1.5 left-1.5 bg-green-500 text-black text-[9px] font-bold px-2 py-0.5 rounded-full shadow-lg z-10">
+                              ✓ সাইটে আছে
+                            </div>
+                          )}
 
-                            {/* Year badge */}
-                            {credit.year && (
-                              <div className="absolute bottom-1.5 left-1.5 bg-black/70 backdrop-blur-sm text-white text-[9px] font-bold px-1.5 py-0.5 rounded z-10">
-                                {credit.year}
-                              </div>
-                            )}
+                          <div className="absolute top-1.5 right-1.5 bg-black/70 backdrop-blur-sm text-white text-[9px] font-bold px-2 py-0.5 rounded uppercase z-10">
+                            {credit.mediaType === "tv" ? "TV" : "Movie"}
                           </div>
 
-                          <p className="mt-2 text-xs text-slate-300 line-clamp-2 group-hover:text-white transition leading-tight">
-                            {credit.title}
-                          </p>
-                          {credit.character && (
-                            <p className="text-[10px] text-slate-500 line-clamp-1 mt-0.5">
-                              {credit.character}
-                            </p>
+                          {credit.rating > 0 && (
+                            <div className="absolute bottom-1.5 right-1.5 bg-yellow-500/90 text-black text-[9px] font-bold px-1.5 py-0.5 rounded flex items-center gap-0.5 z-10">
+                              <Star className="w-2.5 h-2.5 fill-black" />
+                              {credit.rating.toFixed(1)}
+                            </div>
                           )}
-                        </button>
-                      )
-                    })}
-                  </div>
-                )}
-              </div>
+
+                          {credit.year && (
+                            <div className="absolute bottom-1.5 left-1.5 bg-black/70 backdrop-blur-sm text-white text-[9px] font-bold px-1.5 py-0.5 rounded z-10">
+                              {credit.year}
+                            </div>
+                          )}
+                        </div>
+
+                        <p className="mt-2 text-xs text-slate-300 line-clamp-2 group-hover:text-white transition leading-tight">
+                          {credit.title}
+                        </p>
+                        {credit.character && (
+                          <p className="text-[10px] text-slate-500 line-clamp-1 mt-0.5">
+                            {credit.character}
+                          </p>
+                        )}
+                      </button>
+                    )
+                  })}
+                </div>
+              )}
             </div>
-          ) : (
-            <div className="p-12 text-center">
-              <p className="text-slate-400">ডেটা লোড করা যায়নি</p>
-            </div>
-          )}
-        </div>
+          </div>
+        ) : (
+          <div className="p-12 text-center">
+            <p className="text-slate-400">ডেটা লোড করা যায়নি</p>
+          </div>
+        )}
       </div>
 
-      {/* Request Popup */}
+      {/* Request Popup (nested over the modal) */}
       {showRequestPopup && (
         <div
           className="fixed inset-0 z-[110] bg-black/80 backdrop-blur-md flex items-center justify-center p-4"
@@ -369,6 +378,6 @@ export default function PersonModal({
           </div>
         </div>
       )}
-    </>
+    </div>
   )
 }

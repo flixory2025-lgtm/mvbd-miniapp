@@ -121,7 +121,7 @@ export default function PersonPage() {
       try {
         sessionStorage.setItem("mvbd_open_movie_id", String(found.id))
       } catch {}
-      router.push("/")
+      router.push("/?from=person")
     } else {
       setRequestedTitle(credit.title)
       setShowRequestPopup(true)
@@ -129,12 +129,12 @@ export default function PersonPage() {
   }
 
   const handleBack = () => {
-    if (window.history.length > 1) {
-      router.back()
-    } else {
-      router.push("/")
-    }
+  if (window.history.length > 1) {
+    router.back()
+  } else {
+    router.push("/?from=person")
   }
+}
 
   return (
     <div className="min-h-screen bg-black">

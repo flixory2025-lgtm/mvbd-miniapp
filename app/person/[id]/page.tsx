@@ -110,9 +110,16 @@ export default function PersonPage() {
     return null
   }
 
-  /** এখানেই আসল পরিবর্তন — সব navigate করার সময় ?from=person যোগ */
-  function goHome() {
-    router.push("/?from=person")
+  /**
+   * আগের পেজে ফিরে যাই (movie details page).
+   * history না থাকলে হোম পেজে যাই।
+   */
+  function goBack() {
+    if (typeof window !== "undefined" && window.history.length > 1) {
+      router.back()
+    } else {
+      router.push("/?from=person")
+    }
   }
 
   function handleCreditClick(credit: Credit) {
@@ -121,7 +128,9 @@ export default function PersonPage() {
       try {
         sessionStorage.setItem("mvbd_open_movie_id", String(found.id))
       } catch {}
-      goHome()
+
+      // সাইটে থাকা মুভিতে ক্লিক করলে সোজা হোম পেজে গিয়ে সেই মুভি খুলব
+      router.push("/?from=person")
     } else {
       setRequestedTitle(credit.title)
       setShowRequestPopup(true)
@@ -129,7 +138,7 @@ export default function PersonPage() {
   }
 
   function handleBack() {
-    goHome()
+    goBack()
   }
 
   return (

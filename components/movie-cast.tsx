@@ -14,16 +14,18 @@ type CastMember = {
 interface MovieCastProps {
   title: string
   year?: string | number
-  mediaType?: "movie" | "anime"
+  mediaType?: "movie" | "anime" | "kdrama"
+  /** মুভির genre string — K-Drama ডিটেক্ট করতে ব্যবহার হয় */
+  genre?: string
   /** এই মুভির ID — person page থেকে ফিরে আসার জন্য */
   movieId?: number
   /** TMDB ID — থাকলে ১০০% নির্ভুল cast আসবে */
   tmdbId?: number
-  /** TMDB media type — movie না tv */
+  /** TMDB media type */
   tmdbType?: "movie" | "tv"
-  /** IMDb ID (tt...) — TMDB-তে না পেলে ব্যবহার হবে */
+  /** IMDb ID — TMDB-তে না পেলে ব্যবহার হবে */
   imdbId?: string
-  /** MyDramaList slug — K-Drama-র জন্য */
+  /** MyDramaList slug */
   mdlId?: string
 }
 
@@ -31,6 +33,7 @@ export default function MovieCast({
   title,
   year,
   mediaType = "movie",
+  genre,
   movieId,
   tmdbId,
   tmdbType,
@@ -52,17 +55,18 @@ export default function MovieCast({
       try {
         const params = new URLSearchParams()
 
-        // TMDB ID থাকলে সেটা পাঠাই
+        // TMDB ID থাকলে সেটা পাঠাই (সবচেয়ে নির্ভুল)
         if (tmdbId) {
           params.set("tmdbId", String(tmdbId))
-          params.set("mediaType", tmdbType || "movie")
+          params.set("mediaType", tmdbType || mediaType || "movie")
         } else {
           params.set("title", title)
           params.set("mediaType", mediaType)
-          if (year) {
-            params.set("year", String(year))
-          }
+          if (year) params.set("year", String(year))
         }
+
+        // genre সবসময় পাঠাই — যাতে K-Drama ডিটেক্ট হয়
+        if (genre) params.set("genre", genre)
 
         // IMDb এবং MDL ID থাকলে পাঠাই
         if (imdbId) params.set("imdbId", imdbId)
@@ -91,7 +95,7 @@ export default function MovieCast({
     return () => {
       cancelled = true
     }
-  }, [title, year, mediaType, tmdbId, tmdbType, imdbId, mdlId])
+  }, [title, year, mediaType, genre, tmdbId, tmdbType, imdbId, mdlId])
 
   const handleActorClick = (actorId: number | string) => {
     try {

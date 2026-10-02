@@ -7,7 +7,7 @@
  * - Admin panel থেকে logged-in user-দের history দেখা যাবে
  */
 
-import { db } from "@/firebase"
+import { db } from "./firebase"
 import {
   doc,
   setDoc,

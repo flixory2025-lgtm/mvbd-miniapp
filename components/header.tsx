@@ -3,9 +3,20 @@
 import type React from "react"
 
 import { useState, useRef, useMemo, useEffect } from "react"
-import { Search, X } from "lucide-react"
+import { Search, X, Clock, TrendingUp, Trash2 } from "lucide-react"
 import { movies } from "@/lib/movie-data"
 import { animes } from "@/lib/anime-data"
+import { useAuth } from "@/components/auth-provider"
+import {
+  addToLocalHistory,
+  cleanupExpiredHistory,
+  getLocalHistory,
+  removeFromLocalHistory,
+  getTimeAgo,
+  saveHistoryToFirestore,
+  loadHistoryFromFirestore,
+  type SearchHistoryItem,
+} from "@/lib/search-history"
 
 interface HeaderProps {
   onSearch: (query: string) => void
@@ -77,8 +88,14 @@ export default function Header({
   const [currentSuggestionIndex, setCurrentSuggestionIndex] = useState(0)
   const [isTyping, setIsTyping] = useState(true)
 
+  // Search history state
+  const [history, setHistory] = useState<SearchHistoryItem[]>([])
+
   const placeholderTimeoutRef = useRef<NodeJS.Timeout>()
   const bubbleIdRef = useRef(0)
+  const wrapperRef = useRef<HTMLDivElement>(null)
+
+  const { user } = useAuth()
 
   // ------------------------------------------
   // Typing placeholder suggestions
@@ -113,7 +130,6 @@ export default function Header({
 
   // ------------------------------------------
   // Smart search suggestions
-  // Latest movies first
   // ------------------------------------------
 
   const allSearchSuggestions = useMemo(() => {
@@ -121,50 +137,119 @@ export default function Header({
 
     if (!query) return []
 
-    /*
-     * User-এর search-কে আলাদা আলাদা word-এ ভাগ করা হচ্ছে।
-     *
-     * Example:
-     * "spider man"
-     *
-     * তাহলে title-এর মধ্যে spider এবং man
-     * দুটোই থাকা movie match করবে।
-     */
-
-    const queryWords = query
-      .split(/\s+/)
-      .filter(Boolean)
+    const queryWords = query.split(/\s+/).filter(Boolean)
 
     const matches = dataSource.filter((item) => {
       const title = item.title.toLowerCase()
-
       return queryWords.every((word) => title.includes(word))
     })
-
-    /*
-     * Latest movie আগে।
-     *
-     * movie-data-তে ID নতুন movie-র ক্ষেত্রে বড় ধরে
-     * latest → oldest সাজানো হচ্ছে।
-     *
-     * Anime/other data-তে ID না থাকলে original position
-     * ধরে রাখা হবে।
-     */
 
     return [...matches].sort((a, b) => {
       const idA = typeof a.id === "number" ? a.id : 0
       const idB = typeof b.id === "number" ? b.id : 0
-
       return idB - idA
     })
   }, [searchQuery, dataSource])
 
-  /*
-   * আগে এখানে slice(0, 5) ছিল।
-   *
-   * এখন সব matching movie suggestion-এ থাকবে।
-   */
   const searchSuggestions = allSearchSuggestions
+
+  // ------------------------------------------
+  // Load history on mount + when user changes
+  // ------------------------------------------
+
+  useEffect(() => {
+    cleanupExpiredHistory()
+    setHistory(getLocalHistory())
+  }, [])
+
+  // When user logs in, sync Firestore history
+  useEffect(() => {
+    if (!user?.uid) return
+
+    let cancelled = false
+
+    async function syncFirestore() {
+      try {
+        // Firestore থেকে history আনো
+        const remoteHistory = await loadHistoryFromFirestore(user!.uid)
+
+        if (cancelled) return
+
+        // Local history + remote history merge করি
+        const local = getLocalHistory()
+        const combined = [...remoteHistory, ...local]
+
+        // Deduplicate (query অনুযায়ী)
+        const seen = new Set<string>()
+        const merged: SearchHistoryItem[] = []
+
+        for (const item of combined) {
+          const key = item.query.toLowerCase()
+          if (seen.has(key)) continue
+          seen.add(key)
+          merged.push(item)
+          if (merged.length >= 8) break
+        }
+
+        // Sort by timestamp desc
+        merged.sort((a, b) => b.timestamp - a.timestamp)
+
+        setHistory(merged)
+
+        // Firestore-এ merge করা history সেভ করি
+        await saveHistoryToFirestore(user!.uid, merged)
+      } catch (err) {
+        console.error("Firestore sync failed:", err)
+      }
+    }
+
+    syncFirestore()
+
+    return () => {
+      cancelled = true
+    }
+  }, [user?.uid])
+
+  // ------------------------------------------
+  // Click outside → close dropdown
+  // ------------------------------------------
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        wrapperRef.current &&
+        !wrapperRef.current.contains(event.target as Node)
+      ) {
+        setIsFocused(false)
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside)
+    }
+  }, [])
+
+  // ------------------------------------------
+  // Save history — call this when user submits
+  // ------------------------------------------
+
+  const saveSearchToHistory = async (query: string) => {
+    const trimmed = query.trim()
+    if (!trimmed) return
+
+    const updated = addToLocalHistory(trimmed)
+    setHistory(updated)
+
+    // Logged-in হলে Firestore-এও save করি
+    if (user?.uid) {
+      try {
+        await saveHistoryToFirestore(user.uid, updated)
+      } catch (err) {
+        console.error("Firestore save failed:", err)
+      }
+    }
+  }
 
   // ------------------------------------------
   // Search input
@@ -172,11 +257,6 @@ export default function Header({
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
-
-    /*
-     * Search state এখন parent page.tsx-এ আছে।
-     * তাই Header remount হলেও search text হারাবে না।
-     */
     onSearch(value)
   }
 
@@ -190,6 +270,41 @@ export default function Header({
   }
 
   // ------------------------------------------
+  // Submit search (Enter key or click)
+  // ------------------------------------------
+
+  const handleSubmitSearch = (query: string) => {
+    const trimmed = query.trim()
+    if (!trimmed) return
+
+    saveSearchToHistory(trimmed)
+
+    onSearch(trimmed)
+    setIsFocused(false)
+  }
+
+  // ------------------------------------------
+  // Remove one history item
+  // ------------------------------------------
+
+  const handleRemoveHistory = async (
+    item: SearchHistoryItem,
+    e: React.MouseEvent
+  ) => {
+    e.stopPropagation()
+    e.preventDefault()
+
+    const updated = removeFromLocalHistory(item.query)
+    setHistory(updated)
+
+    if (user?.uid) {
+      try {
+        await saveHistoryToFirestore(user.uid, updated)
+      } catch {}
+    }
+  }
+
+  // ------------------------------------------
   // Liquid bubbles
   // ------------------------------------------
 
@@ -200,20 +315,13 @@ export default function Header({
 
     for (let i = 0; i < 3; i++) {
       const id = bubbleIdRef.current++
-
       const x = Math.random() * 20 - 10
       const y = Math.random() * 10
 
-      newBubbles.push({
-        id,
-        x,
-        y,
-      })
+      newBubbles.push({ id, x, y })
 
       setTimeout(() => {
-        setBubbles((prev) =>
-          prev.filter((b) => b.id !== id)
-        )
+        setBubbles((prev) => prev.filter((b) => b.id !== id))
       }, 800)
     }
 
@@ -224,8 +332,7 @@ export default function Header({
   // Current animated placeholder
   // ------------------------------------------
 
-  const currentSuggestion =
-    TYPING_SUGGESTIONS[currentSuggestionIndex]
+  const currentSuggestion = TYPING_SUGGESTIONS[currentSuggestionIndex]
 
   useEffect(() => {
     if (placeholderTimeoutRef.current) {
@@ -233,16 +340,10 @@ export default function Header({
     }
 
     if (isTyping) {
-      if (
-        displayedPlaceholder.length <
-        currentSuggestion.length
-      ) {
+      if (displayedPlaceholder.length < currentSuggestion.length) {
         placeholderTimeoutRef.current = setTimeout(() => {
           setDisplayedPlaceholder(
-            currentSuggestion.slice(
-              0,
-              displayedPlaceholder.length + 1
-            )
+            currentSuggestion.slice(0, displayedPlaceholder.length + 1)
           )
         }, TYPING_SPEED)
       } else {
@@ -253,17 +354,13 @@ export default function Header({
     } else {
       if (displayedPlaceholder.length > 0) {
         placeholderTimeoutRef.current = setTimeout(() => {
-          setDisplayedPlaceholder(
-            displayedPlaceholder.slice(0, -1)
-          )
+          setDisplayedPlaceholder(displayedPlaceholder.slice(0, -1))
         }, DELETE_SPEED)
       } else {
         placeholderTimeoutRef.current = setTimeout(() => {
           setCurrentSuggestionIndex(
-            (prev) =>
-              (prev + 1) % TYPING_SUGGESTIONS.length
+            (prev) => (prev + 1) % TYPING_SUGGESTIONS.length
           )
-
           setDisplayedPlaceholder("")
           setIsTyping(true)
         }, 300)
@@ -283,6 +380,15 @@ export default function Header({
   ])
 
   // ------------------------------------------
+  // Dropdown visibility logic
+  // ------------------------------------------
+
+  const hasQuery = searchQuery.trim().length > 0
+  const showHistoryDropdown =
+    isFocused && !hasQuery && history.length > 0
+  const showSuggestionsDropdown = isFocused && hasQuery
+
+  // ------------------------------------------
   // UI
   // ------------------------------------------
 
@@ -295,13 +401,11 @@ export default function Header({
             background: rgba(255, 255, 255, 0.05);
             backdrop-filter: blur(20px);
           }
-
           50% {
             transform: scale(1.03);
             background: rgba(255, 255, 255, 0.08);
             backdrop-filter: blur(25px);
           }
-
           100% {
             transform: scale(1.06);
             background: rgba(255, 255, 255, 0.1);
@@ -311,21 +415,13 @@ export default function Header({
 
         @keyframes liquidGlassGlow {
           0% {
-            box-shadow:
-              0 0 0 0 rgba(100, 200, 255, 0.3),
-              inset 0 0 20px rgba(255, 255, 255, 0.1);
+            box-shadow: 0 0 0 0 rgba(100, 200, 255, 0.3), inset 0 0 20px rgba(255, 255, 255, 0.1);
           }
-
           50% {
-            box-shadow:
-              0 0 15px 5px rgba(100, 200, 255, 0.2),
-              inset 0 0 30px rgba(255, 255, 255, 0.15);
+            box-shadow: 0 0 15px 5px rgba(100, 200, 255, 0.2), inset 0 0 30px rgba(255, 255, 255, 0.15);
           }
-
           100% {
-            box-shadow:
-              0 0 25px 10px rgba(100, 200, 255, 0.1),
-              inset 0 0 40px rgba(255, 255, 255, 0.2);
+            box-shadow: 0 0 25px 10px rgba(100, 200, 255, 0.1), inset 0 0 40px rgba(255, 255, 255, 0.2);
           }
         }
 
@@ -340,9 +436,7 @@ export default function Header({
           background: rgba(255, 255, 255, 0.08);
           backdrop-filter: blur(30px);
           border: 1px solid rgba(100, 200, 255, 0.4);
-          animation:
-            liquidGlassZoom 0.6s ease-out forwards,
-            liquidGlassGlow 0.6s ease-out;
+          animation: liquidGlassZoom 0.6s ease-out forwards, liquidGlassGlow 0.6s ease-out;
         }
 
         .search-input-liquid {
@@ -359,28 +453,16 @@ export default function Header({
           top: 100%;
           left: 0;
           right: 0;
-
-          background: rgba(20, 20, 30, 0.95);
+          background: rgba(20, 20, 30, 0.98);
           backdrop-filter: blur(20px);
-
           border: 1px solid rgba(100, 200, 255, 0.3);
           border-radius: 12px;
-
           margin-top: 8px;
-
-          /*
-           * অনেক movie থাকলেও dropdown-এর ভিতর
-           * scroll করা যাবে।
-           */
-          max-height: 360px;
+          max-height: 400px;
           overflow-y: auto;
-
           z-index: 50;
-
           scrollbar-width: thin;
-          scrollbar-color:
-            rgba(100, 200, 255, 0.5)
-            transparent;
+          scrollbar-color: rgba(100, 200, 255, 0.5) transparent;
         }
 
         .search-suggestions::-webkit-scrollbar {
@@ -401,12 +483,10 @@ export default function Header({
         }
 
         .search-suggestion-item {
-          padding: 12px 16px;
+          padding: 10px 16px;
           cursor: pointer;
           transition: all 0.2s ease;
-
-          border-bottom:
-            1px solid rgba(255, 255, 255, 0.05);
+          border-bottom: 1px solid rgba(255, 255, 255, 0.05);
         }
 
         .search-suggestion-item:hover {
@@ -417,13 +497,25 @@ export default function Header({
           border-bottom: none;
         }
 
+        .history-header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 8px 16px;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+          font-size: 11px;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+          color: rgba(148, 163, 184, 0.9);
+          font-weight: 600;
+        }
+
         @keyframes liquidBubbleRise {
           0% {
             opacity: 1;
             transform: scale(1) translateY(0);
             filter: blur(0);
           }
-
           100% {
             opacity: 0;
             transform: scale(0.2) translateY(-50px);
@@ -432,13 +524,11 @@ export default function Header({
         }
 
         .liquid-bubble {
-          animation:
-            liquidBubbleRise 0.8s ease-out forwards;
+          animation: liquidBubbleRise 0.8s ease-out forwards;
         }
       `}</style>
 
       <div className="px-4 py-4 flex items-center gap-4">
-
         {/* MVBD Logo */}
         <div className="flex-shrink-0">
           <img
@@ -449,44 +539,29 @@ export default function Header({
         </div>
 
         {/* Search */}
-        <div className="flex-1 relative">
-
+        <div ref={wrapperRef} className="flex-1 relative">
           <div className="liquid-glass-search rounded-2xl px-4 py-3 flex items-center gap-3">
-
             <Search className="w-5 h-5 text-slate-300 flex-shrink-0" />
 
             <input
               type="text"
               placeholder={
-                displayedPlaceholder ||
-                TYPING_SUGGESTIONS[0]
+                displayedPlaceholder || TYPING_SUGGESTIONS[0]
               }
-
-              /*
-               * IMPORTANT:
-               * Parent-এর searchQuery directly ব্যবহার করা হচ্ছে।
-               *
-               * তাই:
-               * Search → Movie → Back
-               *
-               * করলে search text আর হারাবে না।
-               */
               value={searchQuery}
-
               onChange={handleSearch}
-
               onFocus={() => {
                 setIsFocused(true)
                 createBubbles()
               }}
-
-              onBlur={() =>
-                setTimeout(
-                  () => setIsFocused(false),
-                  200
-                )
-              }
-
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  handleSubmitSearch(searchQuery)
+                }
+                if (e.key === "Escape") {
+                  setIsFocused(false)
+                }
+              }}
               className="search-input-liquid w-full text-white text-sm outline-none"
             />
 
@@ -514,8 +589,7 @@ export default function Header({
                   borderRadius: "50%",
                   background:
                     "radial-gradient(circle at 30% 30%, rgba(100, 200, 255, 0.8), rgba(59, 130, 246, 0.3))",
-                  border:
-                    "1px solid rgba(100, 200, 255, 0.5)",
+                  border: "1px solid rgba(100, 200, 255, 0.5)",
                   boxShadow:
                     "0 0 8px rgba(100, 200, 255, 0.4), inset -2px -2px 4px rgba(0, 0, 0, 0.2)",
                 }}
@@ -523,49 +597,95 @@ export default function Header({
             ))}
           </div>
 
-          {/* Search suggestions */}
-          {isFocused &&
-            allSearchSuggestions.length > 0 && (
-              <div className="search-suggestions">
+          {/* ============================================ */}
+          {/* HISTORY DROPDOWN (query খালি থাকলে)        */}
+          {/* ============================================ */}
+          {showHistoryDropdown && (
+            <div className="search-suggestions">
+              <div className="history-header">
+                <div className="flex items-center gap-2">
+                  <Clock className="w-3 h-3" />
+                  <span>সাম্প্রতিক সার্চ</span>
+                </div>
+              </div>
 
-                {searchSuggestions.map(
-                  (suggestion, idx) => (
+              {history.map((item, idx) => (
+                <div
+                  key={`${item.query}-${item.timestamp}-${idx}`}
+                  className="search-suggestion-item flex items-center gap-3 text-slate-200 group"
+                  onMouseDown={(e) => {
+                    e.preventDefault()
+                    handleSubmitSearch(item.query)
+                  }}
+                >
+                  <Clock className="w-4 h-4 flex-shrink-0 text-slate-500" />
+
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm text-white truncate">
+                      {item.query}
+                    </p>
+                    <p className="text-[10px] text-slate-500 mt-0.5">
+                      {getTimeAgo(item.timestamp)}
+                    </p>
+                  </div>
+
+                  <button
+                    type="button"
+                    onMouseDown={(e) => handleRemoveHistory(item, e)}
+                    className="w-6 h-6 rounded-full hover:bg-white/10 text-slate-500 hover:text-white flex items-center justify-center transition opacity-0 group-hover:opacity-100"
+                    aria-label="Remove"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* ============================================ */}
+          {/* SUGGESTIONS DROPDOWN (query টাইপ করলে)     */}
+          {/* ============================================ */}
+          {showSuggestionsDropdown && (
+            <div className="search-suggestions">
+              {searchSuggestions.length > 0 ? (
+                <>
+                  <div className="history-header">
+                    <div className="flex items-center gap-2">
+                      <TrendingUp className="w-3 h-3" />
+                      <span>সাজেশন</span>
+                    </div>
+                  </div>
+
+                  {searchSuggestions.map((suggestion, idx) => (
                     <div
                       key={`${suggestion.title}-${suggestion.id ?? idx}`}
                       className="search-suggestion-item flex items-center gap-3 text-slate-200"
-
-                      onMouseDown={() => {
-                        /*
-                         * Suggestion click করলেও
-                         * parent search state update হবে।
-                         */
-                        onSearch(suggestion.title)
-                        setIsFocused(false)
+                      onMouseDown={(e) => {
+                        e.preventDefault()
+                        handleSubmitSearch(suggestion.title)
                       }}
                     >
-
                       {suggestion.poster ? (
                         <img
                           src={suggestion.poster}
                           alt=""
-                          className="h-10 w-7 flex-shrink-0 rounded object-cover"
+                          className="h-12 w-8 flex-shrink-0 rounded object-cover"
                         />
                       ) : (
-                        <Search
-                          className="h-4 w-4 flex-shrink-0 text-slate-500"
-                        />
+                        <Search className="h-4 w-4 flex-shrink-0 text-slate-500" />
                       )}
 
-                      <span>
-                        {suggestion.title}
-                      </span>
-
+                      <span className="text-sm">{suggestion.title}</span>
                     </div>
-                  )
-                )}
-
-              </div>
-            )}
+                  ))}
+                </>
+              ) : (
+                <div className="search-suggestion-item text-slate-500 text-sm">
+                  কোনো ফলাফল নেই
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </header>

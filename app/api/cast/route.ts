@@ -4,10 +4,6 @@ import { fetchMdlCastByTitle } from "@/lib/mdl-cast"
 
 export const runtime = "nodejs"
 
-/* =========================================================
-   TYPES
-========================================================= */
-
 type CastMember = {
   id: number | string
   name: string
@@ -25,7 +21,7 @@ function cleanTitle(title: string): string {
     .replace(/\(\d{4}\)/g, "")
     .replace(/\[\d{4}\]/g, "")
     .replace(/\{[^}]*\}/g, "")
-    .replace(/[\u{1D7CE}-\u{1D7FF}]/gu, "") // Mathematical bold digits
+    .replace(/[\u{1D7CE}-\u{1D7FF}]/gu, "")
     .replace(/[^\p{L}\p{N}\s:.\-&'!?]/gu, " ")
     .replace(/\s+/g, " ")
     .trim()
@@ -37,15 +33,30 @@ function extractYear(year: string | null): string | null {
   return match ? match[0] : null
 }
 
+/**
+ * genre string থেকে K-Drama ডিটেক্ট করে।
+ * "Action | kdrama | Thriller" → true
+ */
+function isKDramaGenre(genre: string | null): boolean {
+  if (!genre) return false
+  const g = genre.toLowerCase()
+  return (
+    g.includes("kdrama") ||
+    g.includes("k-drama") ||
+    g.includes("korean drama") ||
+    g.includes("korean")
+  )
+}
+
 /* =========================================================
-   TMDB FETCH
+   TMDB CAST
 ========================================================= */
 
 async function fetchTmdbCast(
   token: string,
   title: string | null,
   year: string | null,
-  mediaType: string,
+  preferredType: "movie" | "tv",
   tmdbId: string | null
 ): Promise<CastMember[] | null> {
   const headers = {
@@ -55,9 +66,11 @@ async function fetchTmdbCast(
 
   try {
     let matchedId: number | null = null
-    let matchedType: "movie" | "tv" = mediaType === "anime" ? "tv" : "movie"
+    let matchedType: "movie" | "tv" = preferredType
 
-    // --- Mode 1: tmdbId সরাসরি দেওয়া ---
+    /* --------------------------------------------------
+       Mode 1: tmdbId সরাসরি দেওয়া
+    -------------------------------------------------- */
     if (tmdbId) {
       const parsed = parseInt(tmdbId)
       if (!isNaN(parsed)) {
@@ -65,31 +78,35 @@ async function fetchTmdbCast(
       }
     }
 
-    // --- Mode 2: Title দিয়ে search ---
+    /* --------------------------------------------------
+       Mode 2: Title দিয়ে search
+    -------------------------------------------------- */
     if (!matchedId && title) {
       const clean = cleanTitle(title)
       const yearNum = extractYear(year)
-      const searchEndpoint =
-        mediaType === "anime" ? "search/tv" : "search/movie"
 
-      let searchUrl = `https://api.themoviedb.org/3/${searchEndpoint}?query=${encodeURIComponent(
-        clean
-      )}&language=en-US&page=1`
+      // একটা endpoint-এ search করার হেল্পার
+      const searchOn = async (
+        endpoint: "search/movie" | "search/tv"
+      ) => {
+        let url = `https://api.themoviedb.org/3/${endpoint}?query=${encodeURIComponent(
+          clean
+        )}&language=en-US&page=1`
 
-      if (yearNum && mediaType !== "anime") {
-        searchUrl += `&year=${yearNum}`
-      }
+        if (yearNum && endpoint === "search/movie") {
+          url += `&year=${yearNum}`
+        }
 
-      const searchRes = await fetch(searchUrl, {
-        headers,
-        next: { revalidate: 86400 },
-      })
+        try {
+          const res = await fetch(url, {
+            headers,
+            next: { revalidate: 86400 },
+          })
+          if (!res.ok) return null
+          const data = await res.json()
+          const results = data.results || []
+          if (results.length === 0) return null
 
-      if (searchRes.ok) {
-        const searchData = await searchRes.json()
-        const results = searchData.results || []
-
-        if (results.length > 0) {
           let best = results[0]
 
           if (yearNum) {
@@ -109,35 +126,69 @@ async function fetchTmdbCast(
             }
           }
 
-          matchedId = best.id
+          return best
+        } catch {
+          return null
         }
+      }
+
+      // preferredType অনুযায়ী endpoint ঠিক করি
+      const primaryEndpoint =
+        preferredType === "tv" ? "search/tv" : "search/movie"
+      const fallbackEndpoint =
+        preferredType === "tv" ? "search/movie" : "search/tv"
+
+      let best = await searchOn(primaryEndpoint as any)
+
+      // Primary fail হলে fallback try করি
+      if (!best) {
+        best = await searchOn(fallbackEndpoint as any)
+        if (best) {
+          // matchedType আপডেট করি
+          matchedType = fallbackEndpoint === "search/tv" ? "tv" : "movie"
+        }
+      } else {
+        matchedType = primaryEndpoint === "search/tv" ? "tv" : "movie"
+      }
+
+      if (best) {
+        matchedId = best.id
       }
     }
 
     if (!matchedId) return null
 
-    // --- Credits fetch ---
-    const creditsEndpoint =
-      matchedType === "tv"
-        ? `tv/${matchedId}/credits`
-        : `movie/${matchedId}/credits`
-
-    const creditsRes = await fetch(
-      `https://api.themoviedb.org/3/${creditsEndpoint}?language=en-US`,
-      {
-        headers,
-        next: { revalidate: 86400 },
+    /* --------------------------------------------------
+       Credits fetch
+    -------------------------------------------------- */
+    const tryCredits = async (type: "movie" | "tv") => {
+      try {
+        const res = await fetch(
+          `https://api.themoviedb.org/3/${type}/${matchedId}/credits?language=en-US`,
+          {
+            headers,
+            next: { revalidate: 86400 },
+          }
+        )
+        if (!res.ok) return null
+        const data = await res.json()
+        const cast = data.cast || []
+        if (cast.length === 0) return null
+        return cast
+      } catch {
+        return null
       }
-    )
+    }
 
-    if (!creditsRes.ok) return null
+    let castList = await tryCredits(matchedType)
+    if (!castList || castList.length === 0) {
+      const other = matchedType === "tv" ? "movie" : "tv"
+      castList = await tryCredits(other as any)
+    }
 
-    const creditsData = await creditsRes.json()
-    const castList = (creditsData.cast || []).slice(0, 20)
+    if (!castList || castList.length === 0) return null
 
-    if (castList.length === 0) return null
-
-    return castList.map((actor: any) => ({
+    return castList.slice(0, 20).map((actor: any) => ({
       id: actor.id,
       name: actor.name,
       character: actor.character || "",
@@ -153,14 +204,15 @@ async function fetchTmdbCast(
 }
 
 /* =========================================================
-   MAIN HANDLER
+   MAIN GET HANDLER
 ========================================================= */
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url)
   const title = searchParams.get("title")
   const year = searchParams.get("year")
-  const mediaType = searchParams.get("mediaType") || "movie"
+  const genre = searchParams.get("genre")
+  const mediaTypeParam = searchParams.get("mediaType") || "movie"
   const tmdbId = searchParams.get("tmdbId")
   const imdbId = searchParams.get("imdbId")
   const mdlId = searchParams.get("mdlId")
@@ -168,7 +220,24 @@ export async function GET(request: NextRequest) {
   const token = process.env.TMDB_TOKEN
 
   /* =====================================================
-     ধাপ ১: TMDB (প্রধান সোর্স)
+     genre থেকে mediaType ঠিক করি
+     - kdrama → tv
+     - anime → tv
+     - অন্যথায় → movie
+  ===================================================== */
+
+  let effectiveMediaType: "movie" | "tv" = "movie"
+
+  if (mediaTypeParam === "anime" || mediaTypeParam === "kdrama") {
+    effectiveMediaType = "tv"
+  } else if (mediaTypeParam === "tv") {
+    effectiveMediaType = "tv"
+  } else if (isKDramaGenre(genre)) {
+    effectiveMediaType = "tv"
+  }
+
+  /* =====================================================
+     ধাপ ১: TMDB
   ===================================================== */
 
   if (token) {
@@ -176,28 +245,22 @@ export async function GET(request: NextRequest) {
       token,
       title,
       year,
-      mediaType,
+      effectiveMediaType,
       tmdbId
     )
     if (tmdbCast && tmdbCast.length > 0) {
-      return NextResponse.json({
-        cast: tmdbCast,
-        source: "tmdb",
-      })
+      return NextResponse.json({ cast: tmdbCast, source: "tmdb" })
     }
   }
 
   /* =====================================================
-     ধাপ ২: IMDb (বাংলা মুভি / আন্তর্জাতিক মুভি)
+     ধাপ ২: IMDb (বাংলা / আন্তর্জাতিক মুভি)
   ===================================================== */
 
   if (imdbId) {
     const imdbCast = await fetchImdbCast(imdbId)
     if (imdbCast && imdbCast.length > 0) {
-      return NextResponse.json({
-        cast: imdbCast,
-        source: "imdb",
-      })
+      return NextResponse.json({ cast: imdbCast, source: "imdb" })
     }
   }
 
@@ -205,33 +268,22 @@ export async function GET(request: NextRequest) {
      ধাপ ৩: MyDramaList (K-Drama / এশিয়ান ড্রামা)
   ===================================================== */
 
-  // K-Drama হলে সরাসরি MDL try করি
-  const isKDrama =
-    mediaType === "anime" ||
-    (typeof title === "string" && /\b(kdrama|k-drama|korean)\b/i.test(title))
+  const isKDramaLike =
+    mediaTypeParam === "kdrama" ||
+    mediaTypeParam === "anime" ||
+    isKDramaGenre(genre)
 
   if (mdlId) {
     const mdlCast = await fetchMdlCastByTitle(title || "")
     if (mdlCast && mdlCast.length > 0) {
-      return NextResponse.json({
-        cast: mdlCast,
-        source: "mdl",
-      })
+      return NextResponse.json({ cast: mdlCast, source: "mdl" })
     }
-  } else if (isKDrama && title) {
-    // K-Drama চিহ্নিত হলে টাইটেল দিয়েও চেষ্টা করি
+  } else if (isKDramaLike && title) {
     const mdlCast = await fetchMdlCastByTitle(title)
     if (mdlCast && mdlCast.length > 0) {
-      return NextResponse.json({
-        cast: mdlCast,
-        source: "mdl",
-      })
+      return NextResponse.json({ cast: mdlCast, source: "mdl" })
     }
   }
-
-  /* =====================================================
-     কিছু না পেলে খালি অ্যারে
-  ===================================================== */
 
   return NextResponse.json({ cast: [], source: "none" })
 }

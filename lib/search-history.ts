@@ -4,6 +4,7 @@
  * - localStorage-এ ৩ দিনের history রাখে (anonymous user)
  * - Login করলে Firestore-এও sync করে (logged-in user)
  * - Auto cleanup ৩ দিন পর
+ * - Admin panel থেকে logged-in user-দের history দেখা যাবে
  */
 
 import { db } from "@/firebase"
@@ -12,7 +13,6 @@ import {
   setDoc,
   getDoc,
   serverTimestamp,
-  Timestamp,
 } from "firebase/firestore"
 
 const STORAGE_KEY = "mvbd_search_history"
@@ -25,7 +25,7 @@ export type SearchHistoryItem = {
 }
 
 /* =========================================================
-   LOCAL STORAGE (anonymous + logged-in fallback)
+   LOCAL STORAGE
 ========================================================= */
 
 export function getLocalHistory(): SearchHistoryItem[] {
@@ -76,7 +76,6 @@ export function addToLocalHistory(query: string): SearchHistoryItem[] {
 
   const existing = getLocalHistory()
 
-  // Same query সরাই (case insensitive)
   const filtered = existing.filter(
     (item) => item.query.toLowerCase() !== trimmed.toLowerCase()
   )
@@ -120,10 +119,12 @@ export function cleanupExpiredHistory(): void {
 /**
  * Logged-in user-এর history Firestore-এ save করে।
  * Document: searchHistory/{userId}
+ * Admin panel এই collection থেকে সব user-এর history দেখতে পারবে।
  */
 export async function saveHistoryToFirestore(
   userId: string,
-  items: SearchHistoryItem[]
+  items: SearchHistoryItem[],
+  userName?: string
 ): Promise<void> {
   if (!userId) return
 
@@ -138,6 +139,7 @@ export async function saveHistoryToFirestore(
       ref,
       {
         userId,
+        userName: userName || null,
         items: fresh,
         updatedAt: serverTimestamp(),
       },
@@ -148,9 +150,6 @@ export async function saveHistoryToFirestore(
   }
 }
 
-/**
- * Logged-in user-এর Firestore থেকে history load করে।
- */
 export async function loadHistoryFromFirestore(
   userId: string
 ): Promise<SearchHistoryItem[]> {
@@ -184,7 +183,7 @@ export async function loadHistoryFromFirestore(
 }
 
 /* =========================================================
-   TIME FORMATTER
+   TIME FORMATTER — "২ মিনিট আগে", "১ ঘন্টা আগে", "২ দিন আগে"
 ========================================================= */
 
 export function getTimeAgo(timestamp: number): string {
@@ -196,8 +195,8 @@ export function getTimeAgo(timestamp: number): string {
   const hours = Math.floor(minutes / 60)
   const days = Math.floor(hours / 24)
 
-  if (seconds < 60) return "এইমাত্র"
-  if (minutes === 1) return "১ মিনিট আগে"
+  if (seconds < 30) return "এইমাত্র"
+  if (minutes < 1) return `${seconds} সেকেন্ড আগে`
   if (minutes < 60) return `${minutes} মিনিট আগে`
   if (hours === 1) return "১ ঘন্টা আগে"
   if (hours < 24) return `${hours} ঘন্টা আগে`

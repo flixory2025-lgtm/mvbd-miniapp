@@ -283,16 +283,16 @@ export default function MovieDetailPage({
 
             {/* Cast List — genre সবসময় পাঠাই যাতে K-Drama অটো ডিটেক্ট হয় */}
             <MovieCast
-              title={movie.title}
-              year={movie.year}
-              mediaType={mediaType}
-              genre={movie.genre}
-              movieId={movie.id}
-              tmdbId={movie.tmdbId}
-              tmdbType={movie.tmdbType}
-              imdbId={movie.imdbId}
-              mdlId={movie.mdlId}
-            />
+  title={movie.title}
+  year={movie.year}
+  mediaType={mediaType}
+  genre={movie.genre}
+  movieId={movie.id}
+  tmdbId={movie.tmdbId}
+  tmdbType={movie.tmdbType}
+  imdbId={movie.imdbId}
+  mdlId={movie.mdlId}
+/>
           </div>
         </div>
       </div>

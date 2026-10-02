@@ -21,13 +21,9 @@ type DetailItem = {
   telegramLink?: string
   telegram4kLink?: string
   language?: string
-  /** TMDB ID — থাকলে ১০০% accurate cast আসবে */
   tmdbId?: number
-  /** TMDB media type */
   tmdbType?: "movie" | "tv"
-  /** IMDb ID (tt...) — TMDB-তে না পেলে ব্যবহার হবে */
   imdbId?: string
-  /** MyDramaList slug — K-Drama-র জন্য */
   mdlId?: string
 }
 
@@ -50,7 +46,9 @@ export default function MovieDetailPage({
 }: MovieDetailPageProps) {
   const mediaLabel = mediaType === "anime" ? "anime" : "movie"
   const [showTrailer, setShowTrailer] = useState(false)
-  const [viewCount, setViewCount] = useState(Math.floor(Math.random() * 1000) + 1)
+  const [viewCount, setViewCount] = useState(
+    Math.floor(Math.random() * 1000) + 1
+  )
   const [isAddedToWatchLater, setIsAddedToWatchLater] = useState(false)
   const [showTelegramPopup, setShowTelegramPopup] = useState(false)
   const [showSubscriptions, setShowSubscriptions] = useState(false)
@@ -63,7 +61,9 @@ export default function MovieDetailPage({
 
   const isAdultMovie = (genre: string): boolean => {
     const adultGenres = ["Adult", "18+"]
-    return adultGenres.some((g) => genre.toLowerCase().includes(g.toLowerCase()))
+    return adultGenres.some((g) =>
+      genre.toLowerCase().includes(g.toLowerCase())
+    )
   }
 
   const handleWatchTrailer = () => setShowTrailer(true)
@@ -81,12 +81,16 @@ export default function MovieDetailPage({
   }
 
   const isAdult = isAdultMovie(movie.genre)
-  const movieGenres = movie.genre.split(" | ").map((g) => g.trim().toLowerCase())
+  const movieGenres = movie.genre
+    .split(" | ")
+    .map((g) => g.trim().toLowerCase())
 
   const relatedMovies = relatedItems
     .filter((m) => {
       if (m.id === movie.id) return false
-      const mGenres = m.genre.split(" | ").map((g) => g.trim().toLowerCase())
+      const mGenres = m.genre
+        .split(" | ")
+        .map((g) => g.trim().toLowerCase())
       const normalizedMovieGenres = movieGenres.map((g) => g.toLowerCase())
       const genreMatch = mGenres.some((genre) =>
         normalizedMovieGenres.includes(genre)
@@ -103,8 +107,12 @@ export default function MovieDetailPage({
       return genreMatch || titleMatch
     })
     .sort((a, b) => {
-      const aGenres = a.genre.split(" | ").map((g) => g.trim().toLowerCase())
-      const bGenres = b.genre.split(" | ").map((g) => g.trim().toLowerCase())
+      const aGenres = a.genre
+        .split(" | ")
+        .map((g) => g.trim().toLowerCase())
+      const bGenres = b.genre
+        .split(" | ")
+        .map((g) => g.trim().toLowerCase())
       const normalizedMovieGenres = movieGenres.map((g) => g.toLowerCase())
       const aMatches = aGenres.filter((g) =>
         normalizedMovieGenres.includes(g)
@@ -178,7 +186,9 @@ export default function MovieDetailPage({
 
                   <div className="flex flex-wrap gap-6 text-base md:text-lg text-slate-200">
                     <div>
-                      <span className="font-semibold text-slate-300">Year:</span>{" "}
+                      <span className="font-semibold text-slate-300">
+                        Year:
+                      </span>{" "}
                       {movie.year}
                     </div>
                     <div>
@@ -271,11 +281,12 @@ export default function MovieDetailPage({
               </div>
             </div>
 
-            {/* Cast List — TMDB + IMDb + MDL fallback */}
+            {/* Cast List — genre সবসময় পাঠাই যাতে K-Drama অটো ডিটেক্ট হয় */}
             <MovieCast
               title={movie.title}
               year={movie.year}
               mediaType={mediaType}
+              genre={movie.genre}
               movieId={movie.id}
               tmdbId={movie.tmdbId}
               tmdbType={movie.tmdbType}
@@ -306,7 +317,8 @@ export default function MovieDetailPage({
             <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-4">
               {relatedMovies.map((relatedMovie) => {
                 const isRelatedAdult = isAdultMovie(relatedMovie.genre)
-                const shouldBlurRelated = isRelatedAdult && !showAdultContent
+                const shouldBlurRelated =
+                  isRelatedAdult && !showAdultContent
                 return (
                   <div
                     key={relatedMovie.id}

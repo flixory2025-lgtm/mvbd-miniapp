@@ -3,7 +3,7 @@
 import type React from "react"
 
 import { useState, useRef, useMemo, useEffect } from "react"
-import { Search, X, Clock, TrendingUp, Trash2 } from "lucide-react"
+import { Search, X, Clock, TrendingUp } from "lucide-react"
 import { movies } from "@/lib/movie-data"
 import { animes } from "@/lib/anime-data"
 import { useAuth } from "@/components/auth-provider"
@@ -97,10 +97,7 @@ export default function Header({
 
   const { user } = useAuth()
 
-  // ------------------------------------------
   // Typing placeholder suggestions
-  // ------------------------------------------
-
   const TYPING_SUGGESTIONS =
     pageType === "anime"
       ? TYPING_SUGGESTIONS_ANIME
@@ -108,33 +105,19 @@ export default function Header({
         ? TYPING_SUGGESTIONS_SERIES
         : TYPING_SUGGESTIONS_HOME
 
-  // ------------------------------------------
   // Search data
-  // ------------------------------------------
-
   const dataSource = useMemo(() => {
     if (searchData) return searchData
-
-    if (pageType === "anime") {
-      return animes
-    }
-
+    if (pageType === "anime") return animes
     if (pageType === "series") {
-      return movies.filter((m) =>
-        m.title.toLowerCase().includes("season")
-      )
+      return movies.filter((m) => m.title.toLowerCase().includes("season"))
     }
-
     return movies
   }, [pageType, searchData])
 
-  // ------------------------------------------
   // Smart search suggestions
-  // ------------------------------------------
-
   const allSearchSuggestions = useMemo(() => {
     const query = searchQuery.trim().toLowerCase()
-
     if (!query) return []
 
     const queryWords = query.split(/\s+/).filter(Boolean)
@@ -151,15 +134,20 @@ export default function Header({
     })
   }, [searchQuery, dataSource])
 
-  const searchSuggestions = allSearchSuggestions
-
-  // ------------------------------------------
-  // Load history on mount + when user changes
-  // ------------------------------------------
-
+  // Load history on mount
   useEffect(() => {
     cleanupExpiredHistory()
     setHistory(getLocalHistory())
+  }, [])
+
+  // Auto cleanup — every 1 hour (in case user keeps tab open)
+  useEffect(() => {
+    const interval = setInterval(() => {
+      cleanupExpiredHistory()
+      setHistory(getLocalHistory())
+    }, 60 * 60 * 1000) // 1 hour
+
+    return () => clearInterval(interval)
   }, [])
 
   // When user logs in, sync Firestore history
@@ -170,16 +158,12 @@ export default function Header({
 
     async function syncFirestore() {
       try {
-        // Firestore থেকে history আনো
         const remoteHistory = await loadHistoryFromFirestore(user!.uid)
-
         if (cancelled) return
 
-        // Local history + remote history merge করি
         const local = getLocalHistory()
         const combined = [...remoteHistory, ...local]
 
-        // Deduplicate (query অনুযায়ী)
         const seen = new Set<string>()
         const merged: SearchHistoryItem[] = []
 
@@ -191,13 +175,15 @@ export default function Header({
           if (merged.length >= 8) break
         }
 
-        // Sort by timestamp desc
         merged.sort((a, b) => b.timestamp - a.timestamp)
 
         setHistory(merged)
 
-        // Firestore-এ merge করা history সেভ করি
-        await saveHistoryToFirestore(user!.uid, merged)
+        await saveHistoryToFirestore(
+          user!.uid,
+          merged,
+          (user as any)?.displayName || undefined
+        )
       } catch (err) {
         console.error("Firestore sync failed:", err)
       }
@@ -210,10 +196,7 @@ export default function Header({
     }
   }, [user?.uid])
 
-  // ------------------------------------------
   // Click outside → close dropdown
-  // ------------------------------------------
-
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (
@@ -230,10 +213,7 @@ export default function Header({
     }
   }, [])
 
-  // ------------------------------------------
-  // Save history — call this when user submits
-  // ------------------------------------------
-
+  // Save history
   const saveSearchToHistory = async (query: string) => {
     const trimmed = query.trim()
     if (!trimmed) return
@@ -241,51 +221,36 @@ export default function Header({
     const updated = addToLocalHistory(trimmed)
     setHistory(updated)
 
-    // Logged-in হলে Firestore-এও save করি
     if (user?.uid) {
       try {
-        await saveHistoryToFirestore(user.uid, updated)
+        await saveHistoryToFirestore(
+          user.uid,
+          updated,
+          (user as any)?.displayName || undefined
+        )
       } catch (err) {
         console.error("Firestore save failed:", err)
       }
     }
   }
 
-  // ------------------------------------------
-  // Search input
-  // ------------------------------------------
-
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value
-    onSearch(value)
+    onSearch(e.target.value)
   }
-
-  // ------------------------------------------
-  // Clear search
-  // ------------------------------------------
 
   const handleClearSearch = () => {
     onSearch("")
     setIsFocused(false)
   }
 
-  // ------------------------------------------
-  // Submit search (Enter key or click)
-  // ------------------------------------------
-
   const handleSubmitSearch = (query: string) => {
     const trimmed = query.trim()
     if (!trimmed) return
 
     saveSearchToHistory(trimmed)
-
     onSearch(trimmed)
     setIsFocused(false)
   }
-
-  // ------------------------------------------
-  // Remove one history item
-  // ------------------------------------------
 
   const handleRemoveHistory = async (
     item: SearchHistoryItem,
@@ -299,14 +264,14 @@ export default function Header({
 
     if (user?.uid) {
       try {
-        await saveHistoryToFirestore(user.uid, updated)
+        await saveHistoryToFirestore(
+          user.uid,
+          updated,
+          (user as any)?.displayName || undefined
+        )
       } catch {}
     }
   }
-
-  // ------------------------------------------
-  // Liquid bubbles
-  // ------------------------------------------
 
   const createBubbles = () => {
     if (!isFocused) return
@@ -327,10 +292,6 @@ export default function Header({
 
     setBubbles((prev) => [...prev, ...newBubbles])
   }
-
-  // ------------------------------------------
-  // Current animated placeholder
-  // ------------------------------------------
 
   const currentSuggestion = TYPING_SUGGESTIONS[currentSuggestionIndex]
 
@@ -379,153 +340,82 @@ export default function Header({
     TYPING_SUGGESTIONS.length,
   ])
 
-  // ------------------------------------------
-  // Dropdown visibility logic
-  // ------------------------------------------
-
   const hasQuery = searchQuery.trim().length > 0
   const showHistoryDropdown =
     isFocused && !hasQuery && history.length > 0
   const showSuggestionsDropdown = isFocused && hasQuery
 
-  // ------------------------------------------
-  // UI
-  // ------------------------------------------
-
   return (
     <header className="sticky top-0 z-40 bg-black/40 backdrop-blur-xl border-b border-white/10 shadow-lg">
       <style>{`
         @keyframes liquidGlassZoom {
-          0% {
-            transform: scale(1);
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(20px);
-          }
-          50% {
-            transform: scale(1.03);
-            background: rgba(255, 255, 255, 0.08);
-            backdrop-filter: blur(25px);
-          }
-          100% {
-            transform: scale(1.06);
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(30px);
-          }
+          0% { transform: scale(1); background: rgba(255,255,255,.05); backdrop-filter: blur(20px); }
+          50% { transform: scale(1.03); background: rgba(255,255,255,.08); backdrop-filter: blur(25px); }
+          100% { transform: scale(1.06); background: rgba(255,255,255,.1); backdrop-filter: blur(30px); }
         }
-
         @keyframes liquidGlassGlow {
-          0% {
-            box-shadow: 0 0 0 0 rgba(100, 200, 255, 0.3), inset 0 0 20px rgba(255, 255, 255, 0.1);
-          }
-          50% {
-            box-shadow: 0 0 15px 5px rgba(100, 200, 255, 0.2), inset 0 0 30px rgba(255, 255, 255, 0.15);
-          }
-          100% {
-            box-shadow: 0 0 25px 10px rgba(100, 200, 255, 0.1), inset 0 0 40px rgba(255, 255, 255, 0.2);
-          }
+          0% { box-shadow: 0 0 0 0 rgba(100,200,255,.3), inset 0 0 20px rgba(255,255,255,.1); }
+          50% { box-shadow: 0 0 15px 5px rgba(100,200,255,.2), inset 0 0 30px rgba(255,255,255,.15); }
+          100% { box-shadow: 0 0 25px 10px rgba(100,200,255,.1), inset 0 0 40px rgba(255,255,255,.2); }
         }
-
         .liquid-glass-search {
-          background: rgba(255, 255, 255, 0.05);
+          background: rgba(255,255,255,.05);
           backdrop-filter: blur(20px);
-          border: 1px solid rgba(255, 255, 255, 0.2);
-          transition: all 0.3s ease;
+          border: 1px solid rgba(255,255,255,.2);
+          transition: all .3s ease;
         }
-
         .liquid-glass-search:focus-within {
-          background: rgba(255, 255, 255, 0.08);
+          background: rgba(255,255,255,.08);
           backdrop-filter: blur(30px);
-          border: 1px solid rgba(100, 200, 255, 0.4);
-          animation: liquidGlassZoom 0.6s ease-out forwards, liquidGlassGlow 0.6s ease-out;
+          border: 1px solid rgba(100,200,255,.4);
+          animation: liquidGlassZoom .6s ease-out forwards, liquidGlassGlow .6s ease-out;
         }
-
-        .search-input-liquid {
-          background: transparent;
-          border: none;
-        }
-
-        .search-input-liquid::placeholder {
-          color: rgba(255, 255, 255, 0.5);
-        }
-
+        .search-input-liquid { background: transparent; border: none; }
+        .search-input-liquid::placeholder { color: rgba(255,255,255,.5); }
         .search-suggestions {
           position: absolute;
           top: 100%;
           left: 0;
           right: 0;
-          background: rgba(20, 20, 30, 0.98);
+          background: rgba(20,20,30,.98);
           backdrop-filter: blur(20px);
-          border: 1px solid rgba(100, 200, 255, 0.3);
+          border: 1px solid rgba(100,200,255,.3);
           border-radius: 12px;
           margin-top: 8px;
           max-height: 400px;
           overflow-y: auto;
           z-index: 50;
           scrollbar-width: thin;
-          scrollbar-color: rgba(100, 200, 255, 0.5) transparent;
+          scrollbar-color: rgba(100,200,255,.5) transparent;
         }
-
-        .search-suggestions::-webkit-scrollbar {
-          width: 6px;
-        }
-
-        .search-suggestions::-webkit-scrollbar-track {
-          background: transparent;
-        }
-
-        .search-suggestions::-webkit-scrollbar-thumb {
-          background: rgba(100, 200, 255, 0.5);
-          border-radius: 3px;
-        }
-
-        .search-suggestions::-webkit-scrollbar-thumb:hover {
-          background: rgba(100, 200, 255, 0.7);
-        }
-
+        .search-suggestions::-webkit-scrollbar { width: 6px; }
+        .search-suggestions::-webkit-scrollbar-track { background: transparent; }
+        .search-suggestions::-webkit-scrollbar-thumb { background: rgba(100,200,255,.5); border-radius: 3px; }
         .search-suggestion-item {
           padding: 10px 16px;
           cursor: pointer;
-          transition: all 0.2s ease;
-          border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+          transition: all .2s ease;
+          border-bottom: 1px solid rgba(255,255,255,.05);
         }
-
-        .search-suggestion-item:hover {
-          background: rgba(100, 200, 255, 0.1);
-        }
-
-        .search-suggestion-item:last-child {
-          border-bottom: none;
-        }
-
-        .history-header {
+        .search-suggestion-item:hover { background: rgba(100,200,255,.1); }
+        .search-suggestion-item:last-child { border-bottom: none; }
+        .dropdown-header {
           display: flex;
           align-items: center;
-          justify-content: space-between;
+          gap: 6px;
           padding: 8px 16px;
-          border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+          border-bottom: 1px solid rgba(255,255,255,.08);
           font-size: 11px;
           text-transform: uppercase;
-          letter-spacing: 0.05em;
-          color: rgba(148, 163, 184, 0.9);
+          letter-spacing: .05em;
+          color: rgba(148,163,184,.9);
           font-weight: 600;
         }
-
         @keyframes liquidBubbleRise {
-          0% {
-            opacity: 1;
-            transform: scale(1) translateY(0);
-            filter: blur(0);
-          }
-          100% {
-            opacity: 0;
-            transform: scale(0.2) translateY(-50px);
-            filter: blur(2px);
-          }
+          0% { opacity: 1; transform: scale(1) translateY(0); filter: blur(0); }
+          100% { opacity: 0; transform: scale(.2) translateY(-50px); filter: blur(2px); }
         }
-
-        .liquid-bubble {
-          animation: liquidBubbleRise 0.8s ease-out forwards;
-        }
+        .liquid-bubble { animation: liquidBubbleRise .8s ease-out forwards; }
       `}</style>
 
       <div className="px-4 py-4 flex items-center gap-4">
@@ -545,9 +435,7 @@ export default function Header({
 
             <input
               type="text"
-              placeholder={
-                displayedPlaceholder || TYPING_SUGGESTIONS[0]
-              }
+              placeholder={displayedPlaceholder || TYPING_SUGGESTIONS[0]}
               value={searchQuery}
               onChange={handleSearch}
               onFocus={() => {
@@ -555,12 +443,8 @@ export default function Header({
                 createBubbles()
               }}
               onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  handleSubmitSearch(searchQuery)
-                }
-                if (e.key === "Escape") {
-                  setIsFocused(false)
-                }
+                if (e.key === "Enter") handleSubmitSearch(searchQuery)
+                if (e.key === "Escape") setIsFocused(false)
               }}
               className="search-input-liquid w-full text-white text-sm outline-none"
             />
@@ -588,25 +472,21 @@ export default function Header({
                   position: "absolute",
                   borderRadius: "50%",
                   background:
-                    "radial-gradient(circle at 30% 30%, rgba(100, 200, 255, 0.8), rgba(59, 130, 246, 0.3))",
-                  border: "1px solid rgba(100, 200, 255, 0.5)",
+                    "radial-gradient(circle at 30% 30%, rgba(100,200,255,.8), rgba(59,130,246,.3))",
+                  border: "1px solid rgba(100,200,255,.5)",
                   boxShadow:
-                    "0 0 8px rgba(100, 200, 255, 0.4), inset -2px -2px 4px rgba(0, 0, 0, 0.2)",
+                    "0 0 8px rgba(100,200,255,.4), inset -2px -2px 4px rgba(0,0,0,.2)",
                 }}
               />
             ))}
           </div>
 
-          {/* ============================================ */}
-          {/* HISTORY DROPDOWN (query খালি থাকলে)        */}
-          {/* ============================================ */}
+          {/* HISTORY DROPDOWN (query খালি) */}
           {showHistoryDropdown && (
             <div className="search-suggestions">
-              <div className="history-header">
-                <div className="flex items-center gap-2">
-                  <Clock className="w-3 h-3" />
-                  <span>সাম্প্রতিক সার্চ</span>
-                </div>
+              <div className="dropdown-header">
+                <Clock className="w-3 h-3" />
+                <span>সাম্প্রতিক সার্চ</span>
               </div>
 
               {history.map((item, idx) => (
@@ -621,9 +501,7 @@ export default function Header({
                   <Clock className="w-4 h-4 flex-shrink-0 text-slate-500" />
 
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm text-white truncate">
-                      {item.query}
-                    </p>
+                    <p className="text-sm text-white truncate">{item.query}</p>
                     <p className="text-[10px] text-slate-500 mt-0.5">
                       {getTimeAgo(item.timestamp)}
                     </p>
@@ -642,21 +520,17 @@ export default function Header({
             </div>
           )}
 
-          {/* ============================================ */}
-          {/* SUGGESTIONS DROPDOWN (query টাইপ করলে)     */}
-          {/* ============================================ */}
+          {/* SUGGESTIONS DROPDOWN (query টাইপ করলে) */}
           {showSuggestionsDropdown && (
             <div className="search-suggestions">
-              {searchSuggestions.length > 0 ? (
+              {allSearchSuggestions.length > 0 ? (
                 <>
-                  <div className="history-header">
-                    <div className="flex items-center gap-2">
-                      <TrendingUp className="w-3 h-3" />
-                      <span>সাজেশন</span>
-                    </div>
+                  <div className="dropdown-header">
+                    <TrendingUp className="w-3 h-3" />
+                    <span>সাজেশন</span>
                   </div>
 
-                  {searchSuggestions.map((suggestion, idx) => (
+                  {allSearchSuggestions.map((suggestion, idx) => (
                     <div
                       key={`${suggestion.title}-${suggestion.id ?? idx}`}
                       className="search-suggestion-item flex items-center gap-3 text-slate-200"

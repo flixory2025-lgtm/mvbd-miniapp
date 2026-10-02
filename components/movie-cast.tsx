@@ -55,7 +55,6 @@ export default function MovieCast({
       try {
         const params = new URLSearchParams()
 
-        // TMDB ID থাকলে সেটা পাঠাই (সবচেয়ে নির্ভুল)
         if (tmdbId) {
           params.set("tmdbId", String(tmdbId))
           params.set("mediaType", tmdbType || mediaType || "movie")
@@ -65,10 +64,7 @@ export default function MovieCast({
           if (year) params.set("year", String(year))
         }
 
-        // genre সবসময় পাঠাই — যাতে K-Drama ডিটেক্ট হয়
         if (genre) params.set("genre", genre)
-
-        // IMDb এবং MDL ID থাকলে পাঠাই
         if (imdbId) params.set("imdbId", imdbId)
         if (mdlId) params.set("mdlId", mdlId)
 
@@ -76,7 +72,6 @@ export default function MovieCast({
         if (!res.ok) throw new Error("Failed to fetch cast")
 
         const data = await res.json()
-
         if (!cancelled) {
           setCast(data.cast || [])
         }

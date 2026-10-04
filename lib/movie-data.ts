@@ -9486,7 +9486,7 @@ export const movies1 = [
     title: "Odela 2 (2025)",
     poster: "/680id.jpg",
     trailer: "https://www.youtube.com/embed/oX7VhSpm8Lc?si",
-    telegramLink: "https://t.me/mvbdstore_bot?start=f_MzAyOCwzMDI5",
+    telegramLink: "http://t.me/mvbdcdn_bot?start=f_OCw5",
     telegram4kLink: "https://t.me/+gerJUkv5KS85YzM1",
     genre: "Thriller | Drama | Mystery",
     year: "2025",

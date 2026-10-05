@@ -3663,7 +3663,7 @@ export const movies1 = [
     poster: "/261id.jpg",
     trailer: "https://www.youtube.com/embed/1kVK0MZlbI4?si",
     telegramLink: "https://t.me/mvbdstore_bot?start=f_MTMzMSwxMzMy",
-    telegram4kLink: "https://t.me/+gerJUkv5KS85YzM1",
+    telegram4kLink: "http://t.me/mvbdcdn_bot?start=f_MTEsMTI",
     genre: "Action | Thriller | Crime",
     year: "2025",
     rating: "Coming Soon",

@@ -178,9 +178,9 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
   return (
     <section className="relative px-4 py-2 overflow-hidden">
       
-      {/* ✅✅✅ ১. উপরের ব্যাকগ্রাউন্ড (লোগোর পর থেকে ডার্ক) ✅✅✅ */}
+      {/* ✅✅✅ ১. উপরের ব্যাকগ্রাউন্ড (শুধু লোগোর উপরে থাকবে, লোগোর পরেই শেষ) ✅✅✅ */}
       <div
-        className="absolute top-0 left-0 w-full h-[500px] z-0 pointer-events-none"
+        className="absolute top-0 left-0 w-full h-[220px] z-0 pointer-events-none"
         style={{
           backgroundImage: "url('https://i.postimg.cc/7hLqB21s/Netflix-all-movies-and-series-featured-image.jpg')",
           backgroundSize: "cover",
@@ -188,8 +188,8 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
           backgroundRepeat: "no-repeat",
         }}
       >
-        {/* ✅ লোগোর পর থেকে নিচে নামার সাথে সাথে একদম কালো হয়ে যাওয়ার গ্রেডিয়েন্ট */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/70 to-black" />
+        {/* ✅ উপর থেকে নিচে নামার সাথে সাথে একদম কালো হয়ে যাওয়ার গ্রেডিয়েন্ট */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/80 to-black" />
       </div>
 
       {/* ✅ কনটেন্ট এরিয়া */}
@@ -254,13 +254,10 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
             backgroundRepeat: "no-repeat",
             opacity: bgOpacity,
             transition: "opacity 1s ease-in-out",
-            // ✅ ব্লার সরিয়ে শুধু হালকা ডার্ক থিম রাখা হয়েছে
             filter: "brightness(0.6) contrast(1.1)",
           }}
         >
-          {/* ✅ উপর থেকে নিচে কালো হওয়ার গ্রেডিয়েন্ট */}
           <div className="absolute top-0 left-0 w-full h-40 bg-gradient-to-b from-black/80 via-black/40 to-transparent" />
-          {/* ✅ নিচ থেকে উপরে কালো হওয়ার গ্রেডিয়েন্ট */}
           <div className="absolute bottom-0 left-0 w-full h-40 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
         </div>
 

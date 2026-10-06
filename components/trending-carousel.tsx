@@ -192,7 +192,7 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
 
   // ✅ মোবাইল/ডেস্কটপ ইমেজ
   const topBgImage = isMobile
-    ? "https://i.postimg.cc/fRbzRcWW/f24ff497fdec9f056d9d2a9c7d46f4f2.jpg"
+    ? "https://i.postimg.cc/HLx9zhYm/f24ff497fdec9f056d9d2a9c7d46f4f2.jpg"
     : "https://i.postimg.cc/7hLqB21s/Netflix-all-movies-and-series-featured-image.jpg"
 
   return (

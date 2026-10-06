@@ -24,6 +24,19 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
   const trendingMovies = movies.filter((m) => trendingIds.includes(m.id))
   const totalMovieCount = movies.length
 
+  // ✅ বর্তমান কার্ডের পোস্টার ব্যাকগ্রাউন্ডে সেট করা
+  useEffect(() => {
+    const currentMovie = trendingMovies[currentIndex]
+    if (currentMovie && currentMovie.poster) {
+      setBgOpacity(0.8) // প্রথমে কম opacity
+      const timer = setTimeout(() => {
+        setBgImage(currentMovie.poster || "")
+        setBgOpacity(1) // তারপর ফুল opacity
+      }, 200)
+      return () => clearTimeout(timer)
+    }
+  }, [currentIndex, trendingMovies])
+
   // ✅ ৩ সেকেন্ড পর পর অটো স্লাইড
   const startAutoSlide = useCallback(() => {
     if (autoSlideRef.current) clearInterval(autoSlideRef.current)
@@ -39,7 +52,6 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
     }
   }, [])
 
-  // ✅ অটো স্লাইড শুরু
   useEffect(() => {
     startAutoSlide()
     return () => stopAutoSlide()
@@ -48,49 +60,25 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
   // ✅ Tab Visibility
   useEffect(() => {
     const handleVisibilityChange = () => {
-      if (document.hidden) {
-        stopAutoSlide()
-      } else {
-        startAutoSlide()
-      }
+      if (document.hidden) stopAutoSlide()
+      else startAutoSlide()
     }
     document.addEventListener("visibilitychange", handleVisibilityChange)
     return () => document.removeEventListener("visibilitychange", handleVisibilityChange)
   }, [startAutoSlide, stopAutoSlide])
 
-  // ✅ ব্যাকগ্রাউন্ড ইমেজ স্মুথলি পরিবর্তন
-  useEffect(() => {
-    const currentMovie = trendingMovies[currentIndex]
-    if (currentMovie) {
-      setBgOpacity(0)
-      const timer = setTimeout(() => {
-        setBgImage(currentMovie.poster || "")
-        setBgOpacity(1)
-      }, 200)
-      return () => clearTimeout(timer)
-    }
-  }, [currentIndex, trendingMovies])
-
   // ✅ কীবোর্ড কন্ট্রোল
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "ArrowRight") {
-        setCurrentIndex((prev) => (prev + 1) % trendingMovies.length)
-      } else if (e.key === "ArrowLeft") {
-        setCurrentIndex((prev) => (prev - 1 + trendingMovies.length) % trendingMovies.length)
-      }
+      if (e.key === "ArrowRight") setCurrentIndex((prev) => (prev + 1) % trendingMovies.length)
+      else if (e.key === "ArrowLeft") setCurrentIndex((prev) => (prev - 1 + trendingMovies.length) % trendingMovies.length)
     }
     window.addEventListener("keydown", handleKeyDown)
     return () => window.removeEventListener("keydown", handleKeyDown)
   }, [trendingMovies.length])
 
-  const handlePrev = () => {
-    setCurrentIndex((prev) => (prev - 1 + trendingMovies.length) % trendingMovies.length)
-  }
-
-  const handleNext = () => {
-    setCurrentIndex((prev) => (prev + 1) % trendingMovies.length)
-  }
+  const handlePrev = () => setCurrentIndex((prev) => (prev - 1 + trendingMovies.length) % trendingMovies.length)
+  const handleNext = () => setCurrentIndex((prev) => (prev + 1) % trendingMovies.length)
 
   // ✅ Touch Swipe
   const handleTouchStart = (e: React.TouchEvent) => {
@@ -99,13 +87,10 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
     maxDragRef.current = 200
     stopAutoSlide()
   }
-
   const handleTouchMove = (e: React.TouchEvent) => {
     if (!isDragging) return
-    const diff = e.touches[0].clientX - startXRef.current
-    setDragDistance(diff)
+    setDragDistance(e.touches[0].clientX - startXRef.current)
   }
-
   const handleTouchEnd = () => {
     if (!isDragging) return
     setIsDragging(false)
@@ -122,13 +107,10 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
     maxDragRef.current = 200
     stopAutoSlide()
   }
-
   const handleMouseMove = (e: React.MouseEvent) => {
     if (!isDragging) return
-    const diff = e.clientX - startXRef.current
-    setDragDistance(diff)
+    setDragDistance(e.clientX - startXRef.current)
   }
-
   const handleMouseUp = () => {
     if (!isDragging) return
     setIsDragging(false)
@@ -138,14 +120,13 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
     startAutoSlide()
   }
 
-  // ✅ Mouse Wheel
   const handleMouseWheel = (e: React.WheelEvent) => {
     if (isDragging) return
     if (e.deltaY > 0) handleNext()
     else handlePrev()
   }
 
-  // ✅ 3D কার্ড পজিশন লজিক
+  // ✅ 3D কার্ড পজিশন
   const getCardStyle = (index: number) => {
     const total = trendingMovies.length
     let offset = (index - currentIndex + total) % total
@@ -155,12 +136,7 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
     const adjustedOffset = offset + progress
 
     if (adjustedOffset < -2.5 || adjustedOffset > 2.5) {
-      return {
-        opacity: 0,
-        transform: 'scale(0)',
-        pointerEvents: 'none' as const,
-        zIndex: 0,
-      }
+      return { opacity: 0, transform: 'scale(0)', pointerEvents: 'none' as const, zIndex: 0 }
     }
 
     let x = 0, z = 0, scale = 1, opacity = 1, shadow = '', rotateY = 0
@@ -200,147 +176,154 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
   }
 
   return (
+    // ✅✅✅ section-এ relative এবং overflow-hidden দেওয়া হয়েছে, যাতে background সঠিকভাবে বসে
     <section className="relative px-4 py-2 overflow-hidden">
       
-      {/* ✅✅✅ Dynamic Background Section ✅✅✅ */}
+      {/* ✅✅✅ Dynamic Background Layer ✅✅✅ */}
+      {/* এই ডিভটি absolute inset-0 দিয়ে পুরো section ঢেকে রাখবে */}
       <div 
         className="absolute inset-0 z-0 pointer-events-none"
         style={{
-          backgroundImage: `url('${bgImage}')`,
+          backgroundImage: bgImage ? `url('${bgImage}')` : 'none',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',
           opacity: bgOpacity,
           transition: 'opacity 1s ease-in-out',
-          filter: 'blur(8px) brightness(0.4)', // ব্লার ও ডার্ক
+          filter: 'blur(10px) brightness(0.5)',
+          transform: 'scale(1.1)', // ব্লার এজ কাটার জন্য
         }}
       >
-        {/* ✅ উপরে ওঠার সাথে সাথে কালো হয়ে যাওয়ার গ্রেডিয়েন্ট */}
-        <div className="absolute top-0 left-0 w-full h-40 bg-gradient-to-b from-black via-black/80 to-transparent" />
-        {/* ✅ নিচে নামার সাথে সাথে কালো হয়ে যাওয়ার গ্রেডিয়েন্ট */}
-        <div className="absolute bottom-0 left-0 w-full h-40 bg-gradient-to-t from-black via-black/80 to-transparent" />
+        {/* ✅ উপরে সাদা থেকে কালো হওয়ার গ্রেডিয়েন্ট (Dark Theme) */}
+        <div className="absolute top-0 left-0 w-full h-48 bg-gradient-to-b from-black via-black/80 to-transparent" />
+        {/* ✅ নিচে সাদা থেকে কালো হওয়ার গ্রেডিয়েন্ট (Dark Theme) */}
+        <div className="absolute bottom-0 left-0 w-full h-48 bg-gradient-to-t from-black via-black/80 to-transparent" />
       </div>
 
-      {/* ✅ Logo */}
-      <div className="relative z-10 flex justify-center -mt-4 mb-0">
-        <img
-          src="https://i.postimg.cc/Bn4cPRwz/20288-removebg-preview.png"
-          alt="MoviesVerseBD Logo"
-          className="relative z-20 w-72 h-72 object-contain"
-        />
-      </div>
+      {/* ✅ কনটেন্ট এরিয়া: z-10 দিয়ে ব্যাকগ্রাউন্ডের উপরে */}
+      <div className="relative z-10">
+        
+        {/* Logo */}
+        <div className="relative flex justify-center -mt-4 mb-0">
+          <img
+            src="https://i.postimg.cc/Bn4cPRwz/20288-removebg-preview.png"
+            alt="MoviesVerseBD Logo"
+            className="relative z-20 w-72 h-72 object-contain"
+          />
+        </div>
 
-      {/* ✅ Trending Now Title */}
-      <div className="relative z-10 -mt-4 mb-1 flex flex-col items-center justify-center">
-        <h2
-          className="text-xl font-bold text-center tracking-wider animate-pulse"
-          style={{
-            fontFamily: "'Times New Roman', serif",
-            letterSpacing: "0.2em",
-            background: "linear-gradient(to right, #ff6b00, #ffa500, #ff6b00)",
-            WebkitBackgroundClip: "text",
-            backgroundClip: "text",
-            color: "transparent",
-            textShadow: "0 0 10px rgba(255, 107, 0, 0.7), 0 0 15px rgba(255, 165, 0, 0.5)",
-            animation: "fireGlow 2s ease-in-out infinite alternate",
-          }}
+        {/* Trending Now Title */}
+        <div className="relative z-20 -mt-4 mb-1 flex flex-col items-center justify-center">
+          <h2
+            className="text-xl font-bold text-center tracking-wider animate-pulse"
+            style={{
+              fontFamily: "'Times New Roman', serif",
+              letterSpacing: "0.2em",
+              background: "linear-gradient(to right, #ff6b00, #ffa500, #ff6b00)",
+              WebkitBackgroundClip: "text",
+              backgroundClip: "text",
+              color: "transparent",
+              textShadow: "0 0 10px rgba(255, 107, 0, 0.7), 0 0 15px rgba(255, 165, 0, 0.5)",
+              animation: "fireGlow 2s ease-in-out infinite alternate",
+            }}
+          >
+            Trending Now
+          </h2>
+          <style jsx>{`
+            @keyframes fireGlow {
+              0% {
+                text-shadow: 0 0 8px rgba(255, 107, 0, 0.7), 0 0 15px rgba(255, 165, 0, 0.5);
+                background: linear-gradient(to right, #ff6b00, #ffa500, #ff6b00);
+                -webkit-background-clip: text;
+                background-clip: text;
+              }
+              100% {
+                text-shadow: 0 0 15px rgba(255, 107, 0, 0.9), 0 0 25px rgba(255, 165, 0, 0.7), 0 0 35px rgba(255, 69, 0, 0.6);
+                background: linear-gradient(to right, #ff4500, #ff8c00, #ff4500);
+                -webkit-background-clip: text;
+                background-clip: text;
+              }
+            }
+          `}</style>
+        </div>
+
+        {/* Counter */}
+        <p className="text-center text-green-400 text-sm mb-3 font-medium relative z-20">{totalMovieCount} Movie & Series Uploaded</p>
+
+        {/* 3D Card Carousel */}
+        <div
+          className="relative z-20 flex justify-center items-center h-[280px] md:h-[340px] w-full cursor-grab active:cursor-grabbing select-none"
+          style={{ touchAction: "pan-y", perspective: "1200px" }}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+          onMouseLeave={handleMouseUp}
+          onWheel={handleMouseWheel}
         >
-          Trending Now
-        </h2>
-        <style jsx>{`
-          @keyframes fireGlow {
-            0% {
-              text-shadow: 0 0 8px rgba(255, 107, 0, 0.7), 0 0 15px rgba(255, 165, 0, 0.5);
-              background: linear-gradient(to right, #ff6b00, #ffa500, #ff6b00);
-              -webkit-background-clip: text;
-              background-clip: text;
-            }
-            100% {
-              text-shadow: 0 0 15px rgba(255, 107, 0, 0.9), 0 0 25px rgba(255, 165, 0, 0.7), 0 0 35px rgba(255, 69, 0, 0.6);
-              background: linear-gradient(to right, #ff4500, #ff8c00, #ff4500);
-              -webkit-background-clip: text;
-              background-clip: text;
-            }
+          {trendingMovies.map((movie, idx) => (
+            <div
+              key={movie.id}
+              className="absolute w-[160px] h-[220px] md:w-[220px] md:h-[300px] rounded-2xl overflow-hidden transition-all duration-500 ease-out hover:scale-105 cursor-pointer"
+              style={getCardStyle(idx)}
+              onClick={() => onMovieClick(movie)}
+            >
+              <img
+                src={movie.poster || "/placeholder.svg"}
+                alt={movie.title}
+                className="w-full h-full object-cover pointer-events-none"
+              />
+
+              {movie.rating && movie.rating !== "not available" && (
+                <span className="absolute top-2 right-2 bg-black/70 text-white text-[10px] px-2 py-0.5 rounded-full font-semibold border border-white/20">
+                  ⭐ {movie.rating}
+                </span>
+              )}
+
+              <div className="absolute bottom-0 left-0 w-full p-3 bg-gradient-to-t from-black/90 to-transparent">
+                <h3 className="text-white text-sm font-bold truncate">{movie.title}</h3>
+                {movie.year && <p className="text-gray-300 text-[10px]">{movie.year}</p>}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Navigation Buttons */}
+        <button
+          onClick={handlePrev}
+          className="absolute left-4 md:left-10 top-[60%] transform -translate-y-1/2 z-30 hidden md:flex items-center justify-center w-12 h-12 rounded-full carousel-nav-button text-white"
+        >
+          <ChevronLeft className="w-6 h-6" />
+        </button>
+        <button
+          onClick={handleNext}
+          className="absolute right-4 md:right-10 top-[60%] transform -translate-y-1/2 z-30 hidden md:flex items-center justify-center w-12 h-12 rounded-full carousel-nav-button text-white"
+        >
+          <ChevronRight className="w-6 h-6" />
+        </button>
+
+        <style>{`
+          @keyframes carouselNavGlow {
+            0%, 100% { box-shadow: 0 0 15px rgba(34, 197, 94, 0.6), inset 0 0 20px rgba(255, 255, 255, 0.1); }
+            50% { box-shadow: 0 0 25px rgba(34, 197, 94, 0.8), inset 0 0 30px rgba(255, 255, 255, 0.15); }
+          }
+          .carousel-nav-button {
+            background: rgba(34, 197, 94, 0.15);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(34, 197, 94, 0.4);
+            transition: all 0.3s ease;
+            animation: carouselNavGlow 0.8s ease-in-out infinite;
+          }
+          .carousel-nav-button:hover {
+            background: rgba(34, 197, 94, 0.25);
+            backdrop-filter: blur(25px);
+            border: 1px solid rgba(34, 197, 94, 0.6);
+            transform: scale(1.1) translateY(-50%);
           }
         `}</style>
       </div>
-
-      {/* ✅ Counter Text */}
-      <p className="text-center text-green-400 text-sm mb-3 font-medium relative z-10">{totalMovieCount} Movie & Series Uploaded</p>
-
-      {/* ✅ 3D Card Carousel */}
-      <div
-        className="relative z-10 flex justify-center items-center h-[280px] md:h-[340px] w-full cursor-grab active:cursor-grabbing select-none"
-        style={{ touchAction: "pan-y", perspective: "1200px" }}
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseUp}
-        onWheel={handleMouseWheel}
-      >
-        {trendingMovies.map((movie, idx) => (
-          <div
-            key={movie.id}
-            className="absolute w-[160px] h-[220px] md:w-[220px] md:h-[300px] rounded-2xl overflow-hidden transition-all duration-500 ease-out hover:scale-105 cursor-pointer"
-            style={getCardStyle(idx)}
-            onClick={() => onMovieClick(movie)}
-          >
-            <img
-              src={movie.poster || "/placeholder.svg"}
-              alt={movie.title}
-              className="w-full h-full object-cover pointer-events-none"
-            />
-
-            {movie.rating && movie.rating !== "not available" && (
-              <span className="absolute top-2 right-2 bg-black/70 text-white text-[10px] px-2 py-0.5 rounded-full font-semibold border border-white/20">
-                ⭐ {movie.rating}
-              </span>
-            )}
-
-            <div className="absolute bottom-0 left-0 w-full p-3 bg-gradient-to-t from-black/90 to-transparent">
-              <h3 className="text-white text-sm font-bold truncate">{movie.title}</h3>
-              {movie.year && <p className="text-gray-300 text-[10px]">{movie.year}</p>}
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* ✅ Navigation Buttons */}
-      <button
-        onClick={handlePrev}
-        className="absolute left-4 md:left-10 top-[60%] transform -translate-y-1/2 z-30 hidden md:flex items-center justify-center w-12 h-12 rounded-full carousel-nav-button text-white"
-      >
-        <ChevronLeft className="w-6 h-6" />
-      </button>
-      <button
-        onClick={handleNext}
-        className="absolute right-4 md:right-10 top-[60%] transform -translate-y-1/2 z-30 hidden md:flex items-center justify-center w-12 h-12 rounded-full carousel-nav-button text-white"
-      >
-        <ChevronRight className="w-6 h-6" />
-      </button>
-
-      <style>{`
-        @keyframes carouselNavGlow {
-          0%, 100% { box-shadow: 0 0 15px rgba(34, 197, 94, 0.6), inset 0 0 20px rgba(255, 255, 255, 0.1); }
-          50% { box-shadow: 0 0 25px rgba(34, 197, 94, 0.8), inset 0 0 30px rgba(255, 255, 255, 0.15); }
-        }
-        .carousel-nav-button {
-          background: rgba(34, 197, 94, 0.15);
-          backdrop-filter: blur(20px);
-          border: 1px solid rgba(34, 197, 94, 0.4);
-          transition: all 0.3s ease;
-          animation: carouselNavGlow 0.8s ease-in-out infinite;
-        }
-        .carousel-nav-button:hover {
-          background: rgba(34, 197, 94, 0.25);
-          backdrop-filter: blur(25px);
-          border: 1px solid rgba(34, 197, 94, 0.6);
-          transform: scale(1.1) translateY(-50%);
-        }
-      `}</style>
     </section>
   )
 }

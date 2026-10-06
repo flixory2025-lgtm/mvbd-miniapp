@@ -150,9 +150,8 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
 
     let x = 0, z = 0, scale = 1, opacity = 1, shadow = '', rotateY = 0
 
-    // ✅ মোবাইলে আগের মান, ডেস্কটপে বড় স্পেসিং
     const isSmall = typeof window !== 'undefined' && window.innerWidth < 768
-    const xSpacing = isSmall ? 110 : 130      // ডেস্কটপে বাড়ানো হয়েছে
+    const xSpacing = isSmall ? 110 : 130
     const zSpacing = isSmall ? -70 : -70
 
     if (adjustedOffset >= 0 && adjustedOffset <= 1) {
@@ -199,9 +198,9 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
   return (
     <section className="relative py-2 overflow-hidden">
       
-      {/* ✅✅✅ ১. উপরের ব্যাকগ্রাউন্ড ✅✅✅ */}
+      {/* ✅✅✅ ১. উপরের ব্যাকগ্রাউন্ড: লোগোর পরেই সম্পূর্ণ কালো ✅✅✅ */}
       <div
-        className="absolute top-0 left-0 w-full h-[280px] z-0 pointer-events-none"
+        className="absolute top-0 left-0 w-full h-[200px] z-0 pointer-events-none"
         style={{
           backgroundImage: `url('${topBgImage}')`,
           backgroundSize: "cover",
@@ -209,7 +208,8 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
           backgroundRepeat: "no-repeat",
         }}
       >
-        <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/60 to-black" />
+        {/* ✅ উপর থেকে নিচে নামার সাথে সাথে সম্পূর্ণ কালো হয়ে যাওয়ার গ্রেডিয়েন্ট */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/80 to-black" />
       </div>
 
       {/* ✅ কনটেন্ট এরিয়া */}
@@ -282,7 +282,6 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
         </div>
 
         {/* ✅ 3D Card Carousel */}
-        {/* ✅ মোবাইলে height আগের মতোই, ডেস্কটপে বাড়ানো হয়েছে */}
         <div
           className="relative z-20 flex justify-center items-center h-[280px] md:h-[480px] w-full cursor-grab active:cursor-grabbing select-none"
           style={{ touchAction: "pan-y", perspective: "1400px" }}
@@ -297,7 +296,7 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
         >
           {trendingMovies.map((movie, idx) => (
             <div
-              // ✅ মোবাইলে আগের সাইজ, ডেস্কটপে বড় সাইজ
+              key={movie.id}
               className="absolute w-[140px] h-[190px] md:w-[240px] md:h-[360px] rounded-2xl overflow-hidden transition-all duration-500 ease-out hover:scale-105 cursor-pointer"
               style={getCardStyle(idx)}
               onClick={() => onMovieClick(movie)}

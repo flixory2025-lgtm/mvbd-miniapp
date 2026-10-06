@@ -126,7 +126,7 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
     else handlePrev()
   }
 
-  // ✅ 3D কার্ড পজিশন (ডেস্কটপে বড় সাইজ)
+  // ✅ 3D কার্ড পজিশন
   const getCardStyle = (index: number) => {
     const total = trendingMovies.length
     let offset = (index - currentIndex + total) % total
@@ -178,9 +178,9 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
   return (
     <section className="relative px-4 py-2 overflow-hidden">
       
-      {/* ✅✅✅ ১. উপরের ব্যাকগ্রাউন্ড (মাঝখান থেকে ডার্ক) ✅✅✅ */}
+      {/* ✅✅✅ ১. উপরের ব্যাকগ্রাউন্ড (লোগোর পর থেকে ডার্ক) ✅✅✅ */}
       <div
-        className="absolute top-0 left-0 w-full h-[450px] z-0 pointer-events-none"
+        className="absolute top-0 left-0 w-full h-[500px] z-0 pointer-events-none"
         style={{
           backgroundImage: "url('https://i.postimg.cc/tRMc5ZNM/198b2f01e73b905772279616eccc7c65.jpg')",
           backgroundSize: "cover",
@@ -188,10 +188,8 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
           backgroundRepeat: "no-repeat",
         }}
       >
-        {/* ✅ উপরে ওঠার সাথে সাথে কালো হওয়ার গ্রেডিয়েন্ট */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/85 to-transparent" />
-        {/* ✅ একদম মাঝখান থেকে নিচের দিকে কালো হওয়ার গ্রেডিয়েন্ট */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+        {/* ✅ লোগোর পর থেকে নিচে নামার সাথে সাথে একদম কালো হয়ে যাওয়ার গ্রেডিয়েন্ট */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/70 to-black" />
       </div>
 
       {/* ✅ কনটেন্ট এরিয়া */}
@@ -244,7 +242,7 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
         {/* Counter */}
         <p className="text-center text-green-400 text-sm mb-3 font-medium relative z-20">{totalMovieCount} Movie & Series Uploaded</p>
 
-        {/* ✅✅✅ ২. নিচের ব্যাকগ্রাউন্ড: মুভি পোস্টার ✅✅✅ */}
+        {/* ✅✅✅ ২. নিচের ব্যাকগ্রাউন্ড: মুভি পোস্টার (ব্লার ছাড়া, ক্লিন) ✅✅✅ */}
         <div
           className="absolute left-0 w-full z-0 pointer-events-none"
           style={{
@@ -256,17 +254,19 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
             backgroundRepeat: "no-repeat",
             opacity: bgOpacity,
             transition: "opacity 1s ease-in-out",
-            filter: "blur(10px) brightness(0.5)",
-            transform: "scale(1.1)",
+            // ✅ ব্লার সরিয়ে শুধু হালকা ডার্ক থিম রাখা হয়েছে
+            filter: "brightness(0.6) contrast(1.1)",
           }}
         >
-          <div className="absolute top-0 left-0 w-full h-40 bg-gradient-to-b from-black via-black/80 to-transparent" />
-          <div className="absolute bottom-0 left-0 w-full h-40 bg-gradient-to-t from-black via-black/80 to-transparent" />
+          {/* ✅ উপর থেকে নিচে কালো হওয়ার গ্রেডিয়েন্ট */}
+          <div className="absolute top-0 left-0 w-full h-40 bg-gradient-to-b from-black/80 via-black/40 to-transparent" />
+          {/* ✅ নিচ থেকে উপরে কালো হওয়ার গ্রেডিয়েন্ট */}
+          <div className="absolute bottom-0 left-0 w-full h-40 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
         </div>
 
-        {/* ✅ 3D Card Carousel (ডেস্কটপে বড়) */}
+        {/* 3D Card Carousel */}
         <div
-          className="relative z-20 flex justify-center items-center h-[280px] md:h-[380px] lg:h-[450px] w-full cursor-grab active:cursor-grabbing select-none"
+          className="relative z-20 flex justify-center items-center h-[280px] md:h-[340px] w-full cursor-grab active:cursor-grabbing select-none"
           style={{ touchAction: "pan-y", perspective: "1200px" }}
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
@@ -280,7 +280,7 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
           {trendingMovies.map((movie, idx) => (
             <div
               key={movie.id}
-              className="absolute w-[160px] h-[220px] md:w-[220px] md:h-[300px] lg:w-[280px] lg:h-[380px] rounded-2xl overflow-hidden transition-all duration-500 ease-out hover:scale-105 cursor-pointer"
+              className="absolute w-[160px] h-[220px] md:w-[220px] md:h-[300px] rounded-2xl overflow-hidden transition-all duration-500 ease-out hover:scale-105 cursor-pointer"
               style={getCardStyle(idx)}
               onClick={() => onMovieClick(movie)}
             >
@@ -291,14 +291,14 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
               />
 
               {movie.rating && movie.rating !== "not available" && (
-                <span className="absolute top-2 right-2 bg-black/70 text-white text-[10px] md:text-xs px-2 py-0.5 rounded-full font-semibold border border-white/20">
+                <span className="absolute top-2 right-2 bg-black/70 text-white text-[10px] px-2 py-0.5 rounded-full font-semibold border border-white/20">
                   ⭐ {movie.rating}
                 </span>
               )}
 
               <div className="absolute bottom-0 left-0 w-full p-3 bg-gradient-to-t from-black/90 to-transparent">
-                <h3 className="text-white text-sm md:text-base font-bold truncate">{movie.title}</h3>
-                {movie.year && <p className="text-gray-300 text-[10px] md:text-xs">{movie.year}</p>}
+                <h3 className="text-white text-sm font-bold truncate">{movie.title}</h3>
+                {movie.year && <p className="text-gray-300 text-[10px]">{movie.year}</p>}
               </div>
             </div>
           ))}

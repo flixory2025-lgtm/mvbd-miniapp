@@ -45,7 +45,7 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
     return () => stopAutoSlide()
   }, [startAutoSlide, stopAutoSlide])
 
-  // ✅ Tab Visibility (ব্রাউজার মিনিমাইজ করলে অটো স্লাইড বন্ধ)
+  // ✅ Tab Visibility
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (document.hidden) {
@@ -66,7 +66,7 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
       const timer = setTimeout(() => {
         setBgImage(currentMovie.poster || "")
         setBgOpacity(1)
-      }, 200) // ২০০ মিলিসেকেন্ড পর ইমেজ পরিবর্তন
+      }, 200)
       return () => clearTimeout(timer)
     }
   }, [currentIndex, trendingMovies])
@@ -92,11 +92,11 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
     setCurrentIndex((prev) => (prev + 1) % trendingMovies.length)
   }
 
-  // ✅ ইউজার Swipe (Touch)
+  // ✅ Touch Swipe
   const handleTouchStart = (e: React.TouchEvent) => {
     setIsDragging(true)
     startXRef.current = e.touches[0].clientX
-    maxDragRef.current = 200 // মোবাইলে ড্র্যাগের সর্বোচ্চ সীমা
+    maxDragRef.current = 200
     stopAutoSlide()
   }
 
@@ -109,18 +109,13 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
   const handleTouchEnd = () => {
     if (!isDragging) return
     setIsDragging(false)
-    
-    // ৫০ পিক্সেলের বেশি টানলে স্লাইড
-    if (dragDistance < -50) {
-      handleNext()
-    } else if (dragDistance > 50) {
-      handlePrev()
-    }
+    if (dragDistance < -50) handleNext()
+    else if (dragDistance > 50) handlePrev()
     setDragDistance(0)
     startAutoSlide()
   }
 
-  // ✅ ইউজার Swipe (Mouse)
+  // ✅ Mouse Swipe
   const handleMouseDown = (e: React.MouseEvent) => {
     setIsDragging(true)
     startXRef.current = e.clientX
@@ -137,12 +132,8 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
   const handleMouseUp = () => {
     if (!isDragging) return
     setIsDragging(false)
-    
-    if (dragDistance < -50) {
-      handleNext()
-    } else if (dragDistance > 50) {
-      handlePrev()
-    }
+    if (dragDistance < -50) handleNext()
+    else if (dragDistance > 50) handlePrev()
     setDragDistance(0)
     startAutoSlide()
   }
@@ -150,11 +141,8 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
   // ✅ Mouse Wheel
   const handleMouseWheel = (e: React.WheelEvent) => {
     if (isDragging) return
-    if (e.deltaY > 0) {
-      handleNext()
-    } else {
-      handlePrev()
-    }
+    if (e.deltaY > 0) handleNext()
+    else handlePrev()
   }
 
   // ✅ 3D কার্ড পজিশন লজিক
@@ -163,11 +151,9 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
     let offset = (index - currentIndex + total) % total
     if (offset > total / 2) offset -= total
 
-    // ড্র্যাগের সময় progress হিসাব
     const progress = maxDragRef.current > 0 ? dragDistance / maxDragRef.current : 0
     const adjustedOffset = offset + progress
 
-    // ৫টি কার্ডের জন্য সীমা
     if (adjustedOffset < -2.5 || adjustedOffset > 2.5) {
       return {
         opacity: 0,
@@ -181,46 +167,26 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
 
     if (adjustedOffset >= 0 && adjustedOffset <= 1) {
       const p = adjustedOffset
-      x = 130 * p
-      z = -80 * p
-      scale = 1 - (0.15 * p)
-      opacity = 1 - (0.3 * p)
+      x = 130 * p; z = -80 * p; scale = 1 - (0.15 * p); opacity = 1 - (0.3 * p)
       shadow = p > 0.5 ? '0 15px 30px rgba(0,0,0,0.5)' : '0 30px 60px rgba(0,0,0,0.9)'
       rotateY = 5 * p
     } else if (adjustedOffset > 1 && adjustedOffset <= 2) {
       const p = adjustedOffset - 1
-      x = 130 + (80 * p)
-      z = -80 - (60 * p)
-      scale = 0.85 - (0.15 * p)
-      opacity = 0.7 - (0.3 * p)
-      shadow = '0 10px 20px rgba(0,0,0,0.4)'
-      rotateY = 5 + (3 * p)
+      x = 130 + (80 * p); z = -80 - (60 * p); scale = 0.85 - (0.15 * p); opacity = 0.7 - (0.3 * p)
+      shadow = '0 10px 20px rgba(0,0,0,0.4)'; rotateY = 5 + (3 * p)
     } else if (adjustedOffset < 0 && adjustedOffset >= -1) {
       const p = Math.abs(adjustedOffset)
-      x = -130 * p
-      z = -80 * p
-      scale = 1 - (0.15 * p)
-      opacity = 1 - (0.3 * p)
+      x = -130 * p; z = -80 * p; scale = 1 - (0.15 * p); opacity = 1 - (0.3 * p)
       shadow = p > 0.5 ? '0 15px 30px rgba(0,0,0,0.5)' : '0 30px 60px rgba(0,0,0,0.9)'
       rotateY = -5 * p
     } else if (adjustedOffset < -1 && adjustedOffset >= -2) {
       const p = Math.abs(adjustedOffset) - 1
-      x = -130 - (80 * p)
-      z = -80 - (60 * p)
-      scale = 0.85 - (0.15 * p)
-      opacity = 0.7 - (0.3 * p)
-      shadow = '0 10px 20px rgba(0,0,0,0.4)'
-      rotateY = -5 - (3 * p)
+      x = -130 - (80 * p); z = -80 - (60 * p); scale = 0.85 - (0.15 * p); opacity = 0.7 - (0.3 * p)
+      shadow = '0 10px 20px rgba(0,0,0,0.4)'; rotateY = -5 - (3 * p)
     } else {
-      x = adjustedOffset > 0 ? 300 : -300
-      z = -250
-      scale = 0.5
-      opacity = 0
-      shadow = 'none'
-      rotateY = 0
+      x = adjustedOffset > 0 ? 300 : -300; z = -250; scale = 0.5; opacity = 0; shadow = 'none'; rotateY = 0
     }
 
-    // মেইন কার্ড (offset 0) সবসময় মাঝখানে
     if (offset === 0 && Math.abs(progress) < 0.05) {
       x = 0; z = 0; scale = 1; opacity = 1; rotateY = 0
       shadow = '0 30px 60px rgba(0, 0, 0, 0.9), 0 0 30px rgba(255, 255, 255, 0.05)'
@@ -228,30 +194,35 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
 
     return {
       transform: `translateX(${x}px) translateZ(${z}px) scale(${scale}) rotateY(${rotateY}deg)`,
-      opacity,
-      boxShadow: shadow,
+      opacity, boxShadow: shadow,
       zIndex: Math.round(100 - Math.abs(adjustedOffset) * 10),
     }
   }
 
   return (
-    <section className="px-4 py-2 overflow-hidden">
-      {/* ✅ Dynamic Background with Smooth Fade */}
-      <div
-        className="absolute inset-0 -top-20 flex justify-center transition-opacity duration-1000"
+    <section className="relative px-4 py-2 overflow-hidden">
+      
+      {/* ✅✅✅ Dynamic Background Section ✅✅✅ */}
+      <div 
+        className="absolute inset-0 z-0 pointer-events-none"
         style={{
-          opacity: bgOpacity,
           backgroundImage: `url('${bgImage}')`,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          backgroundRepeat: "no-repeat",
-          zIndex: 0,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+          opacity: bgOpacity,
+          transition: 'opacity 1s ease-in-out',
+          filter: 'blur(8px) brightness(0.4)', // ব্লার ও ডার্ক
         }}
       >
-        <div className="w-full h-96 bg-gradient-to-b from-black/60 via-black/90 to-black rounded-b-3xl" />
+        {/* ✅ উপরে ওঠার সাথে সাথে কালো হয়ে যাওয়ার গ্রেডিয়েন্ট */}
+        <div className="absolute top-0 left-0 w-full h-40 bg-gradient-to-b from-black via-black/80 to-transparent" />
+        {/* ✅ নিচে নামার সাথে সাথে কালো হয়ে যাওয়ার গ্রেডিয়েন্ট */}
+        <div className="absolute bottom-0 left-0 w-full h-40 bg-gradient-to-t from-black via-black/80 to-transparent" />
       </div>
 
-      <div className="relative flex justify-center -mt-4 mb-0 z-10">
+      {/* ✅ Logo */}
+      <div className="relative z-10 flex justify-center -mt-4 mb-0">
         <img
           src="https://i.postimg.cc/Bn4cPRwz/20288-removebg-preview.png"
           alt="MoviesVerseBD Logo"
@@ -259,7 +230,8 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
         />
       </div>
 
-      <div className="relative z-20 -mt-4 mb-1 flex flex-col items-center justify-center">
+      {/* ✅ Trending Now Title */}
+      <div className="relative z-10 -mt-4 mb-1 flex flex-col items-center justify-center">
         <h2
           className="text-xl font-bold text-center tracking-wider animate-pulse"
           style={{
@@ -293,11 +265,12 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
         `}</style>
       </div>
 
-      <p className="text-center text-green-400 text-sm mb-3 font-medium relative z-20">{totalMovieCount} Movie & Series Uploaded</p>
+      {/* ✅ Counter Text */}
+      <p className="text-center text-green-400 text-sm mb-3 font-medium relative z-10">{totalMovieCount} Movie & Series Uploaded</p>
 
-      {/* ✅ 3D Card Carousel Container */}
+      {/* ✅ 3D Card Carousel */}
       <div
-        className="relative z-20 flex justify-center items-center h-[280px] md:h-[340px] w-full cursor-grab active:cursor-grabbing select-none"
+        className="relative z-10 flex justify-center items-center h-[280px] md:h-[340px] w-full cursor-grab active:cursor-grabbing select-none"
         style={{ touchAction: "pan-y", perspective: "1200px" }}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
@@ -321,14 +294,12 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
               className="w-full h-full object-cover pointer-events-none"
             />
 
-            {/* Rating Badge */}
             {movie.rating && movie.rating !== "not available" && (
               <span className="absolute top-2 right-2 bg-black/70 text-white text-[10px] px-2 py-0.5 rounded-full font-semibold border border-white/20">
                 ⭐ {movie.rating}
               </span>
             )}
 
-            {/* Title & Year */}
             <div className="absolute bottom-0 left-0 w-full p-3 bg-gradient-to-t from-black/90 to-transparent">
               <h3 className="text-white text-sm font-bold truncate">{movie.title}</h3>
               {movie.year && <p className="text-gray-300 text-[10px]">{movie.year}</p>}
@@ -337,7 +308,7 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
         ))}
       </div>
 
-      {/* Navigation Buttons (Desktop Only) */}
+      {/* ✅ Navigation Buttons */}
       <button
         onClick={handlePrev}
         className="absolute left-4 md:left-10 top-[60%] transform -translate-y-1/2 z-30 hidden md:flex items-center justify-center w-12 h-12 rounded-full carousel-nav-button text-white"
@@ -353,12 +324,8 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
 
       <style>{`
         @keyframes carouselNavGlow {
-          0%, 100% {
-            box-shadow: 0 0 15px rgba(34, 197, 94, 0.6), inset 0 0 20px rgba(255, 255, 255, 0.1);
-          }
-          50% {
-            box-shadow: 0 0 25px rgba(34, 197, 94, 0.8), inset 0 0 30px rgba(255, 255, 255, 0.15);
-          }
+          0%, 100% { box-shadow: 0 0 15px rgba(34, 197, 94, 0.6), inset 0 0 20px rgba(255, 255, 255, 0.1); }
+          50% { box-shadow: 0 0 25px rgba(34, 197, 94, 0.8), inset 0 0 30px rgba(255, 255, 255, 0.15); }
         }
         .carousel-nav-button {
           background: rgba(34, 197, 94, 0.15);
@@ -372,13 +339,6 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
           backdrop-filter: blur(25px);
           border: 1px solid rgba(34, 197, 94, 0.6);
           transform: scale(1.1) translateY(-50%);
-        }
-        .scrollbar-hide::-webkit-scrollbar {
-          display: none;
-        }
-        .scrollbar-hide {
-          -ms-overflow-style: none;
-          scrollbar-width: none;
         }
       `}</style>
     </section>

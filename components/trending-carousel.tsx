@@ -196,11 +196,12 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
     : "https://i.postimg.cc/7hLqB21s/Netflix-all-movies-and-series-featured-image.jpg"
 
   return (
-    <section className="relative py-2 overflow-hidden">
+    // ✅ এখানে -mt-6 যোগ করা হয়েছে, যাতে সেকশনটি আরেকটু উপরে ওঠে
+    <section className="relative py-2 overflow-hidden -mt-6">
       
-      {/* ✅✅✅ ১. উপরের ব্যাকগ্রাউন্ড: লোগোর পরেই সম্পূর্ণ কালো ✅✅✅ */}
+      {/* ✅ উপরের ব্যাকগ্রাউন্ড: উচ্চতা 200px থেকে 160px করা হয়েছে */}
       <div
-        className="absolute top-0 left-0 w-full h-[200px] z-0 pointer-events-none"
+        className="absolute top-0 left-0 w-full h-[160px] z-0 pointer-events-none"
         style={{
           backgroundImage: `url('${topBgImage}')`,
           backgroundSize: "cover",
@@ -208,15 +209,14 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
           backgroundRepeat: "no-repeat",
         }}
       >
-        {/* ✅ উপর থেকে নিচে নামার সাথে সাথে সম্পূর্ণ কালো হয়ে যাওয়ার গ্রেডিয়েন্ট */}
         <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/80 to-black" />
       </div>
 
       {/* ✅ কনটেন্ট এরিয়া */}
       <div className="relative z-10 px-4">
         
-        {/* Logo */}
-        <div className="relative flex justify-center -mt-4 mb-0">
+        {/* Logo: -mt-4 থেকে -mt-8 করা হয়েছে */}
+        <div className="relative flex justify-center -mt-8 mb-0">
           <img
             src="https://i.postimg.cc/Bn4cPRwz/20288-removebg-preview.png"
             alt="MoviesVerseBD Logo"
@@ -262,7 +262,7 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
         {/* Counter */}
         <p className="text-center text-green-400 text-sm mb-3 font-medium relative z-20">{totalMovieCount} Movie & Series Uploaded</p>
 
-        {/* ✅✅✅ ২. নিচের ব্যাকগ্রাউন্ড: মুভি পোস্টার ✅✅✅ */}
+        {/* নিচের ব্যাকগ্রাউন্ড: মুভি পোস্টার */}
         <div
           className="absolute left-0 w-full z-0 pointer-events-none"
           style={{
@@ -281,7 +281,7 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
           <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-transparent to-black/60" />
         </div>
 
-        {/* ✅ 3D Card Carousel */}
+        {/* 3D Card Carousel */}
         <div
           className="relative z-20 flex justify-center items-center h-[280px] md:h-[480px] w-full cursor-grab active:cursor-grabbing select-none"
           style={{ touchAction: "pan-y", perspective: "1400px" }}

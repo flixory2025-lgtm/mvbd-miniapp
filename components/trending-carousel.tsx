@@ -27,9 +27,7 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
 
   // ✅ মোবাইল ডিটেক্ট
   useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768)
-    }
+    const checkMobile = () => setIsMobile(window.innerWidth < 768)
     checkMobile()
     window.addEventListener("resize", checkMobile)
     return () => window.removeEventListener("resize", checkMobile)
@@ -138,6 +136,7 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
   }
 
   // ✅ 3D কার্ড পজিশন
+  // ডেস্কটপে x এর মান কমানো হয়েছে যাতে ৮টি কার্ড একসাথে ফিট হয়
   const getCardStyle = (index: number) => {
     const total = trendingMovies.length
     let offset = (index - currentIndex + total) % total
@@ -146,32 +145,38 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
     const progress = maxDragRef.current > 0 ? dragDistance / maxDragRef.current : 0
     const adjustedOffset = offset + progress
 
-    if (adjustedOffset < -2.5 || adjustedOffset > 2.5) {
+    if (adjustedOffset < -4 || adjustedOffset > 4) {
       return { opacity: 0, transform: 'scale(0)', pointerEvents: 'none' as const, zIndex: 0 }
     }
 
     let x = 0, z = 0, scale = 1, opacity = 1, shadow = '', rotateY = 0
 
+    // ডেস্কটপে x স্পেসিং কম, মোবাইলে বেশি
+    const xSpacing = typeof window !== 'undefined' && window.innerWidth < 768 ? 110 : 90
+    const zSpacing = typeof window !== 'undefined' && window.innerWidth < 768 ? -70 : -55
+
     if (adjustedOffset >= 0 && adjustedOffset <= 1) {
       const p = adjustedOffset
-      x = 130 * p; z = -80 * p; scale = 1 - (0.15 * p); opacity = 1 - (0.3 * p)
+      x = xSpacing * p; z = zSpacing * p; scale = 1 - (0.15 * p); opacity = 1 - (0.3 * p)
       shadow = p > 0.5 ? '0 15px 30px rgba(0,0,0,0.5)' : '0 30px 60px rgba(0,0,0,0.9)'
       rotateY = 5 * p
-    } else if (adjustedOffset > 1 && adjustedOffset <= 2) {
+    } else if (adjustedOffset > 1 && adjustedOffset <= 4) {
       const p = adjustedOffset - 1
-      x = 130 + (80 * p); z = -80 - (60 * p); scale = 0.85 - (0.15 * p); opacity = 0.7 - (0.3 * p)
-      shadow = '0 10px 20px rgba(0,0,0,0.4)'; rotateY = 5 + (3 * p)
+      const stepX = xSpacing + (xSpacing * 0.7 * p)
+      x = stepX; z = zSpacing - (zSpacing * 0.6 * p); scale = 0.85 - (0.12 * p); opacity = 0.7 - (0.2 * p)
+      shadow = '0 10px 20px rgba(0,0,0,0.4)'; rotateY = 5 + (2 * p)
     } else if (adjustedOffset < 0 && adjustedOffset >= -1) {
       const p = Math.abs(adjustedOffset)
-      x = -130 * p; z = -80 * p; scale = 1 - (0.15 * p); opacity = 1 - (0.3 * p)
+      x = -xSpacing * p; z = zSpacing * p; scale = 1 - (0.15 * p); opacity = 1 - (0.3 * p)
       shadow = p > 0.5 ? '0 15px 30px rgba(0,0,0,0.5)' : '0 30px 60px rgba(0,0,0,0.9)'
       rotateY = -5 * p
-    } else if (adjustedOffset < -1 && adjustedOffset >= -2) {
+    } else if (adjustedOffset < -1 && adjustedOffset >= -4) {
       const p = Math.abs(adjustedOffset) - 1
-      x = -130 - (80 * p); z = -80 - (60 * p); scale = 0.85 - (0.15 * p); opacity = 0.7 - (0.3 * p)
-      shadow = '0 10px 20px rgba(0,0,0,0.4)'; rotateY = -5 - (3 * p)
+      const stepX = -xSpacing - (xSpacing * 0.7 * p)
+      x = stepX; z = zSpacing - (zSpacing * 0.6 * p); scale = 0.85 - (0.12 * p); opacity = 0.7 - (0.2 * p)
+      shadow = '0 10px 20px rgba(0,0,0,0.4)'; rotateY = -5 - (2 * p)
     } else {
-      x = adjustedOffset > 0 ? 300 : -300; z = -250; scale = 0.5; opacity = 0; shadow = 'none'; rotateY = 0
+      x = adjustedOffset > 0 ? 600 : -600; z = -400; scale = 0.4; opacity = 0; shadow = 'none'; rotateY = 0
     }
 
     if (offset === 0 && Math.abs(progress) < 0.05) {
@@ -186,15 +191,16 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
     }
   }
 
-  // ✅ মোবাইল ও ডেস্কটপের জন্য আলাদা ইমেজ
+  // ✅ মোবাইল/ডেস্কটপ ইমেজ
   const topBgImage = isMobile
-    ? "https://i.postimg.cc/tRMc5ZNM/198b2f01e73b905772279616eccc7c65.jpg"
+    ? "https://i.postimg.cc/Z0knXCzJ/12dd71216c632c2350be8f6a953a0a2c.jpg"
     : "https://i.postimg.cc/7hLqB21s/Netflix-all-movies-and-series-featured-image.jpg"
 
   return (
-    <section className="relative px-4 py-2 overflow-hidden">
+    // ✅ পুরো সেকশন থেকে padding সরিয়ে দেওয়া হয়েছে যাতে ইমেজ ফুল হয়
+    <section className="relative py-2 overflow-hidden">
       
-      {/* ✅✅✅ ১. উপরের ব্যাকগ্রাউন্ড: মোবাইল/ডেস্কটপের জন্য আলাদা ✅✅✅ */}
+      {/* ✅✅✅ ১. উপরের ব্যাকগ্রাউন্ড: হেডারের ঠিক নিচ থেকে শুরু ✅✅✅ */}
       <div
         className="absolute top-0 left-0 w-full h-[280px] z-0 pointer-events-none"
         style={{
@@ -202,9 +208,6 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
           backgroundSize: "cover",
           backgroundPosition: "center",
           backgroundRepeat: "no-repeat",
-          marginLeft: "-1rem",
-          marginRight: "-1rem",
-          width: "calc(100% + 2rem)",
         }}
       >
         {/* ✅ লোগোর পর থেকে সম্পূর্ণ কালো হয়ে যাওয়ার গ্রেডিয়েন্ট */}
@@ -212,7 +215,7 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
       </div>
 
       {/* ✅ কনটেন্ট এরিয়া */}
-      <div className="relative z-10">
+      <div className="relative z-10 px-4">
         
         {/* Logo */}
         <div className="relative flex justify-center -mt-4 mb-0">
@@ -261,7 +264,7 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
         {/* Counter */}
         <p className="text-center text-green-400 text-sm mb-3 font-medium relative z-20">{totalMovieCount} Movie & Series Uploaded</p>
 
-        {/* ✅✅✅ ২. নিচের ব্যাকগ্রাউন্ড: মুভি পোস্টার (ব্লার ছাড়া, ক্লিন) ✅✅✅ */}
+        {/* ✅✅✅ ২. নিচের ব্যাকগ্রাউন্ড: মুভি পোস্টার (সবদিকে ডার্ক হয়ে যাবে) ✅✅✅ */}
         <div
           className="absolute left-0 w-full z-0 pointer-events-none"
           style={{
@@ -274,19 +277,17 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
             opacity: bgOpacity,
             transition: "opacity 1s ease-in-out",
             filter: "brightness(0.6) contrast(1.1)",
-            marginLeft: "-1rem",
-            marginRight: "-1rem",
-            width: "calc(100% + 2rem)",
           }}
         >
-          <div className="absolute top-0 left-0 w-full h-40 bg-gradient-to-b from-black/80 via-black/40 to-transparent" />
-          <div className="absolute bottom-0 left-0 w-full h-40 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+          {/* ✅ ওপরে, নিচে, বামে, ডানে — সবদিকে ডার্ক গ্রেডিয়েন্ট */}
+          <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-transparent to-black/80" />
+          <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-transparent to-black/60" />
         </div>
 
         {/* 3D Card Carousel */}
         <div
-          className="relative z-20 flex justify-center items-center h-[280px] md:h-[340px] w-full cursor-grab active:cursor-grabbing select-none"
-          style={{ touchAction: "pan-y", perspective: "1200px" }}
+          className="relative z-20 flex justify-center items-center h-[280px] md:h-[360px] w-full cursor-grab active:cursor-grabbing select-none"
+          style={{ touchAction: "pan-y", perspective: "1400px" }}
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
@@ -299,7 +300,7 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
           {trendingMovies.map((movie, idx) => (
             <div
               key={movie.id}
-              className="absolute w-[160px] h-[220px] md:w-[220px] md:h-[300px] rounded-2xl overflow-hidden transition-all duration-500 ease-out hover:scale-105 cursor-pointer"
+              className="absolute w-[140px] h-[190px] md:w-[170px] md:h-[240px] rounded-2xl overflow-hidden transition-all duration-500 ease-out hover:scale-105 cursor-pointer"
               style={getCardStyle(idx)}
               onClick={() => onMovieClick(movie)}
             >
@@ -310,14 +311,14 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
               />
 
               {movie.rating && movie.rating !== "not available" && (
-                <span className="absolute top-2 right-2 bg-black/70 text-white text-[10px] px-2 py-0.5 rounded-full font-semibold border border-white/20">
+                <span className="absolute top-1.5 right-1.5 bg-black/70 text-white text-[9px] md:text-[10px] px-1.5 py-0.5 rounded-full font-semibold border border-white/20">
                   ⭐ {movie.rating}
                 </span>
               )}
 
-              <div className="absolute bottom-0 left-0 w-full p-3 bg-gradient-to-t from-black/90 to-transparent">
-                <h3 className="text-white text-sm font-bold truncate">{movie.title}</h3>
-                {movie.year && <p className="text-gray-300 text-[10px]">{movie.year}</p>}
+              <div className="absolute bottom-0 left-0 w-full p-2 bg-gradient-to-t from-black/90 to-transparent">
+                <h3 className="text-white text-[10px] md:text-xs font-bold truncate">{movie.title}</h3>
+                {movie.year && <p className="text-gray-300 text-[8px] md:text-[9px]">{movie.year}</p>}
               </div>
             </div>
           ))}
@@ -326,15 +327,15 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
         {/* Navigation Buttons */}
         <button
           onClick={handlePrev}
-          className="absolute left-4 md:left-10 top-[60%] transform -translate-y-1/2 z-30 hidden md:flex items-center justify-center w-12 h-12 rounded-full carousel-nav-button text-white"
+          className="absolute left-2 md:left-4 top-[60%] transform -translate-y-1/2 z-30 hidden md:flex items-center justify-center w-10 h-10 rounded-full carousel-nav-button text-white"
         >
-          <ChevronLeft className="w-6 h-6" />
+          <ChevronLeft className="w-5 h-5" />
         </button>
         <button
           onClick={handleNext}
-          className="absolute right-4 md:right-10 top-[60%] transform -translate-y-1/2 z-30 hidden md:flex items-center justify-center w-12 h-12 rounded-full carousel-nav-button text-white"
+          className="absolute right-2 md:right-4 top-[60%] transform -translate-y-1/2 z-30 hidden md:flex items-center justify-center w-10 h-10 rounded-full carousel-nav-button text-white"
         >
-          <ChevronRight className="w-6 h-6" />
+          <ChevronRight className="w-5 h-5" />
         </button>
 
         <style>{`

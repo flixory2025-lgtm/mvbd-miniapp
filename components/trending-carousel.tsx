@@ -178,18 +178,22 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
   return (
     <section className="relative px-4 py-2 overflow-hidden">
       
-      {/* ✅✅✅ ১. উপরের ব্যাকগ্রাউন্ড (শুধু লোগোর উপরে থাকবে, লোগোর পরেই শেষ) ✅✅✅ */}
+      {/* ✅✅✅ ১. উপরের ব্যাকগ্রাউন্ড: লোগোর পর থেকে ডার্ক, Trending Now এর আগে শেষ ✅✅✅ */}
       <div
-        className="absolute top-0 left-0 w-full h-[220px] z-0 pointer-events-none"
+        className="absolute top-0 left-0 w-full h-[280px] z-0 pointer-events-none"
         style={{
           backgroundImage: "url('https://i.postimg.cc/7hLqB21s/Netflix-all-movies-and-series-featured-image.jpg')",
           backgroundSize: "cover",
           backgroundPosition: "center",
           backgroundRepeat: "no-repeat",
+          // ✅ বাম-ডান গ্যাপ ছাড়া ফুল করতে negative margin
+          marginLeft: "-1rem",
+          marginRight: "-1rem",
+          width: "calc(100% + 2rem)",
         }}
       >
-        {/* ✅ উপর থেকে নিচে নামার সাথে সাথে একদম কালো হয়ে যাওয়ার গ্রেডিয়েন্ট */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/80 to-black" />
+        {/* ✅ উপরে হালকা, লোগোর পর থেকে সম্পূর্ণ কালো হয়ে যাওয়ার গ্রেডিয়েন্ট */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/60 to-black" />
       </div>
 
       {/* ✅ কনটেন্ট এরিয়া */}
@@ -242,7 +246,7 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
         {/* Counter */}
         <p className="text-center text-green-400 text-sm mb-3 font-medium relative z-20">{totalMovieCount} Movie & Series Uploaded</p>
 
-        {/* ✅✅✅ ২. নিচের ব্যাকগ্রাউন্ড: মুভি পোস্টার (ব্লার ছাড়া, ক্লিন) ✅✅✅ */}
+        {/* ✅✅✅ ২. নিচের ব্যাকগ্রাউন্ড: মুভি পোস্টার (ফুল ক্রপ, বাম-ডান গ্যাপ ছাড়া) ✅✅✅ */}
         <div
           className="absolute left-0 w-full z-0 pointer-events-none"
           style={{
@@ -255,9 +259,15 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
             opacity: bgOpacity,
             transition: "opacity 1s ease-in-out",
             filter: "brightness(0.6) contrast(1.1)",
+            // ✅ বাম-ডান গ্যাপ ছাড়া ফুল করার জন্য
+            marginLeft: "-1rem",
+            marginRight: "-1rem",
+            width: "calc(100% + 2rem)",
           }}
         >
+          {/* ✅ উপর থেকে নিচে কালো হওয়ার গ্রেডিয়েন্ট */}
           <div className="absolute top-0 left-0 w-full h-40 bg-gradient-to-b from-black/80 via-black/40 to-transparent" />
+          {/* ✅ নিচ থেকে উপরে কালো হওয়ার গ্রেডিয়েন্ট */}
           <div className="absolute bottom-0 left-0 w-full h-40 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
         </div>
 

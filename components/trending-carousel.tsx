@@ -182,7 +182,7 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
       <div
         className="absolute top-0 left-0 w-full h-[500px] z-0 pointer-events-none"
         style={{
-          backgroundImage: "url('https://i.postimg.cc/tRMc5ZNM/198b2f01e73b905772279616eccc7c65.jpg')",
+          backgroundImage: "url('https://i.postimg.cc/7hLqB21s/Netflix-all-movies-and-series-featured-image.jpg')",
           backgroundSize: "cover",
           backgroundPosition: "center",
           backgroundRepeat: "no-repeat",

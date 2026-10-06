@@ -16,6 +16,7 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
   const [dragDistance, setDragDistance] = useState(0)
   const [bgImage, setBgImage] = useState("")
   const [bgOpacity, setBgOpacity] = useState(1)
+  const [isMobile, setIsMobile] = useState(false)
   
   const startXRef = useRef(0)
   const maxDragRef = useRef(0)
@@ -23,6 +24,16 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
   
   const trendingMovies = movies.filter((m) => trendingIds.includes(m.id))
   const totalMovieCount = movies.length
+
+  // ✅ মোবাইল ডিটেক্ট
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768)
+    }
+    checkMobile()
+    window.addEventListener("resize", checkMobile)
+    return () => window.removeEventListener("resize", checkMobile)
+  }, [])
 
   // ✅ বর্তমান কার্ডের পোস্টার ব্যাকগ্রাউন্ডে সেট করা
   useEffect(() => {
@@ -175,24 +186,28 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
     }
   }
 
+  // ✅ মোবাইল ও ডেস্কটপের জন্য আলাদা ইমেজ
+  const topBgImage = isMobile
+    ? "https://i.postimg.cc/Z0knXCzJ/12dd71216c632c2350be8f6a953a0a2c.jpg"
+    : "https://i.postimg.cc/7hLqB21s/Netflix-all-movies-and-series-featured-image.jpg"
+
   return (
     <section className="relative px-4 py-2 overflow-hidden">
       
-      {/* ✅✅✅ ১. উপরের ব্যাকগ্রাউন্ড: লোগোর পর থেকে ডার্ক, Trending Now এর আগে শেষ ✅✅✅ */}
+      {/* ✅✅✅ ১. উপরের ব্যাকগ্রাউন্ড: মোবাইল/ডেস্কটপের জন্য আলাদা ✅✅✅ */}
       <div
         className="absolute top-0 left-0 w-full h-[280px] z-0 pointer-events-none"
         style={{
-          backgroundImage: "url('https://i.postimg.cc/7hLqB21s/Netflix-all-movies-and-series-featured-image.jpg')",
+          backgroundImage: `url('${topBgImage}')`,
           backgroundSize: "cover",
           backgroundPosition: "center",
           backgroundRepeat: "no-repeat",
-          // ✅ বাম-ডান গ্যাপ ছাড়া ফুল করতে negative margin
           marginLeft: "-1rem",
           marginRight: "-1rem",
           width: "calc(100% + 2rem)",
         }}
       >
-        {/* ✅ উপরে হালকা, লোগোর পর থেকে সম্পূর্ণ কালো হয়ে যাওয়ার গ্রেডিয়েন্ট */}
+        {/* ✅ লোগোর পর থেকে সম্পূর্ণ কালো হয়ে যাওয়ার গ্রেডিয়েন্ট */}
         <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/60 to-black" />
       </div>
 
@@ -246,7 +261,7 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
         {/* Counter */}
         <p className="text-center text-green-400 text-sm mb-3 font-medium relative z-20">{totalMovieCount} Movie & Series Uploaded</p>
 
-        {/* ✅✅✅ ২. নিচের ব্যাকগ্রাউন্ড: মুভি পোস্টার (ফুল ক্রপ, বাম-ডান গ্যাপ ছাড়া) ✅✅✅ */}
+        {/* ✅✅✅ ২. নিচের ব্যাকগ্রাউন্ড: মুভি পোস্টার (ব্লার ছাড়া, ক্লিন) ✅✅✅ */}
         <div
           className="absolute left-0 w-full z-0 pointer-events-none"
           style={{
@@ -259,15 +274,12 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
             opacity: bgOpacity,
             transition: "opacity 1s ease-in-out",
             filter: "brightness(0.6) contrast(1.1)",
-            // ✅ বাম-ডান গ্যাপ ছাড়া ফুল করার জন্য
             marginLeft: "-1rem",
             marginRight: "-1rem",
             width: "calc(100% + 2rem)",
           }}
         >
-          {/* ✅ উপর থেকে নিচে কালো হওয়ার গ্রেডিয়েন্ট */}
           <div className="absolute top-0 left-0 w-full h-40 bg-gradient-to-b from-black/80 via-black/40 to-transparent" />
-          {/* ✅ নিচ থেকে উপরে কালো হওয়ার গ্রেডিয়েন্ট */}
           <div className="absolute bottom-0 left-0 w-full h-40 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
         </div>
 

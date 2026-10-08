@@ -8,22 +8,6 @@ import {
 } from "react"
 import { createPortal } from "react-dom"
 
-import { useAuth } from "@/components/auth-provider"
-import { createPendingPaymentRequest } from "@/lib/payment-requests"
-
-import {
-  PAYMENT_NUMBER,
-  SUBSCRIPTION_PLANS,
-  type SubscriptionPlan,
-  type FreeAccessItem,
-} from "@/lib/subscription-plans"
-
-type Plan = SubscriptionPlan
-
-interface SeriesSectionProps {
-  onOpenMeBook?: () => void
-}
-
 /* =========================================================
    VIEWPORT MODAL
 ========================================================= */
@@ -71,42 +55,24 @@ function ViewportModal({
    MAIN COMPONENT
 ========================================================= */
 
-export default function SeriesSection({
-  onOpenMeBook,
-}: SeriesSectionProps) {
-  const { user, profile } = useAuth()
-
-  const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null)
+export default function SeriesSection() {
+  const [openFaq, setOpenFaq] = useState<number | null>(0)
+  const [selectedPlan, setSelectedPlan] = useState<any>(null)
   const [showPayment, setShowPayment] = useState(false)
-  const [showFreeAccess, setShowFreeAccess] = useState(false)
-  const [showProcessing, setShowProcessing] = useState(false)
   const [showSuccess, setShowSuccess] = useState(false)
   const [transactionId, setTransactionId] = useState("")
-  const [progress, setProgress] = useState(0)
-  const [copied, setCopied] = useState(false)
   const [error, setError] = useState("")
-  const [openFaq, setOpenFaq] = useState<number | null>(0) // First FAQ open by default
+  const [copied, setCopied] = useState(false)
 
-  const processingTimerRef = useRef<number | null>(null)
-  const successTimerRef = useRef<number | null>(null)
+  /* =======================================================
+     HANDLERS
+  ======================================================= */
 
-  useEffect(() => {
-    return () => {
-      if (processingTimerRef.current) window.clearInterval(processingTimerRef.current)
-      if (successTimerRef.current) window.clearTimeout(successTimerRef.current)
-    }
-  }, [])
-
-  const openPlan = (plan: Plan) => {
+  const openPlan = (plan: any) => {
     setSelectedPlan(plan)
     setError("")
     setTransactionId("")
     setCopied(false)
-    if (plan.planId === "trial") {
-      setShowFreeAccess(true)
-      setShowPayment(false)
-      return
-    }
     setShowPayment(true)
   }
 
@@ -115,101 +81,30 @@ export default function SeriesSection({
     setError("")
   }
 
-  const closeFreeAccess = () => setShowFreeAccess(false)
-
   const copyNumber = async () => {
     try {
-      await navigator.clipboard.writeText(PAYMENT_NUMBER)
+      await navigator.clipboard.writeText("01700000000")
       setCopied(true)
-      window.setTimeout(() => setCopied(false), 1800)
+      setTimeout(() => setCopied(false), 1800)
     } catch {
       setCopied(false)
     }
   }
 
-  const submitPayment = async () => {
-    const trx = transactionId.trim()
-    if (!user || !profile) {
-      setError("Please sign in before submitting a payment request.")
-      return
-    }
-    if (!trx || trx.length < 3) {
+  const submitPayment = () => {
+    if (!transactionId || transactionId.length < 3) {
       setError("Please enter a valid transaction ID.")
       return
     }
-    if (!selectedPlan) {
-      setError("Please select a subscription plan.")
-      return
-    }
-    if (selectedPlan.planId === "trial") {
-      setError("The Free Plan does not require payment.")
-      return
-    }
-    setError("")
-    try {
-      await createPendingPaymentRequest({
-        user,
-        profile,
-        planId: selectedPlan.planId,
-        transactionId: trx,
-      })
-    } catch (requestError) {
-      setError(requestError instanceof Error ? requestError.message : "Unable to submit your payment request.")
-      return
-    }
-
     setShowPayment(false)
-    setShowProcessing(true)
-    setProgress(0)
-
-    if (processingTimerRef.current) window.clearInterval(processingTimerRef.current)
-    if (successTimerRef.current) window.clearTimeout(successTimerRef.current)
-
-    const startTime = Date.now()
-    const processingDuration = 9000
-
-    processingTimerRef.current = window.setInterval(() => {
-      const elapsed = Date.now() - startTime
-      const percentage = Math.min(100, Math.round((elapsed / processingDuration) * 100))
-      setProgress(percentage)
-      if (percentage >= 100) {
-        if (processingTimerRef.current) window.clearInterval(processingTimerRef.current)
-        successTimerRef.current = window.setTimeout(() => {
-          setShowProcessing(false)
-          setShowSuccess(true)
-        }, 500)
-      }
-    }, 200)
+    setShowSuccess(true)
   }
 
   const closeSuccess = () => {
     setShowSuccess(false)
     setSelectedPlan(null)
     setTransactionId("")
-    setProgress(0)
     setError("")
-  }
-
-  const handleFreeAccess = (item: FreeAccessItem) => {
-    if (item.type === "mebook") {
-      setShowFreeAccess(false)
-      onOpenMeBook?.()
-    }
-  }
-
-  const isRestrictedFreeItem = (item: FreeAccessItem) => {
-    const title = String(item.title || "").toLowerCase()
-    const id = String(item.id || "").toLowerCase()
-    return (
-      item.type === "restricted" ||
-      (title.includes("18+") && !item.href) ||
-      (title.includes("18 +") && !item.href) ||
-      (title.includes("adult") && !item.href) ||
-      (title.includes("age-restricted") && !item.href) ||
-      (title.includes("age restricted") && !item.href) ||
-      (id.includes("18") && !item.href) ||
-      (id.includes("adult") && !item.href)
-    )
   }
 
   /* =======================================================
@@ -218,155 +113,274 @@ export default function SeriesSection({
 
   return (
     <>
-      <main className="mvbd-premium-page">
+      <main className="mvbd-main">
         {/* =================================================
-            BACKGROUND (Image Exactly Match)
+            BACKGROUND (No Image, Pure CSS Gradient)
         ================================================= */}
-        <div className="mvbd-page-background" />
-        <div className="mvbd-page-overlay" />
+        <div className="mvbd-bg-gradient" />
+        <div className="mvbd-bg-glow" />
 
-        <div className="mvbd-page-content">
+        <div className="mvbd-container">
           
           {/* =================================================
-              HEADER (Exact Match)
+              HEADER
           ================================================= */}
-          <header className="mvbd-premium-header">
-            <div className="mvbd-brand">
-              <div className="mvbd-brand-mark">V</div>
-              <div>
-                <strong>Velocity</strong>
-                <span>Premium Membership</span>
-              </div>
+          <header className="mvbd-header">
+            <div className="mvbd-logo">
+              <div className="mvbd-logo-icon">M</div>
+              <span>MoviesVerseBD</span>
             </div>
-            <div className="mvbd-status">
-              <span className="mvbd-status-dot" />
-              MEMBERSHIP
+            <nav className="mvbd-nav">
+              <a href="#">Home</a>
+              <a href="#">Features</a>
+              <a href="#">Pricing</a>
+              <a href="#">FAQ</a>
+            </nav>
+            <div className="mvbd-header-actions">
+              <button className="mvbd-btn-outline">Sign In</button>
+              <button className="mvbd-btn-primary">Get Started</button>
             </div>
           </header>
 
           {/* =================================================
-              HERO SECTION (Exact Match)
+              HERO SECTION
           ================================================= */}
-          <section className="mvbd-premium-hero">
-            <div className="mvbd-eyebrow">VELOCITY</div>
-            <h1>
-              Launch faster.
-              <span>Convert better.</span>
+          <section className="mvbd-hero">
+            <div className="mvbd-hero-badge">✦ AI-POWERED BOOKKEEPING</div>
+            <h1 className="mvbd-hero-title">
+              Books Done.<br />
+              <span>Stress is Gone.</span>
             </h1>
-            <p>
-              Select a membership plan that works best for you.
+            <p className="mvbd-hero-desc">
+              Automate your bookkeeping with AI. Close your books in days, not months.
             </p>
-          </section>
-
-          {/* =================================================
-              PLANS GRID (Exact Match)
-          ================================================= */}
-          <section className="mvbd-plans-grid">
-            {SUBSCRIPTION_PLANS.map((plan) => {
-              const isFree = plan.planId === "trial"
-              const isMonthly = plan.planId === "monthly"
-              const isTwoMonths = plan.planId === "two_months"
-              const isThreeMonths = plan.planId === "three_months"
-
-              const features = plan.features || []
-
-              return (
-                <article
-                  key={plan.planId}
-                  className={[
-                    "mvbd-plan-card",
-                    `mvbd-plan-${plan.planId}`,
-                    plan.popular ? "mvbd-plan-popular" : "",
-                  ].join(" ")}
-                >
-                  {/* Top Glow Line */}
-                  <div className="mvbd-card-glow-line" />
-
-                  {/* Popular Badge */}
-                  {plan.popular && (
-                    <div className="mvbd-popular-badge">⭐ MOST POPULAR</div>
-                  )}
-
-                  {/* Card Header */}
-                  <div className="mvbd-card-top">
-                    <div className="mvbd-plan-icon">{plan.sticker || "📦"}</div>
-                    <div>
-                      <div className="mvbd-plan-name">
-                        {isFree ? "Starter Plan" : isMonthly ? "Pro Plan" : isTwoMonths ? "Pro Plan" : "Velocity Plan"}
-                      </div>
-                      <div className="mvbd-plan-subtitle">
-                        {isFree ? "For individuals" : isMonthly ? "For growing teams" : isTwoMonths ? "For scaling teams" : "For large teams"}
-                      </div>
+            <button className="mvbd-btn-hero">Get Started Free</button>
+            
+            {/* Dashboard Mockup */}
+            <div className="mvbd-dashboard-mockup">
+              <div className="mvbd-dashboard-header">
+                <div className="mvbd-dot red" />
+                <div className="mvbd-dot yellow" />
+                <div className="mvbd-dot green" />
+                <span className="mvbd-dashboard-title">MoviesVerseBD Dashboard</span>
+              </div>
+              <div className="mvbd-dashboard-body">
+                <div className="mvbd-dash-sidebar">
+                  <div className="mvbd-dash-item active" />
+                  <div className="mvbd-dash-item" />
+                  <div className="mvbd-dash-item" />
+                  <div className="mvbd-dash-item" />
+                </div>
+                <div className="mvbd-dash-main">
+                  <div className="mvbd-dash-card" />
+                  <div className="mvbd-dash-card" />
+                  <div className="mvbd-dash-row">
+                    <div className="mvbd-dash-chart" />
+                    <div className="mvbd-dash-list">
+                      <div className="mvbd-dash-list-item" />
+                      <div className="mvbd-dash-list-item" />
+                      <div className="mvbd-dash-list-item" />
                     </div>
                   </div>
-
-                  {/* Price */}
-                  <div className="mvbd-price">
-                    {isFree ? "$0" : plan.price}
-                    <span className="mvbd-price-period">/month</span>
-                  </div>
-
-                  {/* Duration */}
-                  <div className="mvbd-duration-pill">
-                    {isFree ? "BASIC ACCESS" : isMonthly ? "30 DAYS ACCESS" : isTwoMonths ? "60 DAYS ACCESS" : "90 DAYS ACCESS"}
-                  </div>
-
-                  {/* Quality Badge */}
-                  <div className="mvbd-quality-badge">
-                    <span>🎥</span>
-                    <span>{plan.videoQuality}</span>
-                  </div>
-
-                  {/* Features List */}
-                  <ul className="mvbd-feature-list">
-                    {features.map((feature, index) => (
-                      <li
-                        key={`${plan.planId}-${index}`}
-                        className={feature.type === "locked" || feature.type === "restricted" ? "locked" : ""}
-                      >
-                        <span className={
-                          feature.type === "locked" ? "feature-cross" :
-                          feature.type === "restricted" ? "feature-restricted" :
-                          feature.type === "quality" ? "feature-quality" : "feature-check"
-                        }>
-                          {feature.type === "locked" ? "🔒" :
-                           feature.type === "restricted" ? "🔞" :
-                           feature.type === "quality" ? "🎥" : "✅"}
-                        </span>
-                        <span className="feature-text">{feature.text}</span>
-                      </li>
-                    ))}
-                  </ul>
-
-                  {/* Button */}
-                  <button
-                    type="button"
-                    className="mvbd-choose-button"
-                    onClick={() => openPlan(plan)}
-                  >
-                    <span>
-                      {isFree ? "Get Started" : isMonthly ? "Get Pro Plan" : isTwoMonths ? "Get Pro Plan" : "Get Velocity Plan"}
-                    </span>
-                    <span className="mvbd-button-arrow">›</span>
-                  </button>
-                </article>
-              )
-            })}
+                </div>
+              </div>
+            </div>
           </section>
 
           {/* =================================================
-              FAQ SECTION (Exact Match)
+              FEATURES SECTION
           ================================================= */}
-          <section className="mvbd-faq-section">
-            <h2 className="mvbd-section-title">Questions? We've got answers.</h2>
-            
+          <section className="mvbd-section">
+            <div className="mvbd-section-badge">✦ FEATURES</div>
+            <h2 className="mvbd-section-title">Why Businesses Choose MoviesVerseBD?</h2>
+            <p className="mvbd-section-subtitle">Everything you need to manage your finances in one place.</p>
+
+            <div className="mvbd-features-grid">
+              {/* Box 1 */}
+              <div className="mvbd-feature-box large">
+                <div className="mvbd-feature-content">
+                  <h3>Growth Not Books</h3>
+                  <p>Focus on scaling your business while we handle the numbers.</p>
+                  <button className="mvbd-btn-small">Learn More</button>
+                </div>
+                <div className="mvbd-feature-visual">
+                  <div className="mvbd-visual-card">
+                    <div className="mvbd-visual-line" />
+                    <div className="mvbd-visual-line short" />
+                    <div className="mvbd-visual-circle" />
+                  </div>
+                </div>
+              </div>
+
+              {/* Box 2 */}
+              <div className="mvbd-feature-box">
+                <div className="mvbd-feature-content">
+                  <h3>Smarter Accounting</h3>
+                  <p>AI-driven insights to keep your books accurate.</p>
+                  <button className="mvbd-btn-small">Learn More</button>
+                </div>
+                <div className="mvbd-feature-visual">
+                  <div className="mvbd-visual-chart" />
+                </div>
+              </div>
+
+              {/* Box 3 */}
+              <div className="mvbd-feature-box">
+                <div className="mvbd-feature-content">
+                  <h3>Real-time Visibility</h3>
+                  <p>See your financial health at a glance.</p>
+                  <button className="mvbd-btn-small">Learn More</button>
+                </div>
+                <div className="mvbd-feature-visual">
+                  <div className="mvbd-visual-bars">
+                    <div className="mvbd-bar" />
+                    <div className="mvbd-bar" />
+                    <div className="mvbd-bar" />
+                  </div>
+                </div>
+              </div>
+
+              {/* Box 4 - Integrations */}
+              <div className="mvbd-feature-box full">
+                <div className="mvbd-feature-content">
+                  <h3>Easy Integrations</h3>
+                  <p>Connect with your favorite tools seamlessly.</p>
+                </div>
+                <div className="mvbd-integrations">
+                  <div className="mvbd-int-icon">⚡</div>
+                  <div className="mvbd-int-icon">📊</div>
+                  <div className="mvbd-int-icon">☁️</div>
+                  <div className="mvbd-int-icon">🔗</div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* =================================================
+              BUILT TO HANDLE SECTION
+          ================================================= */}
+          <section className="mvbd-section">
+            <h2 className="mvbd-section-title">Built to Handle the Hard Stuff</h2>
+            <p className="mvbd-section-subtitle">Powerful tools for complex financial workflows.</p>
+
+            <div className="mvbd-hard-grid">
+              <div className="mvbd-hard-box">
+                <div className="mvbd-hard-icon">📄</div>
+                <h3>Automated Bookkeeping</h3>
+                <p>Let AI categorize your transactions automatically.</p>
+                <button className="mvbd-btn-small">Learn More</button>
+              </div>
+              <div className="mvbd-hard-box">
+                <div className="mvbd-hard-icon">⚖️</div>
+                <h3>Tax Compliance</h3>
+                <p>Stay compliant with ever-changing tax laws.</p>
+                <button className="mvbd-btn-small">Learn More</button>
+              </div>
+              <div className="mvbd-hard-box">
+                <div className="mvbd-hard-icon">📈</div>
+                <h3>Catch-Up Bookkeeping</h3>
+                <p>Get your past books in order quickly.</p>
+                <button className="mvbd-btn-small">Learn More</button>
+              </div>
+              <div className="mvbd-hard-box">
+                <div className="mvbd-hard-icon">🎯</div>
+                <h3>Tax Strategy</h3>
+                <p>Proactive planning to minimize your tax burden.</p>
+                <button className="mvbd-btn-small">Learn More</button>
+              </div>
+            </div>
+          </section>
+
+          {/* =================================================
+              PRICING SECTION
+          ================================================= */}
+          <section className="mvbd-section">
+            <div className="mvbd-section-badge">✦ PRICING</div>
+            <h2 className="mvbd-section-title">Choose the Right Plan for You</h2>
+            <p className="mvbd-section-subtitle">Simple, transparent pricing for every stage of your business.</p>
+
+            <div className="mvbd-pricing-grid">
+              {/* Starter */}
+              <div className="mvbd-price-card">
+                <div className="mvbd-price-header">
+                  <h3>Starter</h3>
+                  <p>For individuals</p>
+                </div>
+                <div className="mvbd-price-amount">$250<span>/mo</span></div>
+                <ul className="mvbd-price-features">
+                  <li>✓ 1 User</li>
+                  <li>✓ 100 Transactions</li>
+                  <li>✓ Basic Reports</li>
+                  <li>✓ Email Support</li>
+                </ul>
+                <button className="mvbd-btn-price" onClick={() => openPlan({ name: "Starter", price: "$250" })}>Get Started</button>
+              </div>
+
+              {/* Scale */}
+              <div className="mvbd-price-card popular">
+                <div className="mvbd-popular-badge">MOST POPULAR</div>
+                <div className="mvbd-price-header">
+                  <h3>Scale</h3>
+                  <p>For growing teams</p>
+                </div>
+                <div className="mvbd-price-amount">$700<span>/mo</span></div>
+                <ul className="mvbd-price-features">
+                  <li>✓ 5 Users</li>
+                  <li>✓ Unlimited Transactions</li>
+                  <li>✓ Advanced Reports</li>
+                  <li>✓ Priority Support</li>
+                </ul>
+                <button className="mvbd-btn-price primary" onClick={() => openPlan({ name: "Scale", price: "$700" })}>Get Started</button>
+              </div>
+
+              {/* Growth */}
+              <div className="mvbd-price-card">
+                <div className="mvbd-price-header">
+                  <h3>Growth</h3>
+                  <p>For scaling teams</p>
+                </div>
+                <div className="mvbd-price-amount">$450<span>/mo</span></div>
+                <ul className="mvbd-price-features">
+                  <li>✓ 10 Users</li>
+                  <li>✓ Unlimited Transactions</li>
+                  <li>✓ Custom Reports</li>
+                  <li>✓ 24/7 Support</li>
+                </ul>
+                <button className="mvbd-btn-price" onClick={() => openPlan({ name: "Growth", price: "$450" })}>Get Started</button>
+              </div>
+
+              {/* Enterprise */}
+              <div className="mvbd-price-card full-width">
+                <div className="mvbd-price-header">
+                  <h3>Enterprise</h3>
+                  <p>For large organizations</p>
+                </div>
+                <div className="mvbd-price-amount">Custom</div>
+                <ul className="mvbd-price-features horizontal">
+                  <li>✓ Unlimited Users</li>
+                  <li>✓ Dedicated Account Manager</li>
+                  <li>✓ Custom Integrations</li>
+                  <li>✓ SLA Guarantee</li>
+                </ul>
+                <button className="mvbd-btn-price" onClick={() => openPlan({ name: "Enterprise", price: "Custom" })}>Contact Sales</button>
+              </div>
+            </div>
+          </section>
+
+          {/* =================================================
+              FAQ SECTION
+          ================================================= */}
+          <section className="mvbd-section">
+            <div className="mvbd-section-badge">✦ FAQ</div>
+            <h2 className="mvbd-section-title">Have Questions?<br />We Have Answers</h2>
+
             <div className="mvbd-faq-list">
               {[
-                { q: "How long does it take to deliver a landing page?", a: "Typically 3-5 business days depending on the complexity." },
-                { q: "What if I don't like the design?", a: "We offer unlimited revisions until you are 100% satisfied." },
-                { q: "Can I request revisions after delivery?", a: "Yes, we offer a 14-day revision window after delivery." },
-                { q: "Do you offer custom designs?", a: "Absolutely, every design is tailored to your brand." },
-                { q: "Is my data secure with you?", a: "Yes, we take security and privacy very seriously." },
+                { q: "What is MoviesVerseBD?", a: "MoviesVerseBD is an AI-powered bookkeeping platform that helps businesses automate their finances." },
+                { q: "How does the AI work?", a: "Our AI learns from your transactions to categorize and reconcile your books automatically." },
+                { q: "Can I use it for my small business?", a: "Absolutely! We have plans designed specifically for small businesses and freelancers." },
+                { q: "Is my data secure?", a: "Yes, we use bank-level encryption to keep your financial data safe and secure." },
+                { q: "Do you offer a free trial?", a: "Yes, we offer a 14-day free trial on all our plans. No credit card required." },
               ].map((faq, idx) => (
                 <div key={idx} className="mvbd-faq-item" onClick={() => setOpenFaq(openFaq === idx ? null : idx)}>
                   <div className="mvbd-faq-question">
@@ -384,62 +398,38 @@ export default function SeriesSection({
           </section>
 
           {/* =================================================
-              CTA SECTION (Exact Match)
+              CTA SECTION
           ================================================= */}
           <section className="mvbd-cta-section">
+            <div className="mvbd-cta-glow" />
             <div className="mvbd-cta-content">
-              <div className="mvbd-cta-icon">🔒</div>
-              <h2 className="mvbd-cta-title">Ready to launch something that actually works?</h2>
-              <button className="mvbd-cta-button" onClick={() => openPlan(SUBSCRIPTION_PLANS[1] || SUBSCRIPTION_PLANS[0])}>
-                Get started
-              </button>
+              <div className="mvbd-cta-icon">✦</div>
+              <h2 className="mvbd-cta-title">Ready to<br />Change your life?</h2>
+              <p className="mvbd-cta-desc">Join thousands of businesses already using MoviesVerseBD.</p>
+              <button className="mvbd-btn-hero">Get Started Free</button>
             </div>
           </section>
 
           {/* =================================================
-              FOOTER (Exact Match)
+              FOOTER
           ================================================= */}
           <footer className="mvbd-footer">
-            <div className="mvbd-footer-left">
-              <div className="mvbd-footer-brand">
-                <div className="mvbd-brand-mark">V</div>
-                <strong>Velocity</strong>
-              </div>
-              <p>Helping founders launch faster with high-converting landing pages.</p>
-              <button className="mvbd-footer-cta">Get started</button>
+            <div className="mvbd-footer-brand">
+              <div className="mvbd-logo-icon small">M</div>
+              <span>MoviesVerseBD</span>
             </div>
-            
-            <div className="mvbd-footer-right">
-              <div className="mvbd-footer-col">
-                <h4>Menu</h4>
-                <a href="#">Home</a>
-                <a href="#">About</a>
-                <a href="#">Pricing</a>
-                <a href="#">Contact</a>
-              </div>
-              <div className="mvbd-footer-col">
-                <h4>Social Media</h4>
-                <a href="#">X (Twitter)</a>
-                <a href="#">LinkedIn</a>
-                <a href="#">Instagram</a>
-                <a href="#">YouTube</a>
-              </div>
-            </div>
-
-            <div className="mvbd-footer-bottom">
-              © 2026 Velocity. All rights reserved.
-            </div>
+            <p className="mvbd-footer-copy">© 2026 MoviesVerseBD. All rights reserved.</p>
           </footer>
         </div>
 
         {/* =================================================
-            GLOBAL CSS (Exact Match Design)
+            GLOBAL CSS
         ================================================= */}
         <style jsx global>{`
           * { box-sizing: border-box; margin: 0; padding: 0; }
 
           /* ================= PAGE ================= */
-          .mvbd-premium-page {
+          .mvbd-main {
             position: relative;
             min-height: 100svh;
             width: 100%;
@@ -450,41 +440,38 @@ export default function SeriesSection({
             isolation: isolate;
           }
 
-          /* ================= BACKGROUND ================= */
-          .mvbd-page-background {
+          /* ================= BACKGROUND (Pure CSS) ================= */
+          .mvbd-bg-gradient {
             position: fixed;
             inset: 0;
             z-index: -3;
-            pointer-events: none;
-            background-image: url("https://i.postimg.cc/43PLHM4Z/file-0000000041908206b4fe692b01e0940b.png");
-            background-position: center top;
-            background-size: cover;
-            background-repeat: no-repeat;
-            transform: translateZ(0);
-            opacity: 0.8;
-          }
-
-          .mvbd-page-overlay {
-            position: fixed;
-            inset: 0;
-            z-index: -2;
-            pointer-events: none;
             background: linear-gradient(
               180deg,
-              rgba(0, 0, 0, 0.85) 0%,
-              rgba(10, 5, 0, 0.9) 30%,
-              rgba(0, 0, 0, 0.98) 100%
+              #000000 0%,
+              #020b14 40%,
+              #000000 100%
             );
           }
 
-          @media (min-width: 761px) {
-            .mvbd-page-background {
-              background-image: url("https://i.postimg.cc/43s2dZg3/file-00000000e1908211bbeb998f8584d5ba.png");
-            }
+          .mvbd-bg-glow {
+            position: fixed;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 1200px;
+            height: 600px;
+            z-index: -2;
+            background: radial-gradient(
+              ellipse at center,
+              rgba(0, 255, 200, 0.08) 0%,
+              transparent 70%
+            );
+            pointer-events: none;
           }
 
-          /* ================= CONTENT ================= */
-          .mvbd-page-content {
+          /* ================= CONTAINER ================= */
+          .mvbd-container {
             position: relative;
             z-index: 1;
             width: min(1200px, calc(100% - 40px));
@@ -493,407 +480,648 @@ export default function SeriesSection({
           }
 
           /* ================= HEADER ================= */
-          .mvbd-premium-header {
+          .mvbd-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 16px;
-            padding: 12px 20px;
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            gap: 20px;
+            padding: 14px 24px;
+            border: 1px solid rgba(0, 255, 200, 0.12);
             border-radius: 16px;
-            background: rgba(10, 5, 0, 0.6);
-            backdrop-filter: blur(12px);
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(20px);
           }
 
-          .mvbd-brand { display: flex; align-items: center; gap: 12px; }
-          .mvbd-brand-mark {
-            width: 38px; height: 38px;
-            display: grid; place-items: center;
-            border-radius: 10px;
-            font-size: 20px; font-weight: 900;
+          .mvbd-logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 700;
+            font-size: 16px;
+            letter-spacing: -0.5px;
+          }
+          .mvbd-logo-icon {
+            width: 32px;
+            height: 32px;
+            display: grid;
+            place-items: center;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 900;
             color: #000000;
-            background: linear-gradient(135deg, #ffb86b, #ff6a00);
+            background: linear-gradient(135deg, #00ffc8, #00b8ff);
           }
-          .mvbd-brand strong { display: block; font-size: 15px; font-weight: 700; }
-          .mvbd-brand span { display: block; margin-top: 2px; color: #a99a8e; font-size: 10px; }
+          .mvbd-logo-icon.small {
+            width: 24px;
+            height: 24px;
+            font-size: 12px;
+          }
 
-          .mvbd-status {
-            display: flex; align-items: center; gap: 7px;
-            padding: 6px 14px; border-radius: 999px;
-            color: #ffb86b; background: rgba(255, 106, 0, 0.08);
-            border: 1px solid rgba(255, 106, 0, 0.2);
-            font-size: 10px; font-weight: 700; letter-spacing: 0.5px;
+          .mvbd-nav {
+            display: flex;
+            gap: 28px;
           }
-          .mvbd-status-dot {
-            width: 6px; height: 6px; border-radius: 50%;
-            background: #ff6a00; box-shadow: 0 0 10px #ff6a00;
-            animation: mvbdPulse 1.8s ease-in-out infinite;
+          .mvbd-nav a {
+            color: #8a9ba8;
+            font-size: 13px;
+            font-weight: 500;
+            text-decoration: none;
+            transition: color 0.2s;
+          }
+          .mvbd-nav a:hover {
+            color: #00ffc8;
+          }
+
+          .mvbd-header-actions {
+            display: flex;
+            gap: 10px;
+          }
+          .mvbd-btn-outline {
+            padding: 8px 18px;
+            border-radius: 8px;
+            border: 1px solid rgba(0, 255, 200, 0.3);
+            background: transparent;
+            color: #00ffc8;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+          }
+          .mvbd-btn-outline:hover {
+            background: rgba(0, 255, 200, 0.1);
+          }
+          .mvbd-btn-primary {
+            padding: 8px 18px;
+            border-radius: 8px;
+            border: 0;
+            background: linear-gradient(135deg, #00ffc8, #00b8ff);
+            color: #000000;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
           }
 
           /* ================= HERO ================= */
-          .mvbd-premium-hero {
+          .mvbd-hero {
             text-align: center;
             padding: 80px 16px 60px;
           }
-          .mvbd-eyebrow {
-            color: #ff9a4d; font-size: 12px; font-weight: 800;
-            letter-spacing: 4px; text-transform: uppercase; margin-bottom: 16px;
+          .mvbd-hero-badge {
+            display: inline-block;
+            padding: 6px 16px;
+            border-radius: 999px;
+            border: 1px solid rgba(0, 255, 200, 0.2);
+            background: rgba(0, 255, 200, 0.05);
+            color: #00ffc8;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            margin-bottom: 24px;
           }
-          .mvbd-premium-hero h1 {
+          .mvbd-hero-title {
             font-size: clamp(36px, 6vw, 72px);
-            line-height: 1.1; font-weight: 800; letter-spacing: -2px;
+            line-height: 1.05;
+            font-weight: 800;
+            letter-spacing: -2px;
             color: #ffffff;
           }
-          .mvbd-premium-hero h1 span {
-            display: block; color: #ff7a1a;
-            text-shadow: 0 0 40px rgba(255, 106, 0, 0.3);
+          .mvbd-hero-title span {
+            color: #00ffc8;
+            text-shadow: 0 0 40px rgba(0, 255, 200, 0.3);
           }
-          .mvbd-premium-hero p {
-            margin: 20px auto 0; max-width: 500px;
-            color: #b9a89a; font-size: 15px; line-height: 1.7;
+          .mvbd-hero-desc {
+            margin: 20px auto 0;
+            max-width: 500px;
+            color: #8a9ba8;
+            font-size: 15px;
+            line-height: 1.7;
+          }
+          .mvbd-btn-hero {
+            margin-top: 30px;
+            padding: 14px 40px;
+            border-radius: 999px;
+            border: 0;
+            font-size: 15px;
+            font-weight: 700;
+            color: #000000;
+            background: linear-gradient(135deg, #00ffc8, #00b8ff);
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+          }
+          .mvbd-btn-hero:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 40px rgba(0, 255, 200, 0.4);
           }
 
-          /* ================= PLANS GRID ================= */
-          .mvbd-plans-grid {
+          /* ================= DASHBOARD MOCKUP ================= */
+          .mvbd-dashboard-mockup {
+            margin-top: 60px;
+            border-radius: 16px;
+            border: 1px solid rgba(0, 255, 200, 0.15);
+            background: rgba(0, 0, 0, 0.8);
+            overflow: hidden;
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.8), 0 0 60px rgba(0, 255, 200, 0.05);
+          }
+          .mvbd-dashboard-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 18px;
+            border-bottom: 1px solid rgba(0, 255, 200, 0.1);
+            background: rgba(0, 0, 0, 0.5);
+          }
+          .mvbd-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+          }
+          .mvbd-dot.red { background: #ff5f56; }
+          .mvbd-dot.yellow { background: #ffbd2e; }
+          .mvbd-dot.green { background: #27c93f; }
+          .mvbd-dashboard-title {
+            margin-left: 10px;
+            font-size: 11px;
+            color: #8a9ba8;
+          }
+          .mvbd-dashboard-body {
+            display: flex;
+            min-height: 300px;
+          }
+          .mvbd-dash-sidebar {
+            width: 60px;
+            padding: 16px 0;
+            border-right: 1px solid rgba(0, 255, 200, 0.08);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+          }
+          .mvbd-dash-item {
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.05);
+          }
+          .mvbd-dash-item.active {
+            background: rgba(0, 255, 200, 0.15);
+            border: 1px solid rgba(0, 255, 200, 0.3);
+          }
+          .mvbd-dash-main {
+            flex: 1;
+            padding: 20px;
+            display: grid;
+            gap: 16px;
+          }
+          .mvbd-dash-card {
+            height: 60px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(0, 255, 200, 0.08);
+          }
+          .mvbd-dash-row {
+            display: flex;
+            gap: 16px;
+          }
+          .mvbd-dash-chart {
+            flex: 1;
+            height: 120px;
+            border-radius: 8px;
+            background: linear-gradient(180deg, rgba(0, 255, 200, 0.05), transparent);
+            border: 1px solid rgba(0, 255, 200, 0.1);
+          }
+          .mvbd-dash-list {
+            flex: 1;
+            display: grid;
+            gap: 10px;
+          }
+          .mvbd-dash-list-item {
+            height: 32px;
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.03);
+          }
+
+          /* ================= SECTIONS ================= */
+          .mvbd-section {
+            margin-top: 100px;
+            text-align: center;
+          }
+          .mvbd-section-badge {
+            display: inline-block;
+            padding: 4px 14px;
+            border-radius: 999px;
+            border: 1px solid rgba(0, 255, 200, 0.2);
+            background: rgba(0, 255, 200, 0.05);
+            color: #00ffc8;
+            font-size: 9px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            margin-bottom: 20px;
+          }
+          .mvbd-section-title {
+            font-size: clamp(28px, 4vw, 44px);
+            font-weight: 800;
+            letter-spacing: -1.5px;
+            color: #ffffff;
+            line-height: 1.15;
+          }
+          .mvbd-section-subtitle {
+            margin: 16px auto 0;
+            max-width: 500px;
+            color: #8a9ba8;
+            font-size: 14px;
+            line-height: 1.6;
+          }
+
+          /* ================= FEATURES GRID ================= */
+          .mvbd-features-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 20px;
-            align-items: stretch;
-            margin-top: 20px;
+            margin-top: 50px;
+            text-align: left;
           }
-
-          /* ================= PLAN CARD ================= */
-          .mvbd-plan-card {
-            position: relative;
+          .mvbd-feature-box {
+            padding: 28px;
+            border-radius: 20px;
+            border: 1px solid rgba(0, 255, 200, 0.12);
+            background: rgba(0, 0, 0, 0.6);
             display: flex;
             flex-direction: column;
-            padding: 28px 24px 24px;
-            border-radius: 24px;
-            background: #080503;
-            border: 1px solid rgba(255, 122, 26, 0.15);
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
-            transition: transform 0.3s ease, border-color 0.3s ease;
+            gap: 20px;
+            transition: border-color 0.3s;
+          }
+          .mvbd-feature-box:hover {
+            border-color: rgba(0, 255, 200, 0.4);
+          }
+          .mvbd-feature-box.large {
+            grid-column: span 2;
+            flex-direction: row;
+            align-items: center;
+          }
+          .mvbd-feature-box.full {
+            grid-column: span 3;
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-between;
+          }
+          .mvbd-feature-content h3 {
+            font-size: 20px;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 8px;
+          }
+          .mvbd-feature-content p {
+            font-size: 13px;
+            color: #8a9ba8;
+            line-height: 1.6;
+            margin-bottom: 16px;
+          }
+          .mvbd-btn-small {
+            padding: 8px 18px;
+            border-radius: 8px;
+            border: 1px solid rgba(0, 255, 200, 0.3);
+            background: transparent;
+            color: #00ffc8;
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+          }
+          .mvbd-btn-small:hover {
+            background: rgba(0, 255, 200, 0.1);
+          }
+          .mvbd-feature-visual {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+          }
+          .mvbd-visual-card {
+            width: 100%;
+            max-width: 180px;
+            padding: 16px;
+            border-radius: 12px;
+            border: 1px solid rgba(0, 255, 200, 0.15);
+            background: rgba(0, 255, 200, 0.03);
+          }
+          .mvbd-visual-line {
+            height: 8px;
+            border-radius: 4px;
+            background: rgba(0, 255, 200, 0.15);
+            margin-bottom: 8px;
+          }
+          .mvbd-visual-line.short {
+            width: 60%;
+          }
+          .mvbd-visual-circle {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid rgba(0, 255, 200, 0.3);
+            margin-top: 12px;
+          }
+          .mvbd-visual-chart {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            border: 4px solid rgba(0, 255, 200, 0.1);
+            border-top-color: #00ffc8;
+          }
+          .mvbd-visual-bars {
+            display: flex;
+            gap: 6px;
+            align-items: flex-end;
+            height: 60px;
+          }
+          .mvbd-bar {
+            width: 12px;
+            border-radius: 4px;
+            background: linear-gradient(180deg, #00ffc8, #00b8ff);
+          }
+          .mvbd-bar:nth-child(1) { height: 30%; }
+          .mvbd-bar:nth-child(2) { height: 60%; }
+          .mvbd-bar:nth-child(3) { height: 100%; }
+          .mvbd-integrations {
+            display: flex;
+            gap: 16px;
+          }
+          .mvbd-int-icon {
+            width: 48px;
+            height: 48px;
+            display: grid;
+            place-items: center;
+            border-radius: 12px;
+            font-size: 20px;
+            border: 1px solid rgba(0, 255, 200, 0.15);
+            background: rgba(0, 255, 200, 0.03);
           }
 
-          .mvbd-plan-card:hover {
-            transform: translateY(-6px);
-            border-color: rgba(255, 122, 26, 0.4);
+          /* ================= HARD GRID ================= */
+          .mvbd-hard-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-top: 50px;
+            text-align: left;
+          }
+          .mvbd-hard-box {
+            padding: 28px;
+            border-radius: 20px;
+            border: 1px solid rgba(0, 255, 200, 0.12);
+            background: rgba(0, 0, 0, 0.6);
+            transition: border-color 0.3s;
+          }
+          .mvbd-hard-box:hover {
+            border-color: rgba(0, 255, 200, 0.4);
+          }
+          .mvbd-hard-icon {
+            width: 44px;
+            height: 44px;
+            display: grid;
+            place-items: center;
+            border-radius: 12px;
+            font-size: 20px;
+            border: 1px solid rgba(0, 255, 200, 0.15);
+            background: rgba(0, 255, 200, 0.05);
+            margin-bottom: 18px;
+          }
+          .mvbd-hard-box h3 {
+            font-size: 16px;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 8px;
+          }
+          .mvbd-hard-box p {
+            font-size: 12px;
+            color: #8a9ba8;
+            line-height: 1.6;
+            margin-bottom: 16px;
           }
 
-          /* Top Orange Glow Line */
-          .mvbd-card-glow-line {
-            position: absolute;
-            top: -1px;
-            left: 10%;
-            width: 80%;
-            height: 2px;
-            border-radius: 999px;
-            background: #ff7a1a;
-            box-shadow: 0 0 15px #ff7a1a, 0 0 40px #ff6a00;
-            opacity: 0.8;
+          /* ================= PRICING ================= */
+          .mvbd-pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-top: 50px;
+            text-align: left;
           }
-
-          /* Popular Badge */
+          .mvbd-price-card {
+            position: relative;
+            padding: 32px 28px;
+            border-radius: 20px;
+            border: 1px solid rgba(0, 255, 200, 0.12);
+            background: rgba(0, 0, 0, 0.6);
+            display: flex;
+            flex-direction: column;
+            transition: border-color 0.3s, transform 0.3s;
+          }
+          .mvbd-price-card:hover {
+            border-color: rgba(0, 255, 200, 0.4);
+            transform: translateY(-4px);
+          }
+          .mvbd-price-card.popular {
+            border-color: rgba(0, 255, 200, 0.5);
+            background: rgba(0, 255, 200, 0.03);
+            box-shadow: 0 0 40px rgba(0, 255, 200, 0.08);
+          }
           .mvbd-popular-badge {
             position: absolute;
-            top: 0;
-            right: 0;
-            padding: 6px 14px;
-            border-radius: 0 24px 0 16px;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 4px 14px;
+            border-radius: 999px;
             font-size: 9px;
             font-weight: 800;
             letter-spacing: 0.5px;
             color: #000000;
-            background: linear-gradient(135deg, #ffb86b, #ff6a00);
+            background: linear-gradient(135deg, #00ffc8, #00b8ff);
+            white-space: nowrap;
           }
-
-          /* Card Header */
-          .mvbd-card-top {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 20px;
-          }
-          .mvbd-plan-icon {
-            width: 44px; height: 44px;
-            display: grid; place-items: center;
-            border-radius: 12px;
-            font-size: 20px;
-            color: #ff7a1a;
-            background: rgba(255, 106, 0, 0.1);
-            border: 1px solid rgba(255, 106, 0, 0.2);
-          }
-          .mvbd-plan-name {
-            font-size: 18px; font-weight: 700; color: #ffffff;
-          }
-          .mvbd-plan-subtitle {
-            font-size: 11px; color: #8a7a6e; margin-top: 2px;
-          }
-
-          /* Price */
-          .mvbd-price {
-            font-size: 40px; font-weight: 800; color: #ffffff;
-            line-height: 1; letter-spacing: -1px;
-            margin-bottom: 8px;
-          }
-          .mvbd-price-period {
-            font-size: 14px; font-weight: 400; color: #8a7a6e;
-          }
-
-          /* Duration Pill */
-          .mvbd-duration-pill {
-            display: inline-block;
-            padding: 6px 14px;
-            border-radius: 999px;
-            font-size: 10px;
+          .mvbd-price-header h3 {
+            font-size: 18px;
             font-weight: 700;
-            letter-spacing: 0.5px;
-            color: #1a0a00;
-            background: linear-gradient(90deg, #ff7a1a, #ffb86b);
-            margin-bottom: 16px;
-            width: fit-content;
+            color: #ffffff;
           }
-
-          /* Quality Badge */
-          .mvbd-quality-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 6px 14px;
-            border-radius: 999px;
-            font-size: 11px;
-            font-weight: 600;
-            color: #ff7a1a;
-            background: rgba(255, 106, 0, 0.08);
-            border: 1px solid rgba(255, 106, 0, 0.15);
-            margin-bottom: 20px;
-            width: fit-content;
+          .mvbd-price-header p {
+            font-size: 12px;
+            color: #8a9ba8;
+            margin-top: 4px;
           }
-
-          /* Features */
-          .mvbd-feature-list {
+          .mvbd-price-amount {
+            font-size: 36px;
+            font-weight: 800;
+            color: #ffffff;
+            margin: 20px 0;
+            letter-spacing: -1px;
+          }
+          .mvbd-price-amount span {
+            font-size: 14px;
+            font-weight: 400;
+            color: #8a9ba8;
+          }
+          .mvbd-price-features {
             list-style: none;
             display: grid;
-            gap: 0;
-            flex: 1;
+            gap: 12px;
             margin-bottom: 24px;
+            flex: 1;
           }
-          .mvbd-feature-list li {
-            display: flex;
-            align-items: flex-start;
-            gap: 10px;
-            padding: 10px 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+          .mvbd-price-features li {
             font-size: 13px;
-            color: #d4c8be;
-            line-height: 1.4;
+            color: #b0c0cc;
           }
-          .mvbd-feature-list li:last-child { border-bottom: 0; }
-          .mvbd-feature-list li > span:first-child {
-            width: 20px; height: 20px;
-            flex: 0 0 20px;
-            display: grid; place-items: center;
-            border-radius: 50%;
-            font-size: 10px;
-            margin-top: 1px;
-          }
-          .feature-check { color: #000000; background: #ff7a1a; }
-          .feature-quality { color: #000000; background: #ffd52e; }
-          .feature-cross { color: #ff5a45; background: rgba(255, 63, 42, 0.1); border: 1px solid rgba(255, 63, 42, 0.2); }
-          .feature-restricted { color: #ffffff; background: #d82929; }
-          .mvbd-feature-list .feature-text { flex: 1; }
-          .mvbd-feature-list li.locked { color: #5c4d42; }
-
-          /* Button */
-          .mvbd-choose-button {
+          .mvbd-btn-price {
             width: 100%;
-            min-height: 48px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            border-radius: 12px;
-            border: 1px solid rgba(255, 122, 26, 0.4);
-            color: #ffffff;
-            background: rgba(255, 106, 0, 0.1);
-            font-size: 14px;
-            font-weight: 700;
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px solid rgba(0, 255, 200, 0.3);
+            background: transparent;
+            color: #00ffc8;
+            font-size: 13px;
+            font-weight: 600;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: all 0.2s;
           }
-          .mvbd-choose-button:hover {
-            background: rgba(255, 106, 0, 0.25);
-            border-color: #ff7a1a;
+          .mvbd-btn-price:hover {
+            background: rgba(0, 255, 200, 0.1);
           }
-          .mvbd-button-arrow { font-size: 18px; color: #ff7a1a; }
+          .mvbd-btn-price.primary {
+            background: linear-gradient(135deg, #00ffc8, #00b8ff);
+            color: #000000;
+            border: 0;
+          }
+          .mvbd-price-card.full-width {
+            grid-column: span 3;
+            flex-direction: row;
+            align-items: center;
+            gap: 40px;
+            text-align: left;
+          }
+          .mvbd-price-card.full-width .mvbd-price-features.horizontal {
+            display: flex;
+            flex-direction: row;
+            gap: 24px;
+            margin-bottom: 0;
+            flex: 1;
+          }
+          .mvbd-price-card.full-width .mvbd-btn-price {
+            width: auto;
+            padding: 12px 32px;
+          }
 
-          /* ================= FAQ SECTION ================= */
-          .mvbd-faq-section {
-            margin-top: 100px;
-            max-width: 800px;
-            margin-left: auto;
-            margin-right: auto;
-          }
-          .mvbd-section-title {
-            text-align: center;
-            font-size: 32px;
-            font-weight: 700;
-            color: #ffffff;
-            margin-bottom: 40px;
-          }
+          /* ================= FAQ ================= */
           .mvbd-faq-list {
+            max-width: 700px;
+            margin: 50px auto 0;
             display: grid;
             gap: 12px;
           }
           .mvbd-faq-item {
-            border-radius: 16px;
-            border: 1px solid rgba(255, 122, 26, 0.15);
-            background: rgba(10, 5, 0, 0.6);
+            border-radius: 14px;
+            border: 1px solid rgba(0, 255, 200, 0.12);
+            background: rgba(0, 0, 0, 0.6);
             overflow: hidden;
             cursor: pointer;
-            transition: border-color 0.3s ease;
+            transition: border-color 0.3s;
           }
           .mvbd-faq-item:hover {
-            border-color: rgba(255, 122, 26, 0.4);
+            border-color: rgba(0, 255, 200, 0.4);
           }
           .mvbd-faq-question {
             display: flex;
             justify-content: space-between;
             align-items: center;
             padding: 20px 24px;
-            font-size: 16px;
+            font-size: 15px;
             font-weight: 600;
             color: #ffffff;
+            text-align: left;
           }
           .mvbd-faq-icon {
-            font-size: 20px;
-            color: #ff7a1a;
+            font-size: 18px;
+            color: #00ffc8;
             font-weight: 300;
           }
           .mvbd-faq-answer {
             padding: 0 24px 20px;
-            font-size: 14px;
+            font-size: 13px;
             line-height: 1.7;
-            color: #b9a89a;
-            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            color: #8a9ba8;
+            text-align: left;
+            border-top: 1px solid rgba(0, 255, 200, 0.08);
             padding-top: 16px;
           }
 
-          /* ================= CTA SECTION ================= */
+          /* ================= CTA ================= */
           .mvbd-cta-section {
+            position: relative;
             margin-top: 100px;
             padding: 80px 20px;
             text-align: center;
-            border-radius: 32px;
-            background: linear-gradient(180deg, rgba(10, 5, 0, 0.8) 0%, rgba(0, 0, 0, 0.98) 100%);
-            border: 1px solid rgba(255, 122, 26, 0.2);
-            position: relative;
+            border-radius: 24px;
+            border: 1px solid rgba(0, 255, 200, 0.2);
+            background: rgba(0, 0, 0, 0.8);
             overflow: hidden;
           }
-          .mvbd-cta-section::before {
-            content: "";
+          .mvbd-cta-glow {
             position: absolute;
-            top: -50%;
+            top: 0;
             left: 50%;
             transform: translateX(-50%);
-            width: 80%;
+            width: 100%;
             height: 100%;
-            background: radial-gradient(circle, rgba(255, 106, 0, 0.15) 0%, transparent 70%);
+            background: radial-gradient(ellipse at top, rgba(0, 255, 200, 0.1) 0%, transparent 60%);
             pointer-events: none;
           }
+          .mvbd-cta-content {
+            position: relative;
+            z-index: 1;
+          }
           .mvbd-cta-icon {
-            font-size: 40px;
+            font-size: 32px;
             margin-bottom: 20px;
+            color: #00ffc8;
           }
           .mvbd-cta-title {
             font-size: clamp(28px, 4vw, 44px);
-            font-weight: 700;
+            font-weight: 800;
+            letter-spacing: -1.5px;
             color: #ffffff;
-            line-height: 1.2;
-            margin-bottom: 30px;
-            max-width: 600px;
-            margin-left: auto;
-            margin-right: auto;
+            line-height: 1.15;
           }
-          .mvbd-cta-button {
-            padding: 16px 48px;
-            border-radius: 999px;
-            border: 0;
-            font-size: 16px;
-            font-weight: 700;
-            color: #000000;
-            background: linear-gradient(135deg, #ffb86b, #ff6a00);
-            cursor: pointer;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-          }
-          .mvbd-cta-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 0 30px rgba(255, 106, 0, 0.4);
+          .mvbd-cta-desc {
+            margin: 16px auto 0;
+            max-width: 400px;
+            color: #8a9ba8;
+            font-size: 14px;
+            line-height: 1.6;
           }
 
           /* ================= FOOTER ================= */
           .mvbd-footer {
             margin-top: 80px;
             padding: 40px 0;
-            border-top: 1px solid rgba(255, 255, 255, 0.06);
-            display: grid;
-            grid-template-columns: 2fr 1fr 1fr;
-            gap: 40px;
+            border-top: 1px solid rgba(0, 255, 200, 0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
           }
           .mvbd-footer-brand {
             display: flex;
             align-items: center;
             gap: 10px;
-            margin-bottom: 16px;
+            font-weight: 700;
+            font-size: 15px;
           }
-          .mvbd-footer-left p {
-            color: #8a7a6e;
-            font-size: 14px;
-            line-height: 1.6;
-            max-width: 300px;
-            margin-bottom: 20px;
-          }
-          .mvbd-footer-cta {
-            padding: 10px 24px;
-            border-radius: 8px;
-            border: 1px solid rgba(255, 122, 26, 0.4);
-            background: transparent;
-            color: #ffffff;
-            font-size: 13px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.2s ease;
-          }
-          .mvbd-footer-cta:hover {
-            background: rgba(255, 106, 0, 0.1);
-          }
-          .mvbd-footer-col h4 {
-            color: #ffffff;
-            font-size: 14px;
-            font-weight: 600;
-            margin-bottom: 16px;
-          }
-          .mvbd-footer-col a {
-            display: block;
-            color: #8a7a6e;
-            font-size: 13px;
-            text-decoration: none;
-            margin-bottom: 10px;
-            transition: color 0.2s ease;
-          }
-          .mvbd-footer-col a:hover {
-            color: #ff7a1a;
-          }
-          .mvbd-footer-bottom {
-            grid-column: 1 / -1;
-            text-align: center;
-            padding-top: 30px;
-            border-top: 1px solid rgba(255, 255, 255, 0.06);
-            color: #5c4d42;
+          .mvbd-footer-copy {
+            color: #5c6b75;
             font-size: 12px;
           }
 
-          /* ================= MODALS (Same as before) ================= */
+          /* ================= MODALS ================= */
           .mvbd-modal-backdrop {
             position: fixed; inset: 0; z-index: 99999;
             display: flex; align-items: center; justify-content: center;
@@ -902,150 +1130,78 @@ export default function SeriesSection({
             animation: mvbdModalIn 0.2s ease both;
           }
           .mvbd-modal {
-            width: min(470px, 100%);
-            max-height: min(88svh, 760px);
+            width: min(440px, 100%);
+            max-height: min(88svh, 700px);
             overflow-y: auto;
             padding: 28px;
-            border-radius: 24px;
-            border: 1px solid rgba(255, 122, 26, 0.3);
-            background: #0a0502;
-            box-shadow: 0 30px 90px rgba(0, 0, 0, 0.8);
+            border-radius: 20px;
+            border: 1px solid rgba(0, 255, 200, 0.2);
+            background: #020b14;
+            box-shadow: 0 30px 90px rgba(0, 0, 0, 0.9);
             animation: mvbdModalScale 0.24s cubic-bezier(0.2, 0.8, 0.2, 1) both;
           }
           .mvbd-modal::-webkit-scrollbar { width: 4px; }
-          .mvbd-modal::-webkit-scrollbar-thumb { background: #5e3b23; border-radius: 99px; }
-          .mvbd-modal-title { font-size: 22px; font-weight: 700; color: #ffffff; }
-          .mvbd-modal-subtitle { margin-top: 8px; color: #8a7a6e; font-size: 13px; line-height: 1.6; }
+          .mvbd-modal::-webkit-scrollbar-thumb { background: #1a4a44; border-radius: 99px; }
+          .mvbd-modal-title { font-size: 20px; font-weight: 700; color: #ffffff; }
+          .mvbd-modal-subtitle { margin-top: 8px; color: #8a9ba8; font-size: 13px; line-height: 1.6; }
           .mvbd-modal-close {
             float: right; width: 32px; height: 32px;
             border: 0; border-radius: 50%;
-            color: #bcb3a9; background: rgba(255, 255, 255, 0.06);
+            color: #8a9ba8; background: rgba(255, 255, 255, 0.06);
             cursor: pointer; font-size: 16px;
           }
-          .mvbd-free-access-list { display: grid; gap: 10px; margin-top: 20px; }
-          .mvbd-access-button {
-            width: 100%; display: flex; align-items: center; gap: 12px;
-            padding: 14px; border: 1px solid rgba(255, 122, 26, 0.15);
-            border-radius: 14px; background: rgba(255, 255, 255, 0.03);
-            color: #ffffff; text-align: left; cursor: pointer;
-            transition: all 0.2s ease;
-          }
-          .mvbd-access-button:hover { background: rgba(255, 106, 0, 0.08); border-color: rgba(255, 122, 26, 0.4); }
-          .mvbd-access-icon {
-            width: 38px; height: 38px; flex: 0 0 38px;
-            display: grid; place-items: center; border-radius: 10px;
-            font-size: 18px; background: rgba(255, 106, 0, 0.1); color: #ff7a1a;
-          }
-          .mvbd-access-text { min-width: 0; flex: 1; }
-          .mvbd-access-text strong { display: block; font-size: 13px; }
-          .mvbd-access-text span { display: block; margin-top: 3px; color: #8a7a6e; font-size: 11px; line-height: 1.4; }
-          .mvbd-access-arrow { color: #ff7a1a; font-size: 16px; }
-          .mvbd-access-info { cursor: default; }
-          .mvbd-access-info:hover { transform: none; background: rgba(255, 255, 255, 0.03); }
-          .mvbd-access-restricted { cursor: not-allowed; opacity: 0.6; }
-          .mvbd-not-included { margin-top: 22px; padding-top: 18px; border-top: 1px solid rgba(255, 255, 255, 0.07); }
-          .mvbd-not-included-title { margin-bottom: 12px; color: #8a7a6e; font-size: 10px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; }
-          .mvbd-not-included ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 8px; }
-          .mvbd-not-included li { color: #6e6055; font-size: 12px; }
-          .mvbd-not-included li::before { content: "×"; margin-right: 8px; color: #5c4d42; }
-          .mvbd-selected-plan { margin-top: 18px; padding: 16px; border-radius: 14px; background: rgba(255, 106, 0, 0.05); border: 1px solid rgba(255, 106, 0, 0.15); }
-          .mvbd-selected-plan small { display: block; color: #8a7a6e; font-size: 10px; font-weight: 700; letter-spacing: 0.5px; }
+          .mvbd-selected-plan { margin-top: 18px; padding: 16px; border-radius: 12px; background: rgba(0, 255, 200, 0.05); border: 1px solid rgba(0, 255, 200, 0.15); }
+          .mvbd-selected-plan small { display: block; color: #8a9ba8; font-size: 10px; font-weight: 700; letter-spacing: 0.5px; }
           .mvbd-selected-plan strong { display: block; margin-top: 6px; font-size: 16px; color: #ffffff; }
           .mvbd-payment-number { margin-top: 16px; display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 14px; border-radius: 12px; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); }
-          .mvbd-payment-number strong { color: #ff9a4d; font-size: 16px; letter-spacing: 0.5px; }
-          .mvbd-copy-button { border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; padding: 8px 12px; color: #d4c8be; background: rgba(255, 255, 255, 0.05); cursor: pointer; font-size: 11px; font-weight: 600; }
+          .mvbd-payment-number strong { color: #00ffc8; font-size: 16px; letter-spacing: 0.5px; }
+          .mvbd-copy-button { border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; padding: 8px 12px; color: #b0c0cc; background: rgba(255, 255, 255, 0.05); cursor: pointer; font-size: 11px; font-weight: 600; }
           .mvbd-input { width: 100%; margin-top: 16px; min-height: 48px; padding: 0 16px; outline: none; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1); color: #ffffff; background: rgba(255, 255, 255, 0.04); font-size: 14px; }
-          .mvbd-input:focus { border-color: rgba(255, 106, 0, 0.6); }
+          .mvbd-input:focus { border-color: rgba(0, 255, 200, 0.6); }
           .mvbd-error { margin-top: 12px; padding: 12px; border-radius: 10px; color: #ff9d9d; background: rgba(255, 50, 50, 0.08); font-size: 12px; border: 1px solid rgba(255, 50, 50, 0.15); }
-          .mvbd-submit-button { width: 100%; min-height: 50px; margin-top: 16px; border: 0; border-radius: 12px; color: #000000; background: linear-gradient(135deg, #ffb86b, #ff6a00); font-size: 14px; font-weight: 700; cursor: pointer; }
+          .mvbd-submit-button { width: 100%; min-height: 50px; margin-top: 16px; border: 0; border-radius: 12px; color: #000000; background: linear-gradient(135deg, #00ffc8, #00b8ff); font-size: 14px; font-weight: 700; cursor: pointer; }
           .mvbd-submit-button:hover { filter: brightness(1.05); }
-          .mvbd-processing { text-align: center; padding: 24px 10px; }
-          .mvbd-loader { width: 64px; height: 64px; margin: 0 auto 24px; border-radius: 50%; border: 3px solid rgba(255, 255, 255, 0.08); border-top-color: #ff7a1a; animation: mvbdSpin 0.8s linear infinite; }
-          .mvbd-progress-track { height: 8px; margin-top: 24px; overflow: hidden; border-radius: 99px; background: rgba(255, 255, 255, 0.06); }
-          .mvbd-progress-fill { height: 100%; border-radius: inherit; background: linear-gradient(90deg, #ff6a00, #ffb86b); transition: width 0.2s linear; }
-          .mvbd-progress-text { margin-top: 12px; color: #8a7a6e; font-size: 12px; font-weight: 600; }
           .mvbd-success { text-align: center; padding: 16px 10px; }
-          .mvbd-success-icon { width: 68px; height: 68px; display: grid; place-items: center; margin: 0 auto 20px; border-radius: 50%; color: #000000; background: linear-gradient(135deg, #ffb86b, #ff6a00); font-size: 30px; font-weight: 900; animation: mvbdSuccessPop 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+          .mvbd-success-icon { width: 64px; height: 64px; display: grid; place-items: center; margin: 0 auto 20px; border-radius: 50%; color: #000000; background: linear-gradient(135deg, #00ffc8, #00b8ff); font-size: 28px; font-weight: 900; }
 
           /* ================= ANIMATIONS ================= */
-          @keyframes mvbdPulse { 0%, 100% { opacity: 0.4; transform: scale(0.85); } 50% { opacity: 1; transform: scale(1); } }
           @keyframes mvbdModalIn { from { opacity: 0; } to { opacity: 1; } }
           @keyframes mvbdModalScale { from { opacity: 0; transform: translateY(12px) scale(0.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
-          @keyframes mvbdSpin { to { transform: rotate(360deg); } }
-          @keyframes mvbdSuccessPop { from { opacity: 0; transform: scale(0.5); } 60% { transform: scale(1.1); } to { opacity: 1; transform: scale(1); } }
 
           /* ================= RESPONSIVE ================= */
-          @media (max-width: 900px) {
-            .mvbd-plans-grid { grid-template-columns: 1fr; max-width: 500px; margin-left: auto; margin-right: auto; }
-            .mvbd-footer { grid-template-columns: 1fr; gap: 30px; text-align: center; }
-            .mvbd-footer-left p { max-width: 100%; margin-left: auto; margin-right: auto; }
-            .mvbd-footer-brand { justify-content: center; }
+          @media (max-width: 1024px) {
+            .mvbd-features-grid { grid-template-columns: 1fr 1fr; }
+            .mvbd-feature-box.large { grid-column: span 2; }
+            .mvbd-feature-box.full { grid-column: span 2; }
+            .mvbd-hard-grid { grid-template-columns: 1fr 1fr; }
+            .mvbd-pricing-grid { grid-template-columns: 1fr 1fr; }
+            .mvbd-price-card.full-width { grid-column: span 2; flex-direction: column; align-items: flex-start; gap: 20px; }
+            .mvbd-price-card.full-width .mvbd-price-features.horizontal { flex-direction: column; gap: 12px; }
           }
-          @media (max-width: 600px) {
-            .mvbd-page-content { width: calc(100% - 24px); padding-top: 12px; }
-            .mvbd-premium-hero { padding: 60px 0 40px; }
-            .mvbd-premium-hero h1 { font-size: 32px; }
+          @media (max-width: 768px) {
+            .mvbd-nav { display: none; }
+            .mvbd-features-grid { grid-template-columns: 1fr; }
+            .mvbd-feature-box.large { grid-column: span 1; flex-direction: column; }
+            .mvbd-feature-box.full { grid-column: span 1; flex-direction: column; align-items: flex-start; }
+            .mvbd-hard-grid { grid-template-columns: 1fr; }
+            .mvbd-pricing-grid { grid-template-columns: 1fr; }
+            .mvbd-price-card.full-width { grid-column: span 1; }
+            .mvbd-dashboard-body { flex-direction: column; }
+            .mvbd-dash-sidebar { width: 100%; flex-direction: row; justify-content: center; border-right: 0; border-bottom: 1px solid rgba(0, 255, 200, 0.08); }
+          }
+          @media (max-width: 500px) {
+            .mvbd-container { width: calc(100% - 24px); }
+            .mvbd-header { padding: 10px 14px; }
+            .mvbd-header-actions .mvbd-btn-outline { display: none; }
+            .mvbd-hero { padding: 50px 0 40px; }
+            .mvbd-hero-title { font-size: 32px; }
             .mvbd-section-title { font-size: 24px; }
             .mvbd-cta-title { font-size: 24px; }
-            .mvbd-faq-question { font-size: 14px; padding: 16px 18px; }
-            .mvbd-cta-button { width: 100%; }
           }
         `}</style>
       </main>
 
-      {/* ================= MODALS ================= */}
-      {showFreeAccess && selectedPlan && (
-        <ViewportModal onBackdropClick={closeFreeAccess}>
-          <div className="mvbd-modal" role="dialog" aria-modal="true">
-            <button className="mvbd-modal-close" onClick={closeFreeAccess} aria-label="Close">×</button>
-            <div className="mvbd-modal-title">🎁 Free Plan</div>
-            <p className="mvbd-modal-subtitle">আপনার Free Plan-এ যেসব access available আছে সেগুলো এখান থেকে ব্যবহার করতে পারবেন।</p>
-            <div className="mvbd-free-access-list">
-              {(selectedPlan.freeAccess || []).map((item) => {
-                if (isRestrictedFreeItem(item)) {
-                  return (
-                    <div key={item.id} className="mvbd-access-button mvbd-access-restricted">
-                      <div className="mvbd-access-icon">🔒</div>
-                      <div className="mvbd-access-text"><strong>{item.title}</strong><span>Age-restricted content is unavailable here.</span></div>
-                    </div>
-                  )
-                }
-                if (item.type === "external") {
-                  return (
-                    <a key={item.id} href={item.href} target="_blank" rel="noreferrer" className="mvbd-access-button">
-                      <div className="mvbd-access-icon">{item.sticker || "↗"}</div>
-                      <div className="mvbd-access-text"><strong>{item.title}</strong><span>{item.description}</span></div>
-                      <div className="mvbd-access-arrow">›</div>
-                    </a>
-                  )
-                }
-                if (item.type === "mebook") {
-                  return (
-                    <button key={item.id} className="mvbd-access-button" onClick={() => handleFreeAccess(item)}>
-                      <div className="mvbd-access-icon">{item.sticker || "M"}</div>
-                      <div className="mvbd-access-text"><strong>{item.title}</strong><span>{item.description}</span></div>
-                      <div className="mvbd-access-arrow">›</div>
-                    </button>
-                  )
-                }
-                return (
-                  <div key={item.id} className="mvbd-access-button mvbd-access-info">
-                    <div className="mvbd-access-icon">{item.sticker || "✓"}</div>
-                    <div className="mvbd-access-text"><strong>{item.title}</strong><span>{item.description}</span></div>
-                  </div>
-                )
-              })}
-            </div>
-            {!!selectedPlan.notIncluded?.length && (
-              <div className="mvbd-not-included">
-                <div className="mvbd-not-included-title">Not included</div>
-                <ul>{selectedPlan.notIncluded.map((item) => <li key={item}>{item}</li>)}</ul>
-              </div>
-            )}
-          </div>
-        </ViewportModal>
-      )}
-
+      {/* ================= PAYMENT MODAL ================= */}
       {showPayment && selectedPlan && (
         <ViewportModal onBackdropClick={closePayment}>
           <div className="mvbd-modal" role="dialog" aria-modal="true">
@@ -1054,10 +1210,10 @@ export default function SeriesSection({
             <p className="mvbd-modal-subtitle">Send the exact plan amount to the payment number below and enter your transaction ID.</p>
             <div className="mvbd-selected-plan">
               <small>SELECTED PLAN</small>
-              <strong>{selectedPlan.sticker} {selectedPlan.planName} • {selectedPlan.price}</strong>
+              <strong>{selectedPlan.name} • {selectedPlan.price}</strong>
             </div>
             <div className="mvbd-payment-number">
-              <strong>{PAYMENT_NUMBER}</strong>
+              <strong>01700000000</strong>
               <button className="mvbd-copy-button" onClick={copyNumber}>{copied ? "Copied" : "Copy"}</button>
             </div>
             <input className="mvbd-input" value={transactionId} onChange={(e) => setTransactionId(e.target.value)} placeholder="Enter transaction ID" autoComplete="off" />
@@ -1067,20 +1223,7 @@ export default function SeriesSection({
         </ViewportModal>
       )}
 
-      {showProcessing && (
-        <ViewportModal>
-          <div className="mvbd-modal" role="dialog" aria-modal="true">
-            <div className="mvbd-processing">
-              <div className="mvbd-loader" />
-              <div className="mvbd-modal-title">⏳ Processing Request</div>
-              <p className="mvbd-modal-subtitle">Your payment request has been submitted. Please wait while the request is being processed.</p>
-              <div className="mvbd-progress-track"><div className="mvbd-progress-fill" style={{ width: `${progress}%` }} /></div>
-              <div className="mvbd-progress-text">{progress}% processing</div>
-            </div>
-          </div>
-        </ViewportModal>
-      )}
-
+      {/* ================= SUCCESS MODAL ================= */}
       {showSuccess && (
         <ViewportModal>
           <div className="mvbd-modal" role="dialog" aria-modal="true">

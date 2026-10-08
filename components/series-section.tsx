@@ -373,12 +373,12 @@ export default function SeriesSection({
           <header className="mvbd-premium-header">
             <div className="mvbd-brand">
               <div className="mvbd-brand-mark">
-                M
+                V
               </div>
 
               <div>
                 <strong>
-                  MoviesVerseBD
+                  Velocity
                 </strong>
 
                 <span>
@@ -399,7 +399,7 @@ export default function SeriesSection({
 
           <section className="mvbd-premium-hero">
             <div className="mvbd-eyebrow">
-              MOVIESVERSEBD
+              VELOCITY
             </div>
 
             <h1>
@@ -630,8 +630,7 @@ export default function SeriesSection({
           ================================================= */}
 
           <footer className="mvbd-premium-footer">
-            MoviesVerseBD • MVBD Premium
-            Membership
+            Velocity • Premium Membership
           </footer>
         </div>
 
@@ -657,7 +656,7 @@ export default function SeriesSection({
 
             overflow-x: hidden;
 
-            background: #020605;
+            background: #000000;
 
             color: #ffffff;
 
@@ -703,11 +702,11 @@ export default function SeriesSection({
             background:
               linear-gradient(
                 180deg,
-                rgba(0, 0, 0, 0.48)
+                rgba(0, 0, 0, 0.6)
                   0%,
-                rgba(0, 5, 3, 0.72)
+                rgba(5, 3, 0, 0.8)
                   48%,
-                rgba(0, 0, 0, 0.95)
+                rgba(0, 0, 0, 0.98)
                   100%
               );
           }
@@ -764,16 +763,16 @@ export default function SeriesSection({
 
             border:
               1px solid
-              rgba(97, 255, 151, 0.2);
+              rgba(255, 150, 50, 0.2);
 
             border-radius: 22px;
 
             background:
-              rgba(2, 10, 7, 0.76);
+              rgba(10, 5, 2, 0.76);
 
             box-shadow:
               0 12px 35px
-                rgba(0, 0, 0, 0.35),
+                rgba(0, 0, 0, 0.5),
               inset 0 1px 0
                 rgba(255, 255, 255, 0.06);
           }
@@ -800,18 +799,18 @@ export default function SeriesSection({
 
             font-weight: 900;
 
-            color: #001b0c;
+            color: #1a0a00;
 
             background:
               linear-gradient(
                 135deg,
-                #75ffad,
-                #00d95f
+                #ffb86b,
+                #ff6a00
               );
 
             box-shadow:
               0 0 22px
-                rgba(0, 255, 105, 0.35);
+                rgba(255, 106, 0, 0.35);
           }
 
           .mvbd-brand strong {
@@ -830,7 +829,7 @@ export default function SeriesSection({
 
             margin-top: 2px;
 
-            color: #8ea99b;
+            color: #a99a8e;
 
             font-size: 11px;
           }
@@ -848,14 +847,14 @@ export default function SeriesSection({
 
             border-radius: 999px;
 
-            color: #79fca9;
+            color: #ffb86b;
 
             background:
-              rgba(0, 255, 106, 0.07);
+              rgba(255, 106, 0, 0.07);
 
             border:
               1px solid
-              rgba(0, 255, 106, 0.16);
+              rgba(255, 106, 0, 0.16);
 
             font-size: 10px;
 
@@ -871,10 +870,10 @@ export default function SeriesSection({
 
             border-radius: 50%;
 
-            background: #36ff88;
+            background: #ff6a00;
 
             box-shadow:
-              0 0 10px #36ff88;
+              0 0 10px #ff6a00;
 
             animation:
               mvbdPulse
@@ -897,7 +896,7 @@ export default function SeriesSection({
           }
 
           .mvbd-eyebrow {
-            color: #48ff91;
+            color: #ff9a4d;
 
             font-size: 11px;
 
@@ -934,11 +933,11 @@ export default function SeriesSection({
           .mvbd-premium-hero h1 span {
             display: block;
 
-            color: #3cff86;
+            color: #ff7a1a;
 
             text-shadow:
               0 0 30px
-                rgba(0, 255, 112, 0.28);
+                rgba(255, 106, 0, 0.28);
           }
 
           .mvbd-premium-hero p {
@@ -949,7 +948,7 @@ export default function SeriesSection({
 
             max-width: 550px;
 
-            color: #a4b9af;
+            color: #b9a89a;
 
             font-size: 14px;
 
@@ -980,24 +979,24 @@ export default function SeriesSection({
 
           .mvbd-plan-card {
             --plan-main:
-              #47ff8a;
+              #ff7a1a;
 
             --plan-glow:
-              #47ff8a;
+              #ff7a1a;
 
             --plan-glow-soft:
               rgba(
-                47,
                 255,
-                119,
+                106,
+                0,
                 0.22
               );
 
             --plan-shadow:
               rgba(
-                38,
                 255,
-                115,
+                106,
+                0,
                 0.2
               );
 
@@ -1023,16 +1022,16 @@ export default function SeriesSection({
             background:
               linear-gradient(
                 160deg,
-                rgba(3, 17, 12, 0.97),
-                rgba(0, 7, 5, 0.98)
+                rgba(15, 8, 3, 0.97),
+                rgba(5, 2, 0, 0.98)
               );
 
             border:
               1px solid
               rgba(
-                82,
                 255,
-                145,
+                122,
+                26,
                 0.45
               );
 
@@ -1142,202 +1141,48 @@ export default function SeriesSection({
           }
 
           /* =================================================
-             PLAN COLORS
+             PLAN COLORS (All Orange to match the design)
           ================================================= */
 
-          .mvbd-plan-trial {
-            --plan-main:
-              #36ff78;
-
-            --plan-glow:
-              #47ff8a;
-
-            --plan-glow-soft:
-              rgba(
-                47,
-                255,
-                119,
-                0.22
-              );
-
-            --plan-shadow:
-              rgba(
-                38,
-                255,
-                115,
-                0.2
-              );
-
-            border-color:
-              rgba(
-                55,
-                255,
-                125,
-                0.65
-              );
-
-            background:
-              linear-gradient(
-                160deg,
-                rgba(
-                  0,
-                  43,
-                  23,
-                  0.96
-                ),
-                rgba(
-                  0,
-                  12,
-                  7,
-                  0.98
-                )
-              );
-          }
-
-          .mvbd-plan-monthly {
-            --plan-main:
-              #27dfff;
-
-            --plan-glow:
-              #20dfff;
-
-            --plan-glow-soft:
-              rgba(
-                20,
-                218,
-                255,
-                0.23
-              );
-
-            --plan-shadow:
-              rgba(
-                0,
-                210,
-                255,
-                0.2
-              );
-
-            border-color:
-              rgba(
-                20,
-                214,
-                255,
-                0.62
-              );
-
-            background:
-              linear-gradient(
-                160deg,
-                rgba(
-                  0,
-                  28,
-                  51,
-                  0.97
-                ),
-                rgba(
-                  1,
-                  8,
-                  16,
-                  0.98
-                )
-              );
-          }
-
-          .mvbd-plan-two_months {
-            --plan-main:
-              #d84cff;
-
-            --plan-glow:
-              #ce42ff;
-
-            --plan-glow-soft:
-              rgba(
-                210,
-                55,
-                255,
-                0.24
-              );
-
-            --plan-shadow:
-              rgba(
-                198,
-                42,
-                255,
-                0.22
-              );
-
-            border-color:
-              rgba(
-                207,
-                55,
-                255,
-                0.65
-              );
-
-            background:
-              linear-gradient(
-                160deg,
-                rgba(
-                  42,
-                  4,
-                  64,
-                  0.97
-                ),
-                rgba(
-                  10,
-                  2,
-                  19,
-                  0.98
-                )
-              );
-          }
-
+          .mvbd-plan-trial,
+          .mvbd-plan-monthly,
+          .mvbd-plan-two_months,
           .mvbd-plan-three_months {
             --plan-main:
-              #ffd52e;
+              #ff7a1a;
 
             --plan-glow:
-              #ffd329;
+              #ff7a1a;
 
             --plan-glow-soft:
               rgba(
                 255,
-                211,
-                38,
+                106,
+                0,
                 0.22
               );
 
             --plan-shadow:
               rgba(
                 255,
-                204,
-                30,
+                106,
+                0,
                 0.2
               );
 
             border-color:
               rgba(
                 255,
-                210,
-                40,
-                0.64
+                122,
+                26,
+                0.45
               );
 
             background:
               linear-gradient(
                 160deg,
-                rgba(
-                  53,
-                  40,
-                  4,
-                  0.97
-                ),
-                rgba(
-                  15,
-                  10,
-                  1,
-                  0.98
-                )
+                rgba(15, 8, 3, 0.97),
+                rgba(5, 2, 0, 0.98)
               );
           }
 
@@ -1422,7 +1267,7 @@ export default function SeriesSection({
           .mvbd-plan-subtitle {
             margin-top: 6px;
 
-            color: #a8bbb2;
+            color: #b8a79a;
 
             font-size: 10px;
 
@@ -1506,7 +1351,7 @@ export default function SeriesSection({
             border-radius:
               999px;
 
-            color: #07100b;
+            color: #1a0a00;
 
             background:
               linear-gradient(
@@ -1643,7 +1488,7 @@ export default function SeriesSection({
                 0.075
               );
 
-            color: #e1ebe6;
+            color: #e8e0da;
 
             font-size: 11px;
 
@@ -1677,23 +1522,23 @@ export default function SeriesSection({
           }
 
           .feature-check {
-            color: #001d0c;
+            color: #1a0a00;
 
             background:
-              #32f879;
+              #ff7a1a;
 
             box-shadow:
               0 0 9px
                 rgba(
-                  42,
                   255,
-                  117,
+                  122,
+                  26,
                   0.35
                 );
           }
 
           .feature-quality {
-            color: #001d0c;
+            color: #1a0a00;
 
             background:
               linear-gradient(
@@ -1763,7 +1608,7 @@ export default function SeriesSection({
 
           .mvbd-feature-list
             li.locked {
-            color: #7c8882;
+            color: #8a7a6e;
           }
 
           /* =================================================
@@ -1810,13 +1655,13 @@ export default function SeriesSection({
                   in srgb,
                   var(--plan-main)
                     35%,
-                  #020605
+                  #050200
                 ),
                 color-mix(
                   in srgb,
                   var(--plan-main)
                     15%,
-                  #020605
+                  #050200
                 )
               );
 
@@ -1865,13 +1710,13 @@ export default function SeriesSection({
                   in srgb,
                   var(--plan-main)
                     55%,
-                  #020605
+                  #050200
                 ),
                 color-mix(
                   in srgb,
                   var(--plan-main)
                     25%,
-                  #020605
+                  #050200
                 )
               );
 
@@ -1924,21 +1769,21 @@ export default function SeriesSection({
               0
               14px;
 
-            color: #06130d;
+            color: #1a0a00;
 
             background:
               linear-gradient(
                 135deg,
-                #5effdc,
-                #2beaff
+                #ffb86b,
+                #ff6a00
               );
 
             box-shadow:
               0 0 18px
                 rgba(
-                  40,
-                  237,
                   255,
+                  106,
+                  0,
                   0.3
                 );
 
@@ -1982,9 +1827,9 @@ export default function SeriesSection({
 
             background:
               rgba(
+                15,
+                8,
                 3,
-                13,
-                9,
                 0.8
               );
 
@@ -2009,13 +1854,13 @@ export default function SeriesSection({
 
             border-radius: 11px;
 
-            color: #62ff9b;
+            color: #ff7a1a;
 
             background:
               rgba(
-                0,
                 255,
                 106,
+                0,
                 0.08
               );
           }
@@ -2031,7 +1876,7 @@ export default function SeriesSection({
 
             margin-top: 3px;
 
-            color: #80948b;
+            color: #8a7a6e;
 
             font-size: 10px;
           }
@@ -2045,7 +1890,7 @@ export default function SeriesSection({
 
             margin-top: 30px;
 
-            color: #52645b;
+            color: #5c4d42;
 
             font-size: 10px;
           }
@@ -2079,8 +1924,7 @@ export default function SeriesSection({
 
             animation:
               mvbdModalIn
-              0.2s
-              ease
+              0.2s              ease
               both;
           }
 
@@ -2110,17 +1954,17 @@ export default function SeriesSection({
             border:
               1px solid
               rgba(
-                76,
                 255,
-                137,
+                122,
+                26,
                 0.28
               );
 
             background:
               linear-gradient(
                 155deg,
-                #07130e,
-                #020605
+                #130c07,
+                #050200
               );
 
             box-shadow:
@@ -2133,9 +1977,9 @@ export default function SeriesSection({
                 ),
               0 0 45px
                 rgba(
-                  0,
                   255,
                   106,
+                  0,
                   0.08
                 );
 
@@ -2157,7 +2001,7 @@ export default function SeriesSection({
 
           .mvbd-modal::-webkit-scrollbar-thumb {
             background:
-              #235e3b;
+              #5e3b23;
 
             border-radius: 99px;
           }
@@ -2171,7 +2015,7 @@ export default function SeriesSection({
           .mvbd-modal-subtitle {
             margin-top: 7px;
 
-            color: #84988e;
+            color: #98887a;
 
             font-size: 12px;
 
@@ -2189,7 +2033,7 @@ export default function SeriesSection({
 
             border-radius: 50%;
 
-            color: #a9bcb3;
+            color: #bcb3a9;
 
             background:
               rgba(
@@ -2230,9 +2074,9 @@ export default function SeriesSection({
             border:
               1px solid
               rgba(
-                85,
                 255,
-                145,
+                122,
+                26,
                 0.15
               );
 
@@ -2267,9 +2111,9 @@ export default function SeriesSection({
 
             background:
               rgba(
-                42,
                 255,
-                117,
+                106,
+                0,
                 0.07
               );
           }
@@ -2294,9 +2138,9 @@ export default function SeriesSection({
 
             background:
               rgba(
-                0,
                 255,
                 106,
+                0,
                 0.09
               );
           }
@@ -2318,7 +2162,7 @@ export default function SeriesSection({
 
             margin-top: 3px;
 
-            color: #758a80;
+            color: #8a7a6e;
 
             font-size: 10px;
 
@@ -2326,7 +2170,7 @@ export default function SeriesSection({
           }
 
           .mvbd-access-arrow {
-            color: #56ff94;
+            color: #ff7a1a;
 
             font-size: 16px;
           }
@@ -2363,7 +2207,7 @@ export default function SeriesSection({
 
           .mvbd-access-restricted
             .mvbd-access-icon {
-            color: #8d9792;
+            color: #8a7a6e;
 
             background:
               rgba(
@@ -2392,7 +2236,7 @@ export default function SeriesSection({
           .mvbd-not-included-title {
             margin-bottom: 11px;
 
-            color: #7c8e86;
+            color: #8a7a6e;
 
             font-size: 10px;
 
@@ -2417,7 +2261,7 @@ export default function SeriesSection({
           }
 
           .mvbd-not-included li {
-            color: #67766f;
+            color: #6e6055;
 
             font-size: 10px;
           }
@@ -2427,7 +2271,7 @@ export default function SeriesSection({
 
             margin-right: 8px;
 
-            color: #66716d;
+            color: #5c4d42;
           }
 
           /* =================================================
@@ -2443,18 +2287,18 @@ export default function SeriesSection({
 
             background:
               rgba(
-                0,
                 255,
                 106,
+                0,
                 0.055
               );
 
             border:
               1px solid
               rgba(
-                0,
                 255,
                 106,
+                0,
                 0.12
               );
           }
@@ -2462,7 +2306,7 @@ export default function SeriesSection({
           .mvbd-selected-plan small {
             display: block;
 
-            color: #719083;
+            color: #8a7a6e;
 
             font-size: 9px;
           }
@@ -2501,7 +2345,7 @@ export default function SeriesSection({
           }
 
           .mvbd-payment-number strong {
-            color: #65ff9c;
+            color: #ff9a4d;
 
             font-size: 17px;
 
@@ -2524,7 +2368,7 @@ export default function SeriesSection({
               7px
               10px;
 
-            color: #c8d7d0;
+            color: #d4c8be;
 
             background:
               rgba(
@@ -2579,9 +2423,9 @@ export default function SeriesSection({
           .mvbd-input:focus {
             border-color:
               rgba(
-                63,
                 255,
-                136,
+                106,
+                0,
                 0.55
               );
           }
@@ -2617,13 +2461,13 @@ export default function SeriesSection({
 
             border-radius: 14px;
 
-            color: #001b0c;
+            color: #1a0a00;
 
             background:
               linear-gradient(
                 135deg,
-                #8affb7,
-                #27ed78
+                #ffb86b,
+                #ff6a00
               );
 
             font-size: 12px;
@@ -2672,7 +2516,7 @@ export default function SeriesSection({
               );
 
             border-top-color:
-              #52ff95;
+              #ff7a1a;
 
             animation:
               mvbdSpin
@@ -2708,8 +2552,8 @@ export default function SeriesSection({
             background:
               linear-gradient(
                 90deg,
-                #00d95f,
-                #72ffac
+                #ff6a00,
+                #ffb86b
               );
 
             transition:
@@ -2721,7 +2565,7 @@ export default function SeriesSection({
           .mvbd-progress-text {
             margin-top: 10px;
 
-            color: #70877c;
+            color: #8a7a6e;
 
             font-size: 10px;
           }
@@ -2754,13 +2598,13 @@ export default function SeriesSection({
 
             border-radius: 50%;
 
-            color: #001b0c;
+            color: #1a0a00;
 
             background:
               linear-gradient(
                 135deg,
-                #8affb7,
-                #29ed78
+                #ffb86b,
+                #ff6a00
               );
 
             font-size: 30px;
@@ -2770,9 +2614,9 @@ export default function SeriesSection({
             box-shadow:
               0 0 35px
                 rgba(
-                  0,
                   255,
                   106,
+                  0,
                   0.22
                 );
 
@@ -2834,9 +2678,9 @@ export default function SeriesSection({
               box-shadow:
                 0 0 18px
                   rgba(
-                    40,
-                    237,
                     255,
+                    106,
+                    0,
                     0.3
                   );
             }
@@ -2845,9 +2689,9 @@ export default function SeriesSection({
               box-shadow:
                 0 0 30px
                   rgba(
-                    40,
-                    237,
                     255,
+                    106,
+                    0,
                     0.6
                   );
             }
@@ -3518,4 +3362,4 @@ export default function SeriesSection({
       )}
     </>
   )
-                        }
+                          }

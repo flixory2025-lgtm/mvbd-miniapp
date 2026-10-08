@@ -11125,7 +11125,7 @@ export const movies1 = [
     poster: "/797id.jpg",
     trailer: "https://www.youtube.com/embed/_34JNLkvz40?si",
     telegramLink: "https://t.me/mvbdstore_bot?start=f_MzYzMSwzNjMy",
-    telegram4kLink: "https://t.me/+gerJUkv5KS85YzM1",
+    telegram4kLink: "http://t.me/mvbdcdn_bot?start=f_MTcsMTg",
     genre: "Sci-Fi | Action | Thriller",
     year: "2014",
     rating: "6.4",

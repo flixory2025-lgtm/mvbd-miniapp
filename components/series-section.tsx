@@ -525,46 +525,47 @@ export default function SeriesSection({
      SWIPER INITIALIZATION
   ======================================================= */
 
-  useEffect(() => {
-    let swiperInstance: any = null
+useEffect(() => {
+  let swiperInstance: any = null
 
-    const initSwiper = async () => {
-      const SwiperModule = await import("swiper")
-      const { EffectCards, Mousewheel, Keyboard } = await import("swiper/modules")
+  const initSwiper = async () => {
+    // v8-এ মডিউল এবং কোর উভয়ই 'swiper' থেকে আমদানি করতে হয়
+    const SwiperModule = await import("swiper")
+    const { EffectCards, Mousewheel, Keyboard } = await import("swiper")
 
-      SwiperModule.default.use(EffectCards, Mousewheel, Keyboard)
+    SwiperModule.default.use(EffectCards, Mousewheel, Keyboard)
 
-      swiperInstance = new SwiperModule.default(".mySwiper", {
-        effect: "cards",
-        grabCursor: true,
-        initialSlide: 0,
-        cardsEffect: {
-          perSlideOffset: 8,
-          perSlideRotate: 2,
-          slideShadows: true,
+    swiperInstance = new SwiperModule.default(".mySwiper", {
+      effect: "cards",
+      grabCursor: true,
+      initialSlide: 0,
+      cardsEffect: {
+        perSlideOffset: 8,
+        perSlideRotate: 2,
+        slideShadows: true,
+      },
+      mousewheel: {
+        forceToAxis: true,
+      },
+      keyboard: {
+        enabled: true,
+      },
+      on: {
+        slideChange: (swiper: any) => {
+          setActiveCard(swiper.activeIndex)
         },
-        mousewheel: {
-          forceToAxis: true,
-        },
-        keyboard: {
-          enabled: true,
-        },
-        on: {
-          slideChange: (swiper: any) => {
-            setActiveCard(swiper.activeIndex)
-          },
-        },
-      })
+      },
+    })
+  }
+
+  initSwiper()
+
+  return () => {
+    if (swiperInstance) {
+      swiperInstance.destroy(true, true)
     }
-
-    initSwiper()
-
-    return () => {
-      if (swiperInstance) {
-        swiperInstance.destroy(true, true)
-      }
-    }
-  }, [])
+  }
+}, [])
 
   /* =======================================================
      RENDER

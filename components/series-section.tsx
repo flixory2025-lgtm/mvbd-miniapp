@@ -522,6 +522,51 @@ export default function SeriesSection({
   const cardPlans = SUBSCRIPTION_PLANS
 
   /* =======================================================
+     SWIPER INITIALIZATION
+  ======================================================= */
+
+  useEffect(() => {
+    let swiperInstance: any = null
+
+    const initSwiper = async () => {
+      const SwiperModule = await import("swiper")
+      const { EffectCards, Mousewheel, Keyboard } = await import("swiper/modules")
+
+      SwiperModule.default.use(EffectCards, Mousewheel, Keyboard)
+
+      swiperInstance = new SwiperModule.default(".mySwiper", {
+        effect: "cards",
+        grabCursor: true,
+        initialSlide: 0,
+        cardsEffect: {
+          perSlideOffset: 8,
+          perSlideRotate: 2,
+          slideShadows: true,
+        },
+        mousewheel: {
+          forceToAxis: true,
+        },
+        keyboard: {
+          enabled: true,
+        },
+        on: {
+          slideChange: (swiper: any) => {
+            setActiveCard(swiper.activeIndex)
+          },
+        },
+      })
+    }
+
+    initSwiper()
+
+    return () => {
+      if (swiperInstance) {
+        swiperInstance.destroy(true, true)
+      }
+    }
+  }, [])
+
+  /* =======================================================
      RENDER
   ======================================================= */
 
@@ -612,7 +657,7 @@ export default function SeriesSection({
           </section>
 
           {/* =================================================
-              PLAN CARD STACK
+              PLAN CARD STACK (SWIPER CARDS EFFECT)
           ================================================= */}
 
           <section className="mvbd-plan-showcase">
@@ -650,150 +695,92 @@ export default function SeriesSection({
 
               <div className="mvbd-stage-glow" />
 
-              {cardPlans.map(
-                (plan, index) => {
+              <div className="swiper mySwiper">
+                <div className="swiper-wrapper">
 
-                  const offset =
-                    (index - activeCard + cardPlans.length) %
-                    cardPlans.length
-
-                  const visibleOffset =
-                    offset <= 3
-                      ? offset
-                      : offset - cardPlans.length
-
-                  const isActive =
-                    index === activeCard
-
-                  return (
-                    <button
-                      type="button"
+                  {cardPlans.map((plan) => (
+                    <div
+                      className="swiper-slide"
                       key={plan.planId}
-                      className={[
-                        "mvbd-stack-card",
-                        isActive
-                          ? "active"
-                          : "",
-                      ].join(" ")}
-                      style={{
-                        "--card-offset":
-                          visibleOffset,
-                        "--card-index":
-                          index,
-                      } as React.CSSProperties}
-                      onClick={() => {
-                        if (!isActive) {
-                          setActiveCard(index)
-                        } else {
-                          openPlan(plan)
-                        }
-                      }}
                     >
+                      <div className="mvbd-stack-card-inner">
 
-                      {/* CARD LIGHT */}
+                        <div className="mvbd-stack-light" />
 
-                      <div className="mvbd-stack-light" />
+                        {plan.popular && (
+                          <div className="mvbd-stack-popular">
+                            ✦ MOST POPULAR
+                          </div>
+                        )}
 
-                      {plan.popular && (
-                        <div className="mvbd-stack-popular">
-                          ✦ MOST POPULAR
+                        <div className="mvbd-stack-top">
+
+                          <div className="mvbd-stack-icon">
+                            {plan.sticker || "✦"}
+                          </div>
+
+                          <div>
+                            <span>
+                              MOVIESVERSEBD
+                            </span>
+
+                            <strong>
+                              {getPlanLabel(plan)}
+                            </strong>
+                          </div>
+
                         </div>
-                      )}
 
-                      <div className="mvbd-stack-top">
-
-                        <div className="mvbd-stack-icon">
-                          {plan.sticker || "✦"}
+                        <div className="mvbd-stack-price">
+                          {plan.planId === "trial"
+                            ? "FREE"
+                            : plan.price}
                         </div>
 
-                        <div>
+                        <div className="mvbd-stack-duration">
+                          {getPlanDuration(plan)}
+                        </div>
+
+                        <div className="mvbd-stack-divider" />
+
+                        <div className="mvbd-stack-quality">
                           <span>
-                            MOVIESVERSEBD
+                            🎥
                           </span>
 
-                          <strong>
-                            {getPlanLabel(plan)}
-                          </strong>
+                          <span>
+                            {plan.videoQuality}
+                          </span>
                         </div>
 
+                        <button
+                          type="button"
+                          className="mvbd-stack-bottom"
+                          onClick={() => openPlan(plan)}
+                        >
+                          <span>
+                            {plan.planId === "trial"
+                              ? "Explore Free Access"
+                              : "Unlock Premium Access"}
+                          </span>
+
+                          <b>
+                            →
+                          </b>
+                        </button>
+
                       </div>
+                    </div>
+                  ))}
 
-                      <div className="mvbd-stack-price">
-                        {plan.planId === "trial"
-                          ? "FREE"
-                          : plan.price}
-                      </div>
-
-                      <div className="mvbd-stack-duration">
-                        {getPlanDuration(plan)}
-                      </div>
-
-                      <div className="mvbd-stack-divider" />
-
-                      <div className="mvbd-stack-quality">
-                        <span>
-                          🎥
-                        </span>
-
-                        <span>
-                          {plan.videoQuality}
-                        </span>
-                      </div>
-
-                      <div className="mvbd-stack-bottom">
-                        <span>
-                          {plan.planId === "trial"
-                            ? "Explore Free Access"
-                            : "Unlock Premium Access"}
-                        </span>
-
-                        <b>
-                          →
-                        </b>
-                      </div>
-
-                    </button>
-                  )
-                },
-              )}
-
-              {/* STACK CONTROLS */}
-
-              <button
-                type="button"
-                className="mvbd-stack-nav mvbd-stack-prev"
-                onClick={() => {
-                  setActiveCard(
-                    (activeCard -
-                      1 +
-                      cardPlans.length) %
-                      cardPlans.length,
-                  )
-                }}
-                aria-label="Previous plan"
-              >
-                ‹
-              </button>
-
-              <button
-                type="button"
-                className="mvbd-stack-nav mvbd-stack-next"
-                onClick={() => {
-                  setActiveCard(
-                    (activeCard + 1) %
-                      cardPlans.length,
-                  )
-                }}
-                aria-label="Next plan"
-              >
-                ›
-              </button>
+                </div>
+              </div>
 
             </div>
 
             <div className="mvbd-stack-hint">
               <span>←</span>
-              Tap a card to select
+              Swipe or tap a card to select
               <span>→</span>
             </div>
 
@@ -1745,7 +1732,7 @@ export default function SeriesSection({
           }
 
           /* =================================================
-             CARD STAGE
+             CARD STAGE - SWIPER CONTAINER
           ================================================= */
 
           .mvbd-card-stage {
@@ -1800,156 +1787,50 @@ export default function SeriesSection({
           }
 
           /* =================================================
-             STACK CARD
+             SWIPER WRAPPER
           ================================================= */
 
-          .mvbd-stack-card {
-            --card-offset: 0;
-
-            position: absolute;
-
-            width:
-              min(
-                330px,
-                70vw
-              );
-
-            height: 395px;
-
-            border-radius: 27px;
-
-            padding:
-              25px
-              23px;
-
-            overflow: hidden;
-
-            text-align: left;
-
-            color: #ffffff;
-
-            cursor: pointer;
-
-            border:
-              1px solid
-              rgba(255,255,255,0.10);
-
-            background:
-              linear-gradient(
-                145deg,
-                rgba(27,32,38,0.96),
-                rgba(7,10,14,0.98)
-              );
-
-            box-shadow:
-              0 35px 70px
-              rgba(0,0,0,0.65);
-
-            transform:
-              translateX(
-                calc(
-                  var(--card-offset)
-                  * 34px
-                )
-              )
-              translateY(
-                calc(
-                  abs(var(--card-offset))
-                  * 5px
-                )
-              )
-              translateZ(
-                calc(
-                  var(--card-offset)
-                  * -45px
-                )
-              )
-              rotate(
-                calc(
-                  var(--card-offset)
-                  * 4deg
-                )
-              )
-              scale(
-                calc(
-                  1 -
-                  (
-                    min(
-                      abs(var(--card-offset)),
-                      3
-                    )
-                    * 0.035
-                  )
-                )
-              );
-
-            opacity:
-              calc(
-                1 -
-                (
-                  min(
-                    abs(var(--card-offset)),
-                    3
-                  )
-                  * 0.15
-                )
-              );
-
-            z-index:
-              calc(
-                20 -
-                abs(var(--card-offset))
-              );
-
-            transition:
-              transform
-                0.55s
-                cubic-bezier(
-                  0.22,
-                  0.8,
-                  0.2,
-                  1
-                ),
-              opacity
-                0.45s
-                ease,
-              box-shadow
-                0.35s
-                ease,
-              border-color
-                0.35s
-                ease;
-
-            appearance:
-              none;
-
-            -webkit-tap-highlight-color:
-              transparent;
+          .mySwiper {
+            width: 100%;
+            height: 100%;
+            padding: 20px 0;
+            overflow: visible !important;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            max-width: 330px;
+            min-height: 395px;
           }
 
-          .mvbd-stack-card.active {
+          .swiper-slide {
+            width: 300px;
+            height: 375px;
+            border-radius: 27px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: 0 35px 70px rgba(0, 0, 0, 0.65);
+            border: 1px solid rgba(255, 255, 255, 0.10);
+            background: linear-gradient(
+              145deg,
+              rgba(27, 32, 38, 0.96),
+              rgba(7, 10, 14, 0.98)
+            );
+          }
+
+          .swiper-slide-active {
             box-shadow:
               0 45px 100px
               rgba(0,0,0,0.72),
               0 0 60px
               rgba(225,196,116,0.10);
-
-            border-color:
-              rgba(236,211,143,0.22);
+            border-color: rgba(236,211,143,0.22);
           }
 
-          .mvbd-stack-card:hover {
-            border-color:
-              rgba(255,235,177,0.28);
-          }
-
-          .mvbd-stack-card::before {
+          .swiper-slide::before {
             content: "";
-
             position: absolute;
-
             inset: 0;
-
             background:
               linear-gradient(
                 130deg,
@@ -1958,218 +1839,136 @@ export default function SeriesSection({
                 transparent 68%,
                 rgba(255,221,139,0.025)
               );
+            pointer-events: none;
+            z-index: 1;
+          }
 
-            pointer-events:
-              none;
+          /* =================================================
+             STACK CARD INNER
+          ================================================= */
+
+          .mvbd-stack-card-inner {
+            width: 100%;
+            height: 100%;
+            padding: 25px 23px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
           }
 
           .mvbd-stack-light {
             position: absolute;
-
             width: 210px;
             height: 210px;
-
             top: -115px;
             left: 50%;
-
-            transform:
-              translateX(-50%);
-
-            border-radius:
-              50%;
-
+            transform: translateX(-50%);
+            border-radius: 50%;
             background:
               radial-gradient(
                 circle,
                 rgba(246,218,148,0.23),
-                rgba(246,218,148,0.04)
-                  42%,
-                transparent
-                  70%
+                rgba(246,218,148,0.04) 42%,
+                transparent 70%
               );
-
-            filter:
-              blur(8px);
-
-            animation:
-              mvbdCardLight
-              5s
-              ease-in-out
-              infinite;
+            filter: blur(8px);
+            animation: mvbdCardLight 5s ease-in-out infinite;
+            z-index: 0;
           }
 
           .mvbd-stack-popular {
             position: absolute;
-
             top: 0;
             right: 0;
-
-            padding:
-              8px
-              13px;
-
-            border-radius:
-              0
-              0
-              0
-              14px;
-
-            color:
-              #17130b;
-
+            padding: 8px 13px;
+            border-radius: 0 0 0 14px;
+            color: #17130b;
             background:
               linear-gradient(
                 135deg,
                 #f6dda0,
                 #c9ad61
               );
-
             font-size: 7px;
-
             font-weight: 950;
-
-            letter-spacing:
-              0.8px;
-
+            letter-spacing: 0.8px;
             box-shadow:
               0 0 25px
               rgba(236,207,126,0.20);
+            z-index: 2;
           }
 
           .mvbd-stack-top {
             position: relative;
             z-index: 3;
-
             display: flex;
             align-items: center;
-
             gap: 12px;
           }
 
           .mvbd-stack-icon {
             width: 50px;
             height: 50px;
-
             display: grid;
             place-items: center;
-
-            flex:
-              0 0 50px;
-
+            flex: 0 0 50px;
             border-radius: 15px;
-
-            color:
-              #f2d88e;
-
-            background:
-              rgba(242,214,139,0.08);
-
-            border:
-              1px solid
-              rgba(242,214,139,0.16);
-
+            color: #f2d88e;
+            background: rgba(242,214,139,0.08);
+            border: 1px solid rgba(242,214,139,0.16);
             font-size: 22px;
-
-            box-shadow:
-              inset
-              0 0 25px
-              rgba(255,255,255,0.02);
+            box-shadow: inset 0 0 25px rgba(255,255,255,0.02);
           }
 
           .mvbd-stack-top span {
             display: block;
-
-            color:
-              rgba(255,255,255,0.38);
-
+            color: rgba(255,255,255,0.38);
             font-size: 7px;
-
-            letter-spacing:
-              1.5px;
-
+            letter-spacing: 1.5px;
             font-weight: 800;
           }
 
           .mvbd-stack-top strong {
             display: block;
-
             margin-top: 5px;
-
-            color:
-              #f5f3ed;
-
+            color: #f5f3ed;
             font-size: 17px;
-
             font-weight: 850;
           }
 
           .mvbd-stack-price {
             position: relative;
             z-index: 3;
-
             margin-top: 42px;
-
-            color:
-              #f5dda0;
-
+            color: #f5dda0;
             font-size: 44px;
-
             line-height: 1;
-
             font-weight: 900;
-
-            letter-spacing:
-              -2px;
-
-            text-shadow:
-              0 0 35px
-              rgba(241,213,139,0.18);
+            letter-spacing: -2px;
+            text-shadow: 0 0 35px rgba(241,213,139,0.18);
           }
 
           .mvbd-stack-duration {
             position: relative;
             z-index: 3;
-
             display: inline-flex;
-
             margin-top: 12px;
-
-            padding:
-              7px
-              12px;
-
-            border-radius:
-              999px;
-
-            color:
-              rgba(255,255,255,0.65);
-
-            background:
-              rgba(255,255,255,0.045);
-
-            border:
-              1px solid
-              rgba(255,255,255,0.07);
-
+            padding: 7px 12px;
+            border-radius: 999px;
+            color: rgba(255,255,255,0.65);
+            background: rgba(255,255,255,0.045);
+            border: 1px solid rgba(255,255,255,0.07);
             font-size: 8px;
-
             font-weight: 800;
-
-            letter-spacing:
-              0.7px;
+            letter-spacing: 0.7px;
+            align-self: flex-start;
           }
 
           .mvbd-stack-divider {
             position: relative;
             z-index: 3;
-
             height: 1px;
-
-            margin:
-              24px
-              0
-              15px;
-
+            margin: 24px 0 15px;
             background:
               linear-gradient(
                 90deg,
@@ -2181,57 +1980,46 @@ export default function SeriesSection({
           .mvbd-stack-quality {
             position: relative;
             z-index: 3;
-
             display: flex;
             align-items: center;
-
             gap: 7px;
-
-            color:
-              rgba(255,255,255,0.65);
-
+            color: rgba(255,255,255,0.65);
             font-size: 10px;
-
             font-weight: 700;
           }
 
           .mvbd-stack-bottom {
             position: absolute;
-
             z-index: 3;
-
             left: 23px;
             right: 23px;
             bottom: 22px;
-
             display: flex;
             align-items: center;
-            justify-content:
-              space-between;
-
-            padding:
-              12px
-              14px;
-
+            justify-content: space-between;
+            padding: 12px 14px;
             border-radius: 13px;
-
-            color:
-              #15120b;
-
+            color: #15120b;
             background:
               linear-gradient(
                 100deg,
                 #f4dda0,
                 #d1b968
               );
-
             font-size: 9px;
-
             font-weight: 900;
-
             box-shadow:
               0 8px 25px
               rgba(217,188,105,0.10);
+            border: none;
+            cursor: pointer;
+            width: calc(100% - 46px);
+            transition: all 0.2s ease;
+          }
+
+          .mvbd-stack-bottom:hover {
+            filter: brightness(1.1);
+            transform: translateY(-2px);
           }
 
           .mvbd-stack-bottom b {
@@ -2239,93 +2027,33 @@ export default function SeriesSection({
             line-height: 0;
           }
 
-          /* =================================================
-             STACK NAV
-          ================================================= */
-
-          .mvbd-stack-nav {
-            position: absolute;
-
-            top: 50%;
-
-            z-index: 40;
-
-            width: 40px;
-            height: 40px;
-
-            transform:
-              translateY(-50%);
-
-            display: grid;
-            place-items: center;
-
-            border-radius: 50%;
-
-            color:
-              rgba(255,255,255,0.85);
-
-            background:
-              rgba(15,19,24,0.82);
-
-            border:
-              1px solid
-              rgba(255,255,255,0.10);
-
-            backdrop-filter:
-              blur(12px);
-
-            cursor: pointer;
-
-            font-size: 24px;
-
-            transition:
-              all
-              0.2s
-              ease;
-          }
-
-          .mvbd-stack-nav:hover {
-            background:
-              rgba(231,207,137,0.12);
-
-            border-color:
-              rgba(231,207,137,0.28);
-
-            color:
-              #f1d992;
-          }
-
-          .mvbd-stack-prev {
-            left: 18px;
-          }
-
-          .mvbd-stack-next {
-            right: 18px;
-          }
-
           .mvbd-stack-hint {
             display: flex;
             align-items: center;
             justify-content: center;
-
             gap: 12px;
-
             margin-top: 14px;
-
-            color:
-              rgba(255,255,255,0.28);
-
+            color: rgba(255,255,255,0.28);
             font-size: 9px;
-
-            letter-spacing:
-              0.7px;
+            letter-spacing: 0.7px;
           }
 
           .mvbd-stack-hint span {
-            color:
-              rgba(239,211,139,0.55);
-
+            color: rgba(239,211,139,0.55);
             font-size: 13px;
+          }
+
+          /* =================================================
+             SWIPER CARD EFFECT STYLES
+          ================================================= */
+
+          .swiper-cards {
+            overflow: visible;
+          }
+
+          .swiper-cards .swiper-slide {
+            overflow: hidden;
+            backface-visibility: hidden;
           }
 
           /* =================================================
@@ -4023,20 +3751,18 @@ export default function SeriesSection({
               border-radius: 27px;
             }
 
-            .mvbd-stack-card {
-              width:
-                min(
-                  275px,
-                  72vw
-                );
+            .mySwiper {
+              max-width: 275px;
+              min-height: 355px;
+            }
 
-              height: 355px;
+            .swiper-slide {
+              width: 250px;
+              height: 340px;
+            }
 
-              padding:
-                21px
-                19px;
-
-              border-radius: 23px;
+            .mvbd-stack-card-inner {
+              padding: 21px 19px;
             }
 
             .mvbd-stack-top strong {
@@ -4056,6 +3782,8 @@ export default function SeriesSection({
               padding:
                 11px
                 12px;
+
+              width: calc(100% - 38px);
             }
 
             .mvbd-stack-nav {
@@ -4193,9 +3921,14 @@ export default function SeriesSection({
               font-size: 32px;
             }
 
-            .mvbd-stack-card {
-              width: 260px;
-              height: 345px;
+            .mySwiper {
+              max-width: 260px;
+              min-height: 345px;
+            }
+
+            .swiper-slide {
+              width: 235px;
+              height: 330px;
             }
 
             .mvbd-card-stage {
@@ -4685,4 +4418,4 @@ export default function SeriesSection({
 
     </>
   )
-                }
+        }

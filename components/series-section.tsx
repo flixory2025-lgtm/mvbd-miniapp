@@ -39,13 +39,10 @@ function ViewportModal({
 
   useEffect(() => {
     setMounted(true)
-
     const oldOverflow = document.body.style.overflow
     const oldTouchAction = document.body.style.touchAction
-
     document.body.style.overflow = "hidden"
     document.body.style.touchAction = "none"
-
     return () => {
       document.body.style.overflow = oldOverflow
       document.body.style.touchAction = oldTouchAction
@@ -59,10 +56,7 @@ function ViewportModal({
       className="mvbd-modal-backdrop"
       role="presentation"
       onClick={(event) => {
-        if (
-          event.target === event.currentTarget &&
-          onBackdropClick
-        ) {
+        if (event.target === event.currentTarget && onBackdropClick) {
           onBackdropClick()
         }
       }}
@@ -74,7 +68,7 @@ function ViewportModal({
 }
 
 /* =========================================================
-   MAIN
+   MAIN COMPONENT
 ========================================================= */
 
 export default function SeriesSection({
@@ -82,152 +76,76 @@ export default function SeriesSection({
 }: SeriesSectionProps) {
   const { user, profile } = useAuth()
 
-  const [selectedPlan, setSelectedPlan] =
-    useState<Plan | null>(null)
+  const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null)
+  const [showPayment, setShowPayment] = useState(false)
+  const [showFreeAccess, setShowFreeAccess] = useState(false)
+  const [showProcessing, setShowProcessing] = useState(false)
+  const [showSuccess, setShowSuccess] = useState(false)
+  const [transactionId, setTransactionId] = useState("")
+  const [progress, setProgress] = useState(0)
+  const [copied, setCopied] = useState(false)
+  const [error, setError] = useState("")
+  const [openFaq, setOpenFaq] = useState<number | null>(0) // First FAQ open by default
 
-  const [showPayment, setShowPayment] =
-    useState(false)
-
-  const [showFreeAccess, setShowFreeAccess] =
-    useState(false)
-
-  const [showProcessing, setShowProcessing] =
-    useState(false)
-
-  const [showSuccess, setShowSuccess] =
-    useState(false)
-
-  const [transactionId, setTransactionId] =
-    useState("")
-
-  const [progress, setProgress] =
-    useState(0)
-
-  const [copied, setCopied] =
-    useState(false)
-
-  const [error, setError] =
-    useState("")
-
-  const processingTimerRef =
-    useRef<number | null>(null)
-
-  const successTimerRef =
-    useRef<number | null>(null)
-
-  /* =======================================================
-     CLEANUP
-  ======================================================= */
+  const processingTimerRef = useRef<number | null>(null)
+  const successTimerRef = useRef<number | null>(null)
 
   useEffect(() => {
     return () => {
-      if (processingTimerRef.current) {
-        window.clearInterval(
-          processingTimerRef.current,
-        )
-      }
-
-      if (successTimerRef.current) {
-        window.clearTimeout(
-          successTimerRef.current,
-        )
-      }
+      if (processingTimerRef.current) window.clearInterval(processingTimerRef.current)
+      if (successTimerRef.current) window.clearTimeout(successTimerRef.current)
     }
   }, [])
-
-  /* =======================================================
-     OPEN PLAN
-  ======================================================= */
 
   const openPlan = (plan: Plan) => {
     setSelectedPlan(plan)
     setError("")
     setTransactionId("")
     setCopied(false)
-
     if (plan.planId === "trial") {
       setShowFreeAccess(true)
       setShowPayment(false)
       return
     }
-
     setShowPayment(true)
   }
-
-  /* =======================================================
-     CLOSE PAYMENT
-  ======================================================= */
 
   const closePayment = () => {
     setShowPayment(false)
     setError("")
   }
 
-  /* =======================================================
-     CLOSE FREE ACCESS
-  ======================================================= */
-
-  const closeFreeAccess = () => {
-    setShowFreeAccess(false)
-  }
-
-  /* =======================================================
-     COPY PAYMENT NUMBER
-  ======================================================= */
+  const closeFreeAccess = () => setShowFreeAccess(false)
 
   const copyNumber = async () => {
     try {
-      await navigator.clipboard.writeText(
-        PAYMENT_NUMBER,
-      )
-
+      await navigator.clipboard.writeText(PAYMENT_NUMBER)
       setCopied(true)
-
-      window.setTimeout(() => {
-        setCopied(false)
-      }, 1800)
+      window.setTimeout(() => setCopied(false), 1800)
     } catch {
       setCopied(false)
     }
   }
 
-  /* =======================================================
-     SUBMIT PAYMENT
-  ======================================================= */
-
   const submitPayment = async () => {
     const trx = transactionId.trim()
-
     if (!user || !profile) {
-      setError(
-        "Please sign in before submitting a payment request.",
-      )
+      setError("Please sign in before submitting a payment request.")
       return
     }
-
     if (!trx || trx.length < 3) {
-      setError(
-        "Please enter a valid transaction ID.",
-      )
+      setError("Please enter a valid transaction ID.")
       return
     }
-
     if (!selectedPlan) {
-      setError(
-        "Please select a subscription plan.",
-      )
+      setError("Please select a subscription plan.")
       return
     }
-
     if (selectedPlan.planId === "trial") {
-      setError(
-        "The Free Plan does not require payment.",
-      )
+      setError("The Free Plan does not require payment.")
       return
     }
-
     setError("")
-
     try {
       await createPendingPaymentRequest({
         user,
@@ -236,12 +154,7 @@ export default function SeriesSection({
         transactionId: trx,
       })
     } catch (requestError) {
-      setError(
-        requestError instanceof Error
-          ? requestError.message
-          : "Unable to submit your payment request.",
-      )
-
+      setError(requestError instanceof Error ? requestError.message : "Unable to submit your payment request.")
       return
     }
 
@@ -249,55 +162,25 @@ export default function SeriesSection({
     setShowProcessing(true)
     setProgress(0)
 
-    if (processingTimerRef.current) {
-      window.clearInterval(
-        processingTimerRef.current,
-      )
-    }
-
-    if (successTimerRef.current) {
-      window.clearTimeout(
-        successTimerRef.current,
-      )
-    }
+    if (processingTimerRef.current) window.clearInterval(processingTimerRef.current)
+    if (successTimerRef.current) window.clearTimeout(successTimerRef.current)
 
     const startTime = Date.now()
     const processingDuration = 9000
 
-    processingTimerRef.current =
-      window.setInterval(() => {
-        const elapsed =
-          Date.now() - startTime
-
-        const percentage = Math.min(
-          100,
-          Math.round(
-            (elapsed / processingDuration) *
-              100,
-          ),
-        )
-
-        setProgress(percentage)
-
-        if (percentage >= 100) {
-          if (processingTimerRef.current) {
-            window.clearInterval(
-              processingTimerRef.current,
-            )
-          }
-
-          successTimerRef.current =
-            window.setTimeout(() => {
-              setShowProcessing(false)
-              setShowSuccess(true)
-            }, 500)
-        }
-      }, 200)
+    processingTimerRef.current = window.setInterval(() => {
+      const elapsed = Date.now() - startTime
+      const percentage = Math.min(100, Math.round((elapsed / processingDuration) * 100))
+      setProgress(percentage)
+      if (percentage >= 100) {
+        if (processingTimerRef.current) window.clearInterval(processingTimerRef.current)
+        successTimerRef.current = window.setTimeout(() => {
+          setShowProcessing(false)
+          setShowSuccess(true)
+        }, 500)
+      }
+    }, 200)
   }
-
-  /* =======================================================
-     CLOSE SUCCESS
-  ======================================================= */
 
   const closeSuccess = () => {
     setShowSuccess(false)
@@ -307,44 +190,23 @@ export default function SeriesSection({
     setError("")
   }
 
-  /* =======================================================
-     FREE ACCESS HANDLER
-  ======================================================= */
-
-  const handleFreeAccess = (
-    item: FreeAccessItem,
-  ) => {
+  const handleFreeAccess = (item: FreeAccessItem) => {
     if (item.type === "mebook") {
       setShowFreeAccess(false)
       onOpenMeBook?.()
     }
   }
 
-  /* =======================================================
-     RESTRICTED ITEM CHECK
-  ======================================================= */
-
-  const isRestrictedFreeItem = (
-    item: FreeAccessItem,
-  ) => {
-    const title =
-      String(item.title || "").toLowerCase()
-
-    const id =
-      String(item.id || "").toLowerCase()
-
+  const isRestrictedFreeItem = (item: FreeAccessItem) => {
+    const title = String(item.title || "").toLowerCase()
+    const id = String(item.id || "").toLowerCase()
     return (
       item.type === "restricted" ||
-      (title.includes("18+") &&
-        !item.href) ||
-      (title.includes("18 +") &&
-        !item.href) ||
-      (title.includes("adult") &&
-        !item.href) ||
-      (title.includes("age-restricted") &&
-        !item.href) ||
-      (title.includes("age restricted") &&
-        !item.href) ||
+      (title.includes("18+") && !item.href) ||
+      (title.includes("18 +") && !item.href) ||
+      (title.includes("adult") && !item.href) ||
+      (title.includes("age-restricted") && !item.href) ||
+      (title.includes("age restricted") && !item.href) ||
       (id.includes("18") && !item.href) ||
       (id.includes("adult") && !item.href)
     )
@@ -358,35 +220,24 @@ export default function SeriesSection({
     <>
       <main className="mvbd-premium-page">
         {/* =================================================
-            BACKGROUND
+            BACKGROUND (Image Exactly Match)
         ================================================= */}
-
         <div className="mvbd-page-background" />
-
         <div className="mvbd-page-overlay" />
 
         <div className="mvbd-page-content">
+          
           {/* =================================================
-              HEADER
+              HEADER (Exact Match)
           ================================================= */}
-
           <header className="mvbd-premium-header">
             <div className="mvbd-brand">
-              <div className="mvbd-brand-mark">
-                V
-              </div>
-
+              <div className="mvbd-brand-mark">V</div>
               <div>
-                <strong>
-                  Velocity
-                </strong>
-
-                <span>
-                  Premium Membership
-                </span>
+                <strong>Velocity</strong>
+                <span>Premium Membership</span>
               </div>
             </div>
-
             <div className="mvbd-status">
               <span className="mvbd-status-dot" />
               MEMBERSHIP
@@ -394,2972 +245,854 @@ export default function SeriesSection({
           </header>
 
           {/* =================================================
-              HERO
+              HERO SECTION (Exact Match)
           ================================================= */}
-
           <section className="mvbd-premium-hero">
-            <div className="mvbd-eyebrow">
-              VELOCITY
-            </div>
-
+            <div className="mvbd-eyebrow">VELOCITY</div>
             <h1>
-              Choose Your
-              <span>
-                Premium Plan
-              </span>
+              Launch faster.
+              <span>Convert better.</span>
             </h1>
-
             <p>
-              Select a membership plan that
-              works best for you.
+              Select a membership plan that works best for you.
             </p>
           </section>
 
           {/* =================================================
-              PLANS
+              PLANS GRID (Exact Match)
           ================================================= */}
-
           <section className="mvbd-plans-grid">
-            {SUBSCRIPTION_PLANS.map(
-              (plan) => {
-                const isFree =
-                  plan.planId === "trial"
+            {SUBSCRIPTION_PLANS.map((plan) => {
+              const isFree = plan.planId === "trial"
+              const isMonthly = plan.planId === "monthly"
+              const isTwoMonths = plan.planId === "two_months"
+              const isThreeMonths = plan.planId === "three_months"
 
-                const isMonthly =
-                  plan.planId === "monthly"
+              const features = plan.features || []
 
-                const isTwoMonths =
-                  plan.planId ===
-                  "two_months"
+              return (
+                <article
+                  key={plan.planId}
+                  className={[
+                    "mvbd-plan-card",
+                    `mvbd-plan-${plan.planId}`,
+                    plan.popular ? "mvbd-plan-popular" : "",
+                  ].join(" ")}
+                >
+                  {/* Top Glow Line */}
+                  <div className="mvbd-card-glow-line" />
 
-                const isThreeMonths =
-                  plan.planId ===
-                  "three_months"
+                  {/* Popular Badge */}
+                  {plan.popular && (
+                    <div className="mvbd-popular-badge">⭐ MOST POPULAR</div>
+                  )}
 
-                /* -------------------------------------------
-                   FEATURES FROM PLAN DATA
-                ------------------------------------------- */
+                  {/* Card Header */}
+                  <div className="mvbd-card-top">
+                    <div className="mvbd-plan-icon">{plan.sticker || "📦"}</div>
+                    <div>
+                      <div className="mvbd-plan-name">
+                        {isFree ? "Starter Plan" : isMonthly ? "Pro Plan" : isTwoMonths ? "Pro Plan" : "Velocity Plan"}
+                      </div>
+                      <div className="mvbd-plan-subtitle">
+                        {isFree ? "For individuals" : isMonthly ? "For growing teams" : isTwoMonths ? "For scaling teams" : "For large teams"}
+                      </div>
+                    </div>
+                  </div>
 
-                const features =
-                  plan.features || []
+                  {/* Price */}
+                  <div className="mvbd-price">
+                    {isFree ? "$0" : plan.price}
+                    <span className="mvbd-price-period">/month</span>
+                  </div>
 
-                return (
-                  <article
-                    key={plan.planId}
-                    className={[
-                      "mvbd-plan-card",
-                      `mvbd-plan-${plan.planId}`,
-                      plan.popular
-                        ? "mvbd-plan-popular"
-                        : "",
-                    ].join(" ")}
+                  {/* Duration */}
+                  <div className="mvbd-duration-pill">
+                    {isFree ? "BASIC ACCESS" : isMonthly ? "30 DAYS ACCESS" : isTwoMonths ? "60 DAYS ACCESS" : "90 DAYS ACCESS"}
+                  </div>
+
+                  {/* Quality Badge */}
+                  <div className="mvbd-quality-badge">
+                    <span>🎥</span>
+                    <span>{plan.videoQuality}</span>
+                  </div>
+
+                  {/* Features List */}
+                  <ul className="mvbd-feature-list">
+                    {features.map((feature, index) => (
+                      <li
+                        key={`${plan.planId}-${index}`}
+                        className={feature.type === "locked" || feature.type === "restricted" ? "locked" : ""}
+                      >
+                        <span className={
+                          feature.type === "locked" ? "feature-cross" :
+                          feature.type === "restricted" ? "feature-restricted" :
+                          feature.type === "quality" ? "feature-quality" : "feature-check"
+                        }>
+                          {feature.type === "locked" ? "🔒" :
+                           feature.type === "restricted" ? "🔞" :
+                           feature.type === "quality" ? "🎥" : "✅"}
+                        </span>
+                        <span className="feature-text">{feature.text}</span>
+                      </li>
+                    ))}
+                  </ul>
+
+                  {/* Button */}
+                  <button
+                    type="button"
+                    className="mvbd-choose-button"
+                    onClick={() => openPlan(plan)}
                   >
-                    {/* CARD GLOW */}
-
-                    <div className="mvbd-card-glow" />
-
-                    {/* POPULAR BADGE */}
-
-                    {plan.popular && (
-                      <div className="mvbd-popular-badge">
-                        ⭐ MOST POPULAR
-                      </div>
-                    )}
-
-                    {/* TOP */}
-
-                    <div className="mvbd-card-top">
-                      <div className="mvbd-plan-icon">
-                        {plan.sticker || "📦"}
-                      </div>
-
-                      <div>
-                        <div className="mvbd-plan-name">
-                          {isFree
-                            ? "FREE PLAN"
-                            : isMonthly
-                              ? "1 MONTH"
-                              : isTwoMonths
-                                ? "2 MONTH"
-                                : "3 MONTH"}
-                        </div>
-
-                        <div className="mvbd-plan-subtitle">
-                          {isFree
-                            ? "Enjoy Basic Access"
-                            : "SUBSCRIPTION PLAN"}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* PRICE */}
-
-                    <div className="mvbd-price">
-                      {isFree
-                        ? "FREE"
-                        : plan.price}
-                    </div>
-
-                    {/* DURATION */}
-
-                    <div className="mvbd-duration-pill">
-                      {isFree
-                        ? "BASIC ACCESS"
-                        : isMonthly
-                          ? "30 DAYS ACCESS"
-                          : isTwoMonths
-                            ? "60 DAYS ACCESS"
-                            : "90 DAYS ACCESS"}
-                    </div>
-
-                    {/* QUALITY BADGE */}
-
-                    <div className="mvbd-quality-badge">
-                      <span>🎥</span>
-                      <span>
-                        {plan.videoQuality}
-                      </span>
-                    </div>
-
-                    {/* FEATURES */}
-
-                    <ul className="mvbd-feature-list">
-                      {features.map(
-                        (
-                          feature,
-                          index,
-                        ) => (
-                          <li
-                            key={`${plan.planId}-${index}`}
-                            className={
-                              feature.type ===
-                                "locked" ||
-                              feature.type ===
-                                "restricted"
-                                ? "locked"
-                                : ""
-                            }
-                          >
-                            <span
-                              className={
-                                feature.type ===
-                                "locked"
-                                  ? "feature-cross"
-                                  : feature.type ===
-                                      "restricted"
-                                    ? "feature-restricted"
-                                    : feature.type ===
-                                        "quality"
-                                      ? "feature-quality"
-                                      : "feature-check"
-                              }
-                            >
-                              {feature.type ===
-                              "locked"
-                                ? "🔒"
-                                : feature.type ===
-                                    "restricted"
-                                  ? "🔞"
-                                  : feature.type ===
-                                      "quality"
-                                    ? "🎥"
-                                    : "✅"}
-                            </span>
-
-                            <span className="feature-text">
-                              {feature.text}
-                            </span>
-                          </li>
-                        ),
-                      )}
-                    </ul>
-
-                    {/* BUTTON */}
-
-                    <button
-                      type="button"
-                      className="mvbd-choose-button"
-                      onClick={() =>
-                        openPlan(plan)
-                      }
-                    >
-                      <span>
-                        {isFree
-                          ? "Start Exploring"
-                          : isMonthly
-                            ? "Get 1 Month"
-                            : isTwoMonths
-                              ? "Get 2 Months"
-                              : "Get 3 Months"}
-                      </span>
-
-                      <span className="mvbd-button-arrow">
-                        ›
-                      </span>
-                    </button>
-                  </article>
-                )
-              },
-            )}
+                    <span>
+                      {isFree ? "Get Started" : isMonthly ? "Get Pro Plan" : isTwoMonths ? "Get Pro Plan" : "Get Velocity Plan"}
+                    </span>
+                    <span className="mvbd-button-arrow">›</span>
+                  </button>
+                </article>
+              )
+            })}
           </section>
 
           {/* =================================================
-              PAYMENT INFO
+              FAQ SECTION (Exact Match)
           ================================================= */}
-
-          <section className="mvbd-payment-info">
-            <div className="mvbd-info-icon">
-              ৳
-            </div>
-
-            <div>
-              <strong>
-                Secure Payment
-              </strong>
-
-              <span>
-                Paid plans are activated
-                after transaction
-                verification.
-              </span>
+          <section className="mvbd-faq-section">
+            <h2 className="mvbd-section-title">Questions? We've got answers.</h2>
+            
+            <div className="mvbd-faq-list">
+              {[
+                { q: "How long does it take to deliver a landing page?", a: "Typically 3-5 business days depending on the complexity." },
+                { q: "What if I don't like the design?", a: "We offer unlimited revisions until you are 100% satisfied." },
+                { q: "Can I request revisions after delivery?", a: "Yes, we offer a 14-day revision window after delivery." },
+                { q: "Do you offer custom designs?", a: "Absolutely, every design is tailored to your brand." },
+                { q: "Is my data secure with you?", a: "Yes, we take security and privacy very seriously." },
+              ].map((faq, idx) => (
+                <div key={idx} className="mvbd-faq-item" onClick={() => setOpenFaq(openFaq === idx ? null : idx)}>
+                  <div className="mvbd-faq-question">
+                    {faq.q}
+                    <span className="mvbd-faq-icon">{openFaq === idx ? "−" : "+"}</span>
+                  </div>
+                  {openFaq === idx && (
+                    <div className="mvbd-faq-answer">
+                      {faq.a}
+                    </div>
+                  )}
+                </div>
+              ))}
             </div>
           </section>
 
           {/* =================================================
-              FOOTER
+              CTA SECTION (Exact Match)
           ================================================= */}
+          <section className="mvbd-cta-section">
+            <div className="mvbd-cta-content">
+              <div className="mvbd-cta-icon">🔒</div>
+              <h2 className="mvbd-cta-title">Ready to launch something that actually works?</h2>
+              <button className="mvbd-cta-button" onClick={() => openPlan(SUBSCRIPTION_PLANS[1] || SUBSCRIPTION_PLANS[0])}>
+                Get started
+              </button>
+            </div>
+          </section>
 
-          <footer className="mvbd-premium-footer">
-            Velocity • Premium Membership
+          {/* =================================================
+              FOOTER (Exact Match)
+          ================================================= */}
+          <footer className="mvbd-footer">
+            <div className="mvbd-footer-left">
+              <div className="mvbd-footer-brand">
+                <div className="mvbd-brand-mark">V</div>
+                <strong>Velocity</strong>
+              </div>
+              <p>Helping founders launch faster with high-converting landing pages.</p>
+              <button className="mvbd-footer-cta">Get started</button>
+            </div>
+            
+            <div className="mvbd-footer-right">
+              <div className="mvbd-footer-col">
+                <h4>Menu</h4>
+                <a href="#">Home</a>
+                <a href="#">About</a>
+                <a href="#">Pricing</a>
+                <a href="#">Contact</a>
+              </div>
+              <div className="mvbd-footer-col">
+                <h4>Social Media</h4>
+                <a href="#">X (Twitter)</a>
+                <a href="#">LinkedIn</a>
+                <a href="#">Instagram</a>
+                <a href="#">YouTube</a>
+              </div>
+            </div>
+
+            <div className="mvbd-footer-bottom">
+              © 2026 Velocity. All rights reserved.
+            </div>
           </footer>
         </div>
 
         {/* =================================================
-            GLOBAL CSS
+            GLOBAL CSS (Exact Match Design)
         ================================================= */}
-
         <style jsx global>{`
-          * {
-            box-sizing: border-box;
-          }
+          * { box-sizing: border-box; margin: 0; padding: 0; }
 
-          /* =================================================
-             PAGE
-          ================================================= */
-
+          /* ================= PAGE ================= */
           .mvbd-premium-page {
             position: relative;
-
             min-height: 100svh;
-
             width: 100%;
-
             overflow-x: hidden;
-
             background: #000000;
-
             color: #ffffff;
-
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
             isolation: isolate;
           }
 
-          /* =================================================
-             BACKGROUND
-          ================================================= */
-
+          /* ================= BACKGROUND ================= */
           .mvbd-page-background {
             position: fixed;
-
             inset: 0;
-
             z-index: -3;
-
             pointer-events: none;
-
-            background-image:
-              url("https://i.postimg.cc/43PLHM4Z/file-0000000041908206b4fe692b01e0940b.png");
-
-            background-position:
-              center top;
-
+            background-image: url("https://i.postimg.cc/43PLHM4Z/file-0000000041908206b4fe692b01e0940b.png");
+            background-position: center top;
             background-size: cover;
-
             background-repeat: no-repeat;
-
-            transform:
-              translateZ(0);
+            transform: translateZ(0);
+            opacity: 0.8;
           }
 
           .mvbd-page-overlay {
             position: fixed;
-
             inset: 0;
-
             z-index: -2;
-
             pointer-events: none;
-
-            background:
-              linear-gradient(
-                180deg,
-                rgba(0, 0, 0, 0.6)
-                  0%,
-                rgba(5, 3, 0, 0.8)
-                  48%,
-                rgba(0, 0, 0, 0.98)
-                  100%
-              );
+            background: linear-gradient(
+              180deg,
+              rgba(0, 0, 0, 0.85) 0%,
+              rgba(10, 5, 0, 0.9) 30%,
+              rgba(0, 0, 0, 0.98) 100%
+            );
           }
-
-          /* DESKTOP BACKGROUND */
 
           @media (min-width: 761px) {
             .mvbd-page-background {
-              background-image:
-                url("https://i.postimg.cc/43s2dZg3/file-00000000e1908211bbeb998f8584d5ba.png");
+              background-image: url("https://i.postimg.cc/43s2dZg3/file-00000000e1908211bbeb998f8584d5ba.png");
             }
           }
 
-          /* =================================================
-             CONTENT
-          ================================================= */
-
+          /* ================= CONTENT ================= */
           .mvbd-page-content {
             position: relative;
-
             z-index: 1;
-
-            width:
-              min(
-                1440px,
-                calc(100% - 32px)
-              );
-
+            width: min(1200px, calc(100% - 40px));
             margin: 0 auto;
-
-            padding:
-              22px
-              0
-              45px;
+            padding: 20px 0 60px;
           }
 
-          /* =================================================
-             HEADER
-          ================================================= */
-
+          /* ================= HEADER ================= */
           .mvbd-premium-header {
             display: flex;
-
             align-items: center;
-
-            justify-content:
-              space-between;
-
+            justify-content: space-between;
             gap: 16px;
-
-            padding:
-              14px
-              18px;
-
-            border:
-              1px solid
-              rgba(255, 150, 50, 0.2);
-
-            border-radius: 22px;
-
-            background:
-              rgba(10, 5, 2, 0.76);
-
-            box-shadow:
-              0 12px 35px
-                rgba(0, 0, 0, 0.5),
-              inset 0 1px 0
-                rgba(255, 255, 255, 0.06);
+            padding: 12px 20px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            background: rgba(10, 5, 0, 0.6);
+            backdrop-filter: blur(12px);
           }
 
-          .mvbd-brand {
-            display: flex;
-
-            align-items: center;
-
-            gap: 12px;
-          }
-
+          .mvbd-brand { display: flex; align-items: center; gap: 12px; }
           .mvbd-brand-mark {
-            width: 42px;
-            height: 42px;
-
-            display: grid;
-
-            place-items: center;
-
-            border-radius: 13px;
-
-            font-size: 24px;
-
-            font-weight: 900;
-
-            color: #1a0a00;
-
-            background:
-              linear-gradient(
-                135deg,
-                #ffb86b,
-                #ff6a00
-              );
-
-            box-shadow:
-              0 0 22px
-                rgba(255, 106, 0, 0.35);
+            width: 38px; height: 38px;
+            display: grid; place-items: center;
+            border-radius: 10px;
+            font-size: 20px; font-weight: 900;
+            color: #000000;
+            background: linear-gradient(135deg, #ffb86b, #ff6a00);
           }
-
-          .mvbd-brand strong {
-            display: block;
-
-            font-size: 15px;
-
-            font-weight: 800;
-
-            letter-spacing:
-              0.3px;
-          }
-
-          .mvbd-brand span {
-            display: block;
-
-            margin-top: 2px;
-
-            color: #a99a8e;
-
-            font-size: 11px;
-          }
+          .mvbd-brand strong { display: block; font-size: 15px; font-weight: 700; }
+          .mvbd-brand span { display: block; margin-top: 2px; color: #a99a8e; font-size: 10px; }
 
           .mvbd-status {
-            display: flex;
-
-            align-items: center;
-
-            gap: 7px;
-
-            padding:
-              8px
-              12px;
-
-            border-radius: 999px;
-
-            color: #ffb86b;
-
-            background:
-              rgba(255, 106, 0, 0.07);
-
-            border:
-              1px solid
-              rgba(255, 106, 0, 0.16);
-
-            font-size: 10px;
-
-            font-weight: 800;
-
-            letter-spacing:
-              1px;
+            display: flex; align-items: center; gap: 7px;
+            padding: 6px 14px; border-radius: 999px;
+            color: #ffb86b; background: rgba(255, 106, 0, 0.08);
+            border: 1px solid rgba(255, 106, 0, 0.2);
+            font-size: 10px; font-weight: 700; letter-spacing: 0.5px;
           }
-
           .mvbd-status-dot {
-            width: 7px;
-            height: 7px;
-
-            border-radius: 50%;
-
-            background: #ff6a00;
-
-            box-shadow:
-              0 0 10px #ff6a00;
-
-            animation:
-              mvbdPulse
-              1.8s
-              ease-in-out
-              infinite;
+            width: 6px; height: 6px; border-radius: 50%;
+            background: #ff6a00; box-shadow: 0 0 10px #ff6a00;
+            animation: mvbdPulse 1.8s ease-in-out infinite;
           }
 
-          /* =================================================
-             HERO
-          ================================================= */
-
+          /* ================= HERO ================= */
           .mvbd-premium-hero {
             text-align: center;
-
-            padding:
-              64px
-              16px
-              42px;
+            padding: 80px 16px 60px;
           }
-
           .mvbd-eyebrow {
-            color: #ff9a4d;
-
-            font-size: 11px;
-
-            font-weight: 900;
-
-            letter-spacing:
-              3px;
-
-            margin-bottom: 12px;
+            color: #ff9a4d; font-size: 12px; font-weight: 800;
+            letter-spacing: 4px; text-transform: uppercase; margin-bottom: 16px;
           }
-
           .mvbd-premium-hero h1 {
-            margin: 0;
-
-            font-size:
-              clamp(
-                34px,
-                5vw,
-                68px
-              );
-
-            line-height: 1.05;
-
-            font-weight: 900;
-
-            letter-spacing:
-              -2px;
-
-            text-shadow:
-              0 4px 30px
-                rgba(0, 0, 0, 0.6);
+            font-size: clamp(36px, 6vw, 72px);
+            line-height: 1.1; font-weight: 800; letter-spacing: -2px;
+            color: #ffffff;
           }
-
           .mvbd-premium-hero h1 span {
-            display: block;
-
-            color: #ff7a1a;
-
-            text-shadow:
-              0 0 30px
-                rgba(255, 106, 0, 0.28);
+            display: block; color: #ff7a1a;
+            text-shadow: 0 0 40px rgba(255, 106, 0, 0.3);
           }
-
           .mvbd-premium-hero p {
-            margin:
-              16px
-              auto
-              0;
-
-            max-width: 550px;
-
-            color: #b9a89a;
-
-            font-size: 14px;
-
-            line-height: 1.7;
+            margin: 20px auto 0; max-width: 500px;
+            color: #b9a89a; font-size: 15px; line-height: 1.7;
           }
 
-          /* =================================================
-             PLAN GRID
-          ================================================= */
-
+          /* ================= PLANS GRID ================= */
           .mvbd-plans-grid {
             display: grid;
-
-            grid-template-columns:
-              repeat(
-                4,
-                minmax(0, 1fr)
-              );
-
-            gap: 16px;
-
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
             align-items: stretch;
+            margin-top: 20px;
           }
 
-          /* =================================================
-             PLAN CARD
-          ================================================= */
-
+          /* ================= PLAN CARD ================= */
           .mvbd-plan-card {
-            --plan-main:
-              #ff7a1a;
-
-            --plan-glow:
-              #ff7a1a;
-
-            --plan-glow-soft:
-              rgba(
-                255,
-                106,
-                0,
-                0.22
-              );
-
-            --plan-shadow:
-              rgba(
-                255,
-                106,
-                0,
-                0.2
-              );
-
             position: relative;
-
-            min-width: 0;
-
-            min-height: 690px;
-
             display: flex;
-
             flex-direction: column;
-
-            padding:
-              22px
-              18px
-              18px;
-
-            overflow: hidden;
-
-            border-radius: 28px;
-
-            background:
-              linear-gradient(
-                160deg,
-                rgba(15, 8, 3, 0.97),
-                rgba(5, 2, 0, 0.98)
-              );
-
-            border:
-              1px solid
-              rgba(
-                255,
-                122,
-                26,
-                0.45
-              );
-
-            box-shadow:
-              0 20px 55px
-                rgba(0, 0, 0, 0.5),
-              inset 0 1px 0
-                rgba(
-                  255,
-                  255,
-                  255,
-                  0.07
-                );
-
-            isolation: isolate;
-
-            transition:
-              transform
-                0.3s
-                ease,
-              box-shadow
-                0.3s
-                ease,
-              border-color
-                0.3s
-                ease;
-          }
-
-          .mvbd-plan-card::before {
-            content: "";
-
-            position: absolute;
-
-            top: -2px;
-
-            left: 8%;
-
-            width: 84%;
-
-            height: 3px;
-
-            border-radius:
-              999px;
-
-            background:
-              var(--plan-glow);
-
-            box-shadow:
-              0 0 12px
-                var(--plan-glow),
-              0 0 30px
-                var(--plan-glow),
-              0 0 55px
-                var(--plan-glow);
-
-            opacity: 0.9;
-
-            z-index: 3;
-          }
-
-          .mvbd-card-glow {
-            position: absolute;
-
-            width: 230px;
-            height: 230px;
-
-            top: -100px;
-
-            left: 50%;
-
-            transform:
-              translateX(-50%);
-
-            border-radius: 50%;
-
-            background:
-              radial-gradient(
-                circle,
-                var(--plan-glow-soft)
-                  0%,
-                transparent 68%
-              );
-
-            pointer-events: none;
-
-            z-index: -1;
-
-            animation:
-              mvbdCardGlow
-              5s
-              ease-in-out
-              infinite;
+            padding: 28px 24px 24px;
+            border-radius: 24px;
+            background: #080503;
+            border: 1px solid rgba(255, 122, 26, 0.15);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+            transition: transform 0.3s ease, border-color 0.3s ease;
           }
 
           .mvbd-plan-card:hover {
-            transform:
-              translateY(-8px);
-
-            border-color:
-              var(--plan-glow);
-
-            box-shadow:
-              0 25px 70px
-                rgba(0, 0, 0, 0.58),
-              0 0 30px
-                var(--plan-shadow);
+            transform: translateY(-6px);
+            border-color: rgba(255, 122, 26, 0.4);
           }
 
-          /* =================================================
-             PLAN COLORS (All Orange to match the design)
-          ================================================= */
-
-          .mvbd-plan-trial,
-          .mvbd-plan-monthly,
-          .mvbd-plan-two_months,
-          .mvbd-plan-three_months {
-            --plan-main:
-              #ff7a1a;
-
-            --plan-glow:
-              #ff7a1a;
-
-            --plan-glow-soft:
-              rgba(
-                255,
-                106,
-                0,
-                0.22
-              );
-
-            --plan-shadow:
-              rgba(
-                255,
-                106,
-                0,
-                0.2
-              );
-
-            border-color:
-              rgba(
-                255,
-                122,
-                26,
-                0.45
-              );
-
-            background:
-              linear-gradient(
-                160deg,
-                rgba(15, 8, 3, 0.97),
-                rgba(5, 2, 0, 0.98)
-              );
+          /* Top Orange Glow Line */
+          .mvbd-card-glow-line {
+            position: absolute;
+            top: -1px;
+            left: 10%;
+            width: 80%;
+            height: 2px;
+            border-radius: 999px;
+            background: #ff7a1a;
+            box-shadow: 0 0 15px #ff7a1a, 0 0 40px #ff6a00;
+            opacity: 0.8;
           }
 
-          /* =================================================
-             CARD CONTENT
-          ================================================= */
-
-          .mvbd-card-top {
-            position: relative;
-
-            z-index: 4;
-
-            display: flex;
-
-            align-items: center;
-
-            min-height: 70px;
-
-            gap: 11px;
-          }
-
-          .mvbd-plan-icon {
-            width: 45px;
-
-            height: 45px;
-
-            flex: 0 0 45px;
-
-            display: grid;
-
-            place-items: center;
-
-            border-radius: 13px;
-
-            color:
-              var(--plan-main);
-
-            background:
-              color-mix(
-                in srgb,
-                var(--plan-main)
-                  10%,
-                transparent
-              );
-
-            border:
-              1px solid
-              color-mix(
-                in srgb,
-                var(--plan-main)
-                  30%,
-                transparent
-              );
-
-            box-shadow:
-              0 0 20px
-                color-mix(
-                  in srgb,
-                  var(--plan-main)
-                    18%,
-                  transparent
-                );
-
-            font-size: 23px;
-
-            font-weight: 900;
-          }
-
-          .mvbd-plan-name {
-            color: #ffffff;
-
-            font-size: 17px;
-
-            line-height: 1.1;
-
-            font-weight: 950;
-
-            letter-spacing:
-              0.4px;
-          }
-
-          .mvbd-plan-subtitle {
-            margin-top: 6px;
-
-            color: #b8a79a;
-
-            font-size: 10px;
-
-            line-height: 1.2;
-
-            font-weight: 700;
-
-            letter-spacing:
-              0.4px;
-          }
-
-          /* =================================================
-             PRICE
-          ================================================= */
-
-          .mvbd-price {
-            position: relative;
-
-            z-index: 4;
-
-            margin-top: 24px;
-
-            min-height: 68px;
-
-            display: flex;
-
-            align-items: center;
-
-            color:
-              var(--plan-main);
-
-            font-size:
-              clamp(
-                35px,
-                3vw,
-                48px
-              );
-
-            line-height: 1;
-
-            font-weight: 950;
-
-            letter-spacing:
-              -1.5px;
-
-            text-shadow:
-              0 0 18px
-                color-mix(
-                  in srgb,
-                  var(--plan-main)
-                    35%,
-                  transparent
-                );
-          }
-
-          /* =================================================
-             DURATION
-          ================================================= */
-
-          .mvbd-duration-pill {
-            position: relative;
-
-            z-index: 4;
-
-            display: flex;
-
-            align-items: center;
-
-            justify-content: center;
-
-            width: 100%;
-
-            min-height: 38px;
-
-            margin-top: 8px;
-
-            padding:
-              7px
-              12px;
-
-            border-radius:
-              999px;
-
-            color: #1a0a00;
-
-            background:
-              linear-gradient(
-                90deg,
-                var(--plan-main),
-                color-mix(
-                  in srgb,
-                  var(--plan-main)
-                    72%,
-                  white
-                )
-              );
-
-            box-shadow:
-              0 0 18px
-                color-mix(
-                  in srgb,
-                  var(--plan-main)
-                    22%,
-                  transparent
-                );
-
-            font-size: 10px;
-
-            font-weight: 950;
-
-            letter-spacing:
-              0.5px;
-
-            text-align: center;
-          }
-
-          /* =================================================
-             QUALITY BADGE
-          ================================================= */
-
-          .mvbd-quality-badge {
-            position: relative;
-
-            z-index: 4;
-
-            display: inline-flex;
-
-            align-items: center;
-
-            justify-content: center;
-
-            gap: 6px;
-
-            align-self: center;
-
-            margin-top: 10px;
-
-            padding:
-              6px
-              14px;
-
-            border-radius:
-              999px;
-
-            border:
-              1px solid
-              color-mix(
-                in srgb,
-                var(--plan-main)
-                  40%,
-                transparent
-              );
-
-            background:
-              color-mix(
-                in srgb,
-                var(--plan-main)
-                  10%,
-                transparent
-              );
-
-            color:
-              var(--plan-main);
-
-            font-size: 10px;
-
-            font-weight: 900;
-
-            letter-spacing:
-              0.5px;
-          }
-
-          /* =================================================
-             FEATURES
-          ================================================= */
-
-          .mvbd-feature-list {
-            position: relative;
-
-            z-index: 4;
-
-            list-style: none;
-
-            display: grid;
-
-            gap: 0;
-
-            flex: 1;
-
-            margin:
-              19px
-              0
-              0;
-
-            padding: 0;
-          }
-
-          .mvbd-feature-list li {
-            display: flex;
-
-            align-items:
-              flex-start;
-
-            gap: 9px;
-
-            min-height: 49px;
-
-            padding:
-              8px
-              0;
-
-            border-bottom:
-              1px solid
-              rgba(
-                255,
-                255,
-                255,
-                0.075
-              );
-
-            color: #e8e0da;
-
-            font-size: 11px;
-
-            line-height: 1.35;
-          }
-
-          .mvbd-feature-list li:last-child {
-            border-bottom: 0;
-          }
-
-          .mvbd-feature-list
-            li
-            > span:first-child {
-            width: 21px;
-
-            height: 21px;
-
-            flex: 0 0 21px;
-
-            display: grid;
-
-            place-items: center;
-
-            margin-top: 1px;
-
-            border-radius: 50%;
-
-            font-size: 10px;
-
-            font-weight: 950;
-          }
-
-          .feature-check {
-            color: #1a0a00;
-
-            background:
-              #ff7a1a;
-
-            box-shadow:
-              0 0 9px
-                rgba(
-                  255,
-                  122,
-                  26,
-                  0.35
-                );
-          }
-
-          .feature-quality {
-            color: #1a0a00;
-
-            background:
-              linear-gradient(
-                135deg,
-                #ffe66d,
-                #ffb800
-              );
-
-            box-shadow:
-              0 0 10px
-                rgba(
-                  255,
-                  184,
-                  0,
-                  0.35
-                );
-          }
-
-          .feature-cross {
-            color: #ff5a45;
-
-            background:
-              rgba(
-                255,
-                63,
-                42,
-                0.1
-              );
-
-            border:
-              1px solid
-              rgba(
-                255,
-                63,
-                42,
-                0.25
-              );
-
-            font-size: 11px !important;
-          }
-
-          .feature-restricted {
-            color: #ffffff;
-
-            background:
-              #d82929;
-
-            font-size:
-              10px !important;
-
-            box-shadow:
-              0 0 8px
-                rgba(
-                  255,
-                  30,
-                  30,
-                  0.25
-                );
-          }
-
-          .mvbd-feature-list
-            .feature-text {
-            flex: 1;
-
-            padding-top: 2px;
-          }
-
-          .mvbd-feature-list
-            li.locked {
-            color: #8a7a6e;
-          }
-
-          /* =================================================
-             CHOOSE BUTTON
-          ================================================= */
-
-          .mvbd-choose-button {
-            position: relative;
-
-            z-index: 5;
-
-            width: 100%;
-
-            min-height: 57px;
-
-            margin-top: 19px;
-
-            display: flex;
-
-            align-items: center;
-
-            justify-content: center;
-
-            gap: 12px;
-
-            border-radius:
-              999px;
-
-            border:
-              1px solid
-              color-mix(
-                in srgb,
-                var(--plan-main)
-                  80%,
-                white
-              );
-
-            color: #ffffff;
-
-            background:
-              linear-gradient(
-                135deg,
-                color-mix(
-                  in srgb,
-                  var(--plan-main)
-                    35%,
-                  #050200
-                ),
-                color-mix(
-                  in srgb,
-                  var(--plan-main)
-                    15%,
-                  #050200
-                )
-              );
-
-            box-shadow:
-              inset 0 1px 0
-                rgba(
-                  255,
-                  255,
-                  255,
-                  0.15
-                ),
-              0 0 18px
-                color-mix(
-                  in srgb,
-                  var(--plan-main)
-                    18%,
-                  transparent
-                );
-
-            cursor: pointer;
-
-            font-size: 12px;
-
-            font-weight: 900;
-
-            transition:
-              transform
-                0.2s
-                ease,
-              box-shadow
-                0.2s
-                ease,
-              background
-                0.2s
-                ease;
-          }
-
-          .mvbd-choose-button:hover {
-            transform:
-              translateY(-2px);
-
-            background:
-              linear-gradient(
-                135deg,
-                color-mix(
-                  in srgb,
-                  var(--plan-main)
-                    55%,
-                  #050200
-                ),
-                color-mix(
-                  in srgb,
-                  var(--plan-main)
-                    25%,
-                  #050200
-                )
-              );
-
-            box-shadow:
-              0 0 28px
-                color-mix(
-                  in srgb,
-                  var(--plan-main)
-                    32%,
-                  transparent
-                );
-          }
-
-          .mvbd-choose-button:active {
-            transform:
-              scale(0.98);
-          }
-
-          .mvbd-button-arrow {
-            color:
-              var(--plan-main);
-
-            font-size: 28px;
-
-            line-height: 0;
-
-            font-weight: 300;
-          }
-
-          /* =================================================
-             POPULAR
-          ================================================= */
-
+          /* Popular Badge */
           .mvbd-popular-badge {
             position: absolute;
-
             top: 0;
-
             right: 0;
-
-            z-index: 10;
-
-            padding:
-              7px
-              13px;
-
-            border-radius:
-              0
-              0
-              0
-              14px;
-
-            color: #1a0a00;
-
-            background:
-              linear-gradient(
-                135deg,
-                #ffb86b,
-                #ff6a00
-              );
-
-            box-shadow:
-              0 0 18px
-                rgba(
-                  255,
-                  106,
-                  0,
-                  0.3
-                );
-
-            font-size: 8px;
-
-            font-weight: 950;
-
-            letter-spacing:
-              0.8px;
-
-            animation:
-              mvbdBadgePulse
-              2s
-              ease-in-out
-              infinite;
-          }
-
-          /* =================================================
-             PAYMENT INFO
-          ================================================= */
-
-          .mvbd-payment-info {
-            display: flex;
-
-            align-items: center;
-
-            gap: 13px;
-
-            max-width: 650px;
-
-            margin:
-              28px
-              auto
-              0;
-
-            padding:
-              14px
-              17px;
-
-            border-radius: 17px;
-
-            background:
-              rgba(
-                15,
-                8,
-                3,
-                0.8
-              );
-
-            border:
-              1px solid
-              rgba(
-                255,
-                255,
-                255,
-                0.08
-              );
-          }
-
-          .mvbd-info-icon {
-            width: 35px;
-
-            height: 35px;
-
-            display: grid;
-
-            place-items: center;
-
-            border-radius: 11px;
-
-            color: #ff7a1a;
-
-            background:
-              rgba(
-                255,
-                106,
-                0,
-                0.08
-              );
-          }
-
-          .mvbd-payment-info strong {
-            display: block;
-
-            font-size: 12px;
-          }
-
-          .mvbd-payment-info span {
-            display: block;
-
-            margin-top: 3px;
-
-            color: #8a7a6e;
-
-            font-size: 10px;
-          }
-
-          /* =================================================
-             FOOTER
-          ================================================= */
-
-          .mvbd-premium-footer {
-            text-align: center;
-
-            margin-top: 30px;
-
-            color: #5c4d42;
-
-            font-size: 10px;
-          }
-
-          /* =================================================
-             MODAL BACKDROP
-          ================================================= */
-
-          .mvbd-modal-backdrop {
-            position: fixed;
-
-            inset: 0;
-
-            z-index: 99999;
-
-            display: flex;
-
-            align-items: center;
-
-            justify-content: center;
-
-            padding: 18px;
-
-            background:
-              rgba(
-                0,
-                0,
-                0,
-                0.78
-              );
-
-            animation:
-              mvbdModalIn
-              0.2s              ease
-              both;
-          }
-
-          /* =================================================
-             MODAL
-          ================================================= */
-
-          .mvbd-modal {
-            width:
-              min(
-                470px,
-                100%
-              );
-
-            max-height:
-              min(
-                88svh,
-                760px
-              );
-
-            overflow-y: auto;
-
-            padding: 22px;
-
-            border-radius: 25px;
-
-            border:
-              1px solid
-              rgba(
-                255,
-                122,
-                26,
-                0.28
-              );
-
-            background:
-              linear-gradient(
-                155deg,
-                #130c07,
-                #050200
-              );
-
-            box-shadow:
-              0 30px 90px
-                rgba(
-                  0,
-                  0,
-                  0,
-                  0.7
-                ),
-              0 0 45px
-                rgba(
-                  255,
-                  106,
-                  0,
-                  0.08
-                );
-
-            animation:
-              mvbdModalScale
-              0.24s
-              cubic-bezier(
-                0.2,
-                0.8,
-                0.2,
-                1
-              )
-              both;
-          }
-
-          .mvbd-modal::-webkit-scrollbar {
-            width: 4px;
-          }
-
-          .mvbd-modal::-webkit-scrollbar-thumb {
-            background:
-              #5e3b23;
-
-            border-radius: 99px;
-          }
-
-          .mvbd-modal-title {
-            font-size: 22px;
-
-            font-weight: 900;
-          }
-
-          .mvbd-modal-subtitle {
-            margin-top: 7px;
-
-            color: #98887a;
-
-            font-size: 12px;
-
-            line-height: 1.6;
-          }
-
-          .mvbd-modal-close {
-            float: right;
-
-            width: 32px;
-
-            height: 32px;
-
-            border: 0;
-
-            border-radius: 50%;
-
-            color: #bcb3a9;
-
-            background:
-              rgba(
-                255,
-                255,
-                255,
-                0.06
-              );
-
-            cursor: pointer;
-
-            font-size: 16px;
-          }
-
-          /* =================================================
-             FREE ACCESS
-          ================================================= */
-
-          .mvbd-free-access-list {
-            display: grid;
-
-            gap: 10px;
-
-            margin-top: 20px;
-          }
-
-          .mvbd-access-button {
-            width: 100%;
-
-            display: flex;
-
-            align-items: center;
-
-            gap: 12px;
-
-            padding: 13px;
-
-            border:
-              1px solid
-              rgba(
-                255,
-                122,
-                26,
-                0.15
-              );
-
-            border-radius: 16px;
-
-            background:
-              rgba(
-                255,
-                255,
-                255,
-                0.035
-              );
-
-            color: #ffffff;
-
-            text-align: left;
-
-            cursor: pointer;
-
-            transition:
-              transform
-                0.2s
-                ease,
-              background
-                0.2s
-                ease;
-          }
-
-          .mvbd-access-button:hover {
-            transform:
-              translateY(-2px);
-
-            background:
-              rgba(
-                255,
-                106,
-                0,
-                0.07
-              );
-          }
-
-          .mvbd-access-icon {
-            width: 38px;
-
-            height: 38px;
-
-            flex:
-              0
-              0
-              38px;
-
-            display: grid;
-
-            place-items: center;
-
-            border-radius: 12px;
-
-            font-size: 18px;
-
-            background:
-              rgba(
-                255,
-                106,
-                0,
-                0.09
-              );
-          }
-
-          .mvbd-access-text {
-            min-width: 0;
-
-            flex: 1;
-          }
-
-          .mvbd-access-text strong {
-            display: block;
-
-            font-size: 12px;
-          }
-
-          .mvbd-access-text span {
-            display: block;
-
-            margin-top: 3px;
-
-            color: #8a7a6e;
-
-            font-size: 10px;
-
-            line-height: 1.5;
-          }
-
-          .mvbd-access-arrow {
-            color: #ff7a1a;
-
-            font-size: 16px;
-          }
-
-          .mvbd-access-info {
-            cursor: default;
-          }
-
-          .mvbd-access-info:hover {
-            transform: none;
-
-            background:
-              rgba(
-                255,
-                255,
-                255,
-                0.035
-              );
-          }
-
-          .mvbd-access-restricted {
-            cursor: not-allowed;
-
-            border-color:
-              rgba(
-                255,
-                255,
-                255,
-                0.07
-              );
-
-            opacity: 0.65;
-          }
-
-          .mvbd-access-restricted
-            .mvbd-access-icon {
-            color: #8a7a6e;
-
-            background:
-              rgba(
-                255,
-                255,
-                255,
-                0.05
-              );
-          }
-
-          .mvbd-not-included {
-            margin-top: 22px;
-
-            padding-top: 18px;
-
-            border-top:
-              1px solid
-              rgba(
-                255,
-                255,
-                255,
-                0.07
-              );
-          }
-
-          .mvbd-not-included-title {
-            margin-bottom: 11px;
-
-            color: #8a7a6e;
-
-            font-size: 10px;
-
-            font-weight: 900;
-
-            letter-spacing: 1px;
-
-            text-transform:
-              uppercase;
-          }
-
-          .mvbd-not-included ul {
-            margin: 0;
-
-            padding: 0;
-
-            list-style: none;
-
-            display: grid;
-
-            gap: 8px;
-          }
-
-          .mvbd-not-included li {
-            color: #6e6055;
-
-            font-size: 10px;
-          }
-
-          .mvbd-not-included li::before {
-            content: "×";
-
-            margin-right: 8px;
-
-            color: #5c4d42;
-          }
-
-          /* =================================================
-             PAYMENT MODAL
-          ================================================= */
-
-          .mvbd-selected-plan {
-            margin-top: 18px;
-
-            padding: 14px;
-
-            border-radius: 15px;
-
-            background:
-              rgba(
-                255,
-                106,
-                0,
-                0.055
-              );
-
-            border:
-              1px solid
-              rgba(
-                255,
-                106,
-                0,
-                0.12
-              );
-          }
-
-          .mvbd-selected-plan small {
-            display: block;
-
-            color: #8a7a6e;
-
+            padding: 6px 14px;
+            border-radius: 0 24px 0 16px;
             font-size: 9px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            color: #000000;
+            background: linear-gradient(135deg, #ffb86b, #ff6a00);
           }
 
-          .mvbd-selected-plan strong {
-            display: block;
-
-            margin-top: 4px;
-
-            font-size: 17px;
-          }
-
-          .mvbd-payment-number {
-            margin-top: 15px;
-
+          /* Card Header */
+          .mvbd-card-top {
             display: flex;
-
             align-items: center;
-
-            justify-content:
-              space-between;
-
-            gap: 10px;
-
-            padding: 13px;
-
-            border-radius: 14px;
-
-            background:
-              rgba(
-                255,
-                255,
-                255,
-                0.045
-              );
+            gap: 12px;
+            margin-bottom: 20px;
+          }
+          .mvbd-plan-icon {
+            width: 44px; height: 44px;
+            display: grid; place-items: center;
+            border-radius: 12px;
+            font-size: 20px;
+            color: #ff7a1a;
+            background: rgba(255, 106, 0, 0.1);
+            border: 1px solid rgba(255, 106, 0, 0.2);
+          }
+          .mvbd-plan-name {
+            font-size: 18px; font-weight: 700; color: #ffffff;
+          }
+          .mvbd-plan-subtitle {
+            font-size: 11px; color: #8a7a6e; margin-top: 2px;
           }
 
-          .mvbd-payment-number strong {
-            color: #ff9a4d;
-
-            font-size: 17px;
-
-            letter-spacing: 1px;
+          /* Price */
+          .mvbd-price {
+            font-size: 40px; font-weight: 800; color: #ffffff;
+            line-height: 1; letter-spacing: -1px;
+            margin-bottom: 8px;
+          }
+          .mvbd-price-period {
+            font-size: 14px; font-weight: 400; color: #8a7a6e;
           }
 
-          .mvbd-copy-button {
-            border:
-              1px solid
-              rgba(
-                255,
-                255,
-                255,
-                0.1
-              );
-
-            border-radius: 9px;
-
-            padding:
-              7px
-              10px;
-
-            color: #d4c8be;
-
-            background:
-              rgba(
-                255,
-                255,
-                255,
-                0.05
-              );
-
-            cursor: pointer;
-
+          /* Duration Pill */
+          .mvbd-duration-pill {
+            display: inline-block;
+            padding: 6px 14px;
+            border-radius: 999px;
             font-size: 10px;
-          }
-
-          .mvbd-input {
-            width: 100%;
-
-            margin-top: 14px;
-
-            min-height: 48px;
-
-            padding:
-              0
-              14px;
-
-            outline: none;
-
-            border-radius: 13px;
-
-            border:
-              1px solid
-              rgba(
-                255,
-                255,
-                255,
-                0.1
-              );
-
-            color: #ffffff;
-
-            background:
-              rgba(
-                255,
-                255,
-                255,
-                0.045
-              );
-
-            font-size: 13px;
-          }
-
-          .mvbd-input:focus {
-            border-color:
-              rgba(
-                255,
-                106,
-                0,
-                0.55
-              );
-          }
-
-          .mvbd-error {
-            margin-top: 10px;
-
-            padding: 10px;
-
-            border-radius: 10px;
-
-            color: #ff9d9d;
-
-            background:
-              rgba(
-                255,
-                50,
-                50,
-                0.07
-              );
-
-            font-size: 10px;
-          }
-
-          .mvbd-submit-button {
-            width: 100%;
-
-            min-height: 48px;
-
-            margin-top: 14px;
-
-            border: 0;
-
-            border-radius: 14px;
-
+            font-weight: 700;
+            letter-spacing: 0.5px;
             color: #1a0a00;
-
-            background:
-              linear-gradient(
-                135deg,
-                #ffb86b,
-                #ff6a00
-              );
-
-            font-size: 12px;
-
-            font-weight: 900;
-
-            cursor: pointer;
+            background: linear-gradient(90deg, #ff7a1a, #ffb86b);
+            margin-bottom: 16px;
+            width: fit-content;
           }
 
-          .mvbd-submit-button:hover {
-            filter:
-              brightness(1.05);
+          /* Quality Badge */
+          .mvbd-quality-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 600;
+            color: #ff7a1a;
+            background: rgba(255, 106, 0, 0.08);
+            border: 1px solid rgba(255, 106, 0, 0.15);
+            margin-bottom: 20px;
+            width: fit-content;
           }
 
-          /* =================================================
-             PROCESSING
-          ================================================= */
-
-          .mvbd-processing {
-            text-align: center;
-
-            padding:
-              22px
-              10px;
-          }
-
-          .mvbd-loader {
-            width: 62px;
-
-            height: 62px;
-
-            margin:
-              0
-              auto
-              22px;
-
-            border-radius: 50%;
-
-            border:
-              3px solid
-              rgba(
-                255,
-                255,
-                255,
-                0.08
-              );
-
-            border-top-color:
-              #ff7a1a;
-
-            animation:
-              mvbdSpin
-              0.8s
-              linear
-              infinite;
-          }
-
-          .mvbd-progress-track {
-            height: 7px;
-
-            margin-top: 20px;
-
-            overflow: hidden;
-
-            border-radius: 99px;
-
-            background:
-              rgba(
-                255,
-                255,
-                255,
-                0.07
-              );
-          }
-
-          .mvbd-progress-fill {
-            height: 100%;
-
-            border-radius:
-              inherit;
-
-            background:
-              linear-gradient(
-                90deg,
-                #ff6a00,
-                #ffb86b
-              );
-
-            transition:
-              width
-              0.2s
-              linear;
-          }
-
-          .mvbd-progress-text {
-            margin-top: 10px;
-
-            color: #8a7a6e;
-
-            font-size: 10px;
-          }
-
-          /* =================================================
-             SUCCESS
-          ================================================= */
-
-          .mvbd-success {
-            text-align: center;
-
-            padding:
-              15px
-              10px;
-          }
-
-          .mvbd-success-icon {
-            width: 68px;
-
-            height: 68px;
-
+          /* Features */
+          .mvbd-feature-list {
+            list-style: none;
             display: grid;
-
-            place-items: center;
-
-            margin:
-              0
-              auto
-              18px;
-
+            gap: 0;
+            flex: 1;
+            margin-bottom: 24px;
+          }
+          .mvbd-feature-list li {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            font-size: 13px;
+            color: #d4c8be;
+            line-height: 1.4;
+          }
+          .mvbd-feature-list li:last-child { border-bottom: 0; }
+          .mvbd-feature-list li > span:first-child {
+            width: 20px; height: 20px;
+            flex: 0 0 20px;
+            display: grid; place-items: center;
             border-radius: 50%;
+            font-size: 10px;
+            margin-top: 1px;
+          }
+          .feature-check { color: #000000; background: #ff7a1a; }
+          .feature-quality { color: #000000; background: #ffd52e; }
+          .feature-cross { color: #ff5a45; background: rgba(255, 63, 42, 0.1); border: 1px solid rgba(255, 63, 42, 0.2); }
+          .feature-restricted { color: #ffffff; background: #d82929; }
+          .mvbd-feature-list .feature-text { flex: 1; }
+          .mvbd-feature-list li.locked { color: #5c4d42; }
 
-            color: #1a0a00;
+          /* Button */
+          .mvbd-choose-button {
+            width: 100%;
+            min-height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 122, 26, 0.4);
+            color: #ffffff;
+            background: rgba(255, 106, 0, 0.1);
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+          }
+          .mvbd-choose-button:hover {
+            background: rgba(255, 106, 0, 0.25);
+            border-color: #ff7a1a;
+          }
+          .mvbd-button-arrow { font-size: 18px; color: #ff7a1a; }
 
-            background:
-              linear-gradient(
-                135deg,
-                #ffb86b,
-                #ff6a00
-              );
-
-            font-size: 30px;
-
-            font-weight: 900;
-
-            box-shadow:
-              0 0 35px
-                rgba(
-                  255,
-                  106,
-                  0,
-                  0.22
-                );
-
-            animation:
-              mvbdSuccessPop
-              0.5s
-              cubic-bezier(
-                0.2,
-                0.8,
-                0.2,
-                1
-              )
-              both;
+          /* ================= FAQ SECTION ================= */
+          .mvbd-faq-section {
+            margin-top: 100px;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+          }
+          .mvbd-section-title {
+            text-align: center;
+            font-size: 32px;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 40px;
+          }
+          .mvbd-faq-list {
+            display: grid;
+            gap: 12px;
+          }
+          .mvbd-faq-item {
+            border-radius: 16px;
+            border: 1px solid rgba(255, 122, 26, 0.15);
+            background: rgba(10, 5, 0, 0.6);
+            overflow: hidden;
+            cursor: pointer;
+            transition: border-color 0.3s ease;
+          }
+          .mvbd-faq-item:hover {
+            border-color: rgba(255, 122, 26, 0.4);
+          }
+          .mvbd-faq-question {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 24px;
+            font-size: 16px;
+            font-weight: 600;
+            color: #ffffff;
+          }
+          .mvbd-faq-icon {
+            font-size: 20px;
+            color: #ff7a1a;
+            font-weight: 300;
+          }
+          .mvbd-faq-answer {
+            padding: 0 24px 20px;
+            font-size: 14px;
+            line-height: 1.7;
+            color: #b9a89a;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            padding-top: 16px;
           }
 
-          /* =================================================
-             ANIMATIONS
-          ================================================= */
-
-          @keyframes mvbdPulse {
-            0%,
-            100% {
-              opacity: 0.45;
-
-              transform:
-                scale(0.85);
-            }
-
-            50% {
-              opacity: 1;
-
-              transform:
-                scale(1);
-            }
+          /* ================= CTA SECTION ================= */
+          .mvbd-cta-section {
+            margin-top: 100px;
+            padding: 80px 20px;
+            text-align: center;
+            border-radius: 32px;
+            background: linear-gradient(180deg, rgba(10, 5, 0, 0.8) 0%, rgba(0, 0, 0, 0.98) 100%);
+            border: 1px solid rgba(255, 122, 26, 0.2);
+            position: relative;
+            overflow: hidden;
+          }
+          .mvbd-cta-section::before {
+            content: "";
+            position: absolute;
+            top: -50%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(255, 106, 0, 0.15) 0%, transparent 70%);
+            pointer-events: none;
+          }
+          .mvbd-cta-icon {
+            font-size: 40px;
+            margin-bottom: 20px;
+          }
+          .mvbd-cta-title {
+            font-size: clamp(28px, 4vw, 44px);
+            font-weight: 700;
+            color: #ffffff;
+            line-height: 1.2;
+            margin-bottom: 30px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+          }
+          .mvbd-cta-button {
+            padding: 16px 48px;
+            border-radius: 999px;
+            border: 0;
+            font-size: 16px;
+            font-weight: 700;
+            color: #000000;
+            background: linear-gradient(135deg, #ffb86b, #ff6a00);
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+          }
+          .mvbd-cta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 30px rgba(255, 106, 0, 0.4);
           }
 
-          @keyframes mvbdCardGlow {
-            0%,
-            100% {
-              opacity: 0.45;
-
-              transform:
-                translateX(-50%)
-                scale(0.95);
-            }
-
-            50% {
-              opacity: 0.85;
-
-              transform:
-                translateX(-50%)
-                scale(1.12);
-            }
+          /* ================= FOOTER ================= */
+          .mvbd-footer {
+            margin-top: 80px;
+            padding: 40px 0;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr;
+            gap: 40px;
+          }
+          .mvbd-footer-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 16px;
+          }
+          .mvbd-footer-left p {
+            color: #8a7a6e;
+            font-size: 14px;
+            line-height: 1.6;
+            max-width: 300px;
+            margin-bottom: 20px;
+          }
+          .mvbd-footer-cta {
+            padding: 10px 24px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 122, 26, 0.4);
+            background: transparent;
+            color: #ffffff;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s ease;
+          }
+          .mvbd-footer-cta:hover {
+            background: rgba(255, 106, 0, 0.1);
+          }
+          .mvbd-footer-col h4 {
+            color: #ffffff;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 16px;
+          }
+          .mvbd-footer-col a {
+            display: block;
+            color: #8a7a6e;
+            font-size: 13px;
+            text-decoration: none;
+            margin-bottom: 10px;
+            transition: color 0.2s ease;
+          }
+          .mvbd-footer-col a:hover {
+            color: #ff7a1a;
+          }
+          .mvbd-footer-bottom {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding-top: 30px;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            color: #5c4d42;
+            font-size: 12px;
           }
 
-          @keyframes mvbdBadgePulse {
-            0%,
-            100% {
-              box-shadow:
-                0 0 18px
-                  rgba(
-                    255,
-                    106,
-                    0,
-                    0.3
-                  );
-            }
-
-            50% {
-              box-shadow:
-                0 0 30px
-                  rgba(
-                    255,
-                    106,
-                    0,
-                    0.6
-                  );
-            }
+          /* ================= MODALS (Same as before) ================= */
+          .mvbd-modal-backdrop {
+            position: fixed; inset: 0; z-index: 99999;
+            display: flex; align-items: center; justify-content: center;
+            padding: 18px; background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(8px);
+            animation: mvbdModalIn 0.2s ease both;
           }
-
-          @keyframes mvbdModalIn {
-            from {
-              opacity: 0;
-            }
-
-            to {
-              opacity: 1;
-            }
+          .mvbd-modal {
+            width: min(470px, 100%);
+            max-height: min(88svh, 760px);
+            overflow-y: auto;
+            padding: 28px;
+            border-radius: 24px;
+            border: 1px solid rgba(255, 122, 26, 0.3);
+            background: #0a0502;
+            box-shadow: 0 30px 90px rgba(0, 0, 0, 0.8);
+            animation: mvbdModalScale 0.24s cubic-bezier(0.2, 0.8, 0.2, 1) both;
           }
-
-          @keyframes mvbdModalScale {
-            from {
-              opacity: 0;
-
-              transform:
-                translateY(12px)
-                scale(0.97);
-            }
-
-            to {
-              opacity: 1;
-
-              transform:
-                translateY(0)
-                scale(1);
-            }
+          .mvbd-modal::-webkit-scrollbar { width: 4px; }
+          .mvbd-modal::-webkit-scrollbar-thumb { background: #5e3b23; border-radius: 99px; }
+          .mvbd-modal-title { font-size: 22px; font-weight: 700; color: #ffffff; }
+          .mvbd-modal-subtitle { margin-top: 8px; color: #8a7a6e; font-size: 13px; line-height: 1.6; }
+          .mvbd-modal-close {
+            float: right; width: 32px; height: 32px;
+            border: 0; border-radius: 50%;
+            color: #bcb3a9; background: rgba(255, 255, 255, 0.06);
+            cursor: pointer; font-size: 16px;
           }
-
-          @keyframes mvbdSpin {
-            to {
-              transform:
-                rotate(360deg);
-            }
+          .mvbd-free-access-list { display: grid; gap: 10px; margin-top: 20px; }
+          .mvbd-access-button {
+            width: 100%; display: flex; align-items: center; gap: 12px;
+            padding: 14px; border: 1px solid rgba(255, 122, 26, 0.15);
+            border-radius: 14px; background: rgba(255, 255, 255, 0.03);
+            color: #ffffff; text-align: left; cursor: pointer;
+            transition: all 0.2s ease;
           }
-
-          @keyframes mvbdSuccessPop {
-            from {
-              opacity: 0;
-
-              transform:
-                scale(0.5);
-            }
-
-            60% {
-              transform:
-                scale(1.1);
-            }
-
-            to {
-              opacity: 1;
-
-              transform:
-                scale(1);
-            }
+          .mvbd-access-button:hover { background: rgba(255, 106, 0, 0.08); border-color: rgba(255, 122, 26, 0.4); }
+          .mvbd-access-icon {
+            width: 38px; height: 38px; flex: 0 0 38px;
+            display: grid; place-items: center; border-radius: 10px;
+            font-size: 18px; background: rgba(255, 106, 0, 0.1); color: #ff7a1a;
           }
+          .mvbd-access-text { min-width: 0; flex: 1; }
+          .mvbd-access-text strong { display: block; font-size: 13px; }
+          .mvbd-access-text span { display: block; margin-top: 3px; color: #8a7a6e; font-size: 11px; line-height: 1.4; }
+          .mvbd-access-arrow { color: #ff7a1a; font-size: 16px; }
+          .mvbd-access-info { cursor: default; }
+          .mvbd-access-info:hover { transform: none; background: rgba(255, 255, 255, 0.03); }
+          .mvbd-access-restricted { cursor: not-allowed; opacity: 0.6; }
+          .mvbd-not-included { margin-top: 22px; padding-top: 18px; border-top: 1px solid rgba(255, 255, 255, 0.07); }
+          .mvbd-not-included-title { margin-bottom: 12px; color: #8a7a6e; font-size: 10px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; }
+          .mvbd-not-included ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 8px; }
+          .mvbd-not-included li { color: #6e6055; font-size: 12px; }
+          .mvbd-not-included li::before { content: "×"; margin-right: 8px; color: #5c4d42; }
+          .mvbd-selected-plan { margin-top: 18px; padding: 16px; border-radius: 14px; background: rgba(255, 106, 0, 0.05); border: 1px solid rgba(255, 106, 0, 0.15); }
+          .mvbd-selected-plan small { display: block; color: #8a7a6e; font-size: 10px; font-weight: 700; letter-spacing: 0.5px; }
+          .mvbd-selected-plan strong { display: block; margin-top: 6px; font-size: 16px; color: #ffffff; }
+          .mvbd-payment-number { margin-top: 16px; display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 14px; border-radius: 12px; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); }
+          .mvbd-payment-number strong { color: #ff9a4d; font-size: 16px; letter-spacing: 0.5px; }
+          .mvbd-copy-button { border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; padding: 8px 12px; color: #d4c8be; background: rgba(255, 255, 255, 0.05); cursor: pointer; font-size: 11px; font-weight: 600; }
+          .mvbd-input { width: 100%; margin-top: 16px; min-height: 48px; padding: 0 16px; outline: none; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1); color: #ffffff; background: rgba(255, 255, 255, 0.04); font-size: 14px; }
+          .mvbd-input:focus { border-color: rgba(255, 106, 0, 0.6); }
+          .mvbd-error { margin-top: 12px; padding: 12px; border-radius: 10px; color: #ff9d9d; background: rgba(255, 50, 50, 0.08); font-size: 12px; border: 1px solid rgba(255, 50, 50, 0.15); }
+          .mvbd-submit-button { width: 100%; min-height: 50px; margin-top: 16px; border: 0; border-radius: 12px; color: #000000; background: linear-gradient(135deg, #ffb86b, #ff6a00); font-size: 14px; font-weight: 700; cursor: pointer; }
+          .mvbd-submit-button:hover { filter: brightness(1.05); }
+          .mvbd-processing { text-align: center; padding: 24px 10px; }
+          .mvbd-loader { width: 64px; height: 64px; margin: 0 auto 24px; border-radius: 50%; border: 3px solid rgba(255, 255, 255, 0.08); border-top-color: #ff7a1a; animation: mvbdSpin 0.8s linear infinite; }
+          .mvbd-progress-track { height: 8px; margin-top: 24px; overflow: hidden; border-radius: 99px; background: rgba(255, 255, 255, 0.06); }
+          .mvbd-progress-fill { height: 100%; border-radius: inherit; background: linear-gradient(90deg, #ff6a00, #ffb86b); transition: width 0.2s linear; }
+          .mvbd-progress-text { margin-top: 12px; color: #8a7a6e; font-size: 12px; font-weight: 600; }
+          .mvbd-success { text-align: center; padding: 16px 10px; }
+          .mvbd-success-icon { width: 68px; height: 68px; display: grid; place-items: center; margin: 0 auto 20px; border-radius: 50%; color: #000000; background: linear-gradient(135deg, #ffb86b, #ff6a00); font-size: 30px; font-weight: 900; animation: mvbdSuccessPop 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
 
-          /* =================================================
-             TABLET
-          ================================================= */
+          /* ================= ANIMATIONS ================= */
+          @keyframes mvbdPulse { 0%, 100% { opacity: 0.4; transform: scale(0.85); } 50% { opacity: 1; transform: scale(1); } }
+          @keyframes mvbdModalIn { from { opacity: 0; } to { opacity: 1; } }
+          @keyframes mvbdModalScale { from { opacity: 0; transform: translateY(12px) scale(0.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
+          @keyframes mvbdSpin { to { transform: rotate(360deg); } }
+          @keyframes mvbdSuccessPop { from { opacity: 0; transform: scale(0.5); } 60% { transform: scale(1.1); } to { opacity: 1; transform: scale(1); } }
 
-          @media (max-width: 1100px) {
-            .mvbd-plans-grid {
-              grid-template-columns:
-                repeat(
-                  2,
-                  minmax(0, 1fr)
-                );
-            }
-
-            .mvbd-plan-card {
-              min-height: 660px;
-            }
+          /* ================= RESPONSIVE ================= */
+          @media (max-width: 900px) {
+            .mvbd-plans-grid { grid-template-columns: 1fr; max-width: 500px; margin-left: auto; margin-right: auto; }
+            .mvbd-footer { grid-template-columns: 1fr; gap: 30px; text-align: center; }
+            .mvbd-footer-left p { max-width: 100%; margin-left: auto; margin-right: auto; }
+            .mvbd-footer-brand { justify-content: center; }
           }
-
-          /* =================================================
-             MOBILE
-          ================================================= */
-
-          @media (max-width: 700px) {
-            .mvbd-page-content {
-              width:
-                calc(100% - 22px);
-
-              padding-top: 11px;
-
-              padding-bottom: 30px;
-            }
-
-            .mvbd-premium-header {
-              padding:
-                11px
-                13px;
-
-              border-radius: 18px;
-            }
-
-            .mvbd-brand-mark {
-              width: 37px;
-
-              height: 37px;
-
-              border-radius: 11px;
-
-              font-size: 21px;
-            }
-
-            .mvbd-brand strong {
-              font-size: 13px;
-            }
-
-            .mvbd-brand span {
-              font-size: 9px;
-            }
-
-            .mvbd-status {
-              padding:
-                7px
-                9px;
-
-              font-size: 8px;
-            }
-
-            .mvbd-premium-hero {
-              padding:
-                45px
-                8px
-                30px;
-            }
-
-            .mvbd-premium-hero h1 {
-              font-size: 36px;
-
-              letter-spacing:
-                -1.5px;
-            }
-
-            .mvbd-premium-hero p {
-              font-size: 12px;
-            }
-
-            .mvbd-plans-grid {
-              grid-template-columns:
-                1fr;
-
-              gap: 16px;
-            }
-
-            .mvbd-plan-card {
-              min-height: auto;
-
-              padding:
-                21px
-                17px
-                17px;
-
-              border-radius: 25px;
-            }
-
-            .mvbd-plan-name {
-              font-size: 16px;
-            }
-
-            .mvbd-price {
-              margin-top: 20px;
-
-              font-size: 42px;
-            }
-
-            .mvbd-feature-list li {
-              min-height: 46px;
-
-              font-size: 11px;
-            }
-
-            .mvbd-choose-button {
-              min-height: 54px;
-            }
-          }
-
-          /* =================================================
-             SMALL MOBILE
-          ================================================= */
-
-          @media (max-width: 400px) {
-            .mvbd-page-content {
-              width:
-                calc(100% - 16px);
-            }
-
-            .mvbd-status {
-              display: none;
-            }
-
-            .mvbd-premium-hero h1 {
-              font-size: 32px;
-            }
-
-            .mvbd-plan-card {
-              padding:
-                19px
-                15px
-                15px;
-            }
-
-            .mvbd-plan-icon {
-              width: 41px;
-
-              height: 41px;
-
-              flex-basis: 41px;
-            }
-
-            .mvbd-plan-name {
-              font-size: 15px;
-            }
-
-            .mvbd-plan-subtitle {
-              font-size: 9px;
-            }
-
-            .mvbd-price {
-              font-size: 38px;
-            }
-
-            .mvbd-feature-list li {
-              font-size: 10.5px;
-            }
-
-            .mvbd-modal-backdrop {
-              padding: 10px;
-            }
-
-            .mvbd-modal {
-              padding: 18px;
-
-              border-radius: 21px;
-            }
-          }
-
-          /* =================================================
-             REDUCED MOTION
-          ================================================= */
-
-          @media (
-            prefers-reduced-motion:
-              reduce
-          ) {
-            .mvbd-plan-card,
-            .mvbd-choose-button,
-            .mvbd-access-button {
-              transition: none;
-            }
-
-            .mvbd-card-glow,
-            .mvbd-status-dot,
-            .mvbd-loader,
-            .mvbd-popular-badge,
-            .mvbd-success-icon {
-              animation: none;
-            }
+          @media (max-width: 600px) {
+            .mvbd-page-content { width: calc(100% - 24px); padding-top: 12px; }
+            .mvbd-premium-hero { padding: 60px 0 40px; }
+            .mvbd-premium-hero h1 { font-size: 32px; }
+            .mvbd-section-title { font-size: 24px; }
+            .mvbd-cta-title { font-size: 24px; }
+            .mvbd-faq-question { font-size: 14px; padding: 16px 18px; }
+            .mvbd-cta-button { width: 100%; }
           }
         `}</style>
       </main>
 
-      {/* =====================================================
-          FREE ACCESS MODAL
-      ===================================================== */}
-
-      {showFreeAccess &&
-        selectedPlan && (
-          <ViewportModal
-            onBackdropClick={
-              closeFreeAccess
-            }
-          >
-            <div
-              className="mvbd-modal"
-              role="dialog"
-              aria-modal="true"
-              aria-labelledby="free-plan-title"
-            >
-              <button
-                type="button"
-                className="mvbd-modal-close"
-                onClick={closeFreeAccess}
-                aria-label="Close"
-              >
-                ×
-              </button>
-
-              <div
-                id="free-plan-title"
-                className="mvbd-modal-title"
-              >
-                🎁 Free Plan
-              </div>
-
-              <p className="mvbd-modal-subtitle">
-                আপনার Free Plan-এ যেসব
-                access available আছে সেগুলো
-                এখান থেকে ব্যবহার করতে
-                পারবেন।
-              </p>
-
-              <div className="mvbd-free-access-list">
-                {(
-                  selectedPlan.freeAccess ||
-                  []
-                ).map((item) => {
-                  /* ---------------------------------------
-                     RESTRICTED (no link)
-                  --------------------------------------- */
-
-                  if (
-                    isRestrictedFreeItem(
-                      item,
-                    )
-                  ) {
-                    return (
-                      <div
-                        key={item.id}
-                        className="mvbd-access-button mvbd-access-restricted"
-                      >
-                        <div className="mvbd-access-icon">
-                          🔒
-                        </div>
-
-                        <div className="mvbd-access-text">
-                          <strong>
-                            {item.title}
-                          </strong>
-
-                          <span>
-                            Age-restricted
-                            content is
-                            unavailable
-                            here.
-                          </span>
-                        </div>
-                      </div>
-                    )
-                  }
-
-                  /* ---------------------------------------
-                     EXTERNAL
-                  --------------------------------------- */
-
-                  if (
-                    item.type ===
-                    "external"
-                  ) {
-                    return (
-                      <a
-                        key={item.id}
-                        href={
-                          item.href
-                        }
-                        target="_blank"
-                        rel="noreferrer"
-                        className="mvbd-access-button"
-                      >
-                        <div className="mvbd-access-icon">
-                          {item.sticker || "↗"}
-                        </div>
-
-                        <div className="mvbd-access-text">
-                          <strong>
-                            {item.title}
-                          </strong>
-
-                          <span>
-                            {
-                              item.description
-                            }
-                          </span>
-                        </div>
-
-                        <div className="mvbd-access-arrow">
-                          ›
-                        </div>
-                      </a>
-                    )
-                  }
-
-                  /* ---------------------------------------
-                     MEBBOOK
-                  --------------------------------------- */
-
-                  if (
-                    item.type ===
-                    "mebook"
-                  ) {
-                    return (
-                      <button
-                        key={item.id}
-                        type="button"
-                        className="mvbd-access-button"
-                        onClick={() =>
-                          handleFreeAccess(
-                            item,
-                          )
-                        }
-                      >
-                        <div className="mvbd-access-icon">
-                          {item.sticker || "M"}
-                        </div>
-
-                        <div className="mvbd-access-text">
-                          <strong>
-                            {
-                              item.title
-                            }
-                          </strong>
-
-                          <span>
-                            {
-                              item.description
-                            }
-                          </span>
-                        </div>
-
-                        <div className="mvbd-access-arrow">
-                          ›
-                        </div>
-                      </button>
-                    )
-                  }
-
-                  /* ---------------------------------------
-                     INFO
-                  --------------------------------------- */
-
+      {/* ================= MODALS ================= */}
+      {showFreeAccess && selectedPlan && (
+        <ViewportModal onBackdropClick={closeFreeAccess}>
+          <div className="mvbd-modal" role="dialog" aria-modal="true">
+            <button className="mvbd-modal-close" onClick={closeFreeAccess} aria-label="Close">×</button>
+            <div className="mvbd-modal-title">🎁 Free Plan</div>
+            <p className="mvbd-modal-subtitle">আপনার Free Plan-এ যেসব access available আছে সেগুলো এখান থেকে ব্যবহার করতে পারবেন।</p>
+            <div className="mvbd-free-access-list">
+              {(selectedPlan.freeAccess || []).map((item) => {
+                if (isRestrictedFreeItem(item)) {
                   return (
-                    <div
-                      key={item.id}
-                      className="mvbd-access-button mvbd-access-info"
-                    >
-                      <div className="mvbd-access-icon">
-                        {item.sticker || "✓"}
-                      </div>
-
-                      <div className="mvbd-access-text">
-                        <strong>
-                          {item.title}
-                        </strong>
-
-                        <span>
-                          {
-                            item.description
-                          }
-                        </span>
-                      </div>
+                    <div key={item.id} className="mvbd-access-button mvbd-access-restricted">
+                      <div className="mvbd-access-icon">🔒</div>
+                      <div className="mvbd-access-text"><strong>{item.title}</strong><span>Age-restricted content is unavailable here.</span></div>
                     </div>
                   )
-                })}
-              </div>
-
-              {!!selectedPlan
-                .notIncluded
-                ?.length && (
-                <div className="mvbd-not-included">
-                  <div className="mvbd-not-included-title">
-                    Not included
-                  </div>
-
-                  <ul>
-                    {selectedPlan.notIncluded.map(
-                      (item) => (
-                        <li key={item}>
-                          {item}
-                        </li>
-                      ),
-                    )}
-                  </ul>
-                </div>
-              )}
-            </div>
-          </ViewportModal>
-        )}
-
-      {/* =====================================================
-          PAYMENT MODAL
-      ===================================================== */}
-
-      {showPayment &&
-        selectedPlan && (
-          <ViewportModal
-            onBackdropClick={
-              closePayment
-            }
-          >
-            <div
-              className="mvbd-modal"
-              role="dialog"
-              aria-modal="true"
-            >
-              <button
-                type="button"
-                className="mvbd-modal-close"
-                onClick={closePayment}
-                aria-label="Close"
-              >
-                ×
-              </button>
-
-              <div className="mvbd-modal-title">
-                💳 Complete Payment
-              </div>
-
-              <p className="mvbd-modal-subtitle">
-                Send the exact plan amount to
-                the payment number below and
-                enter your transaction ID.
-              </p>
-
-              <div className="mvbd-selected-plan">
-                <small>
-                  SELECTED PLAN
-                </small>
-
-                <strong>
-                  {selectedPlan.sticker}{" "}
-                  {
-                    selectedPlan.planName
-                  }{" "}
-                  •{" "}
-                  {
-                    selectedPlan.price
-                  }
-                </strong>
-              </div>
-
-              <div className="mvbd-payment-number">
-                <strong>
-                  {PAYMENT_NUMBER}
-                </strong>
-
-                <button
-                  type="button"
-                  className="mvbd-copy-button"
-                  onClick={
-                    copyNumber
-                  }
-                >
-                  {copied
-                    ? "Copied"
-                    : "Copy"}
-                </button>
-              </div>
-
-              <input
-                className="mvbd-input"
-                value={transactionId}
-                onChange={(event) =>
-                  setTransactionId(
-                    event.target.value,
+                }
+                if (item.type === "external") {
+                  return (
+                    <a key={item.id} href={item.href} target="_blank" rel="noreferrer" className="mvbd-access-button">
+                      <div className="mvbd-access-icon">{item.sticker || "↗"}</div>
+                      <div className="mvbd-access-text"><strong>{item.title}</strong><span>{item.description}</span></div>
+                      <div className="mvbd-access-arrow">›</div>
+                    </a>
                   )
                 }
-                placeholder="Enter transaction ID"
-                autoComplete="off"
-              />
-
-              {error && (
-                <div className="mvbd-error">
-                  {error}
-                </div>
-              )}
-
-              <button
-                type="button"
-                className="mvbd-submit-button"
-                onClick={
-                  submitPayment
+                if (item.type === "mebook") {
+                  return (
+                    <button key={item.id} className="mvbd-access-button" onClick={() => handleFreeAccess(item)}>
+                      <div className="mvbd-access-icon">{item.sticker || "M"}</div>
+                      <div className="mvbd-access-text"><strong>{item.title}</strong><span>{item.description}</span></div>
+                      <div className="mvbd-access-arrow">›</div>
+                    </button>
+                  )
                 }
-              >
-                Submit Payment Request
-              </button>
+                return (
+                  <div key={item.id} className="mvbd-access-button mvbd-access-info">
+                    <div className="mvbd-access-icon">{item.sticker || "✓"}</div>
+                    <div className="mvbd-access-text"><strong>{item.title}</strong><span>{item.description}</span></div>
+                  </div>
+                )
+              })}
             </div>
-          </ViewportModal>
-        )}
+            {!!selectedPlan.notIncluded?.length && (
+              <div className="mvbd-not-included">
+                <div className="mvbd-not-included-title">Not included</div>
+                <ul>{selectedPlan.notIncluded.map((item) => <li key={item}>{item}</li>)}</ul>
+              </div>
+            )}
+          </div>
+        </ViewportModal>
+      )}
 
-      {/* =====================================================
-          PROCESSING
-      ===================================================== */}
+      {showPayment && selectedPlan && (
+        <ViewportModal onBackdropClick={closePayment}>
+          <div className="mvbd-modal" role="dialog" aria-modal="true">
+            <button className="mvbd-modal-close" onClick={closePayment} aria-label="Close">×</button>
+            <div className="mvbd-modal-title">💳 Complete Payment</div>
+            <p className="mvbd-modal-subtitle">Send the exact plan amount to the payment number below and enter your transaction ID.</p>
+            <div className="mvbd-selected-plan">
+              <small>SELECTED PLAN</small>
+              <strong>{selectedPlan.sticker} {selectedPlan.planName} • {selectedPlan.price}</strong>
+            </div>
+            <div className="mvbd-payment-number">
+              <strong>{PAYMENT_NUMBER}</strong>
+              <button className="mvbd-copy-button" onClick={copyNumber}>{copied ? "Copied" : "Copy"}</button>
+            </div>
+            <input className="mvbd-input" value={transactionId} onChange={(e) => setTransactionId(e.target.value)} placeholder="Enter transaction ID" autoComplete="off" />
+            {error && <div className="mvbd-error">{error}</div>}
+            <button className="mvbd-submit-button" onClick={submitPayment}>Submit Payment Request</button>
+          </div>
+        </ViewportModal>
+      )}
 
       {showProcessing && (
         <ViewportModal>
-          <div
-            className="mvbd-modal"
-            role="dialog"
-            aria-modal="true"
-          >
+          <div className="mvbd-modal" role="dialog" aria-modal="true">
             <div className="mvbd-processing">
               <div className="mvbd-loader" />
-
-              <div className="mvbd-modal-title">
-                ⏳ Processing Request
-              </div>
-
-              <p className="mvbd-modal-subtitle">
-                Your payment request has been
-                submitted. Please wait while
-                the request is being processed.
-              </p>
-
-              <div className="mvbd-progress-track">
-                <div
-                  className="mvbd-progress-fill"
-                  style={{
-                    width: `${progress}%`,
-                  }}
-                />
-              </div>
-
-              <div className="mvbd-progress-text">
-                {progress}%
-                processing
-              </div>
+              <div className="mvbd-modal-title">⏳ Processing Request</div>
+              <p className="mvbd-modal-subtitle">Your payment request has been submitted. Please wait while the request is being processed.</p>
+              <div className="mvbd-progress-track"><div className="mvbd-progress-fill" style={{ width: `${progress}%` }} /></div>
+              <div className="mvbd-progress-text">{progress}% processing</div>
             </div>
           </div>
         </ViewportModal>
       )}
 
-      {/* =====================================================
-          SUCCESS
-      ===================================================== */}
-
       {showSuccess && (
         <ViewportModal>
-          <div
-            className="mvbd-modal"
-            role="dialog"
-            aria-modal="true"
-          >
+          <div className="mvbd-modal" role="dialog" aria-modal="true">
             <div className="mvbd-success">
-              <div className="mvbd-success-icon">
-                ✓
-              </div>
-
-              <div className="mvbd-modal-title">
-                🎉 Request Submitted
-              </div>
-
-              <p className="mvbd-modal-subtitle">
-                Your subscription request has
-                been submitted successfully.
-                Your membership will be
-                updated after verification.
-              </p>
-
-              <button
-                type="button"
-                className="mvbd-submit-button"
-                onClick={
-                  closeSuccess
-                }
-              >
-                Done
-              </button>
+              <div className="mvbd-success-icon">✓</div>
+              <div className="mvbd-modal-title">🎉 Request Submitted</div>
+              <p className="mvbd-modal-subtitle">Your subscription request has been submitted successfully. Your membership will be updated after verification.</p>
+              <button className="mvbd-submit-button" onClick={closeSuccess}>Done</button>
             </div>
           </div>
         </ViewportModal>
       )}
     </>
   )
-                          }
+}

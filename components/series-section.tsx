@@ -46,6 +46,8 @@ const COMPARISON_FEATURES = [
   { icon: "HD", name: "480p Quality", free: true, premium: true },
 ]
 
+const AUTOPLAY_DELAY = 3000 // 3 seconds
+
 /* =========================================================
    VIEWPORT MODAL
 ========================================================= */
@@ -160,7 +162,10 @@ export default function SeriesSection({
   }, [])
 
   /* =======================================================
-     SWIPER CDN LOADER + INITIALIZATION (SMOOTH)
+     SWIPER CDN LOADER + INITIALIZATION
+     - Ultra smooth drag
+     - Auto-slide every 3s
+     - Pauses on hover/touch, resumes after
   ======================================================= */
 
   useEffect(() => {
@@ -173,6 +178,7 @@ export default function SeriesSection({
           return
         }
 
+        // Load CSS once
         if (
           !document.querySelector(
             'link[data-swiper-css="true"]',
@@ -240,33 +246,58 @@ export default function SeriesSection({
           effect: "cards",
           grabCursor: true,
           initialSlide: 0,
-          speed: 400,
-          resistanceRatio: 0.85,
-          followFinger: true,
+
+          /* ---- Ultra smooth drag ---- */
+          speed: 500,                  // smooth transition time
+          resistanceRatio: 0.7,        // soft resistance at edges
+          followFinger: true,          // follows your finger 1:1
+          touchRatio: 1,               // exact 1:1 finger movement
+          touchAngle: 45,              // any direction swipe
+          longSwipes: true,
+          longSwipesRatio: 0.15,       // small swipe = next slide
+          longSwipesMs: 200,
+          shortSwipes: true,
+          threshold: 3,                // very sensitive
           touchStartPreventDefault: false,
           touchMoveStopPropagation: true,
+          preventInteractionOnTransition: true,
           simulateTouch: true,
           allowTouchMove: true,
-          preventClicks: false,
-          preventClicksPropagation: false,
-          threshold: 5,
           watchSlidesProgress: true,
+          watchOverflow: true,
+          roundLengths: true,
+          passiveListeners: true,
+
+          /* ---- Auto slide (slideshow) ---- */
+          autoplay: {
+            delay: AUTOPLAY_DELAY,     // 3 seconds
+            disableOnInteraction: false, // keep autoplay after user drag
+            pauseOnMouseEnter: true,   // pause on hover
+            waitForTransition: true,   // wait for slide transition to finish
+          },
+
+          /* ---- Cards effect ---- */
           cardsEffect: {
             perSlideOffset: 8,
             perSlideRotate: 2,
             slideShadows: true,
+            rotate: true,
           },
+
+          /* ---- Other ---- */
           mousewheel: {
             forceToAxis: true,
             releaseOnEdges: true,
-            sensitivity: 0.6,
+            sensitivity: 0.5,
           },
           keyboard: {
             enabled: true,
+            onlyInViewport: true,
           },
+
           on: {
             slideChange: (swiper: any) => {
-              setActiveCard(swiper.activeIndex)
+              setActiveCard(swiper.realIndex)
             },
           },
         })
@@ -474,10 +505,7 @@ export default function SeriesSection({
     <>
       <main className="mvbd-premium-page">
 
-        {/* =================================================
-            CINEMATIC BACKGROUND
-        ================================================= */}
-
+        {/* Background */}
         <div className="mvbd-page-background">
           <div className="mvbd-sun-glow" />
           <div className="mvbd-ray mvbd-ray-1" />
@@ -493,10 +521,7 @@ export default function SeriesSection({
 
         <div className="mvbd-page-content">
 
-          {/* =================================================
-              HEADER
-          ================================================= */}
-
+          {/* HEADER */}
           <header className="mvbd-premium-header">
             <div className="mvbd-brand">
               <div className="mvbd-brand-logo-wrap">
@@ -517,10 +542,7 @@ export default function SeriesSection({
             </div>
           </header>
 
-          {/* =================================================
-              HERO
-          ================================================= */}
-
+          {/* HERO */}
           <section className="mvbd-premium-hero">
             <div className="mvbd-eyebrow">
               ✦ MOVIESVERSEBD PREMIUM
@@ -536,12 +558,8 @@ export default function SeriesSection({
             </p>
           </section>
 
-          {/* =================================================
-              PLAN CARD STACK (SWIPER CARDS EFFECT)
-          ================================================= */}
-
+          {/* PLAN CARD STACK (SWIPER CARDS + AUTOPLAY) */}
           <section className="mvbd-plan-showcase">
-
             <div className="mvbd-showcase-header">
               <div>
                 <span className="mvbd-section-kicker">MEMBERSHIP</span>
@@ -627,13 +645,9 @@ export default function SeriesSection({
               Swipe or tap a card to select
               <span>→</span>
             </div>
-
           </section>
 
-          {/* =================================================
-              QUICK PLAN BUTTONS
-          ================================================= */}
-
+          {/* QUICK PLAN BUTTONS */}
           <section className="mvbd-plans-grid">
             {SUBSCRIPTION_PLANS.map((plan) => {
               const isFree = plan.planId === "trial"
@@ -747,10 +761,7 @@ export default function SeriesSection({
             })}
           </section>
 
-          {/* =================================================
-              FEATURES COMPARISON
-          ================================================= */}
-
+          {/* FEATURES COMPARISON */}
           <section className="mvbd-features-section">
             <div className="mvbd-features-heading">
               <div>
@@ -815,10 +826,7 @@ export default function SeriesSection({
             </div>
           </section>
 
-          {/* =================================================
-              PAYMENT INFO
-          ================================================= */}
-
+          {/* PAYMENT INFO */}
           <section className="mvbd-payment-info">
             <div className="mvbd-info-icon">৳</div>
             <div>
@@ -832,10 +840,7 @@ export default function SeriesSection({
             <div className="mvbd-secure-badge">VERIFIED</div>
           </section>
 
-          {/* =================================================
-              FOOTER
-          ================================================= */}
-
+          {/* FOOTER */}
           <footer className="mvbd-premium-footer">
             <div className="mvbd-footer-logo">
               <img src={MVBD_LOGO} alt="" />
@@ -869,10 +874,6 @@ export default function SeriesSection({
             font: inherit;
           }
 
-          /* =================================================
-             PAGE
-          ================================================= */
-
           .mvbd-premium-page {
             position: relative;
             min-height: 100svh;
@@ -883,21 +884,15 @@ export default function SeriesSection({
             isolation: isolate;
           }
 
-          /* =================================================
-             CINEMATIC BACKGROUND
-          ================================================= */
-
           .mvbd-page-background {
             position: fixed;
             inset: 0;
             z-index: -5;
             overflow: hidden;
             pointer-events: none;
-
             background:
               radial-gradient(
-                ellipse 80% 45%
-                at 50% -10%,
+                ellipse 80% 45% at 50% -10%,
                 rgba(248, 213, 130, 0.11),
                 transparent 65%
               ),
@@ -914,7 +909,6 @@ export default function SeriesSection({
             inset: 0;
             z-index: -4;
             pointer-events: none;
-
             background:
               radial-gradient(
                 ellipse at 50% 0%,
@@ -937,7 +931,6 @@ export default function SeriesSection({
             left: 50%;
             transform: translateX(-50%);
             border-radius: 50%;
-
             background: radial-gradient(
               circle,
               rgba(255, 237, 183, 0.42) 0%,
@@ -945,7 +938,6 @@ export default function SeriesSection({
               rgba(255, 181, 79, 0.05) 44%,
               transparent 72%
             );
-
             filter: blur(18px);
             animation: mvbdSunPulse 8s ease-in-out infinite;
           }
@@ -957,38 +949,31 @@ export default function SeriesSection({
             height: 125%;
             width: 130px;
             transform-origin: 50% 0;
-
             background: linear-gradient(
               180deg,
               rgba(255, 239, 188, 0.12),
               rgba(255, 207, 117, 0.035),
               transparent 75%
             );
-
             filter: blur(18px);
             opacity: 0.6;
             mix-blend-mode: screen;
             animation: mvbdRayMove 13s ease-in-out infinite;
           }
 
-          .mvbd-ray-1 {
-            transform: translateX(-50%) rotate(-25deg);
-          }
-
+          .mvbd-ray-1 { transform: translateX(-50%) rotate(-25deg); }
           .mvbd-ray-2 {
             width: 95px;
             transform: translateX(-50%) rotate(-10deg);
             opacity: 0.35;
             animation-delay: -3s;
           }
-
           .mvbd-ray-3 {
             width: 160px;
             transform: translateX(-50%) rotate(17deg);
             opacity: 0.28;
             animation-delay: -6s;
           }
-
           .mvbd-ray-4 {
             width: 75px;
             transform: translateX(-50%) rotate(32deg);
@@ -1026,13 +1011,8 @@ export default function SeriesSection({
             inset: 0;
             opacity: 0.035;
             pointer-events: none;
-
             background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.7'/%3E%3C/svg%3E");
           }
-
-          /* =================================================
-             CONTENT
-          ================================================= */
 
           .mvbd-page-content {
             position: relative;
@@ -1041,10 +1021,6 @@ export default function SeriesSection({
             margin: 0 auto;
             padding: 18px 0 70px;
           }
-
-          /* =================================================
-             HEADER
-          ================================================= */
 
           .mvbd-premium-header {
             display: flex;
@@ -1128,10 +1104,6 @@ export default function SeriesSection({
             animation: mvbdStatusPulse 2s ease-in-out infinite;
           }
 
-          /* =================================================
-             HERO
-          ================================================= */
-
           .mvbd-premium-hero {
             text-align: center;
             padding: 76px 12px 48px;
@@ -1182,10 +1154,6 @@ export default function SeriesSection({
             line-height: 1.7;
           }
 
-          /* =================================================
-             SECTION HEADINGS
-          ================================================= */
-
           .mvbd-section-kicker {
             color: #cdbb83;
             font-size: 9px;
@@ -1235,10 +1203,7 @@ export default function SeriesSection({
             opacity: 0.35;
           }
 
-          /* =================================================
-             CARD STAGE - SWIPER CONTAINER (SMOOTH)
-          ================================================= */
-
+          /* CARD STAGE */
           .mvbd-card-stage {
             position: relative;
             min-height: 450px;
@@ -1271,10 +1236,7 @@ export default function SeriesSection({
             pointer-events: none;
           }
 
-          /* =================================================
-             SWIPER WRAPPER (SMOOTH)
-          ================================================= */
-
+          /* SWIPER WRAPPER - Ultra smooth */
           .mySwiper {
             width: 100%;
             height: 100%;
@@ -1308,13 +1270,24 @@ export default function SeriesSection({
               rgba(27, 32, 38, 0.96),
               rgba(7, 10, 14, 0.98)
             );
-
-            /* Swiper নিজে transform handle করে - নিজের transition বন্ধ */
+            /* Critical: no transition, let Swiper handle */
             transition: none !important;
             will-change: transform;
             backface-visibility: hidden;
             -webkit-backface-visibility: hidden;
             transform: translateZ(0);
+            transform-origin: center bottom;
+          }
+
+          /* Smooth GPU-accelerated transitions */
+          .swiper-cards .swiper-slide {
+            transition-property: transform, opacity;
+            transition-timing-function: cubic-bezier(0.22, 0.61, 0.36, 1);
+          }
+
+          /* Reset !important rule for swiper-cards */
+          .swiper-cards .swiper-slide {
+            transition: transform 0.5s cubic-bezier(0.22, 0.61, 0.36, 1) !important;
           }
 
           .swiper-slide-active {
@@ -1338,10 +1311,6 @@ export default function SeriesSection({
             pointer-events: none;
             z-index: 1;
           }
-
-          /* =================================================
-             STACK CARD INNER (SMOOTH)
-          ================================================= */
 
           .mvbd-stack-card-inner {
             width: 100%;
@@ -1506,7 +1475,7 @@ export default function SeriesSection({
             border: none;
             cursor: pointer;
             width: calc(100% - 46px);
-            transition: filter 0.2s ease, transform 0.2s ease;
+            transition: filter 0.2s ease;
             touch-action: manipulation;
             -webkit-tap-highlight-color: transparent;
           }
@@ -1536,10 +1505,7 @@ export default function SeriesSection({
             font-size: 13px;
           }
 
-          /* =================================================
-             NORMAL PLAN CARDS
-          ================================================= */
-
+          /* PLAN CARDS */
           .mvbd-plans-grid {
             display: grid;
             grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -1695,26 +1661,14 @@ export default function SeriesSection({
             font-size: 9px;
           }
 
-          .feature-check {
-            color: #15130d;
-            background: #ead38f;
-          }
-
-          .feature-quality {
-            color: #15130d;
-            background: #ead38f;
-          }
-
+          .feature-check { color: #15130d; background: #ead38f; }
+          .feature-quality { color: #15130d; background: #ead38f; }
           .feature-cross {
             color: #d77f7f;
             background: rgba(214,77,77,0.08);
             border: 1px solid rgba(214,77,77,0.15);
           }
-
-          .feature-restricted {
-            color: white;
-            background: #9f3030;
-          }
+          .feature-restricted { color: white; background: #9f3030; }
 
           .mvbd-feature-list .feature-text {
             flex: 1;
@@ -1749,9 +1703,7 @@ export default function SeriesSection({
             transform: translateY(-2px);
           }
 
-          .mvbd-button-arrow {
-            font-size: 19px;
-          }
+          .mvbd-button-arrow { font-size: 19px; }
 
           .mvbd-popular-badge {
             position: absolute;
@@ -1770,13 +1722,8 @@ export default function SeriesSection({
             letter-spacing: 0.5px;
           }
 
-          /* =================================================
-             FEATURES SECTION
-          ================================================= */
-
-          .mvbd-features-section {
-            margin-top: 68px;
-          }
+          /* FEATURES */
+          .mvbd-features-section { margin-top: 68px; }
 
           .mvbd-features-heading {
             display: flex;
@@ -1800,13 +1747,7 @@ export default function SeriesSection({
             background: rgba(230,207,143,0.05);
           }
 
-          .mvbd-features-crown span {
-            font-size: 13px;
-          }
-
-          /* =================================================
-             COMPARISON
-          ================================================= */
+          .mvbd-features-crown span { font-size: 13px; }
 
           .mvbd-comparison {
             position: relative;
@@ -1821,9 +1762,7 @@ export default function SeriesSection({
           }
 
           .mvbd-comparison-feature-column,
-          .mvbd-comparison-plan {
-            min-width: 0;
-          }
+          .mvbd-comparison-plan { min-width: 0; }
 
           .mvbd-comparison-feature-column {
             background: rgba(255,255,255,0.012);
@@ -1948,10 +1887,7 @@ export default function SeriesSection({
             text-transform: uppercase;
           }
 
-          /* =================================================
-             PAYMENT INFO
-          ================================================= */
-
+          /* PAYMENT INFO */
           .mvbd-payment-info {
             display: flex;
             align-items: center;
@@ -2002,10 +1938,6 @@ export default function SeriesSection({
             letter-spacing: 0.7px;
           }
 
-          /* =================================================
-             FOOTER
-          ================================================= */
-
           .mvbd-premium-footer {
             display: flex;
             align-items: center;
@@ -2031,10 +1963,7 @@ export default function SeriesSection({
             object-fit: contain;
           }
 
-          /* =================================================
-             MODAL BACKDROP
-          ================================================= */
-
+          /* MODAL BACKDROP */
           .mvbd-modal-backdrop {
             position: fixed;
             inset: 0;
@@ -2073,10 +2002,7 @@ export default function SeriesSection({
             ) both;
           }
 
-          .mvbd-modal::-webkit-scrollbar {
-            width: 4px;
-          }
-
+          .mvbd-modal::-webkit-scrollbar { width: 4px; }
           .mvbd-modal::-webkit-scrollbar-thumb {
             background: rgba(230,207,142,0.25);
             border-radius: 99px;
@@ -2107,10 +2033,7 @@ export default function SeriesSection({
             font-size: 17px;
           }
 
-          /* =================================================
-             FREE ACCESS
-          ================================================= */
-
+          /* FREE ACCESS */
           .mvbd-free-access-list {
             display: grid;
             gap: 9px;
@@ -2171,10 +2094,7 @@ export default function SeriesSection({
             font-size: 16px;
           }
 
-          .mvbd-access-info {
-            cursor: default;
-          }
-
+          .mvbd-access-info { cursor: default; }
           .mvbd-access-restricted {
             cursor: not-allowed;
             opacity: 0.55;
@@ -2214,10 +2134,7 @@ export default function SeriesSection({
             color: rgba(220,100,100,0.55);
           }
 
-          /* =================================================
-             PAYMENT MODAL
-          ================================================= */
-
+          /* PAYMENT MODAL */
           .mvbd-selected-plan {
             margin-top: 18px;
             padding: 15px;
@@ -2314,14 +2231,9 @@ export default function SeriesSection({
             box-shadow: 0 12px 30px rgba(220,193,111,0.09);
           }
 
-          .mvbd-submit-button:hover {
-            filter: brightness(1.07);
-          }
+          .mvbd-submit-button:hover { filter: brightness(1.07); }
 
-          /* =================================================
-             PROCESSING
-          ================================================= */
-
+          /* PROCESSING */
           .mvbd-processing {
             text-align: center;
             padding: 22px 8px;
@@ -2363,10 +2275,7 @@ export default function SeriesSection({
             font-weight: 600;
           }
 
-          /* =================================================
-             SUCCESS
-          ================================================= */
-
+          /* SUCCESS */
           .mvbd-success {
             text-align: center;
             padding: 15px 8px;
@@ -2389,10 +2298,7 @@ export default function SeriesSection({
             font-weight: 900;
           }
 
-          /* =================================================
-             ANIMATIONS
-          ================================================= */
-
+          /* ANIMATIONS */
           @keyframes mvbdSunPulse {
             0%, 100% {
               opacity: 0.65;
@@ -2416,12 +2322,8 @@ export default function SeriesSection({
           }
 
           @keyframes mvbdOrbFloat {
-            0%, 100% {
-              transform: translate3d(0,0,0) scale(1);
-            }
-            50% {
-              transform: translate3d(25px,-20px,0) scale(1.08);
-            }
+            0%, 100% { transform: translate3d(0,0,0) scale(1); }
+            50% { transform: translate3d(25px,-20px,0) scale(1.08); }
           }
 
           @keyframes mvbdCardLight {
@@ -2447,12 +2349,8 @@ export default function SeriesSection({
           }
 
           @keyframes mvbdGradientText {
-            0%, 100% {
-              background-position: 0% 50%;
-            }
-            50% {
-              background-position: 100% 50%;
-            }
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
           }
 
           @keyframes mvbdModalIn {
@@ -2475,23 +2373,15 @@ export default function SeriesSection({
             to { transform: rotate(360deg); }
           }
 
-          /* =================================================
-             TABLET
-          ================================================= */
-
+          /* TABLET */
           @media (max-width: 1050px) {
             .mvbd-plans-grid {
               grid-template-columns: repeat(2, minmax(0, 1fr));
             }
-            .mvbd-plan-card {
-              min-height: 600px;
-            }
+            .mvbd-plan-card { min-height: 600px; }
           }
 
-          /* =================================================
-             MOBILE
-          ================================================= */
-
+          /* MOBILE */
           @media (max-width: 700px) {
             .mvbd-page-content {
               width: calc(100% - 18px);
@@ -2503,55 +2393,23 @@ export default function SeriesSection({
               border-radius: 16px;
             }
 
-            .mvbd-brand-logo-wrap {
-              width: 39px;
-              height: 39px;
-            }
+            .mvbd-brand-logo-wrap { width: 39px; height: 39px; }
+            .mvbd-brand-logo { width: 32px; height: 32px; }
+            .mvbd-brand-text strong { font-size: 12px; }
+            .mvbd-brand-text span { font-size: 8px; }
+            .mvbd-status { padding: 6px 9px; font-size: 7px; }
 
-            .mvbd-brand-logo {
-              width: 32px;
-              height: 32px;
-            }
-
-            .mvbd-brand-text strong {
-              font-size: 12px;
-            }
-
-            .mvbd-brand-text span {
-              font-size: 8px;
-            }
-
-            .mvbd-status {
-              padding: 6px 9px;
-              font-size: 7px;
-            }
-
-            .mvbd-premium-hero {
-              padding: 48px 5px 30px;
-            }
-
-            .mvbd-eyebrow {
-              font-size: 8px;
-              letter-spacing: 2.4px;
-            }
-
+            .mvbd-premium-hero { padding: 48px 5px 30px; }
+            .mvbd-eyebrow { font-size: 8px; letter-spacing: 2.4px; }
             .mvbd-premium-hero h1 {
               font-size: 36px;
               letter-spacing: -1.8px;
             }
+            .mvbd-premium-hero p { font-size: 11px; }
 
-            .mvbd-premium-hero p {
-              font-size: 11px;
-            }
-
-            .mvbd-showcase-header {
-              align-items: flex-end;
-            }
-
+            .mvbd-showcase-header { align-items: flex-end; }
             .mvbd-plan-showcase h2,
-            .mvbd-features-section h2 {
-              font-size: 25px;
-            }
+            .mvbd-features-section h2 { font-size: 25px; }
 
             .mvbd-card-stage {
               min-height: 405px;
@@ -2568,18 +2426,9 @@ export default function SeriesSection({
               height: 340px;
             }
 
-            .mvbd-stack-card-inner {
-              padding: 21px 19px;
-            }
-
-            .mvbd-stack-top strong {
-              font-size: 15px;
-            }
-
-            .mvbd-stack-price {
-              margin-top: 32px;
-              font-size: 38px;
-            }
+            .mvbd-stack-card-inner { padding: 21px 19px; }
+            .mvbd-stack-top strong { font-size: 15px; }
+            .mvbd-stack-price { margin-top: 32px; font-size: 38px; }
 
             .mvbd-stack-bottom {
               left: 19px;
@@ -2595,30 +2444,17 @@ export default function SeriesSection({
               margin-top: 34px;
             }
 
-            .mvbd-plan-card {
-              min-height: auto;
-            }
-
-            .mvbd-features-section {
-              margin-top: 48px;
-            }
-
-            .mvbd-features-heading {
-              align-items: center;
-            }
-
-            .mvbd-features-crown {
-              display: none;
-            }
+            .mvbd-plan-card { min-height: auto; }
+            .mvbd-features-section { margin-top: 48px; }
+            .mvbd-features-heading { align-items: center; }
+            .mvbd-features-crown { display: none; }
 
             .mvbd-comparison {
               grid-template-columns: minmax(0, 1fr) 74px 74px;
               border-radius: 18px;
             }
 
-            .mvbd-comparison-title {
-              padding: 0 13px;
-            }
+            .mvbd-comparison-title { padding: 0 13px; }
 
             .mvbd-comparison-feature {
               min-height: 57px;
@@ -2640,9 +2476,7 @@ export default function SeriesSection({
               font-size: 9px;
             }
 
-            .mvbd-comparison-value {
-              min-height: 57px;
-            }
+            .mvbd-comparison-value { min-height: 57px; }
 
             .mvbd-feature-check,
             .mvbd-feature-cross,
@@ -2653,38 +2487,21 @@ export default function SeriesSection({
               font-size: 11px;
             }
 
-            .mvbd-feature-unlimited {
-              font-size: 15px;
-            }
-
+            .mvbd-feature-unlimited { font-size: 15px; }
             .mvbd-feature-limited {
               min-width: 49px;
               padding: 0 5px;
               font-size: 6px;
             }
 
-            .mvbd-payment-info {
-              padding: 12px;
-              gap: 10px;
-            }
-
-            .mvbd-secure-badge {
-              display: none;
-            }
+            .mvbd-payment-info { padding: 12px; gap: 10px; }
+            .mvbd-secure-badge { display: none; }
           }
 
-          /* =================================================
-             SMALL MOBILE
-          ================================================= */
-
+          /* SMALL MOBILE */
           @media (max-width: 390px) {
-            .mvbd-status {
-              display: none;
-            }
-
-            .mvbd-premium-hero h1 {
-              font-size: 32px;
-            }
+            .mvbd-status { display: none; }
+            .mvbd-premium-hero h1 { font-size: 32px; }
 
             .mySwiper {
               max-width: 260px;
@@ -2696,9 +2513,7 @@ export default function SeriesSection({
               height: 330px;
             }
 
-            .mvbd-card-stage {
-              min-height: 390px;
-            }
+            .mvbd-card-stage { min-height: 390px; }
 
             .mvbd-comparison {
               grid-template-columns: minmax(0, 1fr) 67px 67px;
@@ -2710,10 +2525,7 @@ export default function SeriesSection({
             }
           }
 
-          /* =================================================
-             REDUCED MOTION
-          ================================================= */
-
+          /* REDUCED MOTION */
           @media (prefers-reduced-motion: reduce) {
             *, *::before, *::after {
               scroll-behavior: auto !important;
@@ -2739,10 +2551,7 @@ export default function SeriesSection({
         `}</style>
       </main>
 
-      {/* =====================================================
-          FREE ACCESS MODAL
-      ===================================================== */}
-
+      {/* FREE ACCESS MODAL */}
       {showFreeAccess && selectedPlan && (
         <ViewportModal onBackdropClick={closeFreeAccess}>
           <div
@@ -2864,10 +2673,7 @@ export default function SeriesSection({
         </ViewportModal>
       )}
 
-      {/* =====================================================
-          PAYMENT MODAL
-      ===================================================== */}
-
+      {/* PAYMENT MODAL */}
       {showPayment && selectedPlan && (
         <ViewportModal onBackdropClick={closePayment}>
           <div
@@ -2936,10 +2742,7 @@ export default function SeriesSection({
         </ViewportModal>
       )}
 
-      {/* =====================================================
-          PROCESSING
-      ===================================================== */}
-
+      {/* PROCESSING */}
       {showProcessing && (
         <ViewportModal>
           <div
@@ -2971,10 +2774,7 @@ export default function SeriesSection({
         </ViewportModal>
       )}
 
-      {/* =====================================================
-          SUCCESS
-      ===================================================== */}
-
+      {/* SUCCESS */}
       {showSuccess && (
         <ViewportModal>
           <div

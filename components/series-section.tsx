@@ -240,6 +240,9 @@ export default function SeriesSection({
   const successTimerRef =
     useRef<number | null>(null)
 
+  const swiperInstanceRef =
+    useRef<any>(null)
+
   /* =======================================================
      CLEANUP
   ======================================================= */
@@ -256,6 +259,173 @@ export default function SeriesSection({
         window.clearTimeout(
           successTimerRef.current,
         )
+      }
+    }
+  }, [])
+
+  /* =======================================================
+     SWIPER CDN LOADER + INITIALIZATION
+  ======================================================= */
+
+  useEffect(() => {
+    let cancelled = false
+
+    const loadSwiper = (): Promise<void> => {
+      return new Promise((resolve, reject) => {
+        if (typeof window === "undefined") {
+          resolve()
+          return
+        }
+
+        // Load Swiper CSS from CDN (once)
+        if (
+          !document.querySelector(
+            'link[data-swiper-css="true"]',
+          )
+        ) {
+          const cssLink =
+            document.createElement("link")
+
+          cssLink.rel = "stylesheet"
+          cssLink.href =
+            "https://cdn.jsdelivr.net/npm/swiper@8/swiper-bundle.min.css"
+          cssLink.setAttribute(
+            "data-swiper-css",
+            "true",
+          )
+          document.head.appendChild(cssLink)
+        }
+
+        // If Swiper is already loaded, resolve
+        if ((window as any).Swiper) {
+          resolve()
+          return
+        }
+
+        // If a script tag already exists, wait for it
+        const existingScript =
+          document.querySelector(
+            'script[data-swiper-js="true"]',
+          ) as HTMLScriptElement | null
+
+        if (existingScript) {
+          existingScript.addEventListener(
+            "load",
+            () => resolve(),
+          )
+          existingScript.addEventListener(
+            "error",
+            () =>
+              reject(
+                new Error(
+                  "Failed to load Swiper",
+                ),
+              ),
+          )
+          return
+        }
+
+        // Create script tag
+        const script =
+          document.createElement("script")
+
+        script.src =
+          "https://cdn.jsdelivr.net/npm/swiper@8/swiper-bundle.min.js"
+        script.async = true
+        script.setAttribute(
+          "data-swiper-js",
+          "true",
+        )
+        script.onload = () => resolve()
+        script.onerror = () =>
+          reject(
+            new Error("Failed to load Swiper"),
+          )
+
+        document.body.appendChild(script)
+      })
+    }
+
+    const initSwiper = async () => {
+      try {
+        await loadSwiper()
+
+        if (cancelled) return
+
+        // Small delay to ensure DOM is ready
+        await new Promise((r) =>
+          setTimeout(r, 80),
+        )
+
+        if (cancelled) return
+
+        const Swiper = (window as any).Swiper
+
+        if (!Swiper) {
+          console.error(
+            "Swiper not available on window",
+          )
+          return
+        }
+
+        const el =
+          document.querySelector(".mySwiper")
+
+        if (!el) return
+
+        // Destroy existing instance if any
+        if (swiperInstanceRef.current) {
+          try {
+            swiperInstanceRef.current.destroy(
+              true,
+              true,
+            )
+          } catch {}
+          swiperInstanceRef.current = null
+        }
+
+        swiperInstanceRef.current = new Swiper(
+          ".mySwiper",
+          {
+            effect: "cards",
+            grabCursor: true,
+            initialSlide: 0,
+            cardsEffect: {
+              perSlideOffset: 8,
+              perSlideRotate: 2,
+              slideShadows: true,
+            },
+            mousewheel: {
+              forceToAxis: true,
+            },
+            keyboard: {
+              enabled: true,
+            },
+            on: {
+              slideChange: (swiper: any) => {
+                setActiveCard(swiper.activeIndex)
+              },
+            },
+          },
+        )
+      } catch (err) {
+        console.error("Swiper init failed:", err)
+      }
+    }
+
+    initSwiper()
+
+    return () => {
+      cancelled = true
+
+      if (swiperInstanceRef.current) {
+        try {
+          swiperInstanceRef.current.destroy(
+            true,
+            true,
+          )
+        } catch {}
+        swiperInstanceRef.current = null
       }
     }
   }, [])
@@ -520,52 +690,6 @@ export default function SeriesSection({
   }
 
   const cardPlans = SUBSCRIPTION_PLANS
-
-  /* =======================================================
-     SWIPER INITIALIZATION
-  ======================================================= */
-
-useEffect(() => {
-  let swiperInstance: any = null
-
-  const initSwiper = async () => {
-    // v8-এ মডিউল এবং কোর উভয়ই 'swiper' থেকে আমদানি করতে হয়
-    const SwiperModule = await import("swiper")
-    const { EffectCards, Mousewheel, Keyboard } = await import("swiper")
-
-    SwiperModule.default.use(EffectCards, Mousewheel, Keyboard)
-
-    swiperInstance = new SwiperModule.default(".mySwiper", {
-      effect: "cards",
-      grabCursor: true,
-      initialSlide: 0,
-      cardsEffect: {
-        perSlideOffset: 8,
-        perSlideRotate: 2,
-        slideShadows: true,
-      },
-      mousewheel: {
-        forceToAxis: true,
-      },
-      keyboard: {
-        enabled: true,
-      },
-      on: {
-        slideChange: (swiper: any) => {
-          setActiveCard(swiper.activeIndex)
-        },
-      },
-    })
-  }
-
-  initSwiper()
-
-  return () => {
-    if (swiperInstance) {
-      swiperInstance.destroy(true, true)
-    }
-  }
-}, [])
 
   /* =======================================================
      RENDER
@@ -1542,8 +1666,7 @@ useEffect(() => {
               infinite;
           }
 
-          /* =================================================
-             HERO
+          /* =================================================             HERO
           ================================================= */
 
           .mvbd-premium-hero {
@@ -3787,21 +3910,6 @@ useEffect(() => {
               width: calc(100% - 38px);
             }
 
-            .mvbd-stack-nav {
-              width: 34px;
-              height: 34px;
-
-              font-size: 21px;
-            }
-
-            .mvbd-stack-prev {
-              left: 8px;
-            }
-
-            .mvbd-stack-next {
-              right: 8px;
-            }
-
             .mvbd-plans-grid {
               grid-template-columns:
                 1fr;
@@ -4419,4 +4527,4 @@ useEffect(() => {
 
     </>
   )
-        }
+                }

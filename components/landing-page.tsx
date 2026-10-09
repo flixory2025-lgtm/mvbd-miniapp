@@ -16,6 +16,7 @@ const trendingIds = [
   3339, 3338, 3337, 3335, 3389, 3388,
 ];
 
+// ✅ Aro beshi messages — prottek bar notun line ashbe
 const TYPING_MESSAGES = [
   "Click the green button above to enter MoviesVerseBD",
   "Stream thousands of movies in HD — completely free",
@@ -25,6 +26,12 @@ const TYPING_MESSAGES = [
   "Bangladesh's most loved streaming experience",
   "Hollywood · Bollywood · South Indian · Web Series",
   "Your next favourite movie is one click away",
+  "Watch anytime, anywhere — on any device",
+  "Thousands of movies, endless entertainment",
+  "From blockbusters to hidden gems — all in one place",
+  "No ads, no interruptions — pure cinematic joy",
+  "Explore trending titles updated daily for you",
+  "Your gateway to unlimited entertainment awaits",
 ];
 
 export default function LandingPage({
@@ -356,7 +363,7 @@ export default function LandingPage({
         </div>
 
         {/* Content */}
-        <div className="relative z-10 px-4 pt-2 pb-48">
+        <div className="relative z-10 px-4 pt-2 pb-16">
           {/* MoviesVerseBD Logo */}
           <div className="relative flex justify-center -mt-2 mb-8">
             <img
@@ -367,7 +374,7 @@ export default function LandingPage({
           </div>
 
           {/* ✅ Visit Main Site Button — Big CTA box er button er EXACT SAME */}
-          <div className="flex justify-center mb-8">
+          <div className="flex justify-center">
             <a
               href="#"
               onClick={handleHeroEnterSite}
@@ -417,34 +424,41 @@ export default function LandingPage({
               </span>
             </a>
           </div>
-
-          {/* ✅✅✅ Typing animation — ARO NICHE namiye dewa hoyeche (mb-48) ✅✅✅ */}
-          <div className="flex justify-center items-center gap-2 mb-48 min-h-[30px]">
-            <svg
-              className="w-5 h-5 text-green-400 flex-shrink-0"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="m9 12 2 2 4-4" />
-              <circle cx="12" cy="12" r="10" />
-            </svg>
-            <span className="text-green-400 text-sm md:text-base font-medium">
-              {displayedText}
-            </span>
-            <span className="inline-block w-[2px] h-[18px] bg-green-400 animate-pulse" />
-          </div>
         </div>
       </section>
 
-      {/* ✅✅✅ Trending Now — ARO NICHE namiye dewa hoyeche (marginTop: "80px") ✅✅✅ */}
+      {/* ✅✅✅ Typing animation — onek niche, Trending Now er thik upore ✅✅✅ */}
+      <div
+        className="flex justify-center items-center gap-2"
+        style={{
+          background: "#000000",
+          paddingTop: "80px",
+          paddingBottom: "80px",
+        }}
+      >
+        <svg
+          className="w-5 h-5 text-green-400 flex-shrink-0"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path d="m9 12 2 2 4-4" />
+          <circle cx="12" cy="12" r="10" />
+        </svg>
+        <span className="text-green-400 text-sm md:text-base font-medium">
+          {displayedText}
+        </span>
+        <span className="inline-block w-[2px] h-[18px] bg-green-400 animate-pulse" />
+      </div>
+
+      {/* ✅✅✅ Trending Now — onek niche ✅✅✅ */}
       <section
         className="relative"
         id="trending"
-        style={{ background: "#000000", marginTop: "80px" }}
+        style={{ background: "#000000", marginTop: "60px" }}
       >
         {/* Netflix-style curved top edge */}
         <div

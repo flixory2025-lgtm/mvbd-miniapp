@@ -1,587 +1,75 @@
 "use client";
 
 import React, { useEffect, useRef } from "react";
+import TrendingCarousel from "./trending-carousel";
+import { movies } from "@/lib/movie-data";
 
 type LandingPageProps = {
   onEnterSite?: () => void;
+  onMovieClick?: (movie: (typeof movies)[0]) => void;
 };
 
-export default function LandingPage({ onEnterSite }: LandingPageProps = {}) {
-  const htmlContent = `
-    <div class="zoom-vignette"></div>
-    <div class="zoom-flash"></div>
+// ✅ Same trendingIds — jate niche Trending Now list o TrendingCarousel er sathe match kore
+const trendingIds = [
+  3360, 3361, 3362, 3363, 3364, 3365, 3366, 3367, 3368, 3369, 3370, 3371,
+  3373, 3375, 3376, 3377, 3379, 3380, 3382, 3383, 3386, 3387, 3355, 3354,
+  3352, 3351, 3350, 3349, 3348, 3347, 3346, 3345, 3344, 3342, 3341, 3340,
+  3339, 3338, 3337, 3335, 3389, 3388,
+];
 
-    <nav id="nav">
-      <div class="nav-left">
-        <div class="brand">
-          <span class="mv-text">MoviesVerse</span><span class="bd-text">BD</span>
-          <small>STREAM</small>
-        </div>
-        <div class="nav-links">
-          <a href="#" class="active">Home</a>
-          <a href="#trending">Trending</a>
-          <a href="#top10">Top 10</a>
-          <a href="#new">New</a>
-          <a href="#how">How It Works</a>
-        </div>
-      </div>
-      <div class="nav-right">
-        <a href="#" class="nav-cta" data-site-link>
-          <span>Visit Main Site</span>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
-        </a>
-      </div>
-    </nav>
-
-    <section class="hero">
-      <div id="heroSlides"></div>
-
-      <div class="hero-content">
-        <div class="hero-tag animate">
-          <span class="mv-logo">MV</span>
-          <span class="divider"></span>
-          <span class="tag-text">ORIGINAL SERIES</span>
-          <span class="divider"></span>
-          <span class="cat">Trending #1</span>
-        </div>
-
-        <h1 class="hero-title animate">
-          <span class="line"><span>Nebula</span></span>
-          <span class="line"><span>Protocol</span></span>
-        </h1>
-
-        <div class="hero-meta animate">
-          <span class="imdb">IMDb 9.1</span>
-          <span>2025</span>
-          <span>·</span>
-          <span>Season 2 · 8 Episodes</span>
-          <span class="chip hd">HD</span>
-          <span class="chip uahd">4K UHD</span>
-        </div>
-
-        <p class="hero-desc animate">
-          When a rogue AI threatens to unravel reality itself, a fractured team of
-          scientists must race across parallel universes to stop it — before every
-          version of them ceases to exist.
-        </p>
-
-        <div class="hero-actions">
-          <a href="#" class="btn-site-main" data-site-link>
-            <span class="label">Visit Main Site</span>
-            <span class="arrow">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
-            </span>
-          </a>
-
-          <button class="btn-icon-round" aria-label="More info">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
-          </button>
-        </div>
-
-        <div class="site-hint">
-          <svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 12 2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg>
-          <span class="typing-text" id="typingText"></span>
-          <span class="caret"></span>
-        </div>
-      </div>
-
-      <div class="hero-rating">
-        <span class="age">16+</span>
-      </div>
-
-      <div class="hero-indicator" id="heroDots"></div>
-    </section>
-
-    <div class="steps-bar reveal">
-      <div class="step-item">
-        <div class="num-badge">1</div>
-        <div class="text">
-          <strong>Click "Visit Main Site"</strong>
-          <span>The green button takes you to our official website</span>
-        </div>
-      </div>
-      <div class="step-item">
-        <div class="num-badge">2</div>
-        <div class="text">
-          <strong>Browse Movies &amp; Series</strong>
-          <span>Explore thousands of titles across all genres</span>
-        </div>
-      </div>
-      <div class="step-item">
-        <div class="num-badge">3</div>
-        <div class="text">
-          <strong>Stream &amp; Enjoy</strong>
-          <span>Watch instantly in HD — no signup, no ads</span>
-        </div>
-      </div>
-    </div>
-
-    <section class="row" id="trending">
-      <div class="row-head reveal">
-        <h2>Trending Now <span class="badge-genre">HOT</span></h2>
-        <a href="#" class="see-all" data-site-link>
-          See All
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
-        </a>
-      </div>
-      <div class="slider-wrap reveal reveal-delay-1">
-        <div class="slider" id="slider1"></div>
-      </div>
-    </section>
-
-    <section class="section" id="features">
-      <div class="section-head reveal">
-        <span class="kicker">WHY MOVIESVERSEBD</span>
-        <h2>Built for <span class="accent">True Movie Lovers</span></h2>
-        <p>The fastest, cleanest way to watch movies &amp; series in Bangladesh. No signup, no buffering, no hassle.</p>
-      </div>
-
-      <div class="features">
-        <div class="feature-card reveal reveal-delay-1">
-          <div class="icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-          </div>
-          <h3>Instant Streaming</h3>
-          <p>Click any movie and stream instantly. No waiting, no registration — just pure entertainment.</p>
-        </div>
-
-        <div class="feature-card reveal reveal-delay-2">
-          <div class="icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 6v6c0 5 3.5 9 8 10 4.5-1 8-5 8-10V6l-8-4z"/><path d="m9 12 2 2 4-4"/></svg>
-          </div>
-          <h3>100% Free &amp; Safe</h3>
-          <p>No hidden fees. No shady downloads. Just pure content streamed securely to your device.</p>
-        </div>
-
-        <div class="feature-card reveal reveal-delay-3">
-          <div class="icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20 15 15 0 0 1 0-20z"/></svg>
-          </div>
-          <h3>Bangla Subtitles</h3>
-          <p>Most movies include Bangla subtitles. Enjoy Hollywood, Bollywood, South Indian and more.</p>
-        </div>
-
-        <div class="feature-card reveal reveal-delay-4">
-          <div class="icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-6.2-8.5"/><path d="M22 4v6h-6"/></svg>
-          </div>
-          <h3>Updated Daily</h3>
-          <p>New releases land on MoviesVerseBD every single day. Never miss the latest hits again.</p>
-        </div>
-      </div>
-    </section>
-
-    <section class="row" id="top10">
-      <div class="row-head reveal">
-        <h2>Top 10 in Bangladesh Today</h2>
-        <a href="#" class="see-all" data-site-link>
-          See All
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
-        </a>
-      </div>
-      <div class="slider-wrap reveal reveal-delay-1">
-        <div class="slider" id="slider2"></div>
-      </div>
-    </section>
-
-    <section class="row" id="new">
-      <div class="row-head reveal">
-        <h2>New Releases</h2>
-        <a href="#" class="see-all" data-site-link>
-          See All
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
-        </a>
-      </div>
-      <div class="slider-wrap reveal reveal-delay-1">
-        <div class="slider" id="slider3"></div>
-      </div>
-    </section>
-
-    <section class="section" id="how">
-      <div class="section-head reveal">
-        <span class="kicker">SUPER SIMPLE</span>
-        <h2>Enter in <span class="accent">3 Easy Steps</span></h2>
-        <p>No signup. No email. No password. Just click the green button and start watching.</p>
-      </div>
-
-      <div class="features">
-        <div class="feature-card reveal reveal-delay-1" style="text-align:center;">
-          <div class="icon" style="margin: 0 auto 20px;">1</div>
-          <h3>Click The Green Button</h3>
-          <p>Tap the highlighted "Visit Main Site" button anywhere on this page to enter our official website.</p>
-        </div>
-
-        <div class="feature-card reveal reveal-delay-2" style="text-align:center;">
-          <div class="icon" style="margin: 0 auto 20px;">2</div>
-          <h3>Pick Your Movie</h3>
-          <p>Browse hundreds of movies and web series. Use categories or search to find what you love.</p>
-        </div>
-
-        <div class="feature-card reveal reveal-delay-3" style="text-align:center;">
-          <div class="icon" style="margin: 0 auto 20px;">3</div>
-          <h3>Stream &amp; Enjoy</h3>
-          <p>Hit play and enjoy. Download for offline or watch online — MoviesVerseBD has you covered.</p>
-        </div>
-      </div>
-    </section>
-
-    <section class="big-cta reveal">
-      <h2>Ready to <span class="accent">Start Watching?</span></h2>
-      <p>Join thousands of Bangladeshi movie lovers already streaming on MoviesVerseBD. It's free, it's fast, and it's waiting for you.</p>
-      <div class="cta-buttons">
-        <a href="#" class="btn-site-main" data-site-link>
-          <span class="label">Visit Main Site</span>
-          <span class="arrow">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
-          </span>
-        </a>
-      </div>
-    </section>
-
-    <footer>
-      <div class="foot-top">
-        <div class="foot-brand reveal">
-          <div class="brand-lg">
-            <span class="mv-text">MoviesVerse</span><span class="bd-text">BD</span>
-          </div>
-          <p>Bangladesh's most loved movie streaming experience. Fast, free, and endlessly entertaining — with new titles added every single day.</p>
-          <div class="social-row">
-            <a href="#" aria-label="Facebook"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M22 12c0-5.5-4.5-10-10-10S2 6.5 2 12c0 5 3.6 9.1 8.4 9.9v-7H7.9V12h2.5V9.8c0-2.5 1.5-3.9 3.8-3.9 1.1 0 2.2.2 2.2.2v2.5h-1.3c-1.2 0-1.6.8-1.6 1.6V12h2.8l-.5 2.9h-2.3v7C18.4 21.1 22 17 22 12z"/></svg></a>
-            <a href="#" aria-label="Instagram"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.4A4 4 0 1 1 12.6 8 4 4 0 0 1 16 11.4z"/><circle cx="17.5" cy="6.5" r="0.5" fill="currentColor"/></svg></a>
-            <a href="#" aria-label="YouTube"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M23 12s0-3.4-.4-5c-.2-.9-1-1.6-1.9-1.8C19 5 12 5 12 5s-7 0-8.7.4c-.9.2-1.6 1-1.8 1.9C1 9 1 12 1 12s0 3.4.4 5c.2.9 1 1.6 1.9 1.8C5 19 12 19 12 19s7 0 8.7-.4c.9-.2 1.6-1 1.8-1.9.5-1.5.5-4.7.5-4.7zM10 15V9l5 3-5 3z"/></svg></a>
-            <a href="#" aria-label="Telegram"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M22 4.01c0-.79-.63-1.43-1.4-1.4-6.6.25-13.2.5-19.8.75-.74.03-1.3.66-1.3 1.4 0 2.98.02 5.96.05 8.94.01.55.4 1.01.93 1.15 2.6.68 5.2 1.36 7.8 2.04.32.08.44.47.22.71-.98 1.06-1.96 2.13-2.94 3.19-.36.4-.06 1.05.48.98 2.35-.29 4.7-.58 7.05-.87.55-.07.9-.6.78-1.13-.46-2.05-.92-4.1-1.38-6.15-.08-.36.2-.7.57-.68 1.94.1 3.87.19 5.8.29.85.04 1.5-.71 1.34-1.55-.72-3.75-1.44-7.5-2.16-11.25-.09-.45.08-.91.44-1.19.65-.5 1.34-1.03 2.05-1.57.35-.27.44-.76.22-1.14z"/></svg></a>
-          </div>
-        </div>
-
-        <div class="foot-col reveal reveal-delay-1">
-          <h5>Browse</h5>
-          <a href="#trending">Trending</a>
-          <a href="#top10">Top 10 Today</a>
-          <a href="#new">New Releases</a>
-          <a href="#">Hollywood</a>
-          <a href="#">Bollywood</a>
-          <a href="#">Web Series</a>
-        </div>
-
-        <div class="foot-col reveal reveal-delay-2">
-          <h5>Genres</h5>
-          <a href="#">Action</a>
-          <a href="#">Thriller</a>
-          <a href="#">Drama</a>
-          <a href="#">Sci-Fi</a>
-          <a href="#">Romance</a>
-          <a href="#">Horror</a>
-        </div>
-
-        <div class="foot-col reveal reveal-delay-3">
-          <h5>Support</h5>
-          <a href="#">How To Watch</a>
-          <a href="#">FAQ</a>
-          <a href="#">Request a Movie</a>
-          <a href="#">Report Issue</a>
-          <a href="#">Contact Us</a>
-        </div>
-
-        <div class="foot-col reveal reveal-delay-4">
-          <h5>Legal</h5>
-          <a href="#">Terms of Use</a>
-          <a href="#">Privacy Policy</a>
-          <a href="#">DMCA</a>
-          <a href="#">Disclaimer</a>
-          <a href="#">Cookies</a>
-        </div>
-      </div>
-
-      <div class="foot-bottom">
-        <div class="legal">
-          <a href="#">Terms</a>
-          <a href="#">Privacy</a>
-          <a href="#">DMCA</a>
-          <a href="#">Sitemap</a>
-        </div>
-        <div class="made-with">
-          © 2025 MoviesVerseBD · Crafted with <span class="heart">❤</span> in Bangladesh
-        </div>
-      </div>
-    </footer>
-  `;
-
+export default function LandingPage({
+  onEnterSite,
+  onMovieClick,
+}: LandingPageProps = {}) {
   const onEnterSiteRef = useRef(onEnterSite);
   useEffect(() => {
     onEnterSiteRef.current = onEnterSite;
   }, [onEnterSite]);
 
   useEffect(() => {
-    // ==================== DATA ====================
-    const posters = [
-      "https://i.postimg.cc/qBG6ydw2/MV5BMTk4NTk4MTk1OF5BMl5Ban-Bn-Xk-Ft-ZTcw-NTE2MDIw-NA-V1.jpg",
-      "https://i.postimg.cc/J44DQdd1/MV5BYm-I3Yj-Jk-N2It-Y2Zm-YS00Y2Jh-LTk2YTQt-Yz-E5YWU5ODI1Mz-Jm-Xk-Ey-Xk-Fqc-Gc-V1.jpg",
-      "https://i.postimg.cc/65j7bLDQ/MV5BZGVm-Nz-Rl-ZTct-NTU2OS00MTQw-LWI2ZWQt-OGVi-Mjc4ODNl-Nz-Vm-Xk-Ey-Xk-Fqc-Gc-V1-QL75-UX1080.jpg",
-      "https://i.postimg.cc/bwZZ7Shb/c27aec8ab39db4bed60c8bc5e5b0f02d.jpg",
-      "https://i.postimg.cc/4xjYs44x/MV5BNDg3ZGMw-ODAt-MGQ0YS00Ym-Mw-LWI3Nm-Ut-MWYz-NDE3Zj-Y1ODRk-Xk-Ey-Xk-Fqc-Gc-V1.jpg",
-      "https://i.postimg.cc/Wzp3Xh85/MV5BMDBm-Zm-Rl-OWEt-YWZl-Yi00Nz-Vk-LTk5Zj-Et-YTVm-MDQ3ODZk-MGNh-Xk-Ey-Xk-Fqc-Gc-V1.jpg",
-      "https://i.postimg.cc/9Mhzwxqn/images.jpg",
-      "https://i.postimg.cc/Y28jjz2n/netflix-the-silent-sea-character-poster-bae-doona-gong-yoo-v0-2eb5ltwohf281.jpg",
-      "https://i.postimg.cc/yxfN5srV/MV5BOTk5YWY5MDAt-NGZm-OC00Mj-E4LWEz-MWYt-MTJj-ODNi-MTVj-M2Uw-Xk-Ey-Xk-Fqc-Gc-V1.jpg"
-    ];
+    // ==================== MOVIE ROWS (Trending Now = trendingIds list) ====================
+    const trendingMovies = movies.filter((m) => trendingIds.includes(m.id));
 
-    const slideData = [
-      { tag: "ORIGINAL SERIES", cat: "Trending #1", title: ["Tron", "Legacy"], imdb: "9.1", year: "2026", extra: "Season 2 · 8 Episodes", desc: "When a rogue AI threatens to unravel reality itself, a fractured team of scientists must race across parallel universes to stop it — before every version of them ceases to exist." },
-      { tag: "FEATURED FILM", cat: "Now Streaming", title: ["Resident", "Evil"], imdb: "8.7", year: "2024", extra: "1h 58m · Thriller", desc: "A deep-sea salvage crew discovers a sunken vessel that shouldn't exist. As they descend further, they realize the ocean is hiding something far older than humanity itself." },
-      { tag: "MV ORIGINAL", cat: "New Season", title: ["Resident", "Evil"], imdb: "9.4", year: "2025", extra: "Season 1 · 10 Episodes", desc: "In a city that never sleeps, a brilliant detective with a shattered past hunts a killer whose crimes are always committed at the exact moment the clock strikes scarlet." },
-      { tag: "BLOCKBUSTER", cat: "Top Rated", title: ["Island", "Fall"], imdb: "8.9", year: "2025", extra: "2h 12m · Action", desc: "One night. One city. One man against an empire. A relentless ex-agent must dismantle a criminal network before sunrise — or lose everything he loves." },
-      { tag: "SCI-FI EPIC", cat: "Fan Favorite", title: ["Dark", "Hole"], imdb: "9.0", year: "2025", extra: "Season 1 · 12 Episodes", desc: "A physicist discovers her dreams are actually messages from a parallel version of herself — one that's warning her about an imminent catastrophe." },
-      { tag: "CRIME DRAMA", cat: "Award Winner", title: ["0.0mHZ", "Dead "], imdb: "8.8", year: "2024", extra: "1h 45m · Drama", desc: "A small coastal town hides a dark secret beneath its calm waves. When a stranger arrives, long-buried truths threaten to drown everyone involved." },
-      { tag: "MYSTERY", cat: "New Release", title: ["Colony", "Zombie"], imdb: "8.3", year: "2025", extra: "1h 38m · Mystery", desc: "A journalist investigating a cold case discovers the victim was living a double life — and the killer may be closer to her than she ever imagined." },
-      { tag: "NETFLIX SERIES", cat: "Global Hit", title: ["The silent", "Sea"], imdb: "8.5", year: "2024", extra: "Season 1 · 8 Episodes", desc: "On a lunar research station, a team of elite astronauts is sent to retrieve a mysterious sample. What they find will change humanity forever." },
-      { tag: "WEB SERIES", cat: "Just Added", title: ["402", "Rumah"], imdb: "8.6", year: "2025", extra: "Season 1 · 10 Episodes", desc: "A homicide detective and a convicted criminal form an unlikely alliance to solve a series of murders that have haunted the city for decades." }
-    ];
+    // Trending Now row → trending-carousel er list onujayi
+    const row1 = trendingMovies.map((m) => ({
+      title: m.title,
+      rating: m.rating,
+      poster: m.poster,
+      movie: m,
+    }));
 
-    // ==================== BUILD HERO SLIDES ====================
-    const heroSlidesContainer = document.getElementById('heroSlides');
-    const heroDotsContainer = document.getElementById('heroDots');
-
-    if (heroSlidesContainer && heroDotsContainer) {
-      // prevent duplicate build if effect runs twice (React 18 strict)
-      if (heroSlidesContainer.children.length === 0) {
-        slideData.forEach((slide, i) => {
-          const slideEl = document.createElement('div');
-          slideEl.className = 'hero-slide' + (i === 0 ? ' active' : '');
-          slideEl.dataset.slide = String(i);
-          slideEl.style.backgroundImage = `
-            linear-gradient(to top, #0b0b0f 0%, rgba(11,11,15,0.75) 18%, rgba(11,11,15,0.35) 55%, rgba(11,11,15,0.75) 100%),
-            linear-gradient(to right, rgba(11,11,15,0.88) 0%, rgba(11,11,15,0.4) 45%, transparent 75%),
-            url('${posters[i]}')
-          `;
-          slideEl.style.backgroundSize = 'cover, cover, cover';
-          slideEl.style.backgroundPosition = 'center, center, center 20%';
-          heroSlidesContainer.appendChild(slideEl);
-
-          const dotEl = document.createElement('div');
-          dotEl.className = 'dot' + (i === 0 ? ' active' : '');
-          dotEl.dataset.dot = String(i);
-          dotEl.addEventListener('click', () => {
-            goToSlide(i);
-            startTimer();
-          });
-          heroDotsContainer.appendChild(dotEl);
-        });
-      }
-    }
-
-    const slides = document.querySelectorAll('.hero-slide');
-    const dots = document.querySelectorAll('.dot');
-
-    let currentSlide = 0;
-    let slideTimer: ReturnType<typeof setInterval> | null = null;
-
-    function goToSlide(i: number) {
-      slides.forEach((s, idx) => s.classList.toggle('active', idx === i));
-      dots.forEach((d, idx) => d.classList.toggle('active', idx === i));
-
-      const data = slideData[i];
-      const tagEl = document.querySelector('.hero-tag');
-      const titleEl = document.querySelector('.hero-title');
-      const metaEl = document.querySelector('.hero-meta');
-      const descEl = document.querySelector('.hero-desc');
-
-      [tagEl, titleEl, metaEl, descEl].forEach((el) => {
-        if (el) {
-          el.classList.remove('animate');
-          void (el as HTMLElement).offsetWidth;
-        }
-      });
-
-      if (tagEl) {
-        tagEl.innerHTML = `
-          <span class="mv-logo">MV</span>
-          <span class="divider"></span>
-          <span>${data.tag}</span>
-          <span class="divider"></span>
-          <span class="cat">${data.cat}</span>
-        `;
-      }
-
-      if (titleEl) {
-        titleEl.innerHTML = `
-          <span class="line"><span>${data.title[0]}</span></span>
-          <span class="line"><span>${data.title[1]}</span></span>
-        `;
-      }
-
-      if (metaEl) {
-        metaEl.innerHTML = `
-          <span class="imdb">IMDb ${data.imdb}</span>
-          <span>${data.year}</span>
-          <span>·</span>
-          <span>${data.extra}</span>
-          <span class="chip hd">HD</span>
-          <span class="chip uahd">4K UHD</span>
-        `;
-      }
-
-      if (descEl) descEl.textContent = data.desc;
-
-      void (tagEl as HTMLElement)?.offsetWidth;
-      tagEl?.classList.add('animate');
-      titleEl?.classList.add('animate');
-      metaEl?.classList.add('animate');
-      descEl?.classList.add('animate');
-    }
-
-    function nextSlide() {
-      currentSlide = (currentSlide + 1) % slides.length;
-      goToSlide(currentSlide);
-    }
-
-    function startTimer() {
-      if (slideTimer) clearInterval(slideTimer);
-      slideTimer = setInterval(nextSlide, 4500);
-    }
-
-    startTimer();
-
-    // ==================== TYPING ====================
-    const typingMessages = [
-      "Click the green button above to enter MoviesVerseBD",
-      "Stream thousands of movies in HD — completely free",
-      "Bangla subtitles available for most titles",
-      "New releases added every single day",
-      "No signup required. Just click and watch.",
-      "Bangladesh's most loved streaming experience",
-      "Hollywood · Bollywood · South Indian · Web Series",
-      "Your next favourite movie is one click away"
-    ];
-
-    const typingEl = document.getElementById('typingText');
-    let msgIndex = 0;
-    let charIndex = 0;
-    let isDeleting = false;
-    let typingTimeout: ReturnType<typeof setTimeout>;
-
-    function typeLoop() {
-      if (!typingEl) return;
-      const currentMsg = typingMessages[msgIndex];
-      const typingSpeed = isDeleting ? 25 : 55;
-      const pauseAfter = isDeleting ? 300 : 1800;
-
-      if (!isDeleting) {
-        typingEl.textContent = currentMsg.substring(0, charIndex + 1);
-        charIndex++;
-        if (charIndex === currentMsg.length) {
-          isDeleting = true;
-          typingTimeout = setTimeout(typeLoop, pauseAfter);
-          return;
-        }
-        typingTimeout = setTimeout(typeLoop, typingSpeed);
-      } else {
-        typingEl.textContent = currentMsg.substring(0, charIndex - 1);
-        charIndex--;
-        if (charIndex === 0) {
-          isDeleting = false;
-          msgIndex = (msgIndex + 1) % typingMessages.length;
-          typingTimeout = setTimeout(typeLoop, 400);
-          return;
-        }
-        typingTimeout = setTimeout(typeLoop, typingSpeed);
-      }
-    }
-
-    typingTimeout = setTimeout(typeLoop, 1600);
-
-    // ==================== SMOOTH TRANSITION (NO ZOOM) ====================
-    function handleEnterSiteClick(e: Event) {
-      e.preventDefault();
-      if (document.documentElement.classList.contains("zooming")) return;
-
-            // localStorage save করছি না — যাতে প্রতিবার landing দেখায়
-
-      // Smooth fade-out then call onEnterSite
-      const root = document.querySelector(".landing-page-root") as HTMLElement | null;
-      if (root) {
-        root.style.transition = "opacity 400ms ease, transform 400ms ease";
-        root.style.opacity = "0";
-        root.style.transform = "scale(0.98)";
-      }
-
-      setTimeout(() => {
-        if (onEnterSiteRef.current) {
-          onEnterSiteRef.current();
-        } else {
-          // Fallback — reload the page (parent will re-check localStorage)
-          window.location.reload();
-        }
-      }, 420);
-    }
-
-    // Attach to all [data-site-link] elements
-    document.querySelectorAll('[data-site-link]').forEach((link) => {
-      link.addEventListener('click', handleEnterSiteClick);
-    });
-
-    // ==================== NAV SCROLL ====================
-    const nav = document.getElementById('nav');
-    const handleScroll = () => {
-      if (window.scrollY > 40) nav?.classList.add('scrolled');
-      else nav?.classList.remove('scrolled');
-    };
-    window.addEventListener('scroll', handleScroll);
-
-    // ==================== SCROLL REVEAL ====================
-    const revealObs = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) entry.target.classList.add('visible');
-        });
-      },
-      { threshold: 0.12, rootMargin: '0px 0px -60px 0px' }
-    );
-    document.querySelectorAll('.reveal').forEach((el) => revealObs.observe(el));
-
-    // ==================== MOVIE ROWS ====================
-    const row1 = [
-      { title: "Nebula Protocol", rating: "9.1", badge: "top10", poster: posters[0] },
-      { title: "Deep Water", rating: "8.7", badge: "new", poster: posters[1] },
-      { title: "Scarlet Hour", rating: "9.4", badge: "top10", poster: posters[2] },
-      { title: "Midnight Fall", rating: "8.9", poster: posters[3] },
-      { title: "The Silent Sea", rating: "8.5", badge: "new", poster: posters[7] },
-      { title: "Echoes of Tomorrow", rating: "9.0", badge: "top10", poster: posters[4] },
-      { title: "Hidden Truth", rating: "8.3", poster: posters[6] },
-      { title: "Crimson Tide", rating: "8.8", poster: posters[5] },
-      { title: "Shadow Lines", rating: "8.6", badge: "new", poster: posters[8] }
-    ];
-
+    // Top 10 (design er jonno static)
     const row2 = [
-      { title: "Scarlet Hour", rating: "9.4", rank: 1, poster: posters[2] },
-      { title: "Nebula Protocol", rating: "9.1", rank: 2, poster: posters[0] },
-      { title: "Echoes of Tomorrow", rating: "9.0", rank: 3, poster: posters[4] },
-      { title: "Midnight Fall", rating: "8.9", rank: 4, poster: posters[3] },
-      { title: "Crimson Tide", rating: "8.8", rank: 5, poster: posters[5] },
-      { title: "Deep Water", rating: "8.7", rank: 6, poster: posters[1] },
-      { title: "Shadow Lines", rating: "8.6", rank: 7, poster: posters[8] },
-      { title: "The Silent Sea", rating: "8.5", rank: 8, poster: posters[7] },
-      { title: "Hidden Truth", rating: "8.3", rank: 9, poster: posters[6] }
+      { title: "Scarlet Hour", rating: "9.4", rank: 1, poster: "https://i.postimg.cc/65j7bLDQ/MV5BZGVm-Nz-Rl-ZTct-NTU2OS00MTQw-LWI2ZWQt-OGVi-Mjc4ODNl-Nz-Vm-Xk-Ey-Xk-Fqc-Gc-V1-QL75-UX1080.jpg" },
+      { title: "Nebula Protocol", rating: "9.1", rank: 2, poster: "https://i.postimg.cc/qBG6ydw2/MV5BMTk4NTk4MTk1OF5BMl5Ban-Bn-Xk-Ft-ZTcw-NTE2MDIw-NA-V1.jpg" },
+      { title: "Echoes of Tomorrow", rating: "9.0", rank: 3, poster: "https://i.postimg.cc/4xjYs44x/MV5BNDg3ZGMw-ODAt-MGQ0YS00Ym-Mw-LWI3Nm-Ut-MWYz-NDE3Zj-Y1ODRk-Xk-Ey-Xk-Fqc-Gc-V1.jpg" },
+      { title: "Midnight Fall", rating: "8.9", rank: 4, poster: "https://i.postimg.cc/bwZZ7Shb/c27aec8ab39db4bed60c8bc5e5b0f02d.jpg" },
+      { title: "Crimson Tide", rating: "8.8", rank: 5, poster: "https://i.postimg.cc/Wzp3Xh85/MV5BMDBm-Zm-Rl-OWEt-YWZl-Yi00Nz-Vk-LTk5Zj-Et-YTVm-MDQ3ODZk-MGNh-Xk-Ey-Xk-Fqc-Gc-V1.jpg" },
+      { title: "Deep Water", rating: "8.7", rank: 6, poster: "https://i.postimg.cc/J44DQdd1/MV5BYm-I3Yj-Jk-N2It-Y2Zm-YS00Y2Jh-LTk2YTQt-Yz-E5YWU5ODI1Mz-Jm-Xk-Ey-Xk-Fqc-Gc-V1.jpg" },
+      { title: "Shadow Lines", rating: "8.6", rank: 7, poster: "https://i.postimg.cc/yxfN5srV/MV5BOTk5YWY5MDAt-NGZm-OC00Mj-E4LWEz-MWYt-MTJj-ODNi-MTVj-M2Uw-Xk-Ey-Xk-Fqc-Gc-V1.jpg" },
+      { title: "The Silent Sea", rating: "8.5", rank: 8, poster: "https://i.postimg.cc/Y28jjz2n/netflix-the-silent-sea-character-poster-bae-doona-gong-yoo-v0-2eb5ltwohf281.jpg" },
+      { title: "Hidden Truth", rating: "8.3", rank: 9, poster: "https://i.postimg.cc/9Mhzwxqn/images.jpg" },
     ];
 
+    // New Releases (design er jonno static)
     const row3 = [
-      { title: "Velvet Empire", rating: "8.4", badge: "new", poster: posters[3] },
-      { title: "Zero Gravity", rating: "8.6", badge: "new", poster: posters[0] },
-      { title: "Iron Lotus", rating: "8.2", badge: "new", poster: posters[5] },
-      { title: "Last Train to Dhaka", rating: "9.0", badge: "new", poster: posters[2] },
-      { title: "The Glass Prince", rating: "8.5", badge: "new", poster: posters[7] },
-      { title: "Neon Harvest", rating: "8.3", badge: "new", poster: posters[1] },
-      { title: "Broken Compass", rating: "8.1", badge: "new", poster: posters[4] },
-      { title: "Silent Symphony", rating: "8.7", badge: "new", poster: posters[8] },
-      { title: "Ghost Frequency", rating: "8.4", badge: "new", poster: posters[6] }
+      { title: "Velvet Empire", rating: "8.4", badge: "new", poster: "https://i.postimg.cc/bwZZ7Shb/c27aec8ab39db4bed60c8bc5e5b0f02d.jpg" },
+      { title: "Zero Gravity", rating: "8.6", badge: "new", poster: "https://i.postimg.cc/qBG6ydw2/MV5BMTk4NTk4MTk1OF5BMl5Ban-Bn-Xk-Ft-ZTcw-NTE2MDIw-NA-V1.jpg" },
+      { title: "Iron Lotus", rating: "8.2", badge: "new", poster: "https://i.postimg.cc/Wzp3Xh85/MV5BMDBm-Zm-Rl-OWEt-YWZl-Yi00Nz-Vk-LTk5Zj-Et-YTVm-MDQ3ODZk-MGNh-Xk-Ey-Xk-Fqc-Gc-V1.jpg" },
+      { title: "Last Train to Dhaka", rating: "9.0", badge: "new", poster: "https://i.postimg.cc/65j7bLDQ/MV5BZGVm-Nz-Rl-ZTct-NTU2OS00MTQw-LWI2ZWQt-OGVi-Mjc4ODNl-Nz-Vm-Xk-Ey-Xk-Fqc-Gc-V1-QL75-UX1080.jpg" },
+      { title: "The Glass Prince", rating: "8.5", badge: "new", poster: "https://i.postimg.cc/Y28jjz2n/netflix-the-silent-sea-character-poster-bae-doona-gong-yoo-v0-2eb5ltwohf281.jpg" },
+      { title: "Neon Harvest", rating: "8.3", badge: "new", poster: "https://i.postimg.cc/J44DQdd1/MV5BYm-I3Yj-Jk-N2It-Y2Zm-YS00Y2Jh-LTk2YTQt-Yz-E5YWU5ODI1Mz-Jm-Xk-Ey-Xk-Fqc-Gc-V1.jpg" },
+      { title: "Broken Compass", rating: "8.1", badge: "new", poster: "https://i.postimg.cc/4xjYs44x/MV5BNDg3ZGMw-ODAt-MGQ0YS00Ym-Mw-LWI3Nm-Ut-MWYz-NDE3Zj-Y1ODRk-Xk-Ey-Xk-Fqc-Gc-V1.jpg" },
+      { title: "Silent Symphony", rating: "8.7", badge: "new", poster: "https://i.postimg.cc/yxfN5srV/MV5BOTk5YWY5MDAt-NGZm-OC00Mj-E4LWEz-MWYt-MTJj-ODNi-MTVj-M2Uw-Xk-Ey-Xk-Fqc-Gc-V1.jpg" },
+      { title: "Ghost Frequency", rating: "8.4", badge: "new", poster: "https://i.postimg.cc/9Mhzwxqn/images.jpg" },
     ];
 
     function buildCard(movie: any) {
-      const card = document.createElement('div');
-      card.className = 'card';
+      const card = document.createElement("div");
+      card.className = "card";
 
-      let badgeHTML = '';
-      if (movie.badge === 'top10') badgeHTML = `<span class="top10-badge">TOP 10</span>`;
-      else if (movie.badge === 'new') badgeHTML = `<span class="new-badge">NEW</span>`;
+      let badgeHTML = "";
+      if (movie.badge === "new") badgeHTML = `<span class="new-badge">NEW</span>`;
       else if (movie.rank) badgeHTML = `<span class="top10-badge">#${movie.rank}</span>`;
 
       card.innerHTML = `
@@ -601,88 +89,477 @@ export default function LandingPage({ onEnterSite }: LandingPageProps = {}) {
         </div>
       `;
 
-      card.addEventListener('click', handleEnterSiteClick);
+      card.addEventListener("click", () => {
+        if (movie.movie && onMovieClick) {
+          onMovieClick(movie.movie);
+        } else if (onEnterSiteRef.current) {
+          onEnterSiteRef.current();
+        }
+      });
 
       return card;
     }
 
-    const s1 = document.getElementById('slider1');
-    const s2 = document.getElementById('slider2');
-    const s3 = document.getElementById('slider3');
+    const s1 = document.getElementById("slider1");
+    const s2 = document.getElementById("slider2");
+    const s3 = document.getElementById("slider3");
     if (s1 && s1.children.length === 0) s1.append(...row1.map(buildCard));
     if (s2 && s2.children.length === 0) s2.append(...row2.map(buildCard));
     if (s3 && s3.children.length === 0) s3.append(...row3.map(buildCard));
 
     // ==================== DRAG TO SCROLL ====================
-    document.querySelectorAll('.slider').forEach((slider) => {
+    const sliders = document.querySelectorAll(".slider");
+    const cleanupFns: Array<() => void> = [];
+
+    sliders.forEach((slider) => {
       let isDown = false;
       let startX = 0;
       let scrollLeft = 0;
       let moved = false;
 
-      slider.addEventListener('mousedown', (e: any) => {
+      const onMouseDown = (e: any) => {
         isDown = true;
         moved = false;
-        (slider as HTMLElement).style.cursor = 'grabbing';
+        (slider as HTMLElement).style.cursor = "grabbing";
         startX = e.pageX - (slider as HTMLElement).offsetLeft;
         scrollLeft = (slider as HTMLElement).scrollLeft;
-      });
-      slider.addEventListener('mouseleave', () => {
+      };
+      const onMouseLeave = () => {
         isDown = false;
-        (slider as HTMLElement).style.cursor = 'grab';
-      });
-      slider.addEventListener('mouseup', () => {
+        (slider as HTMLElement).style.cursor = "grab";
+      };
+      const onMouseUp = () => {
         isDown = false;
-        (slider as HTMLElement).style.cursor = 'grab';
-      });
-      slider.addEventListener('mousemove', (e: any) => {
+        (slider as HTMLElement).style.cursor = "grab";
+      };
+      const onMouseMove = (e: any) => {
         if (!isDown) return;
         e.preventDefault();
         const x = e.pageX - (slider as HTMLElement).offsetLeft;
         const walk = (x - startX) * 1.6;
         if (Math.abs(walk) > 5) moved = true;
         (slider as HTMLElement).scrollLeft = scrollLeft - walk;
-      });
-      slider.addEventListener(
-        'click',
-        (e: any) => {
-          if (moved) {
-            e.preventDefault();
-            e.stopPropagation();
-          }
-        },
-        true
-      );
-      (slider as HTMLElement).style.cursor = 'grab';
+      };
+      const onClick = (e: any) => {
+        if (moved) {
+          e.preventDefault();
+          e.stopPropagation();
+        }
+      };
+      const onWheel = (e: any) => {
+        if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+          e.preventDefault();
+          (slider as HTMLElement).scrollLeft += e.deltaY;
+        }
+      };
 
-      slider.addEventListener(
-        'wheel',
-        (e: any) => {
-          if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
-            e.preventDefault();
-            (slider as HTMLElement).scrollLeft += e.deltaY;
-          }
-        },
-        { passive: false }
-      );
+      slider.addEventListener("mousedown", onMouseDown);
+      slider.addEventListener("mouseleave", onMouseLeave);
+      slider.addEventListener("mouseup", onMouseUp);
+      slider.addEventListener("mousemove", onMouseMove);
+      slider.addEventListener("click", onClick, true);
+      slider.addEventListener("wheel", onWheel, { passive: false });
+      (slider as HTMLElement).style.cursor = "grab";
+
+      cleanupFns.push(() => {
+        slider.removeEventListener("mousedown", onMouseDown);
+        slider.removeEventListener("mouseleave", onMouseLeave);
+        slider.removeEventListener("mouseup", onMouseUp);
+        slider.removeEventListener("mousemove", onMouseMove);
+        slider.removeEventListener("click", onClick, true);
+        slider.removeEventListener("wheel", onWheel);
+      });
     });
+
+    // ==================== VISIT MAIN SITE (smooth transition) ====================
+    function handleEnterSiteClick(e: Event) {
+      e.preventDefault();
+      if (document.documentElement.classList.contains("zooming")) return;
+
+      const root = document.querySelector(
+        ".landing-page-root"
+      ) as HTMLElement | null;
+      if (root) {
+        root.style.transition = "opacity 400ms ease, transform 400ms ease";
+        root.style.opacity = "0";
+        root.style.transform = "scale(0.98)";
+      }
+
+      setTimeout(() => {
+        if (onEnterSiteRef.current) {
+          onEnterSiteRef.current();
+        } else {
+          window.location.reload();
+        }
+      }, 420);
+    }
+
+    const siteLinks = document.querySelectorAll("[data-site-link]");
+    siteLinks.forEach((link) => {
+      link.addEventListener("click", handleEnterSiteClick);
+    });
+
+    // ==================== NAV SCROLL ====================
+    const nav = document.getElementById("nav");
+    const handleScroll = () => {
+      if (window.scrollY > 40) nav?.classList.add("scrolled");
+      else nav?.classList.remove("scrolled");
+    };
+    window.addEventListener("scroll", handleScroll);
+
+    // ==================== SCROLL REVEAL ====================
+    const revealObs = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) entry.target.classList.add("visible");
+        });
+      },
+      { threshold: 0.12, rootMargin: "0px 0px -60px 0px" }
+    );
+    document.querySelectorAll(".reveal").forEach((el) => revealObs.observe(el));
 
     // Cleanup
     return () => {
-      if (slideTimer) clearInterval(slideTimer);
-      clearTimeout(typingTimeout);
-      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener("scroll", handleScroll);
       revealObs.disconnect();
-      document.querySelectorAll('[data-site-link]').forEach((link) => {
-        link.removeEventListener('click', handleEnterSiteClick);
+      siteLinks.forEach((link) => {
+        link.removeEventListener("click", handleEnterSiteClick);
       });
+      cleanupFns.forEach((fn) => fn());
     };
-  }, []);
+  }, [onMovieClick]);
+
+  const handleMovieClick = (movie: (typeof movies)[0]) => {
+    if (onMovieClick) {
+      onMovieClick(movie);
+    } else if (onEnterSite) {
+      onEnterSite();
+    }
+  };
 
   return (
-    <div
-      className="landing-page-root"
-      dangerouslySetInnerHTML={{ __html: htmlContent }}
-    />
+    <div className="landing-page-root">
+      <div className="zoom-vignette"></div>
+      <div className="zoom-flash"></div>
+
+      {/* ✅ NAV — obhabei ache */}
+      <nav id="nav">
+        <div className="nav-left">
+          <div className="brand">
+            <span className="mv-text">MoviesVerse</span>
+            <span className="bd-text">BD</span>
+            <small>STREAM</small>
+          </div>
+          <div className="nav-links">
+            <a href="#" className="active">Home</a>
+            <a href="#trending">Trending</a>
+            <a href="#top10">Top 10</a>
+            <a href="#new">New</a>
+            <a href="#how">How It Works</a>
+          </div>
+        </div>
+        <div className="nav-right">
+          <a href="#" className="nav-cta" data-site-link>
+            <span>Visit Main Site</span>
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M5 12h14M13 5l7 7-7 7" />
+            </svg>
+          </a>
+        </div>
+      </nav>
+
+      {/* ✅✅✅ HERO — TrendingCarousel diye replace kora hoyeche ✅✅✅ */}
+      <TrendingCarousel onMovieClick={handleMovieClick} />
+
+      {/* ✅ Steps bar */}
+      <div className="steps-bar reveal">
+        <div className="step-item">
+          <div className="num-badge">1</div>
+          <div className="text">
+            <strong>Click "Visit Main Site"</strong>
+            <span>The green button takes you to our official website</span>
+          </div>
+        </div>
+        <div className="step-item">
+          <div className="num-badge">2</div>
+          <div className="text">
+            <strong>Browse Movies &amp; Series</strong>
+            <span>Explore thousands of titles across all genres</span>
+          </div>
+        </div>
+        <div className="step-item">
+          <div className="num-badge">3</div>
+          <div className="text">
+            <strong>Stream &amp; Enjoy</strong>
+            <span>Watch instantly in HD — no signup, no ads</span>
+          </div>
+        </div>
+      </div>
+
+      {/* ✅ Trending Now list — trendingIds onujayi */}
+      <section className="row" id="trending">
+        <div className="row-head reveal">
+          <h2>
+            Trending Now <span className="badge-genre">HOT</span>
+          </h2>
+          <a href="#" className="see-all" data-site-link>
+            See All
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M5 12h14M13 5l7 7-7 7" />
+            </svg>
+          </a>
+        </div>
+        <div className="slider-wrap reveal reveal-delay-1">
+          <div className="slider" id="slider1"></div>
+        </div>
+      </section>
+
+      {/* ✅ Features */}
+      <section className="section" id="features">
+        <div className="section-head reveal">
+          <span className="kicker">WHY MOVIESVERSEBD</span>
+          <h2>
+            Built for <span className="accent">True Movie Lovers</span>
+          </h2>
+          <p>
+            The fastest, cleanest way to watch movies &amp; series in Bangladesh.
+            No signup, no buffering, no hassle.
+          </p>
+        </div>
+
+        <div className="features">
+          <div className="feature-card reveal reveal-delay-1">
+            <div className="icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+              </svg>
+            </div>
+            <h3>Instant Streaming</h3>
+            <p>Click any movie and stream instantly. No waiting, no registration — just pure entertainment.</p>
+          </div>
+
+          <div className="feature-card reveal reveal-delay-2">
+            <div className="icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 2 4 6v6c0 5 3.5 9 8 10 4.5-1 8-5 8-10V6l-8-4z" />
+                <path d="m9 12 2 2 4-4" />
+              </svg>
+            </div>
+            <h3>100% Free &amp; Safe</h3>
+            <p>No hidden fees. No shady downloads. Just pure content streamed securely to your device.</p>
+          </div>
+
+          <div className="feature-card reveal reveal-delay-3">
+            <div className="icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10" />
+                <path d="M2 12h20M12 2a15 15 0 0 1 0 20 15 15 0 0 1 0-20z" />
+              </svg>
+            </div>
+            <h3>Bangla Subtitles</h3>
+            <p>Most movies include Bangla subtitles. Enjoy Hollywood, Bollywood, South Indian and more.</p>
+          </div>
+
+          <div className="feature-card reveal reveal-delay-4">
+            <div className="icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 12a9 9 0 1 1-6.2-8.5" />
+                <path d="M22 4v6h-6" />
+              </svg>
+            </div>
+            <h3>Updated Daily</h3>
+            <p>New releases land on MoviesVerseBD every single day. Never miss the latest hits again.</p>
+          </div>
+        </div>
+      </section>
+
+      {/* ✅ Top 10 */}
+      <section className="row" id="top10">
+        <div className="row-head reveal">
+          <h2>Top 10 in Bangladesh Today</h2>
+          <a href="#" className="see-all" data-site-link>
+            See All
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M5 12h14M13 5l7 7-7 7" />
+            </svg>
+          </a>
+        </div>
+        <div className="slider-wrap reveal reveal-delay-1">
+          <div className="slider" id="slider2"></div>
+        </div>
+      </section>
+
+      {/* ✅ New Releases */}
+      <section className="row" id="new">
+        <div className="row-head reveal">
+          <h2>New Releases</h2>
+          <a href="#" className="see-all" data-site-link>
+            See All
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M5 12h14M13 5l7 7-7 7" />
+            </svg>
+          </a>
+        </div>
+        <div className="slider-wrap reveal reveal-delay-1">
+          <div className="slider" id="slider3"></div>
+        </div>
+      </section>
+
+      {/* ✅ How It Works */}
+      <section className="section" id="how">
+        <div className="section-head reveal">
+          <span className="kicker">SUPER SIMPLE</span>
+          <h2>
+            Enter in <span className="accent">3 Easy Steps</span>
+          </h2>
+          <p>No signup. No email. No password. Just click the green button and start watching.</p>
+        </div>
+
+        <div className="features">
+          <div className="feature-card reveal reveal-delay-1" style={{ textAlign: "center" }}>
+            <div className="icon" style={{ margin: "0 auto 20px" }}>1</div>
+            <h3>Click The Green Button</h3>
+            <p>Tap the highlighted "Visit Main Site" button anywhere on this page to enter our official website.</p>
+          </div>
+
+          <div className="feature-card reveal reveal-delay-2" style={{ textAlign: "center" }}>
+            <div className="icon" style={{ margin: "0 auto 20px" }}>2</div>
+            <h3>Pick Your Movie</h3>
+            <p>Browse hundreds of movies and web series. Use categories or search to find what you love.</p>
+          </div>
+
+          <div className="feature-card reveal reveal-delay-3" style={{ textAlign: "center" }}>
+            <div className="icon" style={{ margin: "0 auto 20px" }}>3</div>
+            <h3>Stream &amp; Enjoy</h3>
+            <p>Hit play and enjoy. Download for offline or watch online — MoviesVerseBD has you covered.</p>
+          </div>
+        </div>
+      </section>
+
+      {/* ✅ Big CTA */}
+      <section className="big-cta reveal">
+        <h2>
+          Ready to <span className="accent">Start Watching?</span>
+        </h2>
+        <p>
+          Join thousands of Bangladeshi movie lovers already streaming on
+          MoviesVerseBD. It's free, it's fast, and it's waiting for you.
+        </p>
+        <div className="cta-buttons">
+          <a href="#" className="btn-site-main" data-site-link>
+            <span className="label">Visit Main Site</span>
+            <span className="arrow">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M5 12h14M13 5l7 7-7 7" />
+              </svg>
+            </span>
+          </a>
+        </div>
+      </section>
+
+      {/* ✅ Footer */}
+      <footer>
+        <div className="foot-top">
+          <div className="foot-brand reveal">
+            <div className="brand-lg">
+              <span className="mv-text">MoviesVerse</span>
+              <span className="bd-text">BD</span>
+            </div>
+            <p>
+              Bangladesh's most loved movie streaming experience. Fast, free, and
+              endlessly entertaining — with new titles added every single day.
+            </p>
+            <div className="social-row">
+              <a href="#" aria-label="Facebook">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M22 12c0-5.5-4.5-10-10-10S2 6.5 2 12c0 5 3.6 9.1 8.4 9.9v-7H7.9V12h2.5V9.8c0-2.5 1.5-3.9 3.8-3.9 1.1 0 2.2.2 2.2.2v2.5h-1.3c-1.2 0-1.6.8-1.6 1.6V12h2.8l-.5 2.9h-2.3v7C18.4 21.1 22 17 22 12z" />
+                </svg>
+              </a>
+              <a href="#" aria-label="Instagram">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="2" y="2" width="20" height="20" rx="5" />
+                  <path d="M16 11.4A4 4 0 1 1 12.6 8 4 4 0 0 1 16 11.4z" />
+                  <circle cx="17.5" cy="6.5" r="0.5" fill="currentColor" />
+                </svg>
+              </a>
+              <a href="#" aria-label="YouTube">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M23 12s0-3.4-.4-5c-.2-.9-1-1.6-1.9-1.8C19 5 12 5 12 5s-7 0-8.7.4c-.9.2-1.6 1-1.8 1.9C1 9 1 12 1 12s0 3.4.4 5c.2.9 1 1.6 1.9 1.8C5 19 12 19 12 19s7 0 8.7-.4c.9-.2 1.6-1 1.8-1.9.5-1.5.5-4.7.5-4.7zM10 15V9l5 3-5 3z" />
+                </svg>
+              </a>
+              <a href="#" aria-label="Telegram">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M22 4.01c0-.79-.63-1.43-1.4-1.4-6.6.25-13.2.5-19.8.75-.74.03-1.3.66-1.3 1.4 0 2.98.02 5.96.05 8.94.01.55.4 1.01.93 1.15 2.6.68 5.2 1.36 7.8 2.04.32.08.44.47.22.71-.98 1.06-1.96 2.13-2.94 3.19-.36.4-.06 1.05.48.98 2.35-.29 4.7-.58 7.05-.87.55-.07.9-.6.78-1.13-.46-2.05-.92-4.1-1.38-6.15-.08-.36.2-.7.57-.68 1.94.1 3.87.19 5.8.29.85.04 1.5-.71 1.34-1.55-.72-3.75-1.44-7.5-2.16-11.25-.09-.45.08-.91.44-1.19.65-.5 1.34-1.03 2.05-1.57.35-.27.44-.76.22-1.14z" />
+                </svg>
+              </a>
+            </div>
+          </div>
+
+          <div className="foot-col reveal reveal-delay-1">
+            <h5>Browse</h5>
+            <a href="#trending">Trending</a>
+            <a href="#top10">Top 10 Today</a>
+            <a href="#new">New Releases</a>
+            <a href="#">Hollywood</a>
+            <a href="#">Bollywood</a>
+            <a href="#">Web Series</a>
+          </div>
+
+          <div className="foot-col reveal reveal-delay-2">
+            <h5>Genres</h5>
+            <a href="#">Action</a>
+            <a href="#">Thriller</a>
+            <a href="#">Drama</a>
+            <a href="#">Sci-Fi</a>
+            <a href="#">Romance</a>
+            <a href="#">Horror</a>
+          </div>
+
+          <div className="foot-col reveal reveal-delay-3">
+            <h5>Support</h5>
+            <a href="#">How To Watch</a>
+            <a href="#">FAQ</a>
+            <a href="#">Request a Movie</a>
+            <a href="#">Report Issue</a>
+            <a href="#">Contact Us</a>
+          </div>
+
+          <div className="foot-col reveal reveal-delay-4">
+            <h5>Legal</h5>
+            <a href="#">Terms of Use</a>
+            <a href="#">Privacy Policy</a>
+            <a href="#">DMCA</a>
+            <a href="#">Disclaimer</a>
+            <a href="#">Cookies</a>
+          </div>
+        </div>
+
+        <div className="foot-bottom">
+          <div className="legal">
+            <a href="#">Terms</a>
+            <a href="#">Privacy</a>
+            <a href="#">DMCA</a>
+            <a href="#">Sitemap</a>
+          </div>
+          <div className="made-with">
+            © 2025 MoviesVerseBD · Crafted with <span className="heart">❤</span> in Bangladesh
+          </div>
+        </div>
+      </footer>
+    </div>
   );
-}
+        }

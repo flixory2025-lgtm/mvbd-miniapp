@@ -331,11 +331,11 @@ export default function Header({
   const showCube = !isFocused && !hasQuery
 
   return (
-    // ✅ FIXED HEADER — Transparent at top, Solid on scroll
+    // ✅ STICKY HEADER — টপে transparent, স্ক্রলে solid, ডকুমেন্ট ফ্লোতে জায়গা নেয়
     <header
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ease-in-out ${
+      className={`sticky top-0 z-50 transition-all duration-300 ease-in-out ${
         isScrolled
-          ? "bg-black/60 backdrop-blur-xl border-b border-white/10 shadow-lg"
+          ? "bg-black/80 backdrop-blur-xl border-b border-white/10 shadow-lg"
           : "bg-transparent border-b border-transparent shadow-none"
       }`}
     >

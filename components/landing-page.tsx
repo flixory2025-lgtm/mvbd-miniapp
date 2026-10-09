@@ -356,7 +356,7 @@ export default function LandingPage({
         </div>
 
         {/* Content */}
-        <div className="relative z-10 px-4 pt-2 pb-16">
+        <div className="relative z-10 px-4 pt-2 pb-32">
           {/* MoviesVerseBD Logo */}
           <div className="relative flex justify-center -mt-2 mb-8">
             <img
@@ -418,8 +418,8 @@ export default function LandingPage({
             </a>
           </div>
 
-          {/* ✅ Typing animation — ARO NICHE namiye dewa hoyeche (mb-16) */}
-          <div className="flex justify-center items-center gap-2 mb-16 min-h-[30px]">
+          {/* ✅✅✅ Typing animation — ARO NICHE namiye dewa hoyeche (mb-32) ✅✅✅ */}
+          <div className="flex justify-center items-center gap-2 mb-32 min-h-[30px]">
             <svg
               className="w-5 h-5 text-green-400 flex-shrink-0"
               viewBox="0 0 24 24"
@@ -440,13 +440,13 @@ export default function LandingPage({
         </div>
       </section>
 
-      {/* ✅ Netflix-style curved divider + Trending Now — ARO NICHE */}
+      {/* ✅✅✅ Trending Now — ARO NICHE namiye dewa hoyeche (marginTop: "80px") ✅✅✅ */}
       <section
         className="relative"
         id="trending"
-        style={{ background: "#000000", marginTop: "40px" }}
+        style={{ background: "#000000", marginTop: "80px" }}
       >
-        {/* Netflix-style curved top edge (dark blue/black gradient curve) */}
+        {/* Netflix-style curved top edge */}
         <div
           className="absolute top-0 left-0 w-full h-[60px] pointer-events-none"
           style={{

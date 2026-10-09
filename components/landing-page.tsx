@@ -355,8 +355,8 @@ export default function LandingPage({
           />
         </div>
 
-        {/* Content — Logo + Visit Button */}
-        <div className="relative z-10 px-4 pt-2 pb-8">
+        {/* Content */}
+        <div className="relative z-10 px-4 pt-2 pb-48">
           {/* MoviesVerseBD Logo */}
           <div className="relative flex justify-center -mt-2 mb-8">
             <img
@@ -367,7 +367,7 @@ export default function LandingPage({
           </div>
 
           {/* ✅ Visit Main Site Button — Big CTA box er button er EXACT SAME */}
-          <div className="flex justify-center">
+          <div className="flex justify-center mb-8">
             <a
               href="#"
               onClick={handleHeroEnterSite}
@@ -417,37 +417,34 @@ export default function LandingPage({
               </span>
             </a>
           </div>
+
+          {/* ✅✅✅ Typing animation — ARO NICHE namiye dewa hoyeche (mb-48) ✅✅✅ */}
+          <div className="flex justify-center items-center gap-2 mb-48 min-h-[30px]">
+            <svg
+              className="w-5 h-5 text-green-400 flex-shrink-0"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="m9 12 2 2 4-4" />
+              <circle cx="12" cy="12" r="10" />
+            </svg>
+            <span className="text-green-400 text-sm md:text-base font-medium">
+              {displayedText}
+            </span>
+            <span className="inline-block w-[2px] h-[18px] bg-green-400 animate-pulse" />
+          </div>
         </div>
       </section>
 
-      {/* ✅✅✅ TYPING ANIMATION — Red mark kora jaygay (Trending Now er thik upore) ✅✅✅ */}
-      <div
-        className="flex justify-center items-center gap-2 py-12 md:py-16"
-        style={{ background: "#000000" }}
-      >
-        <svg
-          className="w-5 h-5 text-green-400 flex-shrink-0"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <path d="m9 12 2 2 4-4" />
-          <circle cx="12" cy="12" r="10" />
-        </svg>
-        <span className="text-green-400 text-sm md:text-base font-medium">
-          {displayedText}
-        </span>
-        <span className="inline-block w-[2px] h-[18px] bg-green-400 animate-pulse" />
-      </div>
-
-      {/* ✅✅✅ Trending Now — obhabei niche ✅✅✅ */}
+      {/* ✅✅✅ Trending Now — ARO NICHE namiye dewa hoyeche (marginTop: "80px") ✅✅✅ */}
       <section
         className="relative"
         id="trending"
-        style={{ background: "#000000", marginTop: "20px" }}
+        style={{ background: "#000000", marginTop: "80px" }}
       >
         {/* Netflix-style curved top edge */}
         <div
@@ -673,4 +670,4 @@ export default function LandingPage({
       </footer>
     </div>
   );
-          }
+}

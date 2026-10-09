@@ -68,10 +68,6 @@ const TYPING_SUGGESTIONS_SERIES = [
   "Romance series...",
 ]
 
-const TYPING_SPEED = 50
-const DELETE_SPEED = 30
-const PAUSE_DURATION = 2500
-
 export default function Header({
   onSearch,
   searchQuery = "",
@@ -84,26 +80,13 @@ export default function Header({
     Array<{ id: number; x: number; y: number }>
   >([])
 
-  const [displayedPlaceholder, setDisplayedPlaceholder] = useState("")
-  const [currentSuggestionIndex, setCurrentSuggestionIndex] = useState(0)
-  const [isTyping, setIsTyping] = useState(true)
-
   // Search history state
   const [history, setHistory] = useState<SearchHistoryItem[]>([])
 
-  const placeholderTimeoutRef = useRef<NodeJS.Timeout>()
   const bubbleIdRef = useRef(0)
   const wrapperRef = useRef<HTMLDivElement>(null)
 
   const { user } = useAuth()
-
-  // Typing placeholder suggestions
-  const TYPING_SUGGESTIONS =
-    pageType === "anime"
-      ? TYPING_SUGGESTIONS_ANIME
-      : pageType === "series"
-        ? TYPING_SUGGESTIONS_SERIES
-        : TYPING_SUGGESTIONS_HOME
 
   // Search data
   const dataSource = useMemo(() => {
@@ -293,52 +276,16 @@ export default function Header({
     setBubbles((prev) => [...prev, ...newBubbles])
   }
 
-  const currentSuggestion = TYPING_SUGGESTIONS[currentSuggestionIndex]
+  // Determine current suggestions array based on pageType
+  const TYPING_SUGGESTIONS =
+    pageType === "anime"
+      ? TYPING_SUGGESTIONS_ANIME
+      : pageType === "series"
+        ? TYPING_SUGGESTIONS_SERIES
+        : TYPING_SUGGESTIONS_HOME
 
-  useEffect(() => {
-    if (placeholderTimeoutRef.current) {
-      clearTimeout(placeholderTimeoutRef.current)
-    }
-
-    if (isTyping) {
-      if (displayedPlaceholder.length < currentSuggestion.length) {
-        placeholderTimeoutRef.current = setTimeout(() => {
-          setDisplayedPlaceholder(
-            currentSuggestion.slice(0, displayedPlaceholder.length + 1)
-          )
-        }, TYPING_SPEED)
-      } else {
-        placeholderTimeoutRef.current = setTimeout(() => {
-          setIsTyping(false)
-        }, PAUSE_DURATION)
-      }
-    } else {
-      if (displayedPlaceholder.length > 0) {
-        placeholderTimeoutRef.current = setTimeout(() => {
-          setDisplayedPlaceholder(displayedPlaceholder.slice(0, -1))
-        }, DELETE_SPEED)
-      } else {
-        placeholderTimeoutRef.current = setTimeout(() => {
-          setCurrentSuggestionIndex(
-            (prev) => (prev + 1) % TYPING_SUGGESTIONS.length
-          )
-          setDisplayedPlaceholder("")
-          setIsTyping(true)
-        }, 300)
-      }
-    }
-
-    return () => {
-      if (placeholderTimeoutRef.current) {
-        clearTimeout(placeholderTimeoutRef.current)
-      }
-    }
-  }, [
-    isTyping,
-    displayedPlaceholder,
-    currentSuggestion,
-    TYPING_SUGGESTIONS.length,
-  ])
+  // Extract first 4 items for the cube faces (since a cube has 4 sides in this 2D representation)
+  const cubeTexts = TYPING_SUGGESTIONS.slice(0, 4)
 
   const hasQuery = searchQuery.trim().length > 0
   const showHistoryDropdown =
@@ -416,6 +363,50 @@ export default function Header({
           100% { opacity: 0; transform: scale(.2) translateY(-50px); filter: blur(2px); }
         }
         .liquid-bubble { animation: liquidBubbleRise .8s ease-out forwards; }
+
+        /* ---- 3D CUBE ANIMATION CSS ---- */
+        .cube-wrapper {
+          position: relative;
+          width: 100%;
+          height: 20px;
+          perspective: 800px;
+          overflow: hidden;
+        }
+        .cube {
+          position: absolute;
+          width: 100%;
+          height: 100%;
+          transform-style: preserve-3d;
+          animation: rotateCubeUp 25s infinite cubic-bezier(0.4, 0.0, 0.2, 1);
+        }
+        .cube-face {
+          position: absolute;
+          width: 100%;
+          height: 100%;
+          display: flex;
+          align-items: center;
+          color: rgba(255,255,255,.5);
+          font-size: 14px;
+          white-space: nowrap;
+          backface-visibility: hidden;
+          transform-origin: center center;
+        }
+        .face-1 { transform: rotateX(0deg) translateZ(10px); }
+        .face-2 { transform: rotateX(90deg) translateZ(10px); }
+        .face-3 { transform: rotateX(180deg) translateZ(10px); }
+        .face-4 { transform: rotateX(270deg) translateZ(10px); }
+
+        @keyframes rotateCubeUp {
+          0%, 20% { transform: translateZ(-10px) rotateX(0deg); }
+          25%, 45% { transform: translateZ(-10px) rotateX(90deg); }
+          50%, 70% { transform: translateZ(-10px) rotateX(180deg); }
+          75%, 95% { transform: translateZ(-10px) rotateX(270deg); }
+          100% { transform: translateZ(-10px) rotateX(360deg); }
+        }
+        /* Hide cube when input is focused */
+        .search-focused .cube-wrapper {
+          display: none;
+        }
       `}</style>
 
       <div className="px-4 py-4 flex items-center gap-4">
@@ -430,30 +421,41 @@ export default function Header({
 
         {/* Search */}
         <div ref={wrapperRef} className="flex-1 relative">
-          <div className="liquid-glass-search rounded-2xl px-4 py-3 flex items-center gap-3">
+          <div className={`liquid-glass-search rounded-2xl px-4 py-3 flex items-center gap-3 ${isFocused ? 'search-focused' : ''}`}>
             <Search className="w-5 h-5 text-slate-300 flex-shrink-0" />
 
-            <input
-              type="text"
-              placeholder={displayedPlaceholder || TYPING_SUGGESTIONS[0]}
-              value={searchQuery}
-              onChange={handleSearch}
-              onFocus={() => {
-                setIsFocused(true)
-                createBubbles()
-              }}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") handleSubmitSearch(searchQuery)
-                if (e.key === "Escape") setIsFocused(false)
-              }}
-              className="search-input-liquid w-full text-white text-sm outline-none"
-            />
+            {/* 3D Cube Animation Placeholder */}
+            <div className="cube-wrapper flex-1">
+              <div className="cube">
+                {cubeTexts.map((text, index) => (
+                  <div key={index} className={`cube-face face-${index + 1}`}>
+                    {text}
+                  </div>
+                ))}
+              </div>
+              {/* Real Input Field on top of cube */}
+              <input
+                type="text"
+                placeholder=""
+                value={searchQuery}
+                onChange={handleSearch}
+                onFocus={() => {
+                  setIsFocused(true)
+                  createBubbles()
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleSubmitSearch(searchQuery)
+                  if (e.key === "Escape") setIsFocused(false)
+                }}
+                className="search-input-liquid absolute inset-0 w-full text-white text-sm outline-none bg-transparent"
+              />
+            </div>
 
             {searchQuery && (
               <button
                 type="button"
                 onClick={handleClearSearch}
-                className="text-slate-400 hover:text-white transition"
+                className="text-slate-400 hover:text-white transition z-10"
                 aria-label="Clear search"
               >
                 <X className="w-4 h-4" />
@@ -564,4 +566,4 @@ export default function Header({
       </div>
     </header>
   )
-}
+                  }

@@ -343,12 +343,12 @@ export default function LandingPage({
 
       {/* ✅✅✅ HERO SECTION — Background image extended to cover typing animation ✅✅✅ */}
       <section
-        className="relative overflow-hidden"
-        style={{ background: "#000000" }}
+        className="relative overflow-hidden flex flex-col justify-center"
+        style={{ background: "#000000", minHeight: "100svh" }}
       >
         {/* Background image — boro kora hoyeche jate typing animation er porjonto stretch kore */}
         <div
-          className="absolute top-0 left-0 w-full h-[700px] md:h-[900px] z-0 pointer-events-none"
+          className="absolute top-0 left-0 w-full h-full z-0 pointer-events-none"
           style={{
             backgroundImage:
               "url('https://i.postimg.cc/7hLqB21s/Netflix-all-movies-and-series-featured-image.jpg')",
@@ -367,21 +367,21 @@ export default function LandingPage({
         </div>
 
         {/* Content */}
-        <div className="relative z-10 px-4 pt-28 md:pt-32 pb-16">
+        <div className="relative z-10 px-4 pt-24 md:pt-28 pb-24 w-full">
           {/* ✅ Heading (Netflix style) */}
           <h1
-            className="text-center text-white font-extrabold text-4xl md:text-6xl leading-tight max-w-3xl mx-auto"
+            className="text-center text-white font-extrabold text-4xl md:text-6xl leading-tight max-w-3xl mx-auto mt-6 md:mt-10"
             style={{ textShadow: "0 2px 20px rgba(0,0,0,0.6)" }}
           >
             Entertainment for every moment
           </h1>
 
           {/* MoviesVerseBD Logo */}
-          <div className="relative flex justify-center mt-2 mb-2">
+          <div className="relative flex justify-center -my-3 md:-my-6">
             <img
               src="https://i.postimg.cc/Bn4cPRwz/20288-removebg-preview.png"
               alt="MoviesVerseBD Logo"
-              className="relative z-20 w-44 h-44 md:w-64 md:h-64 object-contain"
+              className="relative z-20 w-64 h-64 md:w-96 md:h-96 object-contain"
             />
           </div>
 
@@ -447,8 +447,8 @@ export default function LandingPage({
           <div
             className="flex justify-center items-center gap-2"
             style={{
-              paddingTop: "24px",
-              paddingBottom: "24px",
+              paddingTop: "8px",
+              paddingBottom: "8px",
             }}
           >
             <svg
@@ -475,12 +475,16 @@ export default function LandingPage({
       <section
         className="relative"
         id="trending"
-        style={{ background: "#000000", marginTop: "60px" }}
+        style={{ background: "transparent", marginTop: "-64px", zIndex: 20 }}
       >
-        {/* Netflix-style curved red arc */}
+        {/* Solid black body below the arc */}
         <div
-          className="absolute top-0 left-0 w-full h-[90px] pointer-events-none overflow-hidden"
-        >
+          className="absolute left-0 w-full pointer-events-none"
+          style={{ top: "48px", bottom: 0, background: "#000000" }}
+        />
+
+        {/* Green curved arc (matches site UI) */}
+        <div className="absolute top-0 left-0 w-full h-[320px] pointer-events-none overflow-hidden">
           <div
             style={{
               position: "absolute",
@@ -489,15 +493,16 @@ export default function LandingPage({
               width: "150%",
               height: "320px",
               borderRadius: "50%",
-              borderTop: "3px solid #e5294d",
+              borderTop: "3px solid #22c55e",
               background:
-                "linear-gradient(to bottom, rgba(25, 25, 90, 0.75) 0%, rgba(8, 8, 30, 0.9) 35%, #000000 70%)",
-              boxShadow: "0 -4px 18px rgba(229, 9, 20, 0.45)",
+                "linear-gradient(to bottom, rgba(34, 197, 94, 0.30) 0%, rgba(10, 70, 35, 0.35) 12%, rgba(4, 25, 14, 0.7) 30%, #000000 52%)",
+              boxShadow:
+                "0 -6px 30px rgba(34, 197, 94, 0.55), 0 -1px 0 rgba(134, 239, 172, 0.6)",
             }}
           />
         </div>
 
-        <div className="relative z-10 pt-16">
+        <div className="relative z-10 pt-32 md:pt-36">
           {/* Row head — Netflix style */}
           <div className="row-head reveal px-4 mb-4">
             <h2
@@ -709,4 +714,4 @@ export default function LandingPage({
       </footer>
     </div>
   );
-            }
+                                                                                                                                                                                                                                                                                                                                                     }

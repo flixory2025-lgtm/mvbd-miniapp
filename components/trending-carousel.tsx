@@ -22,11 +22,11 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
   // ✅ ট্রেন্ডিং কারোসেলের স্টেট
   const [currentIndex, setCurrentIndex] = useState(0)
   const [isDragging, setIsDragging] = useState(false)
-  const [dragDistance, setDragDistance] = useState(0)
+  const [dragDistance, setDragDistance] = useState(0) // এটি পিক্সেলে ড্র্যাগ দূরত্ব
   const [isMobile, setIsMobile] = useState(false)
+  const [isTransitioning, setIsTransitioning] = useState(true)
   
   const startXRef = useRef(0)
-  const maxDragRef = useRef(0)
   const autoSlideRef = useRef<NodeJS.Timeout | null>(null)
   const topAutoSlideRef = useRef<NodeJS.Timeout | null>(null)
 
@@ -95,48 +95,56 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
   }, [trendingMovies.length])
 
   // ✅ নিচের কারোসেলের নেভিগেশন
-  const handlePrev = () => setCurrentIndex((prev) => (prev - 1 + trendingMovies.length) % trendingMovies.length)
-  const handleNext = () => setCurrentIndex((prev) => (prev + 1) % trendingMovies.length)
+  const handlePrev = () => {
+    setIsTransitioning(true)
+    setCurrentIndex((prev) => (prev - 1 + trendingMovies.length) % trendingMovies.length)
+  }
+  const handleNext = () => {
+    setIsTransitioning(true)
+    setCurrentIndex((prev) => (prev + 1) % trendingMovies.length)
+  }
 
-  // ✅ Touch Swipe (নিচের কারোসেলের জন্য)
-  const handleTouchStart = (e: React.TouchEvent) => {
+  // ✅ Swipe Handlers (নিচের কারোসেলের জন্য - Free Swipe)
+  const handleDragStart = (clientX: number) => {
     setIsDragging(true)
-    startXRef.current = e.touches[0].clientX
-    maxDragRef.current = 200
+    setIsTransitioning(false) // ড্র্যাগ শুরু হলে ট্রানজিশন বন্ধ (সাথে সাথে সরবে)
+    startXRef.current = clientX
     stopAutoSlide()
   }
-  const handleTouchMove = (e: React.TouchEvent) => {
+
+  const handleDragMove = (clientX: number) => {
     if (!isDragging) return
-    setDragDistance(e.touches[0].clientX - startXRef.current)
+    setDragDistance(clientX - startXRef.current)
   }
-  const handleTouchEnd = () => {
+
+  const handleDragEnd = () => {
     if (!isDragging) return
     setIsDragging(false)
-    if (dragDistance < -50) handleNext()
-    else if (dragDistance > 50) handlePrev()
+    setIsTransitioning(true) // ছেড়ে দিলে ট্রানজিশন চালু হবে
+
+    // ✅ কার্ডের প্রস্থ অনুযায়ী কতটুকু টানা হয়েছে তা নির্ণয় (মোবাইলে ১৪০px, ডেস্কটপে ২৪০px)
+    const cardWidth = isMobile ? 140 : 240
+    const threshold = cardWidth * 0.2 // ২০% টানা হলেই স্লাইড হবে (আপনি চাইলে পরিবর্তন করতে পারেন)
+
+    if (dragDistance < -threshold) {
+      // বামে টানা -> পরের মুভি
+      setCurrentIndex((prev) => (prev + 1) % trendingMovies.length)
+    } else if (dragDistance > threshold) {
+      // ডানে টানা -> আগের মুভি
+      setCurrentIndex((prev) => (prev - 1 + trendingMovies.length) % trendingMovies.length)
+    }
+    
     setDragDistance(0)
     startAutoSlide()
   }
 
-  // ✅ Mouse Swipe (নিচের কারোসেলের জন্য)
-  const handleMouseDown = (e: React.MouseEvent) => {
-    setIsDragging(true)
-    startXRef.current = e.clientX
-    maxDragRef.current = 200
-    stopAutoSlide()
-  }
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (!isDragging) return
-    setDragDistance(e.clientX - startXRef.current)
-  }
-  const handleMouseUp = () => {
-    if (!isDragging) return
-    setIsDragging(false)
-    if (dragDistance < -50) handleNext()
-    else if (dragDistance > 50) handlePrev()
-    setDragDistance(0)
-    startAutoSlide()
-  }
+  const handleTouchStart = (e: React.TouchEvent) => handleDragStart(e.touches[0].clientX)
+  const handleTouchMove = (e: React.TouchEvent) => handleDragMove(e.touches[0].clientX)
+  const handleTouchEnd = handleDragEnd
+
+  const handleMouseDown = (e: React.MouseEvent) => handleDragStart(e.clientX)
+  const handleMouseMove = (e: React.MouseEvent) => handleDragMove(e.clientX)
+  const handleMouseUp = handleDragEnd
 
   const handleMouseWheel = (e: React.WheelEvent) => {
     if (isDragging) return
@@ -144,25 +152,28 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
     else handlePrev()
   }
 
-  // ✅ 3D কার্ড পজিশন (নিচের কারোসেলের জন্য)
+  // ✅ 3D কার্ড পজিশন (Free Swipe সহ)
   const getCardStyle = (index: number) => {
     const total = trendingMovies.length
     let offset = (index - currentIndex + total) % total
     if (offset > total / 2) offset -= total
 
-    const progress = maxDragRef.current > 0 ? dragDistance / maxDragRef.current : 0
-    const adjustedOffset = offset + progress
+    // ✅ ড্র্যাগের অনুপাত নির্ণয় (কার্ডের প্রস্থের সাপেক্ষে)
+    const cardWidth = isMobile ? 140 : 240
+    const dragProgress = dragDistance / cardWidth
+    const adjustedOffset = offset + dragProgress
 
+    // ✅ কার্ডগুলো ৪টির বেশি দূরে থাকলে হাইড
     if (adjustedOffset < -4 || adjustedOffset > 4) {
       return { opacity: 0, transform: 'scale(0)', pointerEvents: 'none' as const, zIndex: 0 }
     }
 
     let x = 0, z = 0, scale = 1, opacity = 1, shadow = '', rotateY = 0
 
-    const isSmall = typeof window !== 'undefined' && window.innerWidth < 768
-    const xSpacing = isSmall ? 110 : 130
-    const zSpacing = isSmall ? -70 : -70
+    const xSpacing = isMobile ? 110 : 130
+    const zSpacing = -70
 
+    // ✅ কার্ডের পজিশন ক্যালকুলেশন (আগের মতোই, তবে adjustedOffset এখন ড্র্যাগের সাথে ১:১)
     if (adjustedOffset >= 0 && adjustedOffset <= 1) {
       const p = adjustedOffset
       x = xSpacing * p; z = zSpacing * p; scale = 1 - (0.15 * p); opacity = 1 - (0.3 * p)
@@ -187,7 +198,8 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
       x = adjustedOffset > 0 ? 600 : -600; z = -400; scale = 0.4; opacity = 0; shadow = 'none'; rotateY = 0
     }
 
-    if (offset === 0 && Math.abs(progress) < 0.05) {
+    // ✅ যদি কার্ডটি একদম সেন্টারে থাকে (এবং ড্র্যাগ না করা হয়), তবে এটাকে স্পেশাল শ্যাডো দিন
+    if (offset === 0 && Math.abs(dragProgress) < 0.05) {
       x = 0; z = 0; scale = 1; opacity = 1; rotateY = 0
       shadow = '0 30px 60px rgba(0, 0, 0, 0.9), 0 0 30px rgba(255, 255, 255, 0.05)'
     }
@@ -250,7 +262,7 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
       </div>
 
       {/* ========================================================= */}
-      {/* ✅✅✅ ২. নিচের সেকশন: Trending Movies (আগের মতো 3D) ✅✅✅ */}
+      {/* ✅✅✅ ২. নিচের সেকশন: Trending Movies (Free Swipe) ✅✅✅ */}
       {/* ========================================================= */}
       <div className="relative z-10 px-4 mt-2">
         
@@ -294,7 +306,7 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
           {totalMovieCount} Movie & Series Uploaded
         </p>
 
-        {/* ✅ 3D Card Carousel */}
+        {/* ✅ 3D Card Carousel with Free Swipe */}
         <div
           className="relative z-20 flex justify-center items-center h-[280px] md:h-[480px] w-full cursor-grab active:cursor-grabbing select-none"
           style={{ touchAction: "pan-y", perspective: "1400px" }}
@@ -310,8 +322,11 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
           {trendingMovies.map((movie, idx) => (
             <div
               key={movie.id}
-              className="absolute w-[140px] h-[190px] md:w-[240px] md:h-[360px] rounded-2xl overflow-hidden transition-all duration-500 ease-out hover:scale-105 cursor-pointer"
-              style={getCardStyle(idx)}
+              className="absolute w-[140px] h-[190px] md:w-[240px] md:h-[360px] rounded-2xl overflow-hidden hover:scale-105 cursor-pointer"
+              style={{
+                ...getCardStyle(idx),
+                transition: isTransitioning ? "all 0.5s cubic-bezier(0.25, 1, 0.5, 1)" : "none", // ✅ ড্র্যাগের সময় ট্রানজিশন বন্ধ, ছেড়ে দিলে স্মুথ
+              }}
               onClick={() => onMovieClick(movie)}
             >
               <img

@@ -194,7 +194,7 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
     else handlePrev()
   }
 
-  // ✅ উপরের স্লাইডারের জন্য কার্ড পজিশন (ফিট সাইজ, আগের মতো)
+  // ✅ উপরের স্লাইডারের জন্য 3D কার্ড পজিশন (ট্রেন্ডিং এর মতো)
   const getTopCardStyle = (index: number) => {
     const total = topSeriesMovies.length
     let offset = (index - topIndex + total) % total
@@ -203,24 +203,49 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
     const dragProgress = containerWidth > 0 ? topDragDistance / containerWidth : 0
     const adjustedOffset = offset + dragProgress
 
-    if (adjustedOffset < -2 || adjustedOffset > 2) {
-      return { opacity: 0, transform: 'scale(0.8)', pointerEvents: 'none' as const, zIndex: 0 }
+    // ✅ কার্ড ৪টির বেশি দূরে থাকলে হাইড
+    if (adjustedOffset < -4 || adjustedOffset > 4) {
+      return { opacity: 0, transform: 'scale(0)', pointerEvents: 'none' as const, zIndex: 0 }
     }
 
-    // ✅ কার্ডের প্রস্থ কন্টেইনারের ৮৫% (আগের মতো ফিট)
-    const cardWidthPercent = isMobile ? 0.85 : 0.75
-    const cardWidthPx = containerWidth * cardWidthPercent
-    const gap = 20 // কার্ডের মাঝে ফাঁকা
-    const stepX = cardWidthPx + gap
+    let x = 0, z = 0, scale = 1, opacity = 1, shadow = '', rotateY = 0
 
-    const x = adjustedOffset * stepX
-    const scale = 1 - Math.abs(adjustedOffset) * 0.1
-    const opacity = 1 - Math.abs(adjustedOffset) * 0.4
+    // ✅ মোবাইল ও ডেস্কটপের জন্য স্পেসিং (ট্রেন্ডিং এর মতোই)
+    const xSpacing = isMobile ? 110 : 130
+    const zSpacing = -70
+
+    if (adjustedOffset >= 0 && adjustedOffset <= 1) {
+      const p = adjustedOffset
+      x = xSpacing * p; z = zSpacing * p; scale = 1 - (0.15 * p); opacity = 1 - (0.3 * p)
+      shadow = p > 0.5 ? '0 15px 30px rgba(0,0,0,0.5)' : '0 30px 60px rgba(0,0,0,0.9)'
+      rotateY = 5 * p
+    } else if (adjustedOffset > 1 && adjustedOffset <= 4) {
+      const p = adjustedOffset - 1
+      const stepX = xSpacing + (xSpacing * 0.75 * p)
+      x = stepX; z = zSpacing - (zSpacing * 0.6 * p); scale = 0.85 - (0.12 * p); opacity = 0.7 - (0.2 * p)
+      shadow = '0 10px 20px rgba(0,0,0,0.4)'; rotateY = 5 + (2 * p)
+    } else if (adjustedOffset < 0 && adjustedOffset >= -1) {
+      const p = Math.abs(adjustedOffset)
+      x = -xSpacing * p; z = zSpacing * p; scale = 1 - (0.15 * p); opacity = 1 - (0.3 * p)
+      shadow = p > 0.5 ? '0 15px 30px rgba(0,0,0,0.5)' : '0 30px 60px rgba(0,0,0,0.9)'
+      rotateY = -5 * p
+    } else if (adjustedOffset < -1 && adjustedOffset >= -4) {
+      const p = Math.abs(adjustedOffset) - 1
+      const stepX = -xSpacing - (xSpacing * 0.75 * p)
+      x = stepX; z = zSpacing - (zSpacing * 0.6 * p); scale = 0.85 - (0.12 * p); opacity = 0.7 - (0.2 * p)
+      shadow = '0 10px 20px rgba(0,0,0,0.4)'; rotateY = -5 - (2 * p)
+    } else {
+      x = adjustedOffset > 0 ? 600 : -600; z = -400; scale = 0.4; opacity = 0; shadow = 'none'; rotateY = 0
+    }
+
+    if (offset === 0 && Math.abs(dragProgress) < 0.05) {
+      x = 0; z = 0; scale = 1; opacity = 1; rotateY = 0
+      shadow = '0 30px 60px rgba(0, 0, 0, 0.9), 0 0 30px rgba(255, 255, 255, 0.05)'
+    }
 
     return {
-      width: `${cardWidthPercent * 100}%`,
-      transform: `translateX(${x}px) scale(${scale})`,
-      opacity,
+      transform: `translateX(${x}px) translateZ(${z}px) scale(${scale}) rotateY(${rotateY}deg)`,
+      opacity, boxShadow: shadow,
       zIndex: Math.round(100 - Math.abs(adjustedOffset) * 10),
       transition: topIsTransitioning ? "all 0.5s cubic-bezier(0.25, 1, 0.5, 1)" : "none",
     }
@@ -286,7 +311,7 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
     <section className="relative pb-4 overflow-hidden bg-black">
 
       {/* ========================================================= */}
-      {/* ✅✅✅ ১. উপরের সেকশন: Top Movie Series (Infinite Free Swipe) ✅✅✅ */}
+      {/* ✅✅✅ ১. উপরের সেকশন: Top Movie Series (3D Card Style, ট্রেন্ডিং এর মতো) ✅✅✅ */}
       {/* ========================================================= */}
       <div
         ref={topContainerRef}
@@ -307,7 +332,8 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
               return (
                 <div
                   key={movie.id}
-                  className="absolute h-full rounded-xl overflow-hidden shadow-2xl"
+                  // ✅ এখানে rounded-xl রিমুভ করে rounded-none (boxy) করা হয়েছে
+                  className="absolute w-[140px] h-[190px] md:w-[240px] md:h-[360px] rounded-none overflow-hidden shadow-2xl"
                   style={style}
                   onClick={() => {
                     if (Math.abs(topDragDistance) < 5) {
@@ -321,16 +347,13 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
                     className="w-full h-full object-cover object-top pointer-events-none"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent" />
-                  <div className="absolute bottom-0 left-0 w-full p-4 md:p-8 z-10">
-                    <h2 className="text-white text-xl md:text-3xl font-bold mb-1 drop-shadow-lg">
+                  <div className="absolute bottom-0 left-0 w-full p-2 md:p-4 z-10">
+                    <h3 className="text-white text-[10px] md:text-base font-bold truncate drop-shadow-lg">
                       {movie.title}
-                    </h2>
-                    <div className="flex items-center gap-3 text-xs md:text-base text-gray-300">
-                      {movie.year && <span>{movie.year}</span>}
-                      {movie.rating && movie.rating !== "not available" && (
-                        <span className="text-yellow-400">⭐ {movie.rating}</span>
-                      )}
-                    </div>
+                    </h3>
+                    {movie.year && (
+                      <p className="text-gray-300 text-[8px] md:text-xs">{movie.year}</p>
+                    )}
                   </div>
                 </div>
               )
@@ -460,4 +483,4 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
       </div>
     </section>
   )
-}
+                }

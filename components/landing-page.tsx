@@ -299,28 +299,18 @@ export default function LandingPage({
 
       {/* ✅ Local CSS keyframes for button animation */}
       <style>{`
-        @keyframes heroButtonPulse {
+        @keyframes heroButtonGlowPulse {
           0%, 100% {
             box-shadow:
-              0 0 15px rgba(34, 197, 94, 0.5),
-              0 0 30px rgba(34, 197, 94, 0.3),
+              0 0 20px rgba(34, 197, 94, 0.45),
+              0 0 40px rgba(34, 197, 94, 0.25),
+              inset 0 1px 0 rgba(255, 255, 255, 0.08);
+          }
+          50% {
+            box-shadow:
+              0 0 30px rgba(34, 197, 94, 0.75),
+              0 0 60px rgba(34, 197, 94, 0.45),
               inset 0 1px 0 rgba(255, 255, 255, 0.15);
-          }
-          50% {
-            box-shadow:
-              0 0 25px rgba(34, 197, 94, 0.8),
-              0 0 50px rgba(34, 197, 94, 0.5),
-              inset 0 1px 0 rgba(255, 255, 255, 0.25);
-          }
-        }
-        @keyframes heroGlowRing {
-          0%, 100% {
-            opacity: 0.5;
-            transform: scale(1);
-          }
-          50% {
-            opacity: 0.9;
-            transform: scale(1.08);
           }
         }
         @keyframes heroArrowBounce {
@@ -329,53 +319,38 @@ export default function LandingPage({
         }
 
         .hero-visit-btn {
-          animation: heroButtonPulse 2.5s ease-in-out infinite;
+          animation: heroButtonGlowPulse 2.8s ease-in-out infinite;
           position: relative;
           background: linear-gradient(
             135deg,
-            #0f3d20 0%,
-            #14532d 50%,
-            #0f3d20 100%
+            #0a2e18 0%,
+            #0f3d20 50%,
+            #0a2e18 100%
           );
-          border: 1px solid rgba(34, 197, 94, 0.5);
+          border: 1px solid rgba(34, 197, 94, 0.35);
           transition: all 0.3s ease;
         }
         .hero-visit-btn:hover {
           transform: scale(1.03);
           background: linear-gradient(
             135deg,
-            #14532d 0%,
-            #166534 50%,
-            #14532d 100%
+            #0f3d20 0%,
+            #14532d 50%,
+            #0f3d20 100%
           );
+          border-color: rgba(34, 197, 94, 0.6);
+        }
+        .hero-visit-btn .arrow-circle {
+          background: rgba(34, 197, 94, 0.2);
+          border: 1px solid rgba(34, 197, 94, 0.5);
+          transition: all 0.3s ease;
+        }
+        .hero-visit-btn:hover .arrow-circle {
+          background: rgba(34, 197, 94, 0.35);
           border-color: rgba(34, 197, 94, 0.8);
         }
         .hero-visit-btn .btn-arrow {
           animation: heroArrowBounce 1.8s ease-in-out infinite;
-        }
-        .hero-visit-btn .arrow-circle {
-          background: rgba(34, 197, 94, 0.25);
-          border: 1px solid rgba(34, 197, 94, 0.6);
-          transition: all 0.3s ease;
-        }
-        .hero-visit-btn:hover .arrow-circle {
-          background: rgba(34, 197, 94, 0.4);
-          border-color: rgba(34, 197, 94, 0.9);
-        }
-        .hero-glow-ring {
-          position: absolute;
-          inset: -10px;
-          border-radius: 9999px;
-          background: radial-gradient(
-            ellipse at center,
-            rgba(34, 197, 94, 0.4) 0%,
-            rgba(34, 197, 94, 0.15) 50%,
-            transparent 75%
-          );
-          filter: blur(14px);
-          animation: heroGlowRing 2.5s ease-in-out infinite;
-          pointer-events: none;
-          z-index: -1;
         }
       `}</style>
 
@@ -425,7 +400,6 @@ export default function LandingPage({
             backgroundRepeat: "no-repeat",
           }}
         >
-          {/* Top theke niche smooth fade — jate Trending Now poster er sathe blend hoy */}
           <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/60 to-black" />
         </div>
 
@@ -440,20 +414,20 @@ export default function LandingPage({
             />
           </div>
 
-          {/* ✅✅✅ Visit Main Site Button — Screenshot er moto ✅✅✅ */}
+          {/* ✅✅✅ Visit Main Site Button — Screenshot er moto EXACT ✅✅✅ */}
           <div className="flex justify-center mb-6 relative">
             <button
               type="button"
               onClick={handleHeroEnterSite}
-              className="hero-visit-btn group relative inline-flex items-center gap-3 px-8 py-4 md:px-10 md:py-5 rounded-full font-bold text-white text-base md:text-xl tracking-wide cursor-pointer"
+              className="hero-visit-btn group relative inline-flex items-center justify-between gap-4 pl-10 pr-3 py-3 md:pl-14 md:pr-4 md:py-4 rounded-full font-bold text-white text-lg md:text-xl tracking-wide cursor-pointer"
+              style={{ minWidth: "260px" }}
             >
-              {/* Glow ring behind button */}
-              <span className="hero-glow-ring" />
-
-              <span className="relative z-10">Visit Main Site</span>
+              <span className="relative z-10 whitespace-nowrap">
+                Visit Main Site
+              </span>
 
               {/* Arrow circle — screenshot er moto */}
-              <span className="arrow-circle relative z-10 inline-flex items-center justify-center w-8 h-8 md:w-10 md:h-10 rounded-full">
+              <span className="arrow-circle relative z-10 inline-flex items-center justify-center w-9 h-9 md:w-11 md:h-11 rounded-full flex-shrink-0">
                 <svg
                   className="btn-arrow w-4 h-4 md:w-5 md:h-5"
                   viewBox="0 0 24 24"

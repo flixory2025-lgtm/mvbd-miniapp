@@ -297,63 +297,6 @@ export default function LandingPage({
       <div className="zoom-vignette"></div>
       <div className="zoom-flash"></div>
 
-      {/* ✅ Local CSS keyframes for button animation */}
-      <style>{`
-        @keyframes heroButtonGlowPulse {
-          0%, 100% {
-            box-shadow:
-              0 0 20px rgba(34, 197, 94, 0.45),
-              0 0 40px rgba(34, 197, 94, 0.25),
-              inset 0 1px 0 rgba(255, 255, 255, 0.08);
-          }
-          50% {
-            box-shadow:
-              0 0 30px rgba(34, 197, 94, 0.75),
-              0 0 60px rgba(34, 197, 94, 0.45),
-              inset 0 1px 0 rgba(255, 255, 255, 0.15);
-          }
-        }
-        @keyframes heroArrowBounce {
-          0%, 100% { transform: translateX(0); }
-          50% { transform: translateX(4px); }
-        }
-
-        .hero-visit-btn {
-          animation: heroButtonGlowPulse 2.8s ease-in-out infinite;
-          position: relative;
-          background: linear-gradient(
-            135deg,
-            #0a2e18 0%,
-            #0f3d20 50%,
-            #0a2e18 100%
-          );
-          border: 1px solid rgba(34, 197, 94, 0.35);
-          transition: all 0.3s ease;
-        }
-        .hero-visit-btn:hover {
-          transform: scale(1.03);
-          background: linear-gradient(
-            135deg,
-            #0f3d20 0%,
-            #14532d 50%,
-            #0f3d20 100%
-          );
-          border-color: rgba(34, 197, 94, 0.6);
-        }
-        .hero-visit-btn .arrow-circle {
-          background: rgba(34, 197, 94, 0.2);
-          border: 1px solid rgba(34, 197, 94, 0.5);
-          transition: all 0.3s ease;
-        }
-        .hero-visit-btn:hover .arrow-circle {
-          background: rgba(34, 197, 94, 0.35);
-          border-color: rgba(34, 197, 94, 0.8);
-        }
-        .hero-visit-btn .btn-arrow {
-          animation: heroArrowBounce 1.8s ease-in-out infinite;
-        }
-      `}</style>
-
       {/* ✅ Nav — obhabei */}
       <nav id="nav">
         <div className="nav-left">
@@ -414,33 +357,56 @@ export default function LandingPage({
             />
           </div>
 
-          {/* ✅✅✅ Visit Main Site Button — Screenshot er moto EXACT ✅✅✅ */}
-          <div className="flex justify-center mb-6 relative">
-            <button
-              type="button"
+          {/* ✅✅✅ Visit Main Site Button — Big CTA box er button er EXACT SAME ✅✅✅ */}
+          <div className="flex justify-center mb-6">
+            <a
+              href="#"
               onClick={handleHeroEnterSite}
-              className="hero-visit-btn group relative inline-flex items-center justify-between gap-4 pl-10 pr-3 py-3 md:pl-14 md:pr-4 md:py-4 rounded-full font-bold text-white text-lg md:text-xl tracking-wide cursor-pointer"
-              style={{ minWidth: "260px" }}
+              className="btn-site-main"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "14px",
+                padding: "14px 18px 14px 28px",
+                borderRadius: "9999px",
+                background:
+                  "linear-gradient(135deg, #16a34a 0%, #22c55e 50%, #16a34a 100%)",
+                color: "white",
+                fontWeight: 700,
+                fontSize: "18px",
+                textDecoration: "none",
+                boxShadow:
+                  "0 8px 30px rgba(34, 197, 94, 0.5), 0 0 60px rgba(34, 197, 94, 0.3), inset 0 1px 0 rgba(255,255,255,0.3)",
+                border: "1px solid rgba(34, 197, 94, 0.6)",
+                transition: "all 0.3s ease",
+              }}
             >
-              <span className="relative z-10 whitespace-nowrap">
-                Visit Main Site
-              </span>
-
-              {/* Arrow circle — screenshot er moto */}
-              <span className="arrow-circle relative z-10 inline-flex items-center justify-center w-9 h-9 md:w-11 md:h-11 rounded-full flex-shrink-0">
+              <span>Visit Main Site</span>
+              <span
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  width: "36px",
+                  height: "36px",
+                  borderRadius: "9999px",
+                  background: "rgba(255, 255, 255, 0.15)",
+                  border: "1px solid rgba(255, 255, 255, 0.3)",
+                }}
+              >
                 <svg
-                  className="btn-arrow w-4 h-4 md:w-5 md:h-5"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
                   strokeWidth="2.5"
                   strokeLinecap="round"
                   strokeLinejoin="round"
+                  style={{ width: "18px", height: "18px" }}
                 >
                   <path d="M5 12h14M13 5l7 7-7 7" />
                 </svg>
               </span>
-            </button>
+            </a>
           </div>
 
           {/* ✅ Typing animation — Visit Main Site button er niche */}
@@ -579,7 +545,7 @@ export default function LandingPage({
         </div>
       </section>
 
-      {/* ✅ Big CTA */}
+      {/* ✅ Big CTA — Ekhaneo same button obhabei thakbe */}
       <section className="big-cta reveal">
         <h2>Ready to <span className="accent">Start Watching?</span></h2>
         <p>Join thousands of Bangladeshi movie lovers already streaming on MoviesVerseBD. It's free, it's fast, and it's waiting for you.</p>

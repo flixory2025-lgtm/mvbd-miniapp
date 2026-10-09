@@ -302,84 +302,78 @@ export default function LandingPage({
         @keyframes heroButtonPulse {
           0%, 100% {
             box-shadow:
-              0 0 25px rgba(34, 197, 94, 0.7),
-              0 0 50px rgba(34, 197, 94, 0.5),
-              0 0 80px rgba(34, 197, 94, 0.3),
-              inset 0 2px 0 rgba(255, 255, 255, 0.3);
-            transform: scale(1);
+              0 0 15px rgba(34, 197, 94, 0.5),
+              0 0 30px rgba(34, 197, 94, 0.3),
+              inset 0 1px 0 rgba(255, 255, 255, 0.15);
           }
           50% {
             box-shadow:
-              0 0 40px rgba(34, 197, 94, 1),
-              0 0 80px rgba(34, 197, 94, 0.8),
-              0 0 120px rgba(34, 197, 94, 0.6),
-              inset 0 2px 0 rgba(255, 255, 255, 0.5);
-            transform: scale(1.04);
+              0 0 25px rgba(34, 197, 94, 0.8),
+              0 0 50px rgba(34, 197, 94, 0.5),
+              inset 0 1px 0 rgba(255, 255, 255, 0.25);
           }
         }
-        @keyframes heroButtonGlow {
+        @keyframes heroGlowRing {
           0%, 100% {
-            opacity: 0.6;
+            opacity: 0.5;
             transform: scale(1);
           }
           50% {
-            opacity: 1;
-            transform: scale(1.2);
+            opacity: 0.9;
+            transform: scale(1.08);
           }
         }
         @keyframes heroArrowBounce {
           0%, 100% { transform: translateX(0); }
-          50% { transform: translateX(8px); }
+          50% { transform: translateX(4px); }
         }
-        @keyframes heroShine {
-          0% { transform: translateX(-100%) skewX(-20deg); }
-          100% { transform: translateX(250%) skewX(-20deg); }
-        }
+
         .hero-visit-btn {
-          animation: heroButtonPulse 2s ease-in-out infinite;
+          animation: heroButtonPulse 2.5s ease-in-out infinite;
           position: relative;
-          overflow: hidden;
-        }
-        .hero-visit-btn::before {
-          content: "";
-          position: absolute;
-          top: 0;
-          left: 0;
-          width: 60%;
-          height: 100%;
           background: linear-gradient(
-            90deg,
-            transparent,
-            rgba(255, 255, 255, 0.55),
-            transparent
+            135deg,
+            #0f3d20 0%,
+            #14532d 50%,
+            #0f3d20 100%
           );
-          animation: heroShine 3s ease-in-out infinite;
-          pointer-events: none;
+          border: 1px solid rgba(34, 197, 94, 0.5);
+          transition: all 0.3s ease;
         }
         .hero-visit-btn:hover {
-          animation-play-state: paused;
-          transform: scale(1.08) !important;
-          box-shadow:
-            0 0 50px rgba(34, 197, 94, 1),
-            0 0 100px rgba(34, 197, 94, 0.9),
-            0 0 160px rgba(34, 197, 94, 0.7),
-            inset 0 2px 0 rgba(255, 255, 255, 0.6) !important;
+          transform: scale(1.03);
+          background: linear-gradient(
+            135deg,
+            #14532d 0%,
+            #166534 50%,
+            #14532d 100%
+          );
+          border-color: rgba(34, 197, 94, 0.8);
         }
         .hero-visit-btn .btn-arrow {
-          animation: heroArrowBounce 1.5s ease-in-out infinite;
+          animation: heroArrowBounce 1.8s ease-in-out infinite;
+        }
+        .hero-visit-btn .arrow-circle {
+          background: rgba(34, 197, 94, 0.25);
+          border: 1px solid rgba(34, 197, 94, 0.6);
+          transition: all 0.3s ease;
+        }
+        .hero-visit-btn:hover .arrow-circle {
+          background: rgba(34, 197, 94, 0.4);
+          border-color: rgba(34, 197, 94, 0.9);
         }
         .hero-glow-ring {
           position: absolute;
-          inset: -12px;
+          inset: -10px;
           border-radius: 9999px;
           background: radial-gradient(
-            circle,
-            rgba(34, 197, 94, 0.7) 0%,
-            rgba(34, 197, 94, 0.35) 40%,
-            transparent 70%
+            ellipse at center,
+            rgba(34, 197, 94, 0.4) 0%,
+            rgba(34, 197, 94, 0.15) 50%,
+            transparent 75%
           );
-          filter: blur(16px);
-          animation: heroButtonGlow 2s ease-in-out infinite;
+          filter: blur(14px);
+          animation: heroGlowRing 2.5s ease-in-out infinite;
           pointer-events: none;
           z-index: -1;
         }
@@ -420,9 +414,9 @@ export default function LandingPage({
 
       {/* ✅✅✅ HERO SECTION — Background + Logo + Visit Button + Typing ✅✅✅ */}
       <section className="relative overflow-hidden bg-black">
-        {/* Background image upore */}
+        {/* Background image upore — Trending Now poster er sathe match kore */}
         <div
-          className="absolute top-0 left-0 w-full h-[380px] md:h-[520px] z-0 pointer-events-none"
+          className="absolute top-0 left-0 w-full h-[400px] md:h-[560px] z-0 pointer-events-none"
           style={{
             backgroundImage:
               "url('https://i.postimg.cc/7hLqB21s/Netflix-all-movies-and-series-featured-image.jpg')",
@@ -431,11 +425,12 @@ export default function LandingPage({
             backgroundRepeat: "no-repeat",
           }}
         >
-          <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/80 to-black" />
+          {/* Top theke niche smooth fade — jate Trending Now poster er sathe blend hoy */}
+          <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/60 to-black" />
         </div>
 
         {/* Content */}
-        <div className="relative z-10 px-4 pt-2 pb-16">
+        <div className="relative z-10 px-4 pt-2 pb-8">
           {/* MoviesVerseBD Logo */}
           <div className="relative flex justify-center -mt-2 mb-6">
             <img
@@ -445,39 +440,36 @@ export default function LandingPage({
             />
           </div>
 
-          {/* ✅✅✅ Visit Main Site Button — MAIN GATE (ARO BORO + ANIMATED) ✅✅✅ */}
-          <div className="flex justify-center mb-8 relative">
+          {/* ✅✅✅ Visit Main Site Button — Screenshot er moto ✅✅✅ */}
+          <div className="flex justify-center mb-6 relative">
             <button
               type="button"
               onClick={handleHeroEnterSite}
-              className="hero-visit-btn group relative inline-flex items-center gap-4 px-12 py-6 md:px-20 md:py-8 rounded-full font-extrabold text-white text-xl md:text-3xl tracking-wider transition-all duration-300 cursor-pointer"
-              style={{
-                background:
-                  "linear-gradient(135deg, #15803d 0%, #16a34a 25%, #22c55e 50%, #16a34a 75%, #15803d 100%)",
-                border: "3px solid rgba(34, 197, 94, 1)",
-                textShadow: "0 2px 12px rgba(0, 0, 0, 0.6)",
-                letterSpacing: "0.05em",
-              }}
+              className="hero-visit-btn group relative inline-flex items-center gap-3 px-8 py-4 md:px-10 md:py-5 rounded-full font-bold text-white text-base md:text-xl tracking-wide cursor-pointer"
             >
               {/* Glow ring behind button */}
               <span className="hero-glow-ring" />
 
               <span className="relative z-10">Visit Main Site</span>
-              <svg
-                className="btn-arrow w-7 h-7 md:w-10 md:h-10 relative z-10"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="3"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M5 12h14M13 5l7 7-7 7" />
-              </svg>
+
+              {/* Arrow circle — screenshot er moto */}
+              <span className="arrow-circle relative z-10 inline-flex items-center justify-center w-8 h-8 md:w-10 md:h-10 rounded-full">
+                <svg
+                  className="btn-arrow w-4 h-4 md:w-5 md:h-5"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M5 12h14M13 5l7 7-7 7" />
+                </svg>
+              </span>
             </button>
           </div>
 
-          {/* ✅ Typing animation — Visit Main Site button er niche (ei jaygay i thakbe) */}
+          {/* ✅ Typing animation — Visit Main Site button er niche */}
           <div className="flex justify-center items-center gap-2 mb-2 min-h-[30px]">
             <svg
               className="w-5 h-5 text-green-400 flex-shrink-0"
@@ -498,8 +490,6 @@ export default function LandingPage({
           </div>
         </div>
       </section>
-
-      {/* ❌ 3 Steps box BAD dewa hoyeche */}
 
       {/* ✅ Trending Now list — trendingIds onujayi */}
       <section className="row" id="trending">

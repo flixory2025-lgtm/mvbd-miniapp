@@ -8,6 +8,7 @@ type LandingPageProps = {
   onMovieClick?: (movie: (typeof movies)[0]) => void;
 };
 
+// ✅ Same trendingIds — jate niche Trending Now list thik kore
 const trendingIds = [
   3360, 3361, 3362, 3363, 3364, 3365, 3366, 3367, 3368, 3369, 3370, 3371,
   3373, 3375, 3376, 3377, 3379, 3380, 3382, 3383, 3386, 3387, 3355, 3354,
@@ -15,19 +16,28 @@ const trendingIds = [
   3339, 3338, 3337, 3335, 3389, 3388,
 ];
 
+// ✅ Aro beshi messages — prottek bar notun line ashbe
 const TYPING_MESSAGES = [
   "Welcome to MoviesVerseBD — Your Ultimate Destination for Movies, Web Series, and Endless Entertainment. Discover Your Next Favourite Story Today!",
+
   "From Hollywood Blockbusters to Bollywood Hits, South Indian Action, Korean Dramas, and Trending Web Series — Explore the World of Entertainment with MoviesVerseBD!",
+
   "Every Movie Has a Story, Every Story Creates a Memory. Dive Into Amazing Adventures, Powerful Performances, Mind-Blowing Thrillers, and Unforgettable Cinematic Moments!",
+
   "Your Next Binge-Worthy Series Is Waiting! Explore Exciting Stories, Discover New Releases, Revisit Your Favourite Movies, and Make Every Moment an Entertainment Experience!",
+
   "Welcome to a World Where Entertainment Never Ends! MoviesVerseBD Brings Movie Lovers Closer to the Stories, Characters, and Cinematic Universes They Love!",
+
   "Love Action, Horror, Romance, Comedy, or Sci-Fi? Whatever Your Mood, Discover Different Genres, Explore New Stories, and Find Something Exciting to Watch on MoviesVerseBD!",
+
   "From Legendary Classics to the Latest Trending Titles, MoviesVerseBD Is Your Place to Explore the Incredible World of Cinema and Discover Entertainment Beyond Boundaries!",
+
   "Lights Off, Screen On, Entertainment Begins! Get Ready to Explore Fascinating Movies, Thrilling Mysteries, Epic Adventures, and Stories That Keep You Watching!",
+
   "Made for Movie Lovers, Inspired by Great Stories! Explore Hollywood, Bollywood, South Indian Cinema, Korean Dramas, and Web Series — All in One MoviesVerseBD Experience!",
+
   "Your Entertainment Journey Starts Here! Discover New Favourites, Explore Different Cinematic Worlds, and Join the MoviesVerseBD Community Where Every Movie Lover Belongs!",
 ];
-
 export default function LandingPage({
   onEnterSite,
   onMovieClick,
@@ -104,7 +114,7 @@ export default function LandingPage({
   };
 
   /* ============================================================
-     ✅ MOVIE ROWS + DRAG + REVEAL
+     ✅ MOVIE ROWS + DRAG + VISIT MAIN SITE + REVEAL
   ============================================================ */
   useEffect(() => {
     const trendingMovies = movies.filter((m) => trendingIds.includes(m.id));
@@ -298,7 +308,7 @@ export default function LandingPage({
       <div className="zoom-vignette"></div>
       <div className="zoom-flash"></div>
 
-      {/* ✅ Nav — Netflix style (logo + Sign In jaygay Visit Main Site) */}
+      {/* ✅ Nav — obhabei */}
       <nav id="nav">
         <div className="nav-left">
           <div className="brand">
@@ -331,23 +341,14 @@ export default function LandingPage({
         </div>
       </nav>
 
-      {/* ============================================================
-          ✅✅✅ HERO SECTION — Netflix Screenshot Layout ✅✅✅
-          Order:
-            1. "Entertainment for every moment"
-            2. "Starts at Free. Cancel anytime."
-            3. "Ready to watch? Enter your email to create or restart your membership."
-            4. MoviesVerseBD Logo
-            5. Visit Main Site Button
-            6. Typing animation
-      ============================================================ */}
+      {/* ✅✅✅ HERO SECTION — Background image extended to cover typing animation ✅✅✅ */}
       <section
         className="relative overflow-hidden"
-        style={{ background: "#000000", minHeight: "100vh" }}
+        style={{ background: "#000000" }}
       >
-        {/* Background image — Netflix-style collage */}
+        {/* Background image — boro kora hoyeche jate typing animation er porjonto stretch kore */}
         <div
-          className="absolute top-0 left-0 w-full h-full z-0 pointer-events-none"
+          className="absolute top-0 left-0 w-full h-[700px] md:h-[900px] z-0 pointer-events-none"
           style={{
             backgroundImage:
               "url('https://i.postimg.cc/7hLqB21s/Netflix-all-movies-and-series-featured-image.jpg')",
@@ -356,63 +357,42 @@ export default function LandingPage({
             backgroundRepeat: "no-repeat",
           }}
         >
-          {/* Dark overlay + bottom fade to black */}
           <div
             className="absolute inset-0"
             style={{
               background:
-                "linear-gradient(to bottom, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.65) 30%, rgba(0,0,0,0.85) 70%, #000000 100%)",
+                "linear-gradient(to bottom, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.85) 40%, rgba(0,0,0,0.95) 70%, #000000 100%)",
             }}
           />
         </div>
 
         {/* Content */}
-        <div className="relative z-10 flex flex-col items-center justify-center text-center px-4 pt-24 md:pt-32 pb-16">
-          {/* ✅ 1. Big bold heading — "Entertainment for every moment" */}
+        <div className="relative z-10 px-4 pt-28 md:pt-32 pb-16">
+          {/* ✅ Heading (Netflix style) */}
           <h1
-            className="text-white font-black leading-[1.05] tracking-tight max-w-5xl"
-            style={{
-              fontSize: "clamp(2rem, 5.2vw, 4rem)",
-              textShadow: "0 4px 30px rgba(0,0,0,0.7)",
-            }}
+            className="text-center text-white font-extrabold text-4xl md:text-6xl leading-tight max-w-3xl mx-auto"
+            style={{ textShadow: "0 2px 20px rgba(0,0,0,0.6)" }}
           >
             Entertainment for every moment
           </h1>
 
-          {/* ✅ 2. Sub-heading — "Starts at Free. Cancel anytime." */}
-          <p
-            className="text-white mt-5 font-semibold"
-            style={{
-              fontSize: "clamp(1rem, 1.8vw, 1.5rem)",
-              textShadow: "0 2px 12px rgba(0,0,0,0.7)",
-            }}
-          >
-            Starts at Free. Cancel anytime.
-          </p>
-
-          {/* ✅ 3. Description — "Ready to watch? Enter your email to create or restart your membership." */}
-          <p
-            className="text-white mt-6 max-w-2xl mx-auto"
-            style={{
-              fontSize: "clamp(0.95rem, 1.4vw, 1.15rem)",
-              lineHeight: 1.5,
-              textShadow: "0 2px 12px rgba(0,0,0,0.7)",
-            }}
-          >
-            Ready to watch? Enter your email to create or restart your membership.
-          </p>
-
-          {/* ✅ 4. MoviesVerseBD Logo (big, centered) */}
-          <div className="mt-10 mb-6">
+          {/* MoviesVerseBD Logo */}
+          <div className="relative flex justify-center mt-2 mb-2">
             <img
               src="https://i.postimg.cc/Bn4cPRwz/20288-removebg-preview.png"
               alt="MoviesVerseBD Logo"
-              className="w-52 h-52 md:w-72 md:h-72 object-contain drop-shadow-[0_8px_40px_rgba(34,197,94,0.5)]"
+              className="relative z-20 w-44 h-44 md:w-64 md:h-64 object-contain"
             />
           </div>
 
-          {/* ✅ 5. Visit Main Site Button — Netflix red style */}
-          <div className="flex justify-center mb-10">
+          {/* ✅ Ready to watch text */}
+          <p className="text-center text-white text-base md:text-xl max-w-xl mx-auto mb-6">
+            Ready to watch? Enter your email to create or restart your
+            membership.
+          </p>
+
+          {/* ✅ Visit Main Site Button */}
+          <div className="flex justify-center mb-8">
             <a
               href="#"
               onClick={handleHeroEnterSite}
@@ -421,8 +401,8 @@ export default function LandingPage({
                 display: "inline-flex",
                 alignItems: "center",
                 gap: "14px",
-                padding: "16px 22px 16px 32px",
-                borderRadius: "6px",
+                padding: "14px 18px 14px 28px",
+                borderRadius: "9999px",
                 background:
                   "linear-gradient(135deg, #16a34a 0%, #22c55e 50%, #16a34a 100%)",
                 color: "white",
@@ -463,8 +443,14 @@ export default function LandingPage({
             </a>
           </div>
 
-          {/* ✅ 6. Typing animation — bottom of hero */}
-          <div className="flex justify-center items-center gap-2 max-w-3xl mx-auto">
+          {/* ✅ Typing animation — EKHON HERO SECTION ER VITORE, background transparent */}
+          <div
+            className="flex justify-center items-center gap-2"
+            style={{
+              paddingTop: "24px",
+              paddingBottom: "24px",
+            }}
+          >
             <svg
               className="w-5 h-5 text-green-400 flex-shrink-0"
               viewBox="0 0 24 24"
@@ -483,42 +469,37 @@ export default function LandingPage({
             <span className="inline-block w-[2px] h-[18px] bg-green-400 animate-pulse" />
           </div>
         </div>
-
-        {/* ✅ Netflix-style curved bottom edge — purple/red gradient divider */}
-        <div
-          className="absolute bottom-0 left-0 w-full pointer-events-none z-20"
-          style={{ height: "60px" }}
-        >
-          <svg
-            viewBox="0 0 1440 60"
-            preserveAspectRatio="none"
-            className="w-full h-full"
-          >
-            <defs>
-              <linearGradient id="curveGrad" x1="0" y1="0" x2="1" y2="0">
-                <stop offset="0%" stopColor="#7c1d3f" />
-                <stop offset="30%" stopColor="#c2185b" />
-                <stop offset="50%" stopColor="#e91e63" />
-                <stop offset="70%" stopColor="#c2185b" />
-                <stop offset="100%" stopColor="#7c1d3f" />
-              </linearGradient>
-            </defs>
-            <path
-              d="M0,40 Q720,-30 1440,40 L1440,60 L0,60 Z"
-              fill="url(#curveGrad)"
-            />
-          </svg>
-        </div>
       </section>
 
-      {/* ✅ Trending Now — Netflix style (ekhon screenshot er moto) */}
+      {/* ✅ Trending Now — obhabei niche */}
       <section
         className="relative"
         id="trending"
-        style={{ background: "#000000" }}
+        style={{ background: "#000000", marginTop: "60px" }}
       >
-        <div className="relative z-10 pt-10">
-          <div className="row-head reveal px-4 md:px-8 mb-4">
+        {/* Netflix-style curved red arc */}
+        <div
+          className="absolute top-0 left-0 w-full h-[90px] pointer-events-none overflow-hidden"
+        >
+          <div
+            style={{
+              position: "absolute",
+              top: 0,
+              left: "-25%",
+              width: "150%",
+              height: "320px",
+              borderRadius: "50%",
+              borderTop: "3px solid #e5294d",
+              background:
+                "linear-gradient(to bottom, rgba(25, 25, 90, 0.75) 0%, rgba(8, 8, 30, 0.9) 35%, #000000 70%)",
+              boxShadow: "0 -4px 18px rgba(229, 9, 20, 0.45)",
+            }}
+          />
+        </div>
+
+        <div className="relative z-10 pt-16">
+          {/* Row head — Netflix style */}
+          <div className="row-head reveal px-4 mb-4">
             <h2
               className="text-white text-2xl md:text-3xl font-bold"
               style={{ letterSpacing: "0.01em" }}
@@ -728,4 +709,4 @@ export default function LandingPage({
       </footer>
     </div>
   );
-}
+            }

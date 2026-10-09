@@ -4,24 +4,34 @@ import { useState, useEffect, useRef, useCallback } from "react"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { movies } from "@/lib/movie-data"
 
-const trendingIds = [3360, 3361, 3362, 3363, 3364, 3365, 3366, 3367, 3368, 3369, 3370, 3371, 3373, 3375, 3376, 3377, 3379, 3380, 3382, 3383, 3386, 3387, 3355, 3354, 3352, 3351, 3350, 3349, 3348, 3347, 3346, 3345, 3344, 3342, 3341, 3340, 3339, 3338, 3337, 3335, 3389, 3388]
+// ✅ ১. উপরের "Top Movie Series" এর জন্য আলাদা আইডি (এখানে আপনার আইডি বসান)
+const topSeriesIds = [3323, 3325, 3329, 3336, 3337, 3338] 
+
+// ✅ ২. নিচের "Trending Movies" কারোসেলের জন্য আলাদা আইডি (এখানে আপনার আইডি বসান)
+const trendingIds = [3340, 3341, 3342, 3344, 3345, 3346, 3347, 3348] 
 
 interface TrendingCarouselProps {
   onMovieClick: (movie: (typeof movies)[0]) => void
 }
 
 export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps) {
+  
+  // ✅ টপ স্লাইডারের স্টেট
+  const [topIndex, setTopIndex] = useState(0)
+  
+  // ✅ ট্রেন্ডিং কারোসেলের স্টেট
   const [currentIndex, setCurrentIndex] = useState(0)
   const [isDragging, setIsDragging] = useState(false)
   const [dragDistance, setDragDistance] = useState(0)
-  const [bgImage, setBgImage] = useState("")
-  const [bgOpacity, setBgOpacity] = useState(1)
   const [isMobile, setIsMobile] = useState(false)
   
   const startXRef = useRef(0)
   const maxDragRef = useRef(0)
   const autoSlideRef = useRef<NodeJS.Timeout | null>(null)
-  
+  const topAutoSlideRef = useRef<NodeJS.Timeout | null>(null)
+
+  // ✅ ডাটা ফিল্টার
+  const topSeriesMovies = movies.filter((m) => topSeriesIds.includes(m.id))
   const trendingMovies = movies.filter((m) => trendingIds.includes(m.id))
   const totalMovieCount = movies.length
 
@@ -33,20 +43,18 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
     return () => window.removeEventListener("resize", checkMobile)
   }, [])
 
-  // ✅ বর্তমান কার্ডের পোস্টার ব্যাকগ্রাউন্ডে সেট করা
+  // ✅ উপরের স্লাইডারের অটো স্লাইড (৪ সেকেন্ড)
   useEffect(() => {
-    const currentMovie = trendingMovies[currentIndex]
-    if (currentMovie && currentMovie.poster) {
-      setBgOpacity(0.8)
-      const timer = setTimeout(() => {
-        setBgImage(currentMovie.poster || "")
-        setBgOpacity(1)
-      }, 200)
-      return () => clearTimeout(timer)
+    if (topSeriesMovies.length === 0) return
+    topAutoSlideRef.current = setInterval(() => {
+      setTopIndex((prev) => (prev + 1) % topSeriesMovies.length)
+    }, 4000)
+    return () => {
+      if (topAutoSlideRef.current) clearInterval(topAutoSlideRef.current)
     }
-  }, [currentIndex, trendingMovies])
+  }, [topSeriesMovies.length])
 
-  // ✅ ৩ সেকেন্ড পর পর অটো স্লাইড
+  // ✅ নিচের কারোসেলের অটো স্লাইড (৩ সেকেন্ড)
   const startAutoSlide = useCallback(() => {
     if (autoSlideRef.current) clearInterval(autoSlideRef.current)
     autoSlideRef.current = setInterval(() => {
@@ -60,12 +68,13 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
       autoSlideRef.current = null
     }
   }, [])
+
   useEffect(() => {
     startAutoSlide()
     return () => stopAutoSlide()
   }, [startAutoSlide, stopAutoSlide])
 
-  // ✅ Tab Visibility
+  // ✅ Tab Visibility (নিচের কারোসেলের জন্য)
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (document.hidden) stopAutoSlide()
@@ -75,7 +84,7 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
     return () => document.removeEventListener("visibilitychange", handleVisibilityChange)
   }, [startAutoSlide, stopAutoSlide])
 
-  // ✅ কীবোর্ড কন্ট্রোল
+  // ✅ কীবোর্ড কন্ট্রোল (নিচের কারোসেলের জন্য)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "ArrowRight") setCurrentIndex((prev) => (prev + 1) % trendingMovies.length)
@@ -85,10 +94,11 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
     return () => window.removeEventListener("keydown", handleKeyDown)
   }, [trendingMovies.length])
 
+  // ✅ নিচের কারোসেলের নেভিগেশন
   const handlePrev = () => setCurrentIndex((prev) => (prev - 1 + trendingMovies.length) % trendingMovies.length)
   const handleNext = () => setCurrentIndex((prev) => (prev + 1) % trendingMovies.length)
 
-  // ✅ Touch Swipe
+  // ✅ Touch Swipe (নিচের কারোসেলের জন্য)
   const handleTouchStart = (e: React.TouchEvent) => {
     setIsDragging(true)
     startXRef.current = e.touches[0].clientX
@@ -108,7 +118,7 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
     startAutoSlide()
   }
 
-  // ✅ Mouse Swipe
+  // ✅ Mouse Swipe (নিচের কারোসেলের জন্য)
   const handleMouseDown = (e: React.MouseEvent) => {
     setIsDragging(true)
     startXRef.current = e.clientX
@@ -134,7 +144,7 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
     else handlePrev()
   }
 
-  // ✅ 3D কার্ড পজিশন
+  // ✅ 3D কার্ড পজিশন (নিচের কারোসেলের জন্য)
   const getCardStyle = (index: number) => {
     const total = trendingMovies.length
     let offset = (index - currentIndex + total) % total
@@ -189,42 +199,63 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
     }
   }
 
-  // ✅ মোবাইল/ডেস্কটপ ইমেজ
-  const topBgImage = isMobile
-    ? "https://i.postimg.cc/tRMc5ZNM/198b2f01e73b905772279616eccc7c65.jpg"
-    : "https://i.postimg.cc/7hLqB21s/Netflix-all-movies-and-series-featured-image.jpg"
-
   return (
-    <section className="relative py-2 overflow-hidden">
+    <section className="relative pb-4 overflow-hidden bg-black">
       
-      {/* ✅✅✅ ১. উপরের ব্যাকগ্রাউন্ড: লোগোর পরেই সম্পূর্ণ কালো ✅✅✅ */}
-      <div
-        className="absolute top-0 left-0 w-full h-[200px] z-0 pointer-events-none"
-        style={{
-          backgroundImage: `url('${topBgImage}')`,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          backgroundRepeat: "no-repeat",
-        }}
-      >
-        {/* ✅ উপর থেকে নিচে নামার সাথে সাথে সম্পূর্ণ কালো হয়ে যাওয়ার গ্রেডিয়েন্ট */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/80 to-black" />
+      {/* ========================================================= */}
+      {/* ✅✅✅ ১. উপরের সেকশন: Top Movie Series (লোগো ছাড়া) ✅✅✅ */}
+      {/* ========================================================= */}
+      <div className="relative w-full h-[300px] md:h-[500px] overflow-hidden">
+        {topSeriesMovies.length > 0 && (
+          <>
+            {/* বড় পোস্টার (স্লাইড অ্যানিমেশন) */}
+            <div className="absolute inset-0 transition-opacity duration-700 ease-in-out">
+              <img
+                src={topSeriesMovies[topIndex]?.poster || "/placeholder.svg"}
+                alt={topSeriesMovies[topIndex]?.title || "Top Series"}
+                className="w-full h-full object-cover object-top"
+              />
+              {/* টেক্সট পড়ার জন্য গ্রেডিয়েন্ট ওভারলে */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-transparent to-transparent" />
+            </div>
+
+            {/* টপ স্লাইডারের টেক্সট এবং নাম */}
+            <div className="absolute bottom-0 left-0 w-full p-4 md:p-8 z-10">
+              <h2 className="text-white text-2xl md:text-4xl font-bold mb-2 drop-shadow-lg">
+                {topSeriesMovies[topIndex]?.title}
+              </h2>
+              <div className="flex items-center gap-3 text-sm md:text-base text-gray-300">
+                {topSeriesMovies[topIndex]?.year && <span>{topSeriesMovies[topIndex]?.year}</span>}
+                {topSeriesMovies[topIndex]?.rating && topSeriesMovies[topIndex]?.rating !== "not available" && (
+                  <span className="text-yellow-400">⭐ {topSeriesMovies[topIndex]?.rating}</span>
+                )}
+              </div>
+            </div>
+
+            {/* টপ স্লাইডারের ডট ইন্ডিকেটর */}
+            <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex gap-2 z-20">
+              {topSeriesMovies.map((_, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setTopIndex(idx)}
+                  className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                    idx === topIndex ? "bg-green-500 w-6" : "bg-gray-500 hover:bg-gray-300"
+                  }`}
+                />
+              ))}
+            </div>
+          </>
+        )}
       </div>
 
-      {/* ✅ কনটেন্ট এরিয়া */}
-      <div className="relative z-10 px-4">
+      {/* ========================================================= */}
+      {/* ✅✅✅ ২. নিচের সেকশন: Trending Movies (আগের মতো 3D) ✅✅✅ */}
+      {/* ========================================================= */}
+      <div className="relative z-10 px-4 mt-2">
         
-        {/* Logo */}
-        <div className="relative flex justify-center -mt-4 mb-0">
-          <img
-            src="https://i.postimg.cc/Bn4cPRwz/20288-removebg-preview.png"
-            alt="MoviesVerseBD Logo"
-            className="relative z-20 w-72 h-72 object-contain"
-          />
-        </div>
-
         {/* Trending Now Title */}
-        <div className="relative z-20 -mt-4 mb-1 flex flex-col items-center justify-center">
+        <div className="relative z-20 mb-1 flex flex-col items-center justify-center">
           <h2
             className="text-xl font-bold text-center tracking-wider animate-pulse"
             style={{
@@ -259,26 +290,9 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
         </div>
 
         {/* Counter */}
-        <p className="text-center text-green-400 text-sm mb-3 font-medium relative z-20">{totalMovieCount} Movie & Series Uploaded</p>
-
-        {/* ✅✅✅ ২. নিচের ব্যাকগ্রাউন্ড: মুভি পোস্টার ✅✅✅ */}
-        <div
-          className="absolute left-0 w-full z-0 pointer-events-none"
-          style={{
-            top: "55%",
-            height: "45%",
-            backgroundImage: bgImage ? `url('${bgImage}')` : 'none',
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-            backgroundRepeat: "no-repeat",
-            opacity: bgOpacity,
-            transition: "opacity 1s ease-in-out",
-            filter: "brightness(0.6) contrast(1.1)",
-          }}
-        >
-          <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-transparent to-black/80" />
-          <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-transparent to-black/60" />
-        </div>
+        <p className="text-center text-green-400 text-sm mb-3 font-medium relative z-20">
+          {totalMovieCount} Movie & Series Uploaded
+        </p>
 
         {/* ✅ 3D Card Carousel */}
         <div

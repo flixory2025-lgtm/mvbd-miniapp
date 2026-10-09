@@ -368,6 +368,32 @@ export default function LandingPage({
 
         {/* Content */}
         <div className="relative z-10 px-4 pt-2 pb-16">
+          {/* ✅ Typing animation — EKHON SOBAY UPORE */}
+          <div
+            className="flex justify-center items-center gap-2"
+            style={{
+              paddingTop: "40px",
+              paddingBottom: "40px",
+            }}
+          >
+            <svg
+              className="w-5 h-5 text-green-400 flex-shrink-0"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="m9 12 2 2 4-4" />
+              <circle cx="12" cy="12" r="10" />
+            </svg>
+            <span className="text-green-400 text-sm md:text-base font-medium">
+              {displayedText}
+            </span>
+            <span className="inline-block w-[2px] h-[18px] bg-green-400 animate-pulse" />
+          </div>
+
           {/* MoviesVerseBD Logo */}
           <div className="relative flex justify-center -mt-2 mb-8">
             <img
@@ -427,32 +453,6 @@ export default function LandingPage({
                 </svg>
               </span>
             </a>
-          </div>
-
-          {/* ✅ Typing animation — EKHON HERO SECTION ER VITORE, background transparent */}
-          <div
-            className="flex justify-center items-center gap-2"
-            style={{
-              paddingTop: "120px",
-              paddingBottom: "80px",
-            }}
-          >
-            <svg
-              className="w-5 h-5 text-green-400 flex-shrink-0"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="m9 12 2 2 4-4" />
-              <circle cx="12" cy="12" r="10" />
-            </svg>
-            <span className="text-green-400 text-sm md:text-base font-medium">
-              {displayedText}
-            </span>
-            <span className="inline-block w-[2px] h-[18px] bg-green-400 animate-pulse" />
           </div>
         </div>
       </section>

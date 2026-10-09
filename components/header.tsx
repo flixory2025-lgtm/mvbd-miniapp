@@ -89,7 +89,10 @@ export default function Header({
 
   const { user } = useAuth()
 
-  // Search data
+  // History storage key based on pageType (separate history for anime/home/series)
+  const historyKey = pageType === "anime" ? "anime" : "home"
+
+  // Search data - anime page e shudhu anime, home page e movies + series
   const dataSource = useMemo(() => {
     if (searchData) return searchData
     if (pageType === "anime") return animes
@@ -128,21 +131,21 @@ export default function Header({
     })
   }, [searchQuery, dataSource])
 
-  // Load history on mount
+  // Load history on mount (pageType onujayi separate history)
   useEffect(() => {
-    cleanupExpiredHistory()
-    setHistory(getLocalHistory())
-  }, [])
+    cleanupExpiredHistory(historyKey)
+    setHistory(getLocalHistory(historyKey))
+  }, [historyKey])
 
-  // Auto cleanup — every 1 hour (in case user keeps tab open)
+  // Auto cleanup — every 1 hour
   useEffect(() => {
     const interval = setInterval(() => {
-      cleanupExpiredHistory()
-      setHistory(getLocalHistory())
-    }, 60 * 60 * 1000) // 1 hour
+      cleanupExpiredHistory(historyKey)
+      setHistory(getLocalHistory(historyKey))
+    }, 60 * 60 * 1000)
 
     return () => clearInterval(interval)
-  }, [])
+  }, [historyKey])
 
   // When user logs in, sync Firestore history
   useEffect(() => {
@@ -152,10 +155,13 @@ export default function Header({
 
     async function syncFirestore() {
       try {
-        const remoteHistory = await loadHistoryFromFirestore(user!.uid)
+        const remoteHistory = await loadHistoryFromFirestore(
+          user!.uid,
+          historyKey
+        )
         if (cancelled) return
 
-        const local = getLocalHistory()
+        const local = getLocalHistory(historyKey)
         const combined = [...remoteHistory, ...local]
 
         const seen = new Set<string>()
@@ -176,7 +182,8 @@ export default function Header({
         await saveHistoryToFirestore(
           user!.uid,
           merged,
-          (user as any)?.displayName || undefined
+          (user as any)?.displayName || undefined,
+          historyKey
         )
       } catch (err) {
         console.error("Firestore sync failed:", err)
@@ -188,7 +195,7 @@ export default function Header({
     return () => {
       cancelled = true
     }
-  }, [user?.uid])
+  }, [user?.uid, historyKey])
 
   // Click outside → close dropdown
   useEffect(() => {
@@ -207,12 +214,12 @@ export default function Header({
     }
   }, [])
 
-  // Save history
+  // Save history (pageType onujayi separate)
   const saveSearchToHistory = async (query: string) => {
     const trimmed = query.trim()
     if (!trimmed) return
 
-    const updated = addToLocalHistory(trimmed)
+    const updated = addToLocalHistory(trimmed, historyKey)
     setHistory(updated)
 
     if (user?.uid) {
@@ -220,7 +227,8 @@ export default function Header({
         await saveHistoryToFirestore(
           user.uid,
           updated,
-          (user as any)?.displayName || undefined
+          (user as any)?.displayName || undefined,
+          historyKey
         )
       } catch (err) {
         console.error("Firestore save failed:", err)
@@ -254,7 +262,7 @@ export default function Header({
     e.stopPropagation()
     e.preventDefault()
 
-    const updated = removeFromLocalHistory(item.query)
+    const updated = removeFromLocalHistory(item.query, historyKey)
     setHistory(updated)
 
     if (user?.uid) {
@@ -262,7 +270,8 @@ export default function Header({
         await saveHistoryToFirestore(
           user.uid,
           updated,
-          (user as any)?.displayName || undefined
+          (user as any)?.displayName || undefined,
+          historyKey
         )
       } catch {}
     }
@@ -339,6 +348,7 @@ export default function Header({
           border: none;
           width: 100%;
           height: 100%;
+          color: white;
         }
         .search-input-liquid::placeholder { color: rgba(255,255,255,.5); }
         .search-suggestions {
@@ -391,17 +401,20 @@ export default function Header({
 
         /* ---- 3D CUBE ANIMATION CSS ---- */
         .cube-wrapper {
-          position: relative;
+          position: absolute;
+          inset: 0;
           width: 100%;
-          height: 20px;
+          height: 100%;
           perspective: 800px;
           overflow: hidden;
           pointer-events: none;
+          display: flex;
+          align-items: center;
         }
         .cube {
           position: absolute;
           width: 100%;
-          height: 100%;
+          height: 20px;
           transform-style: preserve-3d;
           animation: rotateCubeUp 25s infinite cubic-bezier(0.4, 0.0, 0.2, 1);
         }
@@ -429,17 +442,12 @@ export default function Header({
           75%, 95% { transform: translateZ(-10px) rotateX(270deg); }
           100% { transform: translateZ(-10px) rotateX(360deg); }
         }
-        /* Hide cube when input is focused */
+        /* Hide cube when input is focused or has query */
         .search-focused .cube-wrapper {
           display: none;
         }
-
-        /* Input field overlay - always on top and clickable */
-        .search-input-overlay {
-          position: absolute;
-          inset: 0;
-          z-index: 10;
-          cursor: text;
+        .search-has-query .cube-wrapper {
+          display: none;
         }
       `}</style>
 
@@ -457,14 +465,14 @@ export default function Header({
         <div ref={wrapperRef} className="flex-1 relative">
           <div
             onClick={handleContainerClick}
-            className={`liquid-glass-search rounded-2xl px-4 py-3 flex items-center gap-3 relative ${isFocused ? 'search-focused' : ''}`}
+            className={`liquid-glass-search rounded-2xl px-4 py-3 flex items-center gap-3 relative ${isFocused ? "search-focused" : ""} ${hasQuery ? "search-has-query" : ""}`}
           >
             <Search className="w-5 h-5 text-slate-300 flex-shrink-0 z-20 relative pointer-events-none" />
 
-            {/* Input field - always on top, clickable */}
-            <div className="flex-1 relative h-5">
+            {/* Input area wrapper - relative container */}
+            <div className="flex-1 relative" style={{ height: "20px" }}>
               {/* 3D Cube Animation Placeholder - behind input */}
-              <div className="cube-wrapper absolute inset-0">
+              <div className="cube-wrapper">
                 <div className="cube">
                   {cubeTexts.map((text, index) => (
                     <div key={index} className={`cube-face face-${index + 1}`}>
@@ -490,6 +498,7 @@ export default function Header({
                   if (e.key === "Escape") setIsFocused(false)
                 }}
                 className="search-input-liquid absolute inset-0 w-full text-white text-sm outline-none bg-transparent z-20"
+                style={{ padding: 0, margin: 0, lineHeight: "20px" }}
               />
             </div>
 

@@ -337,14 +337,14 @@ export default function LandingPage({
         </div>
       </nav>
 
-      {/* ✅✅✅ HERO SECTION — Netflix style, ekdum dark ✅✅✅ */}
+      {/* ✅✅✅ HERO SECTION — Background image extended to cover typing animation ✅✅✅ */}
       <section
         className="relative overflow-hidden"
         style={{ background: "#000000" }}
       >
-        {/* Background image — ekdum dark overlay */}
+        {/* Background image — boro kora hoyeche jate typing animation er porjonto stretch kore */}
         <div
-          className="absolute top-0 left-0 w-full h-[420px] md:h-[600px] z-0 pointer-events-none"
+          className="absolute top-0 left-0 w-full h-[700px] md:h-[900px] z-0 pointer-events-none"
           style={{
             backgroundImage:
               "url('https://i.postimg.cc/7hLqB21s/Netflix-all-movies-and-series-featured-image.jpg')",
@@ -373,8 +373,8 @@ export default function LandingPage({
             />
           </div>
 
-          {/* ✅ Visit Main Site Button — Big CTA box er button er EXACT SAME */}
-          <div className="flex justify-center">
+          {/* ✅ Visit Main Site Button */}
+          <div className="flex justify-center mb-8">
             <a
               href="#"
               onClick={handleHeroEnterSite}
@@ -424,37 +424,36 @@ export default function LandingPage({
               </span>
             </a>
           </div>
+
+          {/* ✅ Typing animation — EKHON HERO SECTION ER VITORE, background transparent */}
+          <div
+            className="flex justify-center items-center gap-2"
+            style={{
+              paddingTop: "120px",
+              paddingBottom: "80px",
+            }}
+          >
+            <svg
+              className="w-5 h-5 text-green-400 flex-shrink-0"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="m9 12 2 2 4-4" />
+              <circle cx="12" cy="12" r="10" />
+            </svg>
+            <span className="text-green-400 text-sm md:text-base font-medium">
+              {displayedText}
+            </span>
+            <span className="inline-block w-[2px] h-[18px] bg-green-400 animate-pulse" />
+          </div>
         </div>
       </section>
 
-      {/* ✅✅✅ Typing animation — onek niche, Trending Now er thik upore ✅✅✅ */}
-      <div
-        className="flex justify-center items-center gap-2"
-        style={{
-          background: "#000000",
-          paddingTop: "80px",
-          paddingBottom: "80px",
-        }}
-      >
-        <svg
-          className="w-5 h-5 text-green-400 flex-shrink-0"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <path d="m9 12 2 2 4-4" />
-          <circle cx="12" cy="12" r="10" />
-        </svg>
-        <span className="text-green-400 text-sm md:text-base font-medium">
-          {displayedText}
-        </span>
-        <span className="inline-block w-[2px] h-[18px] bg-green-400 animate-pulse" />
-      </div>
-
-      {/* ✅✅✅ Trending Now — onek niche ✅✅✅ */}
+      {/* ✅ Trending Now — obhabei niche */}
       <section
         className="relative"
         id="trending"

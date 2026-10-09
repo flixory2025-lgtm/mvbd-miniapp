@@ -315,10 +315,7 @@ export default function Header({
   const hasQuery = searchQuery.trim().length > 0
   const showHistoryDropdown = isFocused && !hasQuery && history.length > 0
   const showSuggestionsDropdown = isFocused && hasQuery
-
-  const handleContainerClick = () => {
-    inputRef.current?.focus()
-  }
+  const showCube = !isFocused && !hasQuery
 
   return (
     <header className="sticky top-0 z-40 bg-black/40 backdrop-blur-xl border-b border-white/10 shadow-lg">
@@ -418,17 +415,20 @@ export default function Header({
         }
 
         /* ---- 3D CUBE ANIMATION CSS ---- */
+        .cube-container {
+          position: relative;
+          flex: 1;
+          height: 20px;
+          min-width: 0;
+        }
         .cube-wrapper {
           position: absolute;
-          inset: 0;
-          width: 100%;
-          height: 100%;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
           perspective: 800px;
-          overflow: hidden;
           pointer-events: none;
-          display: flex;
-          align-items: center;
-          z-index: 1;
         }
         .cube {
           position: absolute;
@@ -448,7 +448,6 @@ export default function Header({
           white-space: nowrap;
           backface-visibility: hidden;
           transform-origin: center center;
-          pointer-events: none;
         }
         .face-1 { transform: rotateX(0deg) translateZ(10px); }
         .face-2 { transform: rotateX(90deg) translateZ(10px); }
@@ -461,11 +460,6 @@ export default function Header({
           50%, 70% { transform: translateZ(-10px) rotateX(180deg); }
           75%, 95% { transform: translateZ(-10px) rotateX(270deg); }
           100% { transform: translateZ(-10px) rotateX(360deg); }
-        }
-        /* Hide cube when input is focused or has query */
-        .search-focused .cube-wrapper,
-        .search-has-query .cube-wrapper {
-          display: none !important;
         }
       `}</style>
 
@@ -482,27 +476,32 @@ export default function Header({
         {/* Search */}
         <div ref={wrapperRef} className="flex-1 relative">
           <div
-            onClick={handleContainerClick}
+            onClick={() => inputRef.current?.focus()}
             className={`liquid-glass-search rounded-2xl px-4 py-3 flex items-center gap-3 relative ${
               isFocused ? "search-focused" : ""
             } ${hasQuery ? "search-has-query" : ""}`}
           >
-            <Search className="w-5 h-5 text-slate-300 flex-shrink-0 z-20 relative pointer-events-none" />
+            <Search className="w-5 h-5 text-slate-300 flex-shrink-0 pointer-events-none" />
 
-            {/* Input area wrapper */}
-            <div className="flex-1 relative" style={{ height: "20px" }}>
-              {/* 3D Cube Animation Placeholder - behind input */}
-              <div className="cube-wrapper">
-                <div className="cube">
-                  {cubeTexts.map((text, index) => (
-                    <div key={index} className={`cube-face face-${index + 1}`}>
-                      {text}
-                    </div>
-                  ))}
+            {/* Input + Cube container */}
+            <div className="cube-container">
+              {/* Cube (only visible when not focused and no query) */}
+              {showCube && (
+                <div className="cube-wrapper">
+                  <div className="cube">
+                    {cubeTexts.map((text, index) => (
+                      <div
+                        key={index}
+                        className={`cube-face face-${index + 1}`}
+                      >
+                        {text}
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
 
-              {/* Real Input Field - on top, fully clickable */}
+              {/* Input field — always visible, fully clickable */}
               <input
                 ref={inputRef}
                 type="text"
@@ -521,7 +520,27 @@ export default function Header({
                 autoCorrect="off"
                 autoCapitalize="off"
                 spellCheck={false}
-                className="search-input-liquid absolute inset-0"
+                className="search-input-liquid"
+                style={{
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  width: "100%",
+                  height: "100%",
+                  background: "transparent",
+                  border: "none",
+                  outline: "none",
+                  color: "#ffffff",
+                  caretColor: "#64c8ff",
+                  fontSize: "14px",
+                  lineHeight: "20px",
+                  padding: 0,
+                  margin: 0,
+                  zIndex: 30,
+                  pointerEvents: "auto",
+                }}
               />
             </div>
 
@@ -532,7 +551,7 @@ export default function Header({
                   e.stopPropagation()
                   handleClearSearch()
                 }}
-                className="text-slate-400 hover:text-white transition z-20 relative"
+                className="text-slate-400 hover:text-white transition relative z-40"
                 aria-label="Clear search"
               >
                 <X className="w-4 h-4" />

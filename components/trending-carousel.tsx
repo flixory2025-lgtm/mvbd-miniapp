@@ -15,7 +15,7 @@ interface TrendingCarouselProps {
 }
 
 export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps) {
-  // ✅ স্টেট (sessionStorage থেকে রিস্টোর করা হবে)
+  // ✅ স্টেট
   const [topIndex, setTopIndex] = useState(0)
   const [topDragDistance, setTopDragDistance] = useState(0)
   const [topIsDragging, setTopIsDragging] = useState(false)
@@ -293,16 +293,15 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
   const currentTopMovie = topSeriesMovies[topIndex] || topSeriesMovies[0]
 
   return (
-    // ✅ -mt-[72px] দিয়ে হেডারের জায়গা ঢেকে দেওয়া হচ্ছে
-    // Header অবশ্যই fixed top-0 হতে হবে
-    <section className="relative pb-4 overflow-hidden bg-black -mt-[72px]">
+    // ✅ -mt সরিয়ে ফেলা হয়েছে, পোস্টার স্বাভাবিক জায়গা থেকে শুরু হবে
+    <section className="relative pb-4 overflow-hidden bg-black">
 
       {/* ========================================================= */}
       {/* ✅✅✅ ১. উপরের সেকশন: Top Movie Series ✅✅✅ */}
       {/* ========================================================= */}
       <div
         ref={topContainerRef}
-        className="relative w-full h-[350px] md:h-[550px] overflow-hidden cursor-grab active:cursor-grabbing select-none bg-gray-900"
+        className="relative w-full h-[420px] md:h-[620px] overflow-hidden cursor-grab active:cursor-grabbing select-none bg-gray-900 pt-[72px]"
         style={{ touchAction: "pan-y" }}
         onTouchStart={handleTopTouchStart}
         onTouchMove={handleTopTouchMove}
@@ -338,8 +337,20 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
               ))}
             </div>
 
-            {/* ✅ ১.২ উপরের ডার্ক গ্রেডিয়েন্ট (হেডারের টেক্সট স্পষ্ট দেখানোর জন্য) */}
-            <div className="absolute top-0 left-0 w-full h-[45%] bg-gradient-to-b from-black via-black/70 to-transparent pointer-events-none z-[5]" />
+            {/* ✅ ১.২ উপরের Blur + Dark গ্রেডিয়েন্ট */}
+            <div
+              className="absolute top-0 left-0 w-full h-[55%] pointer-events-none z-[5]"
+              style={{
+                background:
+                  "linear-gradient(to bottom, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.75) 30%, rgba(0,0,0,0.35) 60%, rgba(0,0,0,0) 100%)",
+                backdropFilter: "blur(8px)",
+                WebkitBackdropFilter: "blur(8px)",
+                maskImage:
+                  "linear-gradient(to bottom, black 0%, black 40%, transparent 100%)",
+                WebkitMaskImage:
+                  "linear-gradient(to bottom, black 0%, black 40%, transparent 100%)",
+              }}
+            />
 
             {/* ✅ ১.৩ নিচের গ্রেডিয়েন্ট (টেক্সট সেকশনের জন্য) */}
             <div className="absolute bottom-0 left-0 w-full h-[45%] bg-gradient-to-t from-black via-black/60 to-transparent pointer-events-none z-[5]" />

@@ -40,7 +40,7 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
   const trendingMovies = movies.filter((m) => trendingIds.includes(m.id))
   const totalMovieCount = movies.length
 
-  // ✅ sessionStorage থেকে ইনিশিয়াল ভ্যালু রিস্টোর (কম্পোনেন্ট Mount হওয়ার সময় একবার)
+  // ✅ sessionStorage থেকে ইনিশিয়াল ভ্যালু রিস্টোর
   useEffect(() => {
     try {
       const savedTopIndex = sessionStorage.getItem("topSeriesIndex")
@@ -59,11 +59,9 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
           setCurrentIndex(parsed)
         }
       }
-    } catch (e) {
-      // sessionStorage অ্যাক্সেস না থাকলে কিছুই করবে না
-    }
+    } catch (e) {}
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []) // ✅ শুধু প্রথমবার Mount হওয়ার সময় চলবে
+  }, [])
 
   // ✅ topIndex পরিবর্তন হলে sessionStorage-এ সেভ
   useEffect(() => {
@@ -127,7 +125,7 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
     return () => stopAutoSlide()
   }, [startAutoSlide, stopAutoSlide])
 
-  // ✅ কীবোর্ড কন্ট্রোল (নিচের কারোসেলের জন্য)
+  // ✅ কীবোর্ড কন্ট্রোল
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "ArrowRight") setCurrentIndex((prev) => (prev + 1) % trendingMovies.length)
@@ -148,7 +146,7 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
   }
 
   // =========================================================
-  // ✅ উপরের স্লাইডারের Swipe Handlers (Infinite Loop + Free Swipe)
+  // ✅ উপরের স্লাইডারের Swipe Handlers
   // =========================================================
   const handleTopDragStart = (clientX: number) => {
     setTopIsDragging(true)
@@ -187,7 +185,7 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
   const handleTopMouseUp = handleTopDragEnd
 
   // =========================================================
-  // ✅ নিচের কারোসেলের Swipe Handlers (Free Swipe)
+  // ✅ নিচের কারোসেলের Swipe Handlers
   // =========================================================
   const handleDragStart = (clientX: number) => {
     setIsDragging(true)
@@ -233,12 +231,10 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
     else handlePrev()
   }
 
-  // =========================================================
-  // ✅ উপরের স্লাইডারের পজিশন (ট্রেন্ডিং এর মতো পাশাপাশি পোস্টার)
-  // =========================================================
+  // ✅ উপরের স্লাইডারের পজিশন
   const topTranslateX = -(topIndex * containerWidth) + topDragDistance
 
-  // ✅ নিচের কারোসেলের 3D কার্ড পজিশন (Free Swipe)
+  // ✅ নিচের কারোসেলের 3D কার্ড পজিশন
   const getCardStyle = (index: number) => {
     const total = trendingMovies.length
     let offset = (index - currentIndex + total) % total
@@ -294,14 +290,15 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
     }
   }
 
-  // ✅ উপরের স্লাইডারের কারেন্ট মুভি (টেক্সট সেকশনের জন্য)
   const currentTopMovie = topSeriesMovies[topIndex] || topSeriesMovies[0]
 
   return (
+    // ✅ -mt-[72px] দিয়ে হেডারের জায়গা ঢেকে দেওয়া হচ্ছে
+    // Header অবশ্যই fixed top-0 হতে হবে
     <section className="relative pb-4 overflow-hidden bg-black -mt-[72px]">
 
       {/* ========================================================= */}
-      {/* ✅✅✅ ১. উপরের সেকশন: Top Movie Series (স্লাইডিং পোস্টার) ✅✅✅ */}
+      {/* ✅✅✅ ১. উপরের সেকশন: Top Movie Series ✅✅✅ */}
       {/* ========================================================= */}
       <div
         ref={topContainerRef}
@@ -341,11 +338,13 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
               ))}
             </div>
 
-            {/* ✅ ১.২ গ্রেডিয়েন্ট ওভারলে */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent pointer-events-none" />
-            <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-transparent to-transparent pointer-events-none" />
+            {/* ✅ ১.২ উপরের ডার্ক গ্রেডিয়েন্ট (হেডারের টেক্সট স্পষ্ট দেখানোর জন্য) */}
+            <div className="absolute top-0 left-0 w-full h-[45%] bg-gradient-to-b from-black via-black/70 to-transparent pointer-events-none z-[5]" />
 
-            {/* ✅ ১.৩ ক্লিক করার জন্য ট্রান্সপারেন্ট ওভারলে */}
+            {/* ✅ ১.৩ নিচের গ্রেডিয়েন্ট (টেক্সট সেকশনের জন্য) */}
+            <div className="absolute bottom-0 left-0 w-full h-[45%] bg-gradient-to-t from-black via-black/60 to-transparent pointer-events-none z-[5]" />
+
+            {/* ✅ ১.৪ ক্লিক করার জন্য ট্রান্সপারেন্ট ওভারলে */}
             <div
               className="absolute inset-0 z-10"
               onClick={() => {
@@ -356,7 +355,7 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
               style={{ cursor: "pointer" }}
             />
 
-            {/* ✅ ১.৪ নিচের টেক্সট সেকশন (স্ক্রিনশটের মতো) */}
+            {/* ✅ ১.৫ নিচের টেক্সট সেকশন (স্ক্রিনশটের মতো) */}
             <div className="absolute bottom-0 left-0 w-full p-4 md:p-6 z-20 pointer-events-none flex items-end gap-4">
               
               {/* ছোট থাম্বনেইল পোস্টার */}
@@ -519,4 +518,4 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
       </div>
     </section>
   )
-        }
+}

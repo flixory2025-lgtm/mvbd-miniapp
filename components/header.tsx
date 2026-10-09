@@ -85,6 +85,7 @@ export default function Header({
 
   const bubbleIdRef = useRef(0)
   const wrapperRef = useRef<HTMLDivElement>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
 
   const { user } = useAuth()
 
@@ -234,6 +235,7 @@ export default function Header({
   const handleClearSearch = () => {
     onSearch("")
     setIsFocused(false)
+    inputRef.current?.focus()
   }
 
   const handleSubmitSearch = (query: string) => {
@@ -294,13 +296,17 @@ export default function Header({
         ? TYPING_SUGGESTIONS_SERIES
         : TYPING_SUGGESTIONS_HOME
 
-  // Extract first 4 items for the cube faces (since a cube has 4 sides in this 2D representation)
+  // Extract first 4 items for the cube faces
   const cubeTexts = TYPING_SUGGESTIONS.slice(0, 4)
 
   const hasQuery = searchQuery.trim().length > 0
   const showHistoryDropdown =
     isFocused && !hasQuery && history.length > 0
   const showSuggestionsDropdown = isFocused && hasQuery
+
+  const handleContainerClick = () => {
+    inputRef.current?.focus()
+  }
 
   return (
     <header className="sticky top-0 z-40 bg-black/40 backdrop-blur-xl border-b border-white/10 shadow-lg">
@@ -320,6 +326,7 @@ export default function Header({
           backdrop-filter: blur(20px);
           border: 1px solid rgba(255,255,255,.2);
           transition: all .3s ease;
+          cursor: text;
         }
         .liquid-glass-search:focus-within {
           background: rgba(255,255,255,.08);
@@ -327,7 +334,12 @@ export default function Header({
           border: 1px solid rgba(100,200,255,.4);
           animation: liquidGlassZoom .6s ease-out forwards, liquidGlassGlow .6s ease-out;
         }
-        .search-input-liquid { background: transparent; border: none; }
+        .search-input-liquid {
+          background: transparent;
+          border: none;
+          width: 100%;
+          height: 100%;
+        }
         .search-input-liquid::placeholder { color: rgba(255,255,255,.5); }
         .search-suggestions {
           position: absolute;
@@ -372,7 +384,10 @@ export default function Header({
           0% { opacity: 1; transform: scale(1) translateY(0); filter: blur(0); }
           100% { opacity: 0; transform: scale(.2) translateY(-50px); filter: blur(2px); }
         }
-        .liquid-bubble { animation: liquidBubbleRise .8s ease-out forwards; }
+        .liquid-bubble {
+          animation: liquidBubbleRise .8s ease-out forwards;
+          pointer-events: none;
+        }
 
         /* ---- 3D CUBE ANIMATION CSS ---- */
         .cube-wrapper {
@@ -381,6 +396,7 @@ export default function Header({
           height: 20px;
           perspective: 800px;
           overflow: hidden;
+          pointer-events: none;
         }
         .cube {
           position: absolute;
@@ -417,6 +433,14 @@ export default function Header({
         .search-focused .cube-wrapper {
           display: none;
         }
+
+        /* Input field overlay - always on top and clickable */
+        .search-input-overlay {
+          position: absolute;
+          inset: 0;
+          z-index: 10;
+          cursor: text;
+        }
       `}</style>
 
       <div className="px-4 py-4 flex items-center gap-4">
@@ -431,20 +455,28 @@ export default function Header({
 
         {/* Search */}
         <div ref={wrapperRef} className="flex-1 relative">
-          <div className={`liquid-glass-search rounded-2xl px-4 py-3 flex items-center gap-3 ${isFocused ? 'search-focused' : ''}`}>
-            <Search className="w-5 h-5 text-slate-300 flex-shrink-0" />
+          <div
+            onClick={handleContainerClick}
+            className={`liquid-glass-search rounded-2xl px-4 py-3 flex items-center gap-3 relative ${isFocused ? 'search-focused' : ''}`}
+          >
+            <Search className="w-5 h-5 text-slate-300 flex-shrink-0 z-20 relative pointer-events-none" />
 
-            {/* 3D Cube Animation Placeholder */}
-            <div className="cube-wrapper flex-1">
-              <div className="cube">
-                {cubeTexts.map((text, index) => (
-                  <div key={index} className={`cube-face face-${index + 1}`}>
-                    {text}
-                  </div>
-                ))}
+            {/* Input field - always on top, clickable */}
+            <div className="flex-1 relative h-5">
+              {/* 3D Cube Animation Placeholder - behind input */}
+              <div className="cube-wrapper absolute inset-0">
+                <div className="cube">
+                  {cubeTexts.map((text, index) => (
+                    <div key={index} className={`cube-face face-${index + 1}`}>
+                      {text}
+                    </div>
+                  ))}
+                </div>
               </div>
-              {/* Real Input Field on top of cube */}
+
+              {/* Real Input Field - on top, fully clickable */}
               <input
+                ref={inputRef}
                 type="text"
                 placeholder=""
                 value={searchQuery}
@@ -457,15 +489,18 @@ export default function Header({
                   if (e.key === "Enter") handleSubmitSearch(searchQuery)
                   if (e.key === "Escape") setIsFocused(false)
                 }}
-                className="search-input-liquid absolute inset-0 w-full text-white text-sm outline-none bg-transparent"
+                className="search-input-liquid absolute inset-0 w-full text-white text-sm outline-none bg-transparent z-20"
               />
             </div>
 
             {searchQuery && (
               <button
                 type="button"
-                onClick={handleClearSearch}
-                className="text-slate-400 hover:text-white transition z-10"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  handleClearSearch()
+                }}
+                className="text-slate-400 hover:text-white transition z-20 relative"
                 aria-label="Clear search"
               >
                 <X className="w-4 h-4" />
@@ -576,4 +611,4 @@ export default function Header({
       </div>
     </header>
   )
-          }
+}

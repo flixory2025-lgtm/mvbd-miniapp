@@ -50,7 +50,6 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
     }
     updateSize()
     window.addEventListener("resize", updateSize)
-    // ✅ ডম লোড হওয়ার পর একবার সাইজ আপডেট
     setTimeout(updateSize, 100)
     return () => window.removeEventListener("resize", updateSize)
   }, [])
@@ -58,7 +57,6 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
   // ✅ উপরের স্লাইডারের অটো স্লাইড (৪ সেকেন্ড)
   useEffect(() => {
     if (topSeriesMovies.length === 0) return
-    // ✅ ড্র্যাগ করার সময় অটো স্লাইড বন্ধ থাকবে
     if (topIsDragging) return
 
     if (topAutoSlideRef.current) clearInterval(topAutoSlideRef.current)
@@ -130,14 +128,11 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
     setTopIsDragging(false)
     setTopIsTransitioning(true)
 
-    // ✅ ২০% টানা হলেই স্লাইড হবে
     const threshold = containerWidth * 0.15
 
     if (topDragDistance < -threshold) {
-      // বামে টানা -> পরের মুভি (লুপিং)
       setTopIndex((prev) => (prev + 1) % topSeriesMovies.length)
     } else if (topDragDistance > threshold) {
-      // ডানে টানা -> আগের মুভি (লুপিং)
       setTopIndex((prev) => (prev - 1 + topSeriesMovies.length) % topSeriesMovies.length)
     }
 
@@ -199,13 +194,12 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
     else handlePrev()
   }
 
-  // ✅ উপরের স্লাইডারের জন্য 3D কার্ড পজিশন (ট্রেন্ডিং এর মতোই, তবে ফুল স্ক্রিন)
+  // ✅ উপরের স্লাইডারের জন্য কার্ড পজিশন (ফিট সাইজ, আগের মতো)
   const getTopCardStyle = (index: number) => {
     const total = topSeriesMovies.length
     let offset = (index - topIndex + total) % total
     if (offset > total / 2) offset -= total
 
-    // ✅ ড্র্যাগের অনুপাত
     const dragProgress = containerWidth > 0 ? topDragDistance / containerWidth : 0
     const adjustedOffset = offset + dragProgress
 
@@ -213,12 +207,18 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
       return { opacity: 0, transform: 'scale(0.8)', pointerEvents: 'none' as const, zIndex: 0 }
     }
 
-    // ✅ কার্ডগুলোর পজিশন (স্ক্রিনের প্রস্থ অনুযায়ী)
-    const x = adjustedOffset * containerWidth
-    const scale = 1 - Math.abs(adjustedOffset) * 0.15
+    // ✅ কার্ডের প্রস্থ কন্টেইনারের ৮৫% (আগের মতো ফিট)
+    const cardWidthPercent = isMobile ? 0.85 : 0.75
+    const cardWidthPx = containerWidth * cardWidthPercent
+    const gap = 20 // কার্ডের মাঝে ফাঁকা
+    const stepX = cardWidthPx + gap
+
+    const x = adjustedOffset * stepX
+    const scale = 1 - Math.abs(adjustedOffset) * 0.1
     const opacity = 1 - Math.abs(adjustedOffset) * 0.4
 
     return {
+      width: `${cardWidthPercent * 100}%`,
       transform: `translateX(${x}px) scale(${scale})`,
       opacity,
       zIndex: Math.round(100 - Math.abs(adjustedOffset) * 10),
@@ -282,8 +282,6 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
     }
   }
 
-  const currentTopMovie = topSeriesMovies[topIndex]
-
   return (
     <section className="relative pb-4 overflow-hidden bg-black">
 
@@ -309,10 +307,9 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
               return (
                 <div
                   key={movie.id}
-                  className="absolute w-[90%] md:w-[80%] h-[90%] md:h-[90%] rounded-xl overflow-hidden shadow-2xl"
+                  className="absolute h-full rounded-xl overflow-hidden shadow-2xl"
                   style={style}
                   onClick={() => {
-                    // ✅ যদি ড্র্যাগ না হয়ে সরাসরি ক্লিক হয়, তবে ডিটেইলসে যাবে
                     if (Math.abs(topDragDistance) < 5) {
                       onMovieClick(movie)
                     }
@@ -323,7 +320,6 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
                     alt={movie.title}
                     className="w-full h-full object-cover object-top pointer-events-none"
                   />
-                  {/* টেক্সট পড়ার জন্য গ্রেডিয়েন্ট ওভারলে */}
                   <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent" />
                   <div className="absolute bottom-0 left-0 w-full p-4 md:p-8 z-10">
                     <h2 className="text-white text-xl md:text-3xl font-bold mb-1 drop-shadow-lg">
@@ -341,22 +337,7 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
             })}
           </div>
         )}
-
-        {/* ✅ টপ স্লাইডারের ডট ইন্ডিকেটর */}
-        <div className="absolute bottom-3 left-1/2 transform -translate-x-1/2 flex gap-2 z-30">
-          {topSeriesMovies.map((_, idx) => (
-            <button
-              key={idx}
-              onClick={(e) => {
-                e.stopPropagation()
-                setTopIndex(idx)
-              }}
-              className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                idx === topIndex ? "bg-green-500 w-6" : "bg-gray-500 hover:bg-gray-300"
-              }`}
-            />
-          ))}
-        </div>
+        {/* ✅ ডট ইন্ডিকেটর রিমুভ করা হয়েছে */}
       </div>
 
       {/* ========================================================= */}

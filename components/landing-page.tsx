@@ -1,7 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef } from "react";
-import TrendingCarousel from "./trending-carousel";
+import React, { useEffect, useRef, useState } from "react";
 import { movies } from "@/lib/movie-data";
 
 type LandingPageProps = {
@@ -9,12 +8,23 @@ type LandingPageProps = {
   onMovieClick?: (movie: (typeof movies)[0]) => void;
 };
 
-// ✅ Same trendingIds — jate niche Trending Now list o TrendingCarousel er sathe match kore
+// ✅ Same trendingIds — jate niche Trending Now list thik kore
 const trendingIds = [
   3360, 3361, 3362, 3363, 3364, 3365, 3366, 3367, 3368, 3369, 3370, 3371,
   3373, 3375, 3376, 3377, 3379, 3380, 3382, 3383, 3386, 3387, 3355, 3354,
   3352, 3351, 3350, 3349, 3348, 3347, 3346, 3345, 3344, 3342, 3341, 3340,
   3339, 3338, 3337, 3335, 3389, 3388,
+];
+
+const TYPING_MESSAGES = [
+  "Click the green button above to enter MoviesVerseBD",
+  "Stream thousands of movies in HD — completely free",
+  "Bangla subtitles available for most titles",
+  "New releases added every single day",
+  "No signup required. Just click and watch.",
+  "Bangladesh's most loved streaming experience",
+  "Hollywood · Bollywood · South Indian · Web Series",
+  "Your next favourite movie is one click away",
 ];
 
 export default function LandingPage({
@@ -26,11 +36,56 @@ export default function LandingPage({
     onEnterSiteRef.current = onEnterSite;
   }, [onEnterSite]);
 
+  /* ============================================================
+     ✅ TYPING ANIMATION
+  ============================================================ */
+  const [displayedText, setDisplayedText] = useState("");
+  const [msgIndex, setMsgIndex] = useState(0);
+  const [charIndex, setCharIndex] = useState(0);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const typingTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
+
   useEffect(() => {
-    // ==================== MOVIE ROWS (Trending Now = trendingIds list) ====================
+    const currentMsg = TYPING_MESSAGES[msgIndex];
+    const typingSpeed = isDeleting ? 25 : 55;
+    const pauseAfter = isDeleting ? 300 : 1800;
+
+    if (!isDeleting) {
+      if (charIndex < currentMsg.length) {
+        typingTimeoutRef.current = setTimeout(() => {
+          setDisplayedText(currentMsg.substring(0, charIndex + 1));
+          setCharIndex(charIndex + 1);
+        }, typingSpeed);
+      } else {
+        typingTimeoutRef.current = setTimeout(() => {
+          setIsDeleting(true);
+        }, pauseAfter);
+      }
+    } else {
+      if (charIndex > 0) {
+        typingTimeoutRef.current = setTimeout(() => {
+          setDisplayedText(currentMsg.substring(0, charIndex - 1));
+          setCharIndex(charIndex - 1);
+        }, typingSpeed);
+      } else {
+        typingTimeoutRef.current = setTimeout(() => {
+          setIsDeleting(false);
+          setMsgIndex((prev) => (prev + 1) % TYPING_MESSAGES.length);
+        }, 400);
+      }
+    }
+
+    return () => {
+      if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+    };
+  }, [charIndex, isDeleting, msgIndex]);
+
+  /* ============================================================
+     ✅ MOVIE ROWS + DRAG + VISIT MAIN SITE + REVEAL
+  ============================================================ */
+  useEffect(() => {
     const trendingMovies = movies.filter((m) => trendingIds.includes(m.id));
 
-    // Trending Now row → trending-carousel er list onujayi
     const row1 = trendingMovies.map((m) => ({
       title: m.title,
       rating: m.rating,
@@ -38,7 +93,6 @@ export default function LandingPage({
       movie: m,
     }));
 
-    // Top 10 (design er jonno static)
     const row2 = [
       { title: "Scarlet Hour", rating: "9.4", rank: 1, poster: "https://i.postimg.cc/65j7bLDQ/MV5BZGVm-Nz-Rl-ZTct-NTU2OS00MTQw-LWI2ZWQt-OGVi-Mjc4ODNl-Nz-Vm-Xk-Ey-Xk-Fqc-Gc-V1-QL75-UX1080.jpg" },
       { title: "Nebula Protocol", rating: "9.1", rank: 2, poster: "https://i.postimg.cc/qBG6ydw2/MV5BMTk4NTk4MTk1OF5BMl5Ban-Bn-Xk-Ft-ZTcw-NTE2MDIw-NA-V1.jpg" },
@@ -51,7 +105,6 @@ export default function LandingPage({
       { title: "Hidden Truth", rating: "8.3", rank: 9, poster: "https://i.postimg.cc/9Mhzwxqn/images.jpg" },
     ];
 
-    // New Releases (design er jonno static)
     const row3 = [
       { title: "Velvet Empire", rating: "8.4", badge: "new", poster: "https://i.postimg.cc/bwZZ7Shb/c27aec8ab39db4bed60c8bc5e5b0f02d.jpg" },
       { title: "Zero Gravity", rating: "8.6", badge: "new", poster: "https://i.postimg.cc/qBG6ydw2/MV5BMTk4NTk4MTk1OF5BMl5Ban-Bn-Xk-Ft-ZTcw-NTE2MDIw-NA-V1.jpg" },
@@ -90,11 +143,8 @@ export default function LandingPage({
       `;
 
       card.addEventListener("click", () => {
-        if (movie.movie && onMovieClick) {
-          onMovieClick(movie.movie);
-        } else if (onEnterSiteRef.current) {
-          onEnterSiteRef.current();
-        }
+        if (movie.movie && onMovieClick) onMovieClick(movie.movie);
+        else if (onEnterSiteRef.current) onEnterSiteRef.current();
       });
 
       return card;
@@ -107,51 +157,18 @@ export default function LandingPage({
     if (s2 && s2.children.length === 0) s2.append(...row2.map(buildCard));
     if (s3 && s3.children.length === 0) s3.append(...row3.map(buildCard));
 
-    // ==================== DRAG TO SCROLL ====================
+    // Drag to scroll
     const sliders = document.querySelectorAll(".slider");
     const cleanupFns: Array<() => void> = [];
 
     sliders.forEach((slider) => {
-      let isDown = false;
-      let startX = 0;
-      let scrollLeft = 0;
-      let moved = false;
-
-      const onMouseDown = (e: any) => {
-        isDown = true;
-        moved = false;
-        (slider as HTMLElement).style.cursor = "grabbing";
-        startX = e.pageX - (slider as HTMLElement).offsetLeft;
-        scrollLeft = (slider as HTMLElement).scrollLeft;
-      };
-      const onMouseLeave = () => {
-        isDown = false;
-        (slider as HTMLElement).style.cursor = "grab";
-      };
-      const onMouseUp = () => {
-        isDown = false;
-        (slider as HTMLElement).style.cursor = "grab";
-      };
-      const onMouseMove = (e: any) => {
-        if (!isDown) return;
-        e.preventDefault();
-        const x = e.pageX - (slider as HTMLElement).offsetLeft;
-        const walk = (x - startX) * 1.6;
-        if (Math.abs(walk) > 5) moved = true;
-        (slider as HTMLElement).scrollLeft = scrollLeft - walk;
-      };
-      const onClick = (e: any) => {
-        if (moved) {
-          e.preventDefault();
-          e.stopPropagation();
-        }
-      };
-      const onWheel = (e: any) => {
-        if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
-          e.preventDefault();
-          (slider as HTMLElement).scrollLeft += e.deltaY;
-        }
-      };
+      let isDown = false, startX = 0, scrollLeft = 0, moved = false;
+      const onMouseDown = (e: any) => { isDown = true; moved = false; (slider as HTMLElement).style.cursor = "grabbing"; startX = e.pageX - (slider as HTMLElement).offsetLeft; scrollLeft = (slider as HTMLElement).scrollLeft; };
+      const onMouseLeave = () => { isDown = false; (slider as HTMLElement).style.cursor = "grab"; };
+      const onMouseUp = () => { isDown = false; (slider as HTMLElement).style.cursor = "grab"; };
+      const onMouseMove = (e: any) => { if (!isDown) return; e.preventDefault(); const x = e.pageX - (slider as HTMLElement).offsetLeft; const walk = (x - startX) * 1.6; if (Math.abs(walk) > 5) moved = true; (slider as HTMLElement).scrollLeft = scrollLeft - walk; };
+      const onClick = (e: any) => { if (moved) { e.preventDefault(); e.stopPropagation(); } };
+      const onWheel = (e: any) => { if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) { e.preventDefault(); (slider as HTMLElement).scrollLeft += e.deltaY; } };
 
       slider.addEventListener("mousedown", onMouseDown);
       slider.addEventListener("mouseleave", onMouseLeave);
@@ -171,35 +188,25 @@ export default function LandingPage({
       });
     });
 
-    // ==================== VISIT MAIN SITE (smooth transition) ====================
+    // Visit Main Site
     function handleEnterSiteClick(e: Event) {
       e.preventDefault();
       if (document.documentElement.classList.contains("zooming")) return;
-
-      const root = document.querySelector(
-        ".landing-page-root"
-      ) as HTMLElement | null;
+      const root = document.querySelector(".landing-page-root") as HTMLElement | null;
       if (root) {
         root.style.transition = "opacity 400ms ease, transform 400ms ease";
         root.style.opacity = "0";
         root.style.transform = "scale(0.98)";
       }
-
       setTimeout(() => {
-        if (onEnterSiteRef.current) {
-          onEnterSiteRef.current();
-        } else {
-          window.location.reload();
-        }
+        if (onEnterSiteRef.current) onEnterSiteRef.current();
+        else window.location.reload();
       }, 420);
     }
 
     const siteLinks = document.querySelectorAll("[data-site-link]");
-    siteLinks.forEach((link) => {
-      link.addEventListener("click", handleEnterSiteClick);
-    });
+    siteLinks.forEach((link) => link.addEventListener("click", handleEnterSiteClick));
 
-    // ==================== NAV SCROLL ====================
     const nav = document.getElementById("nav");
     const handleScroll = () => {
       if (window.scrollY > 40) nav?.classList.add("scrolled");
@@ -207,7 +214,6 @@ export default function LandingPage({
     };
     window.addEventListener("scroll", handleScroll);
 
-    // ==================== SCROLL REVEAL ====================
     const revealObs = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
@@ -218,31 +224,20 @@ export default function LandingPage({
     );
     document.querySelectorAll(".reveal").forEach((el) => revealObs.observe(el));
 
-    // Cleanup
     return () => {
       window.removeEventListener("scroll", handleScroll);
       revealObs.disconnect();
-      siteLinks.forEach((link) => {
-        link.removeEventListener("click", handleEnterSiteClick);
-      });
+      siteLinks.forEach((link) => link.removeEventListener("click", handleEnterSiteClick));
       cleanupFns.forEach((fn) => fn());
     };
   }, [onMovieClick]);
-
-  const handleMovieClick = (movie: (typeof movies)[0]) => {
-    if (onMovieClick) {
-      onMovieClick(movie);
-    } else if (onEnterSite) {
-      onEnterSite();
-    }
-  };
 
   return (
     <div className="landing-page-root">
       <div className="zoom-vignette"></div>
       <div className="zoom-flash"></div>
 
-      {/* ✅ NAV — obhabei ache */}
+      {/* ✅ Nav — obhabei */}
       <nav id="nav">
         <div className="nav-left">
           <div className="brand">
@@ -261,7 +256,44 @@ export default function LandingPage({
         <div className="nav-right">
           <a href="#" className="nav-cta" data-site-link>
             <span>Visit Main Site</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M5 12h14M13 5l7 7-7 7" />
+            </svg>
+          </a>
+        </div>
+      </nav>
+
+      {/* ✅✅✅ HERO SECTION — Background + Logo + Typing Animation ✅✅✅ */}
+      <section className="relative overflow-hidden bg-black">
+        {/* Background image upore */}
+        <div
+          className="absolute top-0 left-0 w-full h-[260px] md:h-[380px] z-0 pointer-events-none"
+          style={{
+            backgroundImage:
+              "url('https://i.postimg.cc/7hLqB21s/Netflix-all-movies-and-series-featured-image.jpg')",
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            backgroundRepeat: "no-repeat",
+          }}
+        >
+          <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/80 to-black" />
+        </div>
+
+        {/* Content */}
+        <div className="relative z-10 px-4 pt-2 pb-8">
+          {/* MoviesVerseBD Logo */}
+          <div className="relative flex justify-center -mt-2 mb-2">
+            <img
+              src="https://i.postimg.cc/Bn4cPRwz/20288-removebg-preview.png"
+              alt="MoviesVerseBD Logo"
+              className="relative z-20 w-64 h-64 md:w-80 md:h-80 object-contain"
+            />
+          </div>
+
+          {/* Typing animation */}
+          <div className="flex justify-center items-center gap-2 mb-6 min-h-[30px]">
             <svg
+              className="w-5 h-5 text-green-400 flex-shrink-0"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
@@ -269,14 +301,16 @@ export default function LandingPage({
               strokeLinecap="round"
               strokeLinejoin="round"
             >
-              <path d="M5 12h14M13 5l7 7-7 7" />
+              <path d="m9 12 2 2 4-4" />
+              <circle cx="12" cy="12" r="10" />
             </svg>
-          </a>
+            <span className="text-green-400 text-sm md:text-base font-medium">
+              {displayedText}
+            </span>
+            <span className="inline-block w-[2px] h-[18px] bg-green-400 animate-pulse" />
+          </div>
         </div>
-      </nav>
-
-      {/* ✅✅✅ HERO — TrendingCarousel diye replace kora hoyeche ✅✅✅ */}
-      <TrendingCarousel onMovieClick={handleMovieClick} />
+      </section>
 
       {/* ✅ Steps bar */}
       <div className="steps-bar reveal">
@@ -306,19 +340,10 @@ export default function LandingPage({
       {/* ✅ Trending Now list — trendingIds onujayi */}
       <section className="row" id="trending">
         <div className="row-head reveal">
-          <h2>
-            Trending Now <span className="badge-genre">HOT</span>
-          </h2>
+          <h2>Trending Now <span className="badge-genre">HOT</span></h2>
           <a href="#" className="see-all" data-site-link>
             See All
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M5 12h14M13 5l7 7-7 7" />
             </svg>
           </a>
@@ -332,21 +357,14 @@ export default function LandingPage({
       <section className="section" id="features">
         <div className="section-head reveal">
           <span className="kicker">WHY MOVIESVERSEBD</span>
-          <h2>
-            Built for <span className="accent">True Movie Lovers</span>
-          </h2>
-          <p>
-            The fastest, cleanest way to watch movies &amp; series in Bangladesh.
-            No signup, no buffering, no hassle.
-          </p>
+          <h2>Built for <span className="accent">True Movie Lovers</span></h2>
+          <p>The fastest, cleanest way to watch movies &amp; series in Bangladesh. No signup, no buffering, no hassle.</p>
         </div>
 
         <div className="features">
           <div className="feature-card reveal reveal-delay-1">
             <div className="icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
-              </svg>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" /></svg>
             </div>
             <h3>Instant Streaming</h3>
             <p>Click any movie and stream instantly. No waiting, no registration — just pure entertainment.</p>
@@ -354,10 +372,7 @@ export default function LandingPage({
 
           <div className="feature-card reveal reveal-delay-2">
             <div className="icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M12 2 4 6v6c0 5 3.5 9 8 10 4.5-1 8-5 8-10V6l-8-4z" />
-                <path d="m9 12 2 2 4-4" />
-              </svg>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2 4 6v6c0 5 3.5 9 8 10 4.5-1 8-5 8-10V6l-8-4z" /><path d="m9 12 2 2 4-4" /></svg>
             </div>
             <h3>100% Free &amp; Safe</h3>
             <p>No hidden fees. No shady downloads. Just pure content streamed securely to your device.</p>
@@ -365,10 +380,7 @@ export default function LandingPage({
 
           <div className="feature-card reveal reveal-delay-3">
             <div className="icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="12" r="10" />
-                <path d="M2 12h20M12 2a15 15 0 0 1 0 20 15 15 0 0 1 0-20z" />
-              </svg>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M2 12h20M12 2a15 15 0 0 1 0 20 15 15 0 0 1 0-20z" /></svg>
             </div>
             <h3>Bangla Subtitles</h3>
             <p>Most movies include Bangla subtitles. Enjoy Hollywood, Bollywood, South Indian and more.</p>
@@ -376,10 +388,7 @@ export default function LandingPage({
 
           <div className="feature-card reveal reveal-delay-4">
             <div className="icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M21 12a9 9 0 1 1-6.2-8.5" />
-                <path d="M22 4v6h-6" />
-              </svg>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a9 9 0 1 1-6.2-8.5" /><path d="M22 4v6h-6" /></svg>
             </div>
             <h3>Updated Daily</h3>
             <p>New releases land on MoviesVerseBD every single day. Never miss the latest hits again.</p>
@@ -393,9 +402,7 @@ export default function LandingPage({
           <h2>Top 10 in Bangladesh Today</h2>
           <a href="#" className="see-all" data-site-link>
             See All
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M5 12h14M13 5l7 7-7 7" />
-            </svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 5l7 7-7 7" /></svg>
           </a>
         </div>
         <div className="slider-wrap reveal reveal-delay-1">
@@ -409,9 +416,7 @@ export default function LandingPage({
           <h2>New Releases</h2>
           <a href="#" className="see-all" data-site-link>
             See All
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M5 12h14M13 5l7 7-7 7" />
-            </svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 5l7 7-7 7" /></svg>
           </a>
         </div>
         <div className="slider-wrap reveal reveal-delay-1">
@@ -423,9 +428,7 @@ export default function LandingPage({
       <section className="section" id="how">
         <div className="section-head reveal">
           <span className="kicker">SUPER SIMPLE</span>
-          <h2>
-            Enter in <span className="accent">3 Easy Steps</span>
-          </h2>
+          <h2>Enter in <span className="accent">3 Easy Steps</span></h2>
           <p>No signup. No email. No password. Just click the green button and start watching.</p>
         </div>
 
@@ -435,13 +438,11 @@ export default function LandingPage({
             <h3>Click The Green Button</h3>
             <p>Tap the highlighted "Visit Main Site" button anywhere on this page to enter our official website.</p>
           </div>
-
           <div className="feature-card reveal reveal-delay-2" style={{ textAlign: "center" }}>
             <div className="icon" style={{ margin: "0 auto 20px" }}>2</div>
             <h3>Pick Your Movie</h3>
             <p>Browse hundreds of movies and web series. Use categories or search to find what you love.</p>
           </div>
-
           <div className="feature-card reveal reveal-delay-3" style={{ textAlign: "center" }}>
             <div className="icon" style={{ margin: "0 auto 20px" }}>3</div>
             <h3>Stream &amp; Enjoy</h3>
@@ -452,20 +453,13 @@ export default function LandingPage({
 
       {/* ✅ Big CTA */}
       <section className="big-cta reveal">
-        <h2>
-          Ready to <span className="accent">Start Watching?</span>
-        </h2>
-        <p>
-          Join thousands of Bangladeshi movie lovers already streaming on
-          MoviesVerseBD. It's free, it's fast, and it's waiting for you.
-        </p>
+        <h2>Ready to <span className="accent">Start Watching?</span></h2>
+        <p>Join thousands of Bangladeshi movie lovers already streaming on MoviesVerseBD. It's free, it's fast, and it's waiting for you.</p>
         <div className="cta-buttons">
           <a href="#" className="btn-site-main" data-site-link>
             <span className="label">Visit Main Site</span>
             <span className="arrow">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M5 12h14M13 5l7 7-7 7" />
-              </svg>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 5l7 7-7 7" /></svg>
             </span>
           </a>
         </div>
@@ -479,33 +473,12 @@ export default function LandingPage({
               <span className="mv-text">MoviesVerse</span>
               <span className="bd-text">BD</span>
             </div>
-            <p>
-              Bangladesh's most loved movie streaming experience. Fast, free, and
-              endlessly entertaining — with new titles added every single day.
-            </p>
+            <p>Bangladesh's most loved movie streaming experience. Fast, free, and endlessly entertaining — with new titles added every single day.</p>
             <div className="social-row">
-              <a href="#" aria-label="Facebook">
-                <svg viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M22 12c0-5.5-4.5-10-10-10S2 6.5 2 12c0 5 3.6 9.1 8.4 9.9v-7H7.9V12h2.5V9.8c0-2.5 1.5-3.9 3.8-3.9 1.1 0 2.2.2 2.2.2v2.5h-1.3c-1.2 0-1.6.8-1.6 1.6V12h2.8l-.5 2.9h-2.3v7C18.4 21.1 22 17 22 12z" />
-                </svg>
-              </a>
-              <a href="#" aria-label="Instagram">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <rect x="2" y="2" width="20" height="20" rx="5" />
-                  <path d="M16 11.4A4 4 0 1 1 12.6 8 4 4 0 0 1 16 11.4z" />
-                  <circle cx="17.5" cy="6.5" r="0.5" fill="currentColor" />
-                </svg>
-              </a>
-              <a href="#" aria-label="YouTube">
-                <svg viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M23 12s0-3.4-.4-5c-.2-.9-1-1.6-1.9-1.8C19 5 12 5 12 5s-7 0-8.7.4c-.9.2-1.6 1-1.8 1.9C1 9 1 12 1 12s0 3.4.4 5c.2.9 1 1.6 1.9 1.8C5 19 12 19 12 19s7 0 8.7-.4c.9-.2 1.6-1 1.8-1.9.5-1.5.5-4.7.5-4.7zM10 15V9l5 3-5 3z" />
-                </svg>
-              </a>
-              <a href="#" aria-label="Telegram">
-                <svg viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M22 4.01c0-.79-.63-1.43-1.4-1.4-6.6.25-13.2.5-19.8.75-.74.03-1.3.66-1.3 1.4 0 2.98.02 5.96.05 8.94.01.55.4 1.01.93 1.15 2.6.68 5.2 1.36 7.8 2.04.32.08.44.47.22.71-.98 1.06-1.96 2.13-2.94 3.19-.36.4-.06 1.05.48.98 2.35-.29 4.7-.58 7.05-.87.55-.07.9-.6.78-1.13-.46-2.05-.92-4.1-1.38-6.15-.08-.36.2-.7.57-.68 1.94.1 3.87.19 5.8.29.85.04 1.5-.71 1.34-1.55-.72-3.75-1.44-7.5-2.16-11.25-.09-.45.08-.91.44-1.19.65-.5 1.34-1.03 2.05-1.57.35-.27.44-.76.22-1.14z" />
-                </svg>
-              </a>
+              <a href="#" aria-label="Facebook"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M22 12c0-5.5-4.5-10-10-10S2 6.5 2 12c0 5 3.6 9.1 8.4 9.9v-7H7.9V12h2.5V9.8c0-2.5 1.5-3.9 3.8-3.9 1.1 0 2.2.2 2.2.2v2.5h-1.3c-1.2 0-1.6.8-1.6 1.6V12h2.8l-.5 2.9h-2.3v7C18.4 21.1 22 17 22 12z" /></svg></a>
+              <a href="#" aria-label="Instagram"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" /><path d="M16 11.4A4 4 0 1 1 12.6 8 4 4 0 0 1 16 11.4z" /><circle cx="17.5" cy="6.5" r="0.5" fill="currentColor" /></svg></a>
+              <a href="#" aria-label="YouTube"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M23 12s0-3.4-.4-5c-.2-.9-1-1.6-1.9-1.8C19 5 12 5 12 5s-7 0-8.7.4c-.9.2-1.6 1-1.8 1.9C1 9 1 12 1 12s0 3.4.4 5c.2.9 1 1.6 1.9 1.8C5 19 12 19 12 19s7 0 8.7-.4c.9-.2 1.6-1 1.8-1.9.5-1.5.5-4.7.5-4.7zM10 15V9l5 3-5 3z" /></svg></a>
+              <a href="#" aria-label="Telegram"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M22 4.01c0-.79-.63-1.43-1.4-1.4-6.6.25-13.2.5-19.8.75-.74.03-1.3.66-1.3 1.4 0 2.98.02 5.96.05 8.94.01.55.4 1.01.93 1.15 2.6.68 5.2 1.36 7.8 2.04.32.08.44.47.22.71-.98 1.06-1.96 2.13-2.94 3.19-.36.4-.06 1.05.48.98 2.35-.29 4.7-.58 7.05-.87.55-.07.9-.6.78-1.13-.46-2.05-.92-4.1-1.38-6.15-.08-.36.2-.7.57-.68 1.94.1 3.87.19 5.8.29.85.04 1.5-.71 1.34-1.55-.72-3.75-1.44-7.5-2.16-11.25-.09-.45.08-.91.44-1.19.65-.5 1.34-1.03 2.05-1.57.35-.27.44-.76.22-1.14z" /></svg></a>
             </div>
           </div>
 
@@ -562,4 +535,4 @@ export default function LandingPage({
       </footer>
     </div>
   );
-        }
+      }

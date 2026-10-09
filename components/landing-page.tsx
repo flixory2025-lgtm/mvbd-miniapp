@@ -18,25 +18,16 @@ const trendingIds = [
 
 // ✅ Aro beshi messages — prottek bar notun line ashbe
 const TYPING_MESSAGES = [
-  "Welcome to MoviesVerseBD — Your Ultimate Destination for Movies, Web Series, and Endless Entertainment. Discover Your Next Favourite Story Today!",
-
-  "From Hollywood Blockbusters to Bollywood Hits, South Indian Action, Korean Dramas, and Trending Web Series — Explore the World of Entertainment with MoviesVerseBD!",
-
-  "Every Movie Has a Story, Every Story Creates a Memory. Dive Into Amazing Adventures, Powerful Performances, Mind-Blowing Thrillers, and Unforgettable Cinematic Moments!",
-
-  "Your Next Binge-Worthy Series Is Waiting! Explore Exciting Stories, Discover New Releases, Revisit Your Favourite Movies, and Make Every Moment an Entertainment Experience!",
-
-  "Welcome to a World Where Entertainment Never Ends! MoviesVerseBD Brings Movie Lovers Closer to the Stories, Characters, and Cinematic Universes They Love!",
-
-  "Love Action, Horror, Romance, Comedy, or Sci-Fi? Whatever Your Mood, Discover Different Genres, Explore New Stories, and Find Something Exciting to Watch on MoviesVerseBD!",
-
-  "From Legendary Classics to the Latest Trending Titles, MoviesVerseBD Is Your Place to Explore the Incredible World of Cinema and Discover Entertainment Beyond Boundaries!",
-
-  "Lights Off, Screen On, Entertainment Begins! Get Ready to Explore Fascinating Movies, Thrilling Mysteries, Epic Adventures, and Stories That Keep You Watching!",
-
-  "Made for Movie Lovers, Inspired by Great Stories! Explore Hollywood, Bollywood, South Indian Cinema, Korean Dramas, and Web Series — All in One MoviesVerseBD Experience!",
-
-  "Your Entertainment Journey Starts Here! Discover New Favourites, Explore Different Cinematic Worlds, and Join the MoviesVerseBD Community Where Every Movie Lover Belongs!",
+  "Welcome to MoviesVerseBD — Watch Free!",
+  "Hollywood, Bollywood & South Hits Here!",
+  "Every Movie Has a Story Worth Watching!",
+  "Your Next Binge-Worthy Series Awaits!",
+  "Entertainment Never Ends on MoviesVerseBD!",
+  "Action, Horror, Romance — Pick Your Mood!",
+  "From Classics to Latest Trending Titles!",
+  "Lights Off, Screen On, Enjoy the Show!",
+  "Made for Movie Lovers, Inspired by Stories!",
+  "Your Entertainment Journey Starts Here!",
 ];
 export default function LandingPage({
   onEnterSite,

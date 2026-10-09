@@ -76,6 +76,8 @@ export default function Header({
   searchData,
 }: HeaderProps) {
   const [isFocused, setIsFocused] = useState(false)
+
+  // ✅ Scroll ট্র্যাক করার জন্য স্টেট
   const [isScrolled, setIsScrolled] = useState(false)
 
   const [bubbles, setBubbles] = useState<
@@ -159,7 +161,7 @@ export default function Header({
       }
     }
 
-    handleScroll()
+    handleScroll() // পেজ লোড হওয়ার সময় একবার চেক
     window.addEventListener("scroll", handleScroll, { passive: true })
     return () => window.removeEventListener("scroll", handleScroll)
   }, [])
@@ -331,11 +333,11 @@ export default function Header({
   const showCube = !isFocused && !hasQuery
 
   return (
-    // ✅ STICKY HEADER — টপে transparent, স্ক্রলে solid, ডকুমেন্ট ফ্লোতে জায়গা নেয়
+    // ✅ FIXED HEADER — Transparent at top, Solid on scroll
     <header
-      className={`sticky top-0 z-50 transition-all duration-300 ease-in-out ${
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ease-in-out ${
         isScrolled
-          ? "bg-black/80 backdrop-blur-xl border-b border-white/10 shadow-lg"
+          ? "bg-black/60 backdrop-blur-xl border-b border-white/10 shadow-lg"
           : "bg-transparent border-b border-transparent shadow-none"
       }`}
     >

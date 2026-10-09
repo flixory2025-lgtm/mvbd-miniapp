@@ -302,19 +302,19 @@ export default function LandingPage({
         @keyframes heroButtonPulse {
           0%, 100% {
             box-shadow:
-              0 0 20px rgba(34, 197, 94, 0.7),
-              0 0 40px rgba(34, 197, 94, 0.5),
-              0 0 60px rgba(34, 197, 94, 0.3),
-              inset 0 1px 0 rgba(255, 255, 255, 0.3);
+              0 0 25px rgba(34, 197, 94, 0.7),
+              0 0 50px rgba(34, 197, 94, 0.5),
+              0 0 80px rgba(34, 197, 94, 0.3),
+              inset 0 2px 0 rgba(255, 255, 255, 0.3);
             transform: scale(1);
           }
           50% {
             box-shadow:
-              0 0 30px rgba(34, 197, 94, 1),
-              0 0 60px rgba(34, 197, 94, 0.8),
-              0 0 90px rgba(34, 197, 94, 0.6),
-              inset 0 1px 0 rgba(255, 255, 255, 0.4);
-            transform: scale(1.05);
+              0 0 40px rgba(34, 197, 94, 1),
+              0 0 80px rgba(34, 197, 94, 0.8),
+              0 0 120px rgba(34, 197, 94, 0.6),
+              inset 0 2px 0 rgba(255, 255, 255, 0.5);
+            transform: scale(1.04);
           }
         }
         @keyframes heroButtonGlow {
@@ -324,16 +324,16 @@ export default function LandingPage({
           }
           50% {
             opacity: 1;
-            transform: scale(1.15);
+            transform: scale(1.2);
           }
         }
         @keyframes heroArrowBounce {
           0%, 100% { transform: translateX(0); }
-          50% { transform: translateX(6px); }
+          50% { transform: translateX(8px); }
         }
         @keyframes heroShine {
           0% { transform: translateX(-100%) skewX(-20deg); }
-          100% { transform: translateX(200%) skewX(-20deg); }
+          100% { transform: translateX(250%) skewX(-20deg); }
         }
         .hero-visit-btn {
           animation: heroButtonPulse 2s ease-in-out infinite;
@@ -345,12 +345,12 @@ export default function LandingPage({
           position: absolute;
           top: 0;
           left: 0;
-          width: 50%;
+          width: 60%;
           height: 100%;
           background: linear-gradient(
             90deg,
             transparent,
-            rgba(255, 255, 255, 0.5),
+            rgba(255, 255, 255, 0.55),
             transparent
           );
           animation: heroShine 3s ease-in-out infinite;
@@ -360,25 +360,25 @@ export default function LandingPage({
           animation-play-state: paused;
           transform: scale(1.08) !important;
           box-shadow:
-            0 0 40px rgba(34, 197, 94, 1),
-            0 0 80px rgba(34, 197, 94, 0.8),
-            0 0 120px rgba(34, 197, 94, 0.6),
-            inset 0 1px 0 rgba(255, 255, 255, 0.5) !important;
+            0 0 50px rgba(34, 197, 94, 1),
+            0 0 100px rgba(34, 197, 94, 0.9),
+            0 0 160px rgba(34, 197, 94, 0.7),
+            inset 0 2px 0 rgba(255, 255, 255, 0.6) !important;
         }
         .hero-visit-btn .btn-arrow {
           animation: heroArrowBounce 1.5s ease-in-out infinite;
         }
         .hero-glow-ring {
           position: absolute;
-          inset: -8px;
+          inset: -12px;
           border-radius: 9999px;
           background: radial-gradient(
             circle,
-            rgba(34, 197, 94, 0.6) 0%,
-            rgba(34, 197, 94, 0.3) 40%,
+            rgba(34, 197, 94, 0.7) 0%,
+            rgba(34, 197, 94, 0.35) 40%,
             transparent 70%
           );
-          filter: blur(12px);
+          filter: blur(16px);
           animation: heroButtonGlow 2s ease-in-out infinite;
           pointer-events: none;
           z-index: -1;
@@ -422,7 +422,7 @@ export default function LandingPage({
       <section className="relative overflow-hidden bg-black">
         {/* Background image upore */}
         <div
-          className="absolute top-0 left-0 w-full h-[340px] md:h-[460px] z-0 pointer-events-none"
+          className="absolute top-0 left-0 w-full h-[380px] md:h-[520px] z-0 pointer-events-none"
           style={{
             backgroundImage:
               "url('https://i.postimg.cc/7hLqB21s/Netflix-all-movies-and-series-featured-image.jpg')",
@@ -435,9 +435,9 @@ export default function LandingPage({
         </div>
 
         {/* Content */}
-        <div className="relative z-10 px-4 pt-2 pb-12">
+        <div className="relative z-10 px-4 pt-2 pb-16">
           {/* MoviesVerseBD Logo */}
-          <div className="relative flex justify-center -mt-2 mb-4">
+          <div className="relative flex justify-center -mt-2 mb-6">
             <img
               src="https://i.postimg.cc/Bn4cPRwz/20288-removebg-preview.png"
               alt="MoviesVerseBD Logo"
@@ -445,18 +445,18 @@ export default function LandingPage({
             />
           </div>
 
-          {/* ✅ Visit Main Site Button — BORO size, ANIMATED glow */}
-          <div className="flex justify-center mb-6 relative">
+          {/* ✅✅✅ Visit Main Site Button — MAIN GATE (ARO BORO + ANIMATED) ✅✅✅ */}
+          <div className="flex justify-center mb-8 relative">
             <button
               type="button"
               onClick={handleHeroEnterSite}
-              className="hero-visit-btn group relative inline-flex items-center gap-3 px-10 py-5 md:px-14 md:py-6 rounded-full font-extrabold text-white text-lg md:text-2xl tracking-wide transition-all duration-300 cursor-pointer"
+              className="hero-visit-btn group relative inline-flex items-center gap-4 px-12 py-6 md:px-20 md:py-8 rounded-full font-extrabold text-white text-xl md:text-3xl tracking-wider transition-all duration-300 cursor-pointer"
               style={{
                 background:
-                  "linear-gradient(135deg, #15803d 0%, #16a34a 30%, #22c55e 50%, #16a34a 70%, #15803d 100%)",
-                border: "2px solid rgba(34, 197, 94, 0.9)",
-                textShadow: "0 2px 8px rgba(0, 0, 0, 0.5)",
-                letterSpacing: "0.03em",
+                  "linear-gradient(135deg, #15803d 0%, #16a34a 25%, #22c55e 50%, #16a34a 75%, #15803d 100%)",
+                border: "3px solid rgba(34, 197, 94, 1)",
+                textShadow: "0 2px 12px rgba(0, 0, 0, 0.6)",
+                letterSpacing: "0.05em",
               }}
             >
               {/* Glow ring behind button */}
@@ -464,7 +464,7 @@ export default function LandingPage({
 
               <span className="relative z-10">Visit Main Site</span>
               <svg
-                className="btn-arrow w-6 h-6 md:w-8 md:h-8 relative z-10"
+                className="btn-arrow w-7 h-7 md:w-10 md:h-10 relative z-10"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
@@ -499,30 +499,7 @@ export default function LandingPage({
         </div>
       </section>
 
-      {/* ✅ Steps bar — ARO NICHE namiye dewa hoyeche (mt-16 add kore) */}
-      <div className="steps-bar reveal mt-16">
-        <div className="step-item">
-          <div className="num-badge">1</div>
-          <div className="text">
-            <strong>Click "Visit Main Site"</strong>
-            <span>The green button takes you to our official website</span>
-          </div>
-        </div>
-        <div className="step-item">
-          <div className="num-badge">2</div>
-          <div className="text">
-            <strong>Browse Movies &amp; Series</strong>
-            <span>Explore thousands of titles across all genres</span>
-          </div>
-        </div>
-        <div className="step-item">
-          <div className="num-badge">3</div>
-          <div className="text">
-            <strong>Stream &amp; Enjoy</strong>
-            <span>Watch instantly in HD — no signup, no ads</span>
-          </div>
-        </div>
-      </div>
+      {/* ❌ 3 Steps box BAD dewa hoyeche */}
 
       {/* ✅ Trending Now list — trendingIds onujayi */}
       <section className="row" id="trending">

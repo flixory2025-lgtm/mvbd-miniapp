@@ -337,20 +337,21 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
               ))}
             </div>
 
-            {/* ✅ ১.২ উপরের Blur + Dark গ্রেডিয়েন্ট */}
-            <div
-              className="absolute top-0 left-0 w-full h-[55%] pointer-events-none z-[5]"
-              style={{
-                background:
-                  "linear-gradient(to bottom, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.75) 30%, rgba(0,0,0,0.35) 60%, rgba(0,0,0,0) 100%)",
-                backdropFilter: "blur(8px)",
-                WebkitBackdropFilter: "blur(8px)",
-                maskImage:
-                  "linear-gradient(to bottom, black 0%, black 40%, transparent 100%)",
-                WebkitMaskImage:
-                  "linear-gradient(to bottom, black 0%, black 40%, transparent 100%)",
-              }}
-            />
+            {/* ✅ ১.২ উপরের Blur + Dark (শুধু হেডারের এলাকায়, নিচে গিয়ে পরিষ্কার) */}
+<div
+  className="absolute top-0 left-0 w-full pointer-events-none z-[5]"
+  style={{
+    height: "140px", // ← শুধু হেডার + একটু নিচ পর্যন্ত
+    background:
+      "linear-gradient(to bottom, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.65) 35%, rgba(0,0,0,0.3) 65%, rgba(0,0,0,0) 100%)",
+    backdropFilter: "blur(12px)",
+    WebkitBackdropFilter: "blur(12px)",
+    maskImage:
+      "linear-gradient(to bottom, black 0%, black 45%, rgba(0,0,0,0.4) 70%, transparent 100%)",
+    WebkitMaskImage:
+      "linear-gradient(to bottom, black 0%, black 45%, rgba(0,0,0,0.4) 70%, transparent 100%)",
+  }}
+/>
 
             {/* ✅ ১.৩ নিচের গ্রেডিয়েন্ট (টেক্সট সেকশনের জন্য) */}
             <div className="absolute bottom-0 left-0 w-full h-[45%] bg-gradient-to-t from-black via-black/60 to-transparent pointer-events-none z-[5]" />

@@ -81,7 +81,7 @@ export default function LandingPage({
   }, [charIndex, isDeleting, msgIndex]);
 
   /* ============================================================
-     ✅ VISIT MAIN SITE HANDLER (hero button er jonno)
+     ✅ VISIT MAIN SITE HANDLER
   ============================================================ */
   const handleHeroEnterSite = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -293,7 +293,7 @@ export default function LandingPage({
   }, [onMovieClick]);
 
   return (
-    <div className="landing-page-root">
+    <div className="landing-page-root" style={{ background: "#000000" }}>
       <div className="zoom-vignette"></div>
       <div className="zoom-flash"></div>
 
@@ -330,11 +330,14 @@ export default function LandingPage({
         </div>
       </nav>
 
-      {/* ✅✅✅ HERO SECTION — Background + Logo + Visit Button + Typing ✅✅✅ */}
-      <section className="relative overflow-hidden bg-black">
-        {/* Background image upore — Trending Now poster er sathe match kore */}
+      {/* ✅✅✅ HERO SECTION — Netflix style, ekdum dark ✅✅✅ */}
+      <section
+        className="relative overflow-hidden"
+        style={{ background: "#000000" }}
+      >
+        {/* Background image — ekdum dark overlay */}
         <div
-          className="absolute top-0 left-0 w-full h-[400px] md:h-[560px] z-0 pointer-events-none"
+          className="absolute top-0 left-0 w-full h-[420px] md:h-[600px] z-0 pointer-events-none"
           style={{
             backgroundImage:
               "url('https://i.postimg.cc/7hLqB21s/Netflix-all-movies-and-series-featured-image.jpg')",
@@ -343,13 +346,19 @@ export default function LandingPage({
             backgroundRepeat: "no-repeat",
           }}
         >
-          <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/60 to-black" />
+          <div
+            className="absolute inset-0"
+            style={{
+              background:
+                "linear-gradient(to bottom, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.85) 40%, rgba(0,0,0,0.95) 70%, #000000 100%)",
+            }}
+          />
         </div>
 
         {/* Content */}
-        <div className="relative z-10 px-4 pt-2 pb-8">
+        <div className="relative z-10 px-4 pt-2 pb-16">
           {/* MoviesVerseBD Logo */}
-          <div className="relative flex justify-center -mt-2 mb-6">
+          <div className="relative flex justify-center -mt-2 mb-8">
             <img
               src="https://i.postimg.cc/Bn4cPRwz/20288-removebg-preview.png"
               alt="MoviesVerseBD Logo"
@@ -357,8 +366,8 @@ export default function LandingPage({
             />
           </div>
 
-          {/* ✅✅✅ Visit Main Site Button — Big CTA box er button er EXACT SAME ✅✅✅ */}
-          <div className="flex justify-center mb-6">
+          {/* ✅ Visit Main Site Button — Big CTA box er button er EXACT SAME */}
+          <div className="flex justify-center mb-8">
             <a
               href="#"
               onClick={handleHeroEnterSite}
@@ -409,8 +418,8 @@ export default function LandingPage({
             </a>
           </div>
 
-          {/* ✅ Typing animation — Visit Main Site button er niche */}
-          <div className="flex justify-center items-center gap-2 mb-2 min-h-[30px]">
+          {/* ✅ Typing animation — ARO NICHE namiye dewa hoyeche (mb-16) */}
+          <div className="flex justify-center items-center gap-2 mb-16 min-h-[30px]">
             <svg
               className="w-5 h-5 text-green-400 flex-shrink-0"
               viewBox="0 0 24 24"
@@ -431,19 +440,51 @@ export default function LandingPage({
         </div>
       </section>
 
-      {/* ✅ Trending Now list — trendingIds onujayi */}
-      <section className="row" id="trending">
-        <div className="row-head reveal">
-          <h2>Trending Now <span className="badge-genre">HOT</span></h2>
-          <a href="#" className="see-all" data-site-link>
-            See All
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M5 12h14M13 5l7 7-7 7" />
-            </svg>
-          </a>
-        </div>
-        <div className="slider-wrap reveal reveal-delay-1">
-          <div className="slider" id="slider1"></div>
+      {/* ✅ Netflix-style curved divider + Trending Now — ARO NICHE */}
+      <section
+        className="relative"
+        id="trending"
+        style={{ background: "#000000", marginTop: "40px" }}
+      >
+        {/* Netflix-style curved top edge (dark blue/black gradient curve) */}
+        <div
+          className="absolute top-0 left-0 w-full h-[60px] pointer-events-none"
+          style={{
+            background:
+              "radial-gradient(ellipse 120% 100% at 50% 100%, rgba(20, 20, 50, 0.6) 0%, transparent 70%)",
+            borderTop: "2px solid transparent",
+            borderImage:
+              "linear-gradient(to right, transparent, rgba(100, 100, 200, 0.3), transparent) 1",
+          }}
+        />
+
+        <div className="relative z-10 pt-10">
+          {/* Row head — Netflix style */}
+          <div className="row-head reveal px-4 mb-4">
+            <h2
+              className="text-white text-2xl md:text-3xl font-bold"
+              style={{ letterSpacing: "0.01em" }}
+            >
+              Trending Now
+            </h2>
+            <a href="#" className="see-all" data-site-link>
+              See All
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M5 12h14M13 5l7 7-7 7" />
+              </svg>
+            </a>
+          </div>
+
+          <div className="slider-wrap reveal reveal-delay-1">
+            <div className="slider" id="slider1"></div>
+          </div>
         </div>
       </section>
 
@@ -545,7 +586,7 @@ export default function LandingPage({
         </div>
       </section>
 
-      {/* ✅ Big CTA — Ekhaneo same button obhabei thakbe */}
+      {/* ✅ Big CTA */}
       <section className="big-cta reveal">
         <h2>Ready to <span className="accent">Start Watching?</span></h2>
         <p>Join thousands of Bangladeshi movie lovers already streaming on MoviesVerseBD. It's free, it's fast, and it's waiting for you.</p>

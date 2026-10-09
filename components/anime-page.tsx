@@ -18,7 +18,7 @@ export default function AnimePage({ onAnimeClick }: AnimePageProps) {
   const [selectedGenre, setSelectedGenre] = useState<string | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
   const [isSearching, setIsSearching] = useState(false)
-  const trendingAnimes = animes.slice(0, 5); // Declare trendingAnimes variable
+  const trendingAnimes = animes.slice(0, 5)
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" })
@@ -74,8 +74,13 @@ export default function AnimePage({ onAnimeClick }: AnimePageProps) {
   }
 
   return (
-  <div className="bg-black">
-      <Header onSearch={handleSearch} pageType="anime" searchData={animes} />
+    <div className="bg-black">
+      <Header
+        onSearch={handleSearch}
+        searchQuery={searchQuery}
+        pageType="anime"
+        searchData={animes}
+      />
 
       {!isSearching && <AnimeTrendingCarousel onAnimeClick={handleAnimeClick} />}
 

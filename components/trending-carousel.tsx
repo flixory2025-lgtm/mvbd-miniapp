@@ -194,6 +194,12 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
     else handlePrev()
   }
 
+  // =========================================================
+  // ✅ উপরের স্লাইডারের পজিশন (ট্রেন্ডিং এর মতো পাশাপাশি পোস্টার)
+  // =========================================================
+  // ✅ মূল ঠিক: topIndex এবং topDragDistance একসাথে ক্যালকুলেট
+  const topTranslateX = -(topIndex * containerWidth) + topDragDistance
+
   // ✅ নিচের কারোসেলের 3D কার্ড পজিশন (Free Swipe)
   const getCardStyle = (index: number) => {
     const total = trendingMovies.length
@@ -250,14 +256,14 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
     }
   }
 
-  // ✅ উপরের স্লাইডারের কারেন্ট মুভি
+  // ✅ উপরের স্লাইডারের কারেন্ট মুভি (টেক্সট সেকশনের জন্য)
   const currentTopMovie = topSeriesMovies[topIndex]
 
   return (
     <section className="relative pb-4 overflow-hidden bg-black">
 
       {/* ========================================================= */}
-      {/* ✅✅✅ ১. উপরের সেকশন: Top Movie Series (একটি করে পোস্টার) ✅✅✅ */}
+      {/* ✅✅✅ ১. উপরের সেকশন: Top Movie Series (স্লাইডিং পোস্টার) ✅✅✅ */}
       {/* ========================================================= */}
       <div
         ref={topContainerRef}
@@ -273,19 +279,28 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
       >
         {topSeriesMovies.length > 0 && currentTopMovie && (
           <>
-            {/* ✅ ১.১ শুধুমাত্র বর্তমান পোস্টার (একটি করে দেখাবে) */}
+            {/* ✅ ১.১ সব পোস্টার পাশাপাশি (ট্রেন্ডিং এর মতো) */}
             <div
-              className="absolute inset-0"
+              className="absolute inset-0 flex"
               style={{
-                transform: `translateX(${topDragDistance}px)`,
+                width: `${topSeriesMovies.length * 100}%`,
+                transform: `translateX(${topTranslateX}px)`,
                 transition: topIsTransitioning ? "transform 0.5s cubic-bezier(0.25, 1, 0.5, 1)" : "none",
               }}
             >
-              <img
-                src={currentTopMovie.poster || "/placeholder.svg"}
-                alt={currentTopMovie.title}
-                className="w-full h-full object-cover object-top pointer-events-none"
-              />
+              {topSeriesMovies.map((movie, idx) => (
+                <div
+                  key={movie.id}
+                  className="relative h-full flex-shrink-0"
+                  style={{ width: `${100 / topSeriesMovies.length}%` }}
+                >
+                  <img
+                    src={movie.poster || "/placeholder.svg"}
+                    alt={movie.title}
+                    className="w-full h-full object-cover object-top pointer-events-none"
+                  />
+                </div>
+              ))}
             </div>
 
             {/* ✅ ১.২ গ্রেডিয়েন্ট ওভারলে (টেক্সট পড়ার জন্য) */}
@@ -466,4 +481,4 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
       </div>
     </section>
   )
-}
+              }

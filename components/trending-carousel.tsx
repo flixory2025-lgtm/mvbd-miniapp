@@ -298,7 +298,7 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
   const currentTopMovie = topSeriesMovies[topIndex] || topSeriesMovies[0]
 
   return (
-    <section className="relative pb-4 overflow-hidden bg-black">
+    <section className="relative pb-4 overflow-hidden bg-black -mt-[72px]">
 
       {/* ========================================================= */}
       {/* ✅✅✅ ১. উপরের সেকশন: Top Movie Series (স্লাইডিং পোস্টার) ✅✅✅ */}

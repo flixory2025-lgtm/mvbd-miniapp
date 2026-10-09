@@ -59,10 +59,6 @@ const LANDING_SEEN_KEY = "mvbd_landing_seen"
 export default function Page() {
   /* =========================================================
      LANDING PAGE STATE
-
-     Default: true (প্রথমে landing page দেখাবে)
-     কিন্তু যদি URL-এ ?from=person থাকে,
-     তাহলে landing page skip করবে (user person page থেকে ফিরছে)
   ========================================================= */
 
   const [showLanding, setShowLanding] = useState(() => {
@@ -88,9 +84,6 @@ export default function Page() {
 
   /* =========================================================
      HANDLE URL PARAM CHANGE
-
-     যদি user /person/[id] থেকে /?from=person এ আসে,
-     তাহলে landing skip করে streaming site দেখাবে।
   ========================================================= */
 
   useEffect(() => {
@@ -101,7 +94,6 @@ export default function Page() {
         const urlParams = new URLSearchParams(window.location.search)
         if (urlParams.get("from") === "person") {
           setShowLanding(false)
-          // URL থেকে ?from=person সরিয়ে ফেলি, যাতে refresh-এ clean URL থাকে
           window.history.replaceState(null, "", "/")
         }
       } catch {}
@@ -232,10 +224,6 @@ export default function Page() {
 
   /* =========================================================
      OPEN MOVIE FROM PERSON PAGE
-
-     /person/[id] থেকে user কোনো মুভিতে ক্লিক করলে
-     sessionStorage-এ movie id সেভ হয়। এখানে সেটা পড়ে
-     সেই মুভির details page খুলবো।
   ========================================================= */
 
   useEffect(() => {
@@ -384,7 +372,6 @@ export default function Page() {
   ========================================================= */
 
   useEffect(() => {
-    // landing page দেখাচ্ছে তখন welcome popup দেখাবো না
     if (showLanding) return
 
     let hasSeenPopup = false
@@ -610,7 +597,7 @@ export default function Page() {
 
       {searchQuery.trim() &&
       filteredMovies.length === 0 ? (
-        <div className="px-4 py-12 text-center">
+        <div className="px-4 pt-[96px] py-12 text-center">
           <p className="mb-6 text-lg text-slate-300">
             আমরা দুঃখিত! এই নামের কোনো মুভি আমাদের
             কালেকশনে নেই
@@ -663,8 +650,9 @@ export default function Page() {
             />
           )}
 
+          {/* ✅ সার্চ রেজাল্ট সেকশন — pt-[96px] যোগ করা হয়েছে */}
           {isSearching && (
-            <div className="px-4 pt-4">
+            <div className="px-4 pt-[96px]">
               <h2 className="text-xl font-bold text-white mb-2">
                 সার্চ রেজাল্ট: "
                 {searchQuery}"

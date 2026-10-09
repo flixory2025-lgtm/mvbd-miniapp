@@ -5,6 +5,7 @@
  * - Login করলে Firestore-এও sync করে (logged-in user)
  * - Auto cleanup ৩ দিন পর
  * - Admin panel থেকে logged-in user-দের history দেখা যাবে
+ * - Home আর Anime page এর history সম্পূর্ণ আলাদা
  */
 
 import { db } from "./firebase"
@@ -15,7 +16,8 @@ import {
   serverTimestamp,
 } from "firebase/firestore"
 
-const STORAGE_KEY = "mvbd_search_history"
+const STORAGE_KEY_HOME = "mvbd_search_history_home"
+const STORAGE_KEY_ANIME = "mvbd_search_history_anime"
 const MAX_ITEMS = 8
 const MAX_AGE_MS = 3 * 24 * 60 * 60 * 1000 // 3 days
 
@@ -24,15 +26,31 @@ export type SearchHistoryItem = {
   timestamp: number
 }
 
+export type HistoryScope = "home" | "anime"
+
+/* =========================================================
+   HELPERS
+========================================================= */
+
+function getStorageKey(scope: HistoryScope): string {
+  return scope === "anime" ? STORAGE_KEY_ANIME : STORAGE_KEY_HOME
+}
+
+function getFirestoreDocId(userId: string, scope: HistoryScope): string {
+  return scope === "anime" ? `${userId}_anime` : userId
+}
+
 /* =========================================================
    LOCAL STORAGE
 ========================================================= */
 
-export function getLocalHistory(): SearchHistoryItem[] {
+export function getLocalHistory(
+  scope: HistoryScope = "home"
+): SearchHistoryItem[] {
   if (typeof window === "undefined") return []
 
   try {
-    const raw = localStorage.getItem(STORAGE_KEY)
+    const raw = localStorage.getItem(getStorageKey(scope))
     if (!raw) return []
 
     const parsed = JSON.parse(raw)
@@ -48,7 +66,7 @@ export function getLocalHistory(): SearchHistoryItem[] {
     )
 
     if (fresh.length !== parsed.length) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(fresh))
+      localStorage.setItem(getStorageKey(scope), JSON.stringify(fresh))
     }
 
     return fresh
@@ -57,7 +75,10 @@ export function getLocalHistory(): SearchHistoryItem[] {
   }
 }
 
-export function saveLocalHistory(items: SearchHistoryItem[]): void {
+export function saveLocalHistory(
+  items: SearchHistoryItem[],
+  scope: HistoryScope = "home"
+): void {
   if (typeof window === "undefined") return
 
   try {
@@ -66,15 +87,18 @@ export function saveLocalHistory(items: SearchHistoryItem[]): void {
       .filter((item) => now - item.timestamp < MAX_AGE_MS)
       .slice(0, MAX_ITEMS)
 
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(fresh))
+    localStorage.setItem(getStorageKey(scope), JSON.stringify(fresh))
   } catch {}
 }
 
-export function addToLocalHistory(query: string): SearchHistoryItem[] {
+export function addToLocalHistory(
+  query: string,
+  scope: HistoryScope = "home"
+): SearchHistoryItem[] {
   const trimmed = query.trim()
-  if (!trimmed) return getLocalHistory()
+  if (!trimmed) return getLocalHistory(scope)
 
-  const existing = getLocalHistory()
+  const existing = getLocalHistory(scope)
 
   const filtered = existing.filter(
     (item) => item.query.toLowerCase() !== trimmed.toLowerCase()
@@ -85,30 +109,33 @@ export function addToLocalHistory(query: string): SearchHistoryItem[] {
     ...filtered,
   ].slice(0, MAX_ITEMS)
 
-  saveLocalHistory(updated)
+  saveLocalHistory(updated, scope)
   return updated
 }
 
-export function removeFromLocalHistory(query: string): SearchHistoryItem[] {
-  const existing = getLocalHistory()
+export function removeFromLocalHistory(
+  query: string,
+  scope: HistoryScope = "home"
+): SearchHistoryItem[] {
+  const existing = getLocalHistory(scope)
   const updated = existing.filter(
     (item) => item.query.toLowerCase() !== query.toLowerCase()
   )
-  saveLocalHistory(updated)
+  saveLocalHistory(updated, scope)
   return updated
 }
 
-export function clearLocalHistory(): void {
+export function clearLocalHistory(scope: HistoryScope = "home"): void {
   if (typeof window === "undefined") return
   try {
-    localStorage.removeItem(STORAGE_KEY)
+    localStorage.removeItem(getStorageKey(scope))
   } catch {}
 }
 
-export function cleanupExpiredHistory(): void {
+export function cleanupExpiredHistory(scope: HistoryScope = "home"): void {
   if (typeof window === "undefined") return
   try {
-    getLocalHistory()
+    getLocalHistory(scope)
   } catch {}
 }
 
@@ -118,13 +145,15 @@ export function cleanupExpiredHistory(): void {
 
 /**
  * Logged-in user-এর history Firestore-এ save করে।
- * Document: searchHistory/{userId}
+ * Document: searchHistory/{userId}         → home history
+ * Document: searchHistory/{userId}_anime   → anime history
  * Admin panel এই collection থেকে সব user-এর history দেখতে পারবে।
  */
 export async function saveHistoryToFirestore(
   userId: string,
   items: SearchHistoryItem[],
-  userName?: string
+  userName?: string,
+  scope: HistoryScope = "home"
 ): Promise<void> {
   if (!userId) return
 
@@ -134,12 +163,15 @@ export async function saveHistoryToFirestore(
       .filter((item) => now - item.timestamp < MAX_AGE_MS)
       .slice(0, MAX_ITEMS)
 
-    const ref = doc(db, "searchHistory", userId)
+    const docId = getFirestoreDocId(userId, scope)
+    const ref = doc(db, "searchHistory", docId)
+
     await setDoc(
       ref,
       {
         userId,
         userName: userName || null,
+        scope,
         items: fresh,
         updatedAt: serverTimestamp(),
       },
@@ -151,12 +183,14 @@ export async function saveHistoryToFirestore(
 }
 
 export async function loadHistoryFromFirestore(
-  userId: string
+  userId: string,
+  scope: HistoryScope = "home"
 ): Promise<SearchHistoryItem[]> {
   if (!userId) return []
 
   try {
-    const ref = doc(db, "searchHistory", userId)
+    const docId = getFirestoreDocId(userId, scope)
+    const ref = doc(db, "searchHistory", docId)
     const snap = await getDoc(ref)
 
     if (!snap.exists()) return []

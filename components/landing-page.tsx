@@ -81,6 +81,26 @@ export default function LandingPage({
   }, [charIndex, isDeleting, msgIndex]);
 
   /* ============================================================
+     ✅ VISIT MAIN SITE HANDLER (hero button er jonno)
+  ============================================================ */
+  const handleHeroEnterSite = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (document.documentElement.classList.contains("zooming")) return;
+
+    const root = document.querySelector(".landing-page-root") as HTMLElement | null;
+    if (root) {
+      root.style.transition = "opacity 400ms ease, transform 400ms ease";
+      root.style.opacity = "0";
+      root.style.transform = "scale(0.98)";
+    }
+
+    setTimeout(() => {
+      if (onEnterSiteRef.current) onEnterSiteRef.current();
+      else window.location.reload();
+    }, 420);
+  };
+
+  /* ============================================================
      ✅ MOVIE ROWS + DRAG + VISIT MAIN SITE + REVEAL
   ============================================================ */
   useEffect(() => {
@@ -188,7 +208,7 @@ export default function LandingPage({
       });
     });
 
-    // Visit Main Site
+    // Visit Main Site (nav + footer er jonno)
     function handleEnterSiteClick(e: Event) {
       e.preventDefault();
       if (document.documentElement.classList.contains("zooming")) return;
@@ -263,11 +283,11 @@ export default function LandingPage({
         </div>
       </nav>
 
-      {/* ✅✅✅ HERO SECTION — Background + Logo + Typing Animation ✅✅✅ */}
+      {/* ✅✅✅ HERO SECTION — Background + Logo + Visit Button + Typing ✅✅✅ */}
       <section className="relative overflow-hidden bg-black">
         {/* Background image upore */}
         <div
-          className="absolute top-0 left-0 w-full h-[260px] md:h-[380px] z-0 pointer-events-none"
+          className="absolute top-0 left-0 w-full h-[320px] md:h-[440px] z-0 pointer-events-none"
           style={{
             backgroundImage:
               "url('https://i.postimg.cc/7hLqB21s/Netflix-all-movies-and-series-featured-image.jpg')",
@@ -280,9 +300,9 @@ export default function LandingPage({
         </div>
 
         {/* Content */}
-        <div className="relative z-10 px-4 pt-2 pb-8">
+        <div className="relative z-10 px-4 pt-2 pb-10">
           {/* MoviesVerseBD Logo */}
-          <div className="relative flex justify-center -mt-2 mb-2">
+          <div className="relative flex justify-center -mt-2 mb-4">
             <img
               src="https://i.postimg.cc/Bn4cPRwz/20288-removebg-preview.png"
               alt="MoviesVerseBD Logo"
@@ -290,8 +310,45 @@ export default function LandingPage({
             />
           </div>
 
-          {/* Typing animation */}
-          <div className="flex justify-center items-center gap-2 mb-6 min-h-[30px]">
+          {/* ✅ Visit Main Site Button — highlight kora, click korle home page e jabe */}
+          <div className="flex justify-center mb-6">
+            <button
+              type="button"
+              onClick={handleHeroEnterSite}
+              className="group relative inline-flex items-center gap-3 px-8 py-4 rounded-full font-bold text-white text-base md:text-lg transition-all duration-300 hover:scale-105 active:scale-95"
+              style={{
+                background: "linear-gradient(135deg, #16a34a 0%, #22c55e 50%, #16a34a 100%)",
+                boxShadow:
+                  "0 0 20px rgba(34, 197, 94, 0.6), 0 0 40px rgba(34, 197, 94, 0.4), inset 0 1px 0 rgba(255,255,255,0.3)",
+                border: "1px solid rgba(34, 197, 94, 0.8)",
+              }}
+            >
+              <span className="relative z-10">Visit Main Site</span>
+              <svg
+                className="w-5 h-5 relative z-10 transition-transform duration-300 group-hover:translate-x-1"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M5 12h14M13 5l7 7-7 7" />
+              </svg>
+              {/* Animated glow ring */}
+              <span
+                className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
+                style={{
+                  background:
+                    "radial-gradient(circle, rgba(34,197,94,0.4) 0%, transparent 70%)",
+                  filter: "blur(12px)",
+                }}
+              />
+            </button>
+          </div>
+
+          {/* ✅ Typing animation — Visit Main Site button er niche */}
+          <div className="flex justify-center items-center gap-2 mb-2 min-h-[30px]">
             <svg
               className="w-5 h-5 text-green-400 flex-shrink-0"
               viewBox="0 0 24 24"
@@ -312,8 +369,8 @@ export default function LandingPage({
         </div>
       </section>
 
-      {/* ✅ Steps bar */}
-      <div className="steps-bar reveal">
+      {/* ✅ Steps bar — arektu niche namiye dewa hoyeche (mt-8 add kore) */}
+      <div className="steps-bar reveal mt-8">
         <div className="step-item">
           <div className="num-badge">1</div>
           <div className="text">
@@ -535,4 +592,4 @@ export default function LandingPage({
       </footer>
     </div>
   );
-      }
+}

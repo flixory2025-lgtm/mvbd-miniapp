@@ -5,10 +5,10 @@ import { ChevronLeft, ChevronRight, Play, Film, Star } from "lucide-react"
 import { movies } from "@/lib/movie-data"
 
 // ✅ ১. উপরের "Top Movie Series" এর জন্য আলাদা আইডি (এখানে আপনার আইডি বসান)
-const topSeriesIds = [3323, 3325, 3329, 3336, 3337, 3338]
+const topSeriesIds = [3323, 3389, 3365, 3364, 3363, 3362, 3361, 3360, 3356, 3355, 3352, 3351, 3326, 3321, 3302]
 
 // ✅ ২. নিচের "Trending Movies" কারোসেলের জন্য আলাদা আইডি (এখানে আপনার আইডি বসান)
-const trendingIds = [3340, 3341, 3342, 3344, 3345, 3346, 3347, 3348]
+const trendingIds = [3360, 3361, 3362, 3363, 3364, 3365, 3366, 3367, 3368, 3369, 3370, 3371, 3373, 3375, 3376, 3377, 3379, 3380, 3382, 3383, 3386, 3387, 3355, 3354, 3352, 3351, 3350, 3349, 3348, 3347, 3346, 3345, 3344, 3342, 3341, 3340, 3339, 3338, 3337, 3335, 3389, 3388]
 
 interface TrendingCarouselProps {
   onMovieClick: (movie: (typeof movies)[0]) => void

@@ -16,6 +16,7 @@ import {
   saveHistoryToFirestore,
   loadHistoryFromFirestore,
   type SearchHistoryItem,
+  type HistoryScope,
 } from "@/lib/search-history"
 
 interface HeaderProps {
@@ -89,8 +90,8 @@ export default function Header({
 
   const { user } = useAuth()
 
-  // History storage key based on pageType (separate history for anime/home/series)
-  const historyKey = pageType === "anime" ? "anime" : "home"
+  // History scope based on pageType (separate history for anime/home)
+  const historyScope: HistoryScope = pageType === "anime" ? "anime" : "home"
 
   // Search data - anime page e shudhu anime, home page e movies + series
   const dataSource = useMemo(() => {
@@ -112,18 +113,21 @@ export default function Header({
     return combined
   }, [pageType, searchData])
 
-  // Smart search suggestions
+  // Smart search suggestions — word by word match, latest (highest id) upore
   const allSearchSuggestions = useMemo(() => {
     const query = searchQuery.trim().toLowerCase()
     if (!query) return []
 
+    // Query কে word এ ভাগ করি (space দিয়ে)
     const queryWords = query.split(/\s+/).filter(Boolean)
 
+    // Prottek word title er moddhe ache kina check kori
     const matches = dataSource.filter((item) => {
-      const title = item.title.toLowerCase()
+      const title = String(item.title || "").toLowerCase()
       return queryWords.every((word) => title.includes(word))
     })
 
+    // Latest (highest id) upore dekhabo
     return [...matches].sort((a, b) => {
       const idA = typeof a.id === "number" ? a.id : 0
       const idB = typeof b.id === "number" ? b.id : 0
@@ -131,21 +135,21 @@ export default function Header({
     })
   }, [searchQuery, dataSource])
 
-  // Load history on mount (pageType onujayi separate history)
+  // Load history on mount (scope onujayi separate)
   useEffect(() => {
-    cleanupExpiredHistory(historyKey)
-    setHistory(getLocalHistory(historyKey))
-  }, [historyKey])
+    cleanupExpiredHistory(historyScope)
+    setHistory(getLocalHistory(historyScope))
+  }, [historyScope])
 
   // Auto cleanup — every 1 hour
   useEffect(() => {
     const interval = setInterval(() => {
-      cleanupExpiredHistory(historyKey)
-      setHistory(getLocalHistory(historyKey))
+      cleanupExpiredHistory(historyScope)
+      setHistory(getLocalHistory(historyScope))
     }, 60 * 60 * 1000)
 
     return () => clearInterval(interval)
-  }, [historyKey])
+  }, [historyScope])
 
   // When user logs in, sync Firestore history
   useEffect(() => {
@@ -157,11 +161,11 @@ export default function Header({
       try {
         const remoteHistory = await loadHistoryFromFirestore(
           user!.uid,
-          historyKey
+          historyScope
         )
         if (cancelled) return
 
-        const local = getLocalHistory(historyKey)
+        const local = getLocalHistory(historyScope)
         const combined = [...remoteHistory, ...local]
 
         const seen = new Set<string>()
@@ -183,7 +187,7 @@ export default function Header({
           user!.uid,
           merged,
           (user as any)?.displayName || undefined,
-          historyKey
+          historyScope
         )
       } catch (err) {
         console.error("Firestore sync failed:", err)
@@ -195,7 +199,7 @@ export default function Header({
     return () => {
       cancelled = true
     }
-  }, [user?.uid, historyKey])
+  }, [user?.uid, historyScope])
 
   // Click outside → close dropdown
   useEffect(() => {
@@ -214,12 +218,12 @@ export default function Header({
     }
   }, [])
 
-  // Save history (pageType onujayi separate)
+  // Save history (scope onujayi separate)
   const saveSearchToHistory = async (query: string) => {
     const trimmed = query.trim()
     if (!trimmed) return
 
-    const updated = addToLocalHistory(trimmed, historyKey)
+    const updated = addToLocalHistory(trimmed, historyScope)
     setHistory(updated)
 
     if (user?.uid) {
@@ -228,7 +232,7 @@ export default function Header({
           user.uid,
           updated,
           (user as any)?.displayName || undefined,
-          historyKey
+          historyScope
         )
       } catch (err) {
         console.error("Firestore save failed:", err)
@@ -262,7 +266,7 @@ export default function Header({
     e.stopPropagation()
     e.preventDefault()
 
-    const updated = removeFromLocalHistory(item.query, historyKey)
+    const updated = removeFromLocalHistory(item.query, historyScope)
     setHistory(updated)
 
     if (user?.uid) {
@@ -271,7 +275,7 @@ export default function Header({
           user.uid,
           updated,
           (user as any)?.displayName || undefined,
-          historyKey
+          historyScope
         )
       } catch {}
     }
@@ -309,8 +313,7 @@ export default function Header({
   const cubeTexts = TYPING_SUGGESTIONS.slice(0, 4)
 
   const hasQuery = searchQuery.trim().length > 0
-  const showHistoryDropdown =
-    isFocused && !hasQuery && history.length > 0
+  const showHistoryDropdown = isFocused && !hasQuery && history.length > 0
   const showSuggestionsDropdown = isFocused && hasQuery
 
   const handleContainerClick = () => {
@@ -344,13 +347,28 @@ export default function Header({
           animation: liquidGlassZoom .6s ease-out forwards, liquidGlassGlow .6s ease-out;
         }
         .search-input-liquid {
-          background: transparent;
-          border: none;
+          background: transparent !important;
+          border: none !important;
+          outline: none !important;
           width: 100%;
           height: 100%;
-          color: white;
+          color: #ffffff !important;
+          caret-color: #64c8ff;
+          font-size: 14px;
+          line-height: 20px;
+          padding: 0;
+          margin: 0;
+          position: relative;
+          z-index: 30;
         }
         .search-input-liquid::placeholder { color: rgba(255,255,255,.5); }
+        .search-input-liquid:-webkit-autofill,
+        .search-input-liquid:-webkit-autofill:hover,
+        .search-input-liquid:-webkit-autofill:focus {
+          -webkit-text-fill-color: #ffffff;
+          -webkit-box-shadow: 0 0 0px 1000px rgba(20,20,30,.98) inset;
+          transition: background-color 5000s ease-in-out 0s;
+        }
         .search-suggestions {
           position: absolute;
           top: 100%;
@@ -410,6 +428,7 @@ export default function Header({
           pointer-events: none;
           display: flex;
           align-items: center;
+          z-index: 1;
         }
         .cube {
           position: absolute;
@@ -429,6 +448,7 @@ export default function Header({
           white-space: nowrap;
           backface-visibility: hidden;
           transform-origin: center center;
+          pointer-events: none;
         }
         .face-1 { transform: rotateX(0deg) translateZ(10px); }
         .face-2 { transform: rotateX(90deg) translateZ(10px); }
@@ -443,11 +463,9 @@ export default function Header({
           100% { transform: translateZ(-10px) rotateX(360deg); }
         }
         /* Hide cube when input is focused or has query */
-        .search-focused .cube-wrapper {
-          display: none;
-        }
+        .search-focused .cube-wrapper,
         .search-has-query .cube-wrapper {
-          display: none;
+          display: none !important;
         }
       `}</style>
 
@@ -465,11 +483,13 @@ export default function Header({
         <div ref={wrapperRef} className="flex-1 relative">
           <div
             onClick={handleContainerClick}
-            className={`liquid-glass-search rounded-2xl px-4 py-3 flex items-center gap-3 relative ${isFocused ? "search-focused" : ""} ${hasQuery ? "search-has-query" : ""}`}
+            className={`liquid-glass-search rounded-2xl px-4 py-3 flex items-center gap-3 relative ${
+              isFocused ? "search-focused" : ""
+            } ${hasQuery ? "search-has-query" : ""}`}
           >
             <Search className="w-5 h-5 text-slate-300 flex-shrink-0 z-20 relative pointer-events-none" />
 
-            {/* Input area wrapper - relative container */}
+            {/* Input area wrapper */}
             <div className="flex-1 relative" style={{ height: "20px" }}>
               {/* 3D Cube Animation Placeholder - behind input */}
               <div className="cube-wrapper">
@@ -497,8 +517,11 @@ export default function Header({
                   if (e.key === "Enter") handleSubmitSearch(searchQuery)
                   if (e.key === "Escape") setIsFocused(false)
                 }}
-                className="search-input-liquid absolute inset-0 w-full text-white text-sm outline-none bg-transparent z-20"
-                style={{ padding: 0, margin: 0, lineHeight: "20px" }}
+                autoComplete="off"
+                autoCorrect="off"
+                autoCapitalize="off"
+                spellCheck={false}
+                className="search-input-liquid absolute inset-0"
               />
             </div>
 
@@ -537,7 +560,7 @@ export default function Header({
             ))}
           </div>
 
-          {/* HISTORY DROPDOWN (query খালি) */}
+          {/* HISTORY DROPDOWN */}
           {showHistoryDropdown && (
             <div className="search-suggestions">
               <div className="dropdown-header">
@@ -576,7 +599,7 @@ export default function Header({
             </div>
           )}
 
-          {/* SUGGESTIONS DROPDOWN (query টাইপ করলে) */}
+          {/* SUGGESTIONS DROPDOWN */}
           {showSuggestionsDropdown && (
             <div className="search-suggestions">
               {allSearchSuggestions.length > 0 ? (

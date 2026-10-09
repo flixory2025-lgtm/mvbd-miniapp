@@ -16,6 +16,7 @@ import {
   saveHistoryToFirestore,
   loadHistoryFromFirestore,
   type SearchHistoryItem,
+  type HistoryScope,
 } from "@/lib/search-history"
 
 interface HeaderProps {
@@ -68,10 +69,6 @@ const TYPING_SUGGESTIONS_SERIES = [
   "Romance series...",
 ]
 
-const TYPING_SPEED = 50
-const DELETE_SPEED = 30
-const PAUSE_DURATION = 2500
-
 export default function Header({
   onSearch,
   searchQuery = "",
@@ -84,49 +81,53 @@ export default function Header({
     Array<{ id: number; x: number; y: number }>
   >([])
 
-  const [displayedPlaceholder, setDisplayedPlaceholder] = useState("")
-  const [currentSuggestionIndex, setCurrentSuggestionIndex] = useState(0)
-  const [isTyping, setIsTyping] = useState(true)
-
   // Search history state
   const [history, setHistory] = useState<SearchHistoryItem[]>([])
 
-  const placeholderTimeoutRef = useRef<NodeJS.Timeout>()
   const bubbleIdRef = useRef(0)
   const wrapperRef = useRef<HTMLDivElement>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
 
   const { user } = useAuth()
 
-  // Typing placeholder suggestions
-  const TYPING_SUGGESTIONS =
-    pageType === "anime"
-      ? TYPING_SUGGESTIONS_ANIME
-      : pageType === "series"
-        ? TYPING_SUGGESTIONS_SERIES
-        : TYPING_SUGGESTIONS_HOME
+  // History scope based on pageType (separate history for anime/home)
+  const historyScope: HistoryScope = pageType === "anime" ? "anime" : "home"
 
-  // Search data
+  // Search data - anime page e shudhu anime, home page e movies + series
   const dataSource = useMemo(() => {
     if (searchData) return searchData
     if (pageType === "anime") return animes
     if (pageType === "series") {
       return movies.filter((m) => m.title.toLowerCase().includes("season"))
     }
-    return movies
+    // Home page: movies + series একসাথে
+    const seriesMovies = movies.filter((m) =>
+      m.title.toLowerCase().includes("season")
+    )
+    const combined = [...movies]
+    seriesMovies.forEach((s) => {
+      if (!combined.find((m) => m.title === s.title)) {
+        combined.push(s)
+      }
+    })
+    return combined
   }, [pageType, searchData])
 
-  // Smart search suggestions
+  // Smart search suggestions — word by word match, latest (highest id) upore
   const allSearchSuggestions = useMemo(() => {
     const query = searchQuery.trim().toLowerCase()
     if (!query) return []
 
+    // Query কে word এ ভাগ করি (space দিয়ে)
     const queryWords = query.split(/\s+/).filter(Boolean)
 
+    // Prottek word title er moddhe ache kina check kori
     const matches = dataSource.filter((item) => {
-      const title = item.title.toLowerCase()
+      const title = String(item.title || "").toLowerCase()
       return queryWords.every((word) => title.includes(word))
     })
 
+    // Latest (highest id) upore dekhabo
     return [...matches].sort((a, b) => {
       const idA = typeof a.id === "number" ? a.id : 0
       const idB = typeof b.id === "number" ? b.id : 0
@@ -134,21 +135,21 @@ export default function Header({
     })
   }, [searchQuery, dataSource])
 
-  // Load history on mount
+  // Load history on mount (scope onujayi separate)
   useEffect(() => {
-    cleanupExpiredHistory()
-    setHistory(getLocalHistory())
-  }, [])
+    cleanupExpiredHistory(historyScope)
+    setHistory(getLocalHistory(historyScope))
+  }, [historyScope])
 
-  // Auto cleanup — every 1 hour (in case user keeps tab open)
+  // Auto cleanup — every 1 hour
   useEffect(() => {
     const interval = setInterval(() => {
-      cleanupExpiredHistory()
-      setHistory(getLocalHistory())
-    }, 60 * 60 * 1000) // 1 hour
+      cleanupExpiredHistory(historyScope)
+      setHistory(getLocalHistory(historyScope))
+    }, 60 * 60 * 1000)
 
     return () => clearInterval(interval)
-  }, [])
+  }, [historyScope])
 
   // When user logs in, sync Firestore history
   useEffect(() => {
@@ -158,10 +159,13 @@ export default function Header({
 
     async function syncFirestore() {
       try {
-        const remoteHistory = await loadHistoryFromFirestore(user!.uid)
+        const remoteHistory = await loadHistoryFromFirestore(
+          user!.uid,
+          historyScope
+        )
         if (cancelled) return
 
-        const local = getLocalHistory()
+        const local = getLocalHistory(historyScope)
         const combined = [...remoteHistory, ...local]
 
         const seen = new Set<string>()
@@ -182,7 +186,8 @@ export default function Header({
         await saveHistoryToFirestore(
           user!.uid,
           merged,
-          (user as any)?.displayName || undefined
+          (user as any)?.displayName || undefined,
+          historyScope
         )
       } catch (err) {
         console.error("Firestore sync failed:", err)
@@ -194,7 +199,7 @@ export default function Header({
     return () => {
       cancelled = true
     }
-  }, [user?.uid])
+  }, [user?.uid, historyScope])
 
   // Click outside → close dropdown
   useEffect(() => {
@@ -213,12 +218,12 @@ export default function Header({
     }
   }, [])
 
-  // Save history
+  // Save history (scope onujayi separate)
   const saveSearchToHistory = async (query: string) => {
     const trimmed = query.trim()
     if (!trimmed) return
 
-    const updated = addToLocalHistory(trimmed)
+    const updated = addToLocalHistory(trimmed, historyScope)
     setHistory(updated)
 
     if (user?.uid) {
@@ -226,7 +231,8 @@ export default function Header({
         await saveHistoryToFirestore(
           user.uid,
           updated,
-          (user as any)?.displayName || undefined
+          (user as any)?.displayName || undefined,
+          historyScope
         )
       } catch (err) {
         console.error("Firestore save failed:", err)
@@ -241,6 +247,7 @@ export default function Header({
   const handleClearSearch = () => {
     onSearch("")
     setIsFocused(false)
+    inputRef.current?.focus()
   }
 
   const handleSubmitSearch = (query: string) => {
@@ -259,7 +266,7 @@ export default function Header({
     e.stopPropagation()
     e.preventDefault()
 
-    const updated = removeFromLocalHistory(item.query)
+    const updated = removeFromLocalHistory(item.query, historyScope)
     setHistory(updated)
 
     if (user?.uid) {
@@ -267,7 +274,8 @@ export default function Header({
         await saveHistoryToFirestore(
           user.uid,
           updated,
-          (user as any)?.displayName || undefined
+          (user as any)?.displayName || undefined,
+          historyScope
         )
       } catch {}
     }
@@ -293,57 +301,21 @@ export default function Header({
     setBubbles((prev) => [...prev, ...newBubbles])
   }
 
-  const currentSuggestion = TYPING_SUGGESTIONS[currentSuggestionIndex]
+  // Determine current suggestions array based on pageType
+  const TYPING_SUGGESTIONS =
+    pageType === "anime"
+      ? TYPING_SUGGESTIONS_ANIME
+      : pageType === "series"
+        ? TYPING_SUGGESTIONS_SERIES
+        : TYPING_SUGGESTIONS_HOME
 
-  useEffect(() => {
-    if (placeholderTimeoutRef.current) {
-      clearTimeout(placeholderTimeoutRef.current)
-    }
-
-    if (isTyping) {
-      if (displayedPlaceholder.length < currentSuggestion.length) {
-        placeholderTimeoutRef.current = setTimeout(() => {
-          setDisplayedPlaceholder(
-            currentSuggestion.slice(0, displayedPlaceholder.length + 1)
-          )
-        }, TYPING_SPEED)
-      } else {
-        placeholderTimeoutRef.current = setTimeout(() => {
-          setIsTyping(false)
-        }, PAUSE_DURATION)
-      }
-    } else {
-      if (displayedPlaceholder.length > 0) {
-        placeholderTimeoutRef.current = setTimeout(() => {
-          setDisplayedPlaceholder(displayedPlaceholder.slice(0, -1))
-        }, DELETE_SPEED)
-      } else {
-        placeholderTimeoutRef.current = setTimeout(() => {
-          setCurrentSuggestionIndex(
-            (prev) => (prev + 1) % TYPING_SUGGESTIONS.length
-          )
-          setDisplayedPlaceholder("")
-          setIsTyping(true)
-        }, 300)
-      }
-    }
-
-    return () => {
-      if (placeholderTimeoutRef.current) {
-        clearTimeout(placeholderTimeoutRef.current)
-      }
-    }
-  }, [
-    isTyping,
-    displayedPlaceholder,
-    currentSuggestion,
-    TYPING_SUGGESTIONS.length,
-  ])
+  // Extract first 4 items for the cube faces
+  const cubeTexts = TYPING_SUGGESTIONS.slice(0, 4)
 
   const hasQuery = searchQuery.trim().length > 0
-  const showHistoryDropdown =
-    isFocused && !hasQuery && history.length > 0
+  const showHistoryDropdown = isFocused && !hasQuery && history.length > 0
   const showSuggestionsDropdown = isFocused && hasQuery
+  const showCube = !isFocused && !hasQuery
 
   return (
     <header className="sticky top-0 z-40 bg-black/40 backdrop-blur-xl border-b border-white/10 shadow-lg">
@@ -363,6 +335,7 @@ export default function Header({
           backdrop-filter: blur(20px);
           border: 1px solid rgba(255,255,255,.2);
           transition: all .3s ease;
+          cursor: text;
         }
         .liquid-glass-search:focus-within {
           background: rgba(255,255,255,.08);
@@ -370,8 +343,29 @@ export default function Header({
           border: 1px solid rgba(100,200,255,.4);
           animation: liquidGlassZoom .6s ease-out forwards, liquidGlassGlow .6s ease-out;
         }
-        .search-input-liquid { background: transparent; border: none; }
+        .search-input-liquid {
+          background: transparent !important;
+          border: none !important;
+          outline: none !important;
+          width: 100%;
+          height: 100%;
+          color: #ffffff !important;
+          caret-color: #64c8ff;
+          font-size: 14px;
+          line-height: 20px;
+          padding: 0;
+          margin: 0;
+          position: relative;
+          z-index: 30;
+        }
         .search-input-liquid::placeholder { color: rgba(255,255,255,.5); }
+        .search-input-liquid:-webkit-autofill,
+        .search-input-liquid:-webkit-autofill:hover,
+        .search-input-liquid:-webkit-autofill:focus {
+          -webkit-text-fill-color: #ffffff;
+          -webkit-box-shadow: 0 0 0px 1000px rgba(20,20,30,.98) inset;
+          transition: background-color 5000s ease-in-out 0s;
+        }
         .search-suggestions {
           position: absolute;
           top: 100%;
@@ -415,7 +409,58 @@ export default function Header({
           0% { opacity: 1; transform: scale(1) translateY(0); filter: blur(0); }
           100% { opacity: 0; transform: scale(.2) translateY(-50px); filter: blur(2px); }
         }
-        .liquid-bubble { animation: liquidBubbleRise .8s ease-out forwards; }
+        .liquid-bubble {
+          animation: liquidBubbleRise .8s ease-out forwards;
+          pointer-events: none;
+        }
+
+        /* ---- 3D CUBE ANIMATION CSS ---- */
+        .cube-container {
+          position: relative;
+          flex: 1;
+          height: 20px;
+          min-width: 0;
+        }
+        .cube-wrapper {
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          perspective: 800px;
+          pointer-events: none;
+        }
+        .cube {
+          position: absolute;
+          width: 100%;
+          height: 20px;
+          transform-style: preserve-3d;
+          animation: rotateCubeUp 25s infinite cubic-bezier(0.4, 0.0, 0.2, 1);
+        }
+        .cube-face {
+          position: absolute;
+          width: 100%;
+          height: 100%;
+          display: flex;
+          align-items: center;
+          color: rgba(255,255,255,.5);
+          font-size: 14px;
+          white-space: nowrap;
+          backface-visibility: hidden;
+          transform-origin: center center;
+        }
+        .face-1 { transform: rotateX(0deg) translateZ(10px); }
+        .face-2 { transform: rotateX(90deg) translateZ(10px); }
+        .face-3 { transform: rotateX(180deg) translateZ(10px); }
+        .face-4 { transform: rotateX(270deg) translateZ(10px); }
+
+        @keyframes rotateCubeUp {
+          0%, 20% { transform: translateZ(-10px) rotateX(0deg); }
+          25%, 45% { transform: translateZ(-10px) rotateX(90deg); }
+          50%, 70% { transform: translateZ(-10px) rotateX(180deg); }
+          75%, 95% { transform: translateZ(-10px) rotateX(270deg); }
+          100% { transform: translateZ(-10px) rotateX(360deg); }
+        }
       `}</style>
 
       <div className="px-4 py-4 flex items-center gap-4">
@@ -430,30 +475,83 @@ export default function Header({
 
         {/* Search */}
         <div ref={wrapperRef} className="flex-1 relative">
-          <div className="liquid-glass-search rounded-2xl px-4 py-3 flex items-center gap-3">
-            <Search className="w-5 h-5 text-slate-300 flex-shrink-0" />
+          <div
+            onClick={() => inputRef.current?.focus()}
+            className={`liquid-glass-search rounded-2xl px-4 py-3 flex items-center gap-3 relative ${
+              isFocused ? "search-focused" : ""
+            } ${hasQuery ? "search-has-query" : ""}`}
+          >
+            <Search className="w-5 h-5 text-slate-300 flex-shrink-0 pointer-events-none" />
 
-            <input
-              type="text"
-              placeholder={displayedPlaceholder || TYPING_SUGGESTIONS[0]}
-              value={searchQuery}
-              onChange={handleSearch}
-              onFocus={() => {
-                setIsFocused(true)
-                createBubbles()
-              }}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") handleSubmitSearch(searchQuery)
-                if (e.key === "Escape") setIsFocused(false)
-              }}
-              className="search-input-liquid w-full text-white text-sm outline-none"
-            />
+            {/* Input + Cube container */}
+            <div className="cube-container">
+              {/* Cube (only visible when not focused and no query) */}
+              {showCube && (
+                <div className="cube-wrapper">
+                  <div className="cube">
+                    {cubeTexts.map((text, index) => (
+                      <div
+                        key={index}
+                        className={`cube-face face-${index + 1}`}
+                      >
+                        {text}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Input field — always visible, fully clickable */}
+              <input
+                ref={inputRef}
+                type="text"
+                placeholder=""
+                value={searchQuery}
+                onChange={handleSearch}
+                onFocus={() => {
+                  setIsFocused(true)
+                  createBubbles()
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleSubmitSearch(searchQuery)
+                  if (e.key === "Escape") setIsFocused(false)
+                }}
+                autoComplete="off"
+                autoCorrect="off"
+                autoCapitalize="off"
+                spellCheck={false}
+                className="search-input-liquid"
+                style={{
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  width: "100%",
+                  height: "100%",
+                  background: "transparent",
+                  border: "none",
+                  outline: "none",
+                  color: "#ffffff",
+                  caretColor: "#64c8ff",
+                  fontSize: "14px",
+                  lineHeight: "20px",
+                  padding: 0,
+                  margin: 0,
+                  zIndex: 30,
+                  pointerEvents: "auto",
+                }}
+              />
+            </div>
 
             {searchQuery && (
               <button
                 type="button"
-                onClick={handleClearSearch}
-                className="text-slate-400 hover:text-white transition"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  handleClearSearch()
+                }}
+                className="text-slate-400 hover:text-white transition relative z-40"
                 aria-label="Clear search"
               >
                 <X className="w-4 h-4" />
@@ -481,7 +579,7 @@ export default function Header({
             ))}
           </div>
 
-          {/* HISTORY DROPDOWN (query খালি) */}
+          {/* HISTORY DROPDOWN */}
           {showHistoryDropdown && (
             <div className="search-suggestions">
               <div className="dropdown-header">
@@ -520,7 +618,7 @@ export default function Header({
             </div>
           )}
 
-          {/* SUGGESTIONS DROPDOWN (query টাইপ করলে) */}
+          {/* SUGGESTIONS DROPDOWN */}
           {showSuggestionsDropdown && (
             <div className="search-suggestions">
               {allSearchSuggestions.length > 0 ? (
@@ -564,4 +662,4 @@ export default function Header({
       </div>
     </header>
   )
-          }
+}

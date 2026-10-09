@@ -95,7 +95,17 @@ export default function Header({
     if (pageType === "series") {
       return movies.filter((m) => m.title.toLowerCase().includes("season"))
     }
-    return movies
+    // Home page: movies + series একসাথে
+    const seriesMovies = movies.filter((m) =>
+      m.title.toLowerCase().includes("season")
+    )
+    const combined = [...movies]
+    seriesMovies.forEach((s) => {
+      if (!combined.find((m) => m.title === s.title)) {
+        combined.push(s)
+      }
+    })
+    return combined
   }, [pageType, searchData])
 
   // Smart search suggestions
@@ -310,6 +320,7 @@ export default function Header({
           backdrop-filter: blur(20px);
           border: 1px solid rgba(255,255,255,.2);
           transition: all .3s ease;
+          cursor: text;
         }
         .liquid-glass-search:focus-within {
           background: rgba(255,255,255,.08);
@@ -317,7 +328,14 @@ export default function Header({
           border: 1px solid rgba(100,200,255,.4);
           animation: liquidGlassZoom .6s ease-out forwards, liquidGlassGlow .6s ease-out;
         }
-        .search-input-liquid { background: transparent; border: none; }
+        .search-input-liquid {
+          background: transparent;
+          border: none;
+          z-index: 10;
+          position: relative;
+          cursor: text;
+          pointer-events: auto;
+        }
         .search-input-liquid::placeholder { color: rgba(255,255,255,.5); }
         .search-suggestions {
           position: absolute;
@@ -371,6 +389,7 @@ export default function Header({
           height: 20px;
           perspective: 800px;
           overflow: hidden;
+          pointer-events: none;
         }
         .cube {
           position: absolute;
@@ -378,6 +397,8 @@ export default function Header({
           height: 100%;
           transform-style: preserve-3d;
           animation: rotateCubeUp 25s infinite cubic-bezier(0.4, 0.0, 0.2, 1);
+          pointer-events: none;
+          user-select: none;
         }
         .cube-face {
           position: absolute;
@@ -390,6 +411,8 @@ export default function Header({
           white-space: nowrap;
           backface-visibility: hidden;
           transform-origin: center center;
+          pointer-events: none;
+          user-select: none;
         }
         .face-1 { transform: rotateX(0deg) translateZ(10px); }
         .face-2 { transform: rotateX(90deg) translateZ(10px); }
@@ -421,7 +444,14 @@ export default function Header({
 
         {/* Search */}
         <div ref={wrapperRef} className="flex-1 relative">
-          <div className={`liquid-glass-search rounded-2xl px-4 py-3 flex items-center gap-3 ${isFocused ? 'search-focused' : ''}`}>
+          <div
+            className={`liquid-glass-search rounded-2xl px-4 py-3 flex items-center gap-3 ${isFocused ? 'search-focused' : ''}`}
+            onClick={() => {
+              const input = wrapperRef.current?.querySelector('input')
+              input?.focus()
+            }}
+            style={{ cursor: 'text' }}
+          >
             <Search className="w-5 h-5 text-slate-300 flex-shrink-0" />
 
             {/* 3D Cube Animation Placeholder */}
@@ -447,6 +477,15 @@ export default function Header({
                   if (e.key === "Enter") handleSubmitSearch(searchQuery)
                   if (e.key === "Escape") setIsFocused(false)
                 }}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  ;(e.target as HTMLInputElement).focus()
+                }}
+                inputMode="search"
+                autoComplete="off"
+                autoCorrect="off"
+                autoCapitalize="off"
+                spellCheck={false}
                 className="search-input-liquid absolute inset-0 w-full text-white text-sm outline-none bg-transparent"
               />
             </div>
@@ -566,4 +605,4 @@ export default function Header({
       </div>
     </header>
   )
-                  }
+              }

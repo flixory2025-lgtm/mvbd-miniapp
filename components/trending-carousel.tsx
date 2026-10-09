@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useRef, useCallback } from "react"
-import { ChevronLeft, ChevronRight } from "lucide-react"
+import { ChevronLeft, ChevronRight, Play, Film, Star } from "lucide-react"
 import { movies } from "@/lib/movie-data"
 
 // ✅ ১. উপরের "Top Movie Series" এর জন্য আলাদা আইডি (এখানে আপনার আইডি বসান)
@@ -128,7 +128,7 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
     setTopIsDragging(false)
     setTopIsTransitioning(true)
 
-    const threshold = containerWidth * 0.15
+    const threshold = containerWidth * 0.15 // ১৫% টানা হলেই স্লাইড হবে
 
     if (topDragDistance < -threshold) {
       setTopIndex((prev) => (prev + 1) % topSeriesMovies.length)
@@ -194,63 +194,6 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
     else handlePrev()
   }
 
-  // ✅ উপরের স্লাইডারের জন্য 3D কার্ড পজিশন (ট্রেন্ডিং এর মতো)
-  const getTopCardStyle = (index: number) => {
-    const total = topSeriesMovies.length
-    let offset = (index - topIndex + total) % total
-    if (offset > total / 2) offset -= total
-
-    const dragProgress = containerWidth > 0 ? topDragDistance / containerWidth : 0
-    const adjustedOffset = offset + dragProgress
-
-    // ✅ কার্ড ৪টির বেশি দূরে থাকলে হাইড
-    if (adjustedOffset < -4 || adjustedOffset > 4) {
-      return { opacity: 0, transform: 'scale(0)', pointerEvents: 'none' as const, zIndex: 0 }
-    }
-
-    let x = 0, z = 0, scale = 1, opacity = 1, shadow = '', rotateY = 0
-
-    // ✅ মোবাইল ও ডেস্কটপের জন্য স্পেসিং (ট্রেন্ডিং এর মতোই)
-    const xSpacing = isMobile ? 110 : 130
-    const zSpacing = -70
-
-    if (adjustedOffset >= 0 && adjustedOffset <= 1) {
-      const p = adjustedOffset
-      x = xSpacing * p; z = zSpacing * p; scale = 1 - (0.15 * p); opacity = 1 - (0.3 * p)
-      shadow = p > 0.5 ? '0 15px 30px rgba(0,0,0,0.5)' : '0 30px 60px rgba(0,0,0,0.9)'
-      rotateY = 5 * p
-    } else if (adjustedOffset > 1 && adjustedOffset <= 4) {
-      const p = adjustedOffset - 1
-      const stepX = xSpacing + (xSpacing * 0.75 * p)
-      x = stepX; z = zSpacing - (zSpacing * 0.6 * p); scale = 0.85 - (0.12 * p); opacity = 0.7 - (0.2 * p)
-      shadow = '0 10px 20px rgba(0,0,0,0.4)'; rotateY = 5 + (2 * p)
-    } else if (adjustedOffset < 0 && adjustedOffset >= -1) {
-      const p = Math.abs(adjustedOffset)
-      x = -xSpacing * p; z = zSpacing * p; scale = 1 - (0.15 * p); opacity = 1 - (0.3 * p)
-      shadow = p > 0.5 ? '0 15px 30px rgba(0,0,0,0.5)' : '0 30px 60px rgba(0,0,0,0.9)'
-      rotateY = -5 * p
-    } else if (adjustedOffset < -1 && adjustedOffset >= -4) {
-      const p = Math.abs(adjustedOffset) - 1
-      const stepX = -xSpacing - (xSpacing * 0.75 * p)
-      x = stepX; z = zSpacing - (zSpacing * 0.6 * p); scale = 0.85 - (0.12 * p); opacity = 0.7 - (0.2 * p)
-      shadow = '0 10px 20px rgba(0,0,0,0.4)'; rotateY = -5 - (2 * p)
-    } else {
-      x = adjustedOffset > 0 ? 600 : -600; z = -400; scale = 0.4; opacity = 0; shadow = 'none'; rotateY = 0
-    }
-
-    if (offset === 0 && Math.abs(dragProgress) < 0.05) {
-      x = 0; z = 0; scale = 1; opacity = 1; rotateY = 0
-      shadow = '0 30px 60px rgba(0, 0, 0, 0.9), 0 0 30px rgba(255, 255, 255, 0.05)'
-    }
-
-    return {
-      transform: `translateX(${x}px) translateZ(${z}px) scale(${scale}) rotateY(${rotateY}deg)`,
-      opacity, boxShadow: shadow,
-      zIndex: Math.round(100 - Math.abs(adjustedOffset) * 10),
-      transition: topIsTransitioning ? "all 0.5s cubic-bezier(0.25, 1, 0.5, 1)" : "none",
-    }
-  }
-
   // ✅ নিচের কারোসেলের 3D কার্ড পজিশন (Free Swipe)
   const getCardStyle = (index: number) => {
     const total = trendingMovies.length
@@ -307,16 +250,19 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
     }
   }
 
+  // ✅ উপরের স্লাইডারের ডাটা
+  const currentTopMovie = topSeriesMovies[topIndex]
+
   return (
     <section className="relative pb-4 overflow-hidden bg-black">
 
       {/* ========================================================= */}
-      {/* ✅✅✅ ১. উপরের সেকশন: Top Movie Series (3D Card Style, ট্রেন্ডিং এর মতো) ✅✅✅ */}
+      {/* ✅✅✅ ১. উপরের সেকশন: Top Movie Series (স্ক্রিনশটের মতো) ✅✅✅ */}
       {/* ========================================================= */}
       <div
         ref={topContainerRef}
-        className="relative w-full h-[300px] md:h-[500px] overflow-hidden cursor-grab active:cursor-grabbing select-none"
-        style={{ touchAction: "pan-y", perspective: "1400px" }}
+        className="relative w-full h-[350px] md:h-[550px] overflow-hidden cursor-grab active:cursor-grabbing select-none bg-gray-900"
+        style={{ touchAction: "pan-y" }}
         onTouchStart={handleTopTouchStart}
         onTouchMove={handleTopTouchMove}
         onTouchEnd={handleTopTouchEnd}
@@ -326,45 +272,92 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
         onMouseLeave={handleTopMouseUp}
       >
         {topSeriesMovies.length > 0 && (
-          <div className="relative w-full h-full flex items-center justify-center">
-            {topSeriesMovies.map((movie, idx) => {
-              const style = getTopCardStyle(idx)
-              return (
+          <>
+            {/* ✅ ১.১ ব্যাকগ্রাউন্ড পোস্টার (ফুল স্ক্রিন) */}
+            <div
+              className="absolute inset-0 flex"
+              style={{
+                transform: `translateX(${topDragDistance}px)`,
+                transition: topIsTransitioning ? "transform 0.5s cubic-bezier(0.25, 1, 0.5, 1)" : "none",
+              }}
+            >
+              {topSeriesMovies.map((movie, idx) => (
                 <div
                   key={movie.id}
-                  // ✅ এখানে rounded-xl রিমুভ করে rounded-none (boxy) করা হয়েছে
-                  className="absolute w-[140px] h-[190px] md:w-[240px] md:h-[360px] rounded-none overflow-hidden shadow-2xl"
-                  style={style}
-                  onClick={() => {
-                    if (Math.abs(topDragDistance) < 5) {
-                      onMovieClick(movie)
-                    }
-                  }}
+                  className="relative w-full h-full flex-shrink-0"
+                  style={{ width: `${100 / topSeriesMovies.length}%` }}
                 >
                   <img
                     src={movie.poster || "/placeholder.svg"}
                     alt={movie.title}
                     className="w-full h-full object-cover object-top pointer-events-none"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent" />
-                  <div className="absolute bottom-0 left-0 w-full p-2 md:p-4 z-10">
-                    <h3 className="text-white text-[10px] md:text-base font-bold truncate drop-shadow-lg">
-                      {movie.title}
-                    </h3>
-                    {movie.year && (
-                      <p className="text-gray-300 text-[8px] md:text-xs">{movie.year}</p>
-                    )}
-                  </div>
                 </div>
-              )
-            })}
-          </div>
+              ))}
+            </div>
+
+            {/* ✅ ১.২ গ্রেডিয়েন্ট ওভারলে (টেক্সট পড়ার জন্য) */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent pointer-events-none" />
+            <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-transparent to-transparent pointer-events-none" />
+
+            {/* ✅ ১.৩ ক্লিক করার জন্য ট্রান্সপারেন্ট ওভারলে */}
+            <div
+              className="absolute inset-0 z-10"
+              onClick={() => {
+                if (Math.abs(topDragDistance) < 5 && currentTopMovie) {
+                  onMovieClick(currentTopMovie)
+                }
+              }}
+              style={{ cursor: "pointer" }}
+            />
+
+            {/* ✅ ১.৪ নিচের টেক্সট সেকশন (স্ক্রিনশটের মতো) */}
+            <div className="absolute bottom-0 left-0 w-full p-4 md:p-6 z-20 pointer-events-none flex items-end gap-4">
+              
+              {/* ছোট থাম্বনেইল পোস্টার */}
+              <div className="w-16 h-24 md:w-20 md:h-28 rounded-lg overflow-hidden border-2 border-white/20 shadow-lg flex-shrink-0">
+                <img
+                  src={currentTopMovie?.poster || "/placeholder.svg"}
+                  alt={currentTopMovie?.title || "Poster"}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+
+              {/* টাইটেল, ইয়ার, রেটিং */}
+              <div className="flex-1 min-w-0 pb-1">
+                <h2 className="text-white text-lg md:text-2xl font-bold mb-1 truncate drop-shadow-lg">
+                  {currentTopMovie?.title}
+                </h2>
+                <div className="flex items-center gap-3 text-xs md:text-sm text-gray-300">
+                  {currentTopMovie?.year && (
+                    <span className="flex items-center gap-1">
+                      <Film className="w-3 h-3 md:w-4 md:h-4" /> {currentTopMovie.year}
+                    </span>
+                  )}
+                  {currentTopMovie?.rating && currentTopMovie.rating !== "not available" && (
+                    <span className="flex items-center gap-1 text-yellow-400">
+                      <Star className="w-3 h-3 md:w-4 md:h-4 fill-yellow-400" /> {currentTopMovie.rating}
+                    </span>
+                  )}
+                  {currentTopMovie?.genre && (
+                    <span className="truncate">{currentTopMovie.genre}</span>
+                  )}
+                </div>
+              </div>
+
+              {/* প্লে বাটন (স্ক্রিনশটের মতো) */}
+              <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0 shadow-lg">
+                <Play className="w-5 h-5 md:w-6 md:h-6 text-white fill-white ml-0.5" />
+              </div>
+            </div>
+
+            {/* ✅ ডট ইন্ডিকেটর (হাইড করা হয়েছে) */}
+          </>
         )}
-        {/* ✅ ডট ইন্ডিকেটর রিমুভ করা হয়েছে */}
       </div>
 
       {/* ========================================================= */}
-      {/* ✅✅✅ ২. নিচের সেকশন: Trending Movies (Free Swipe) ✅✅✅ */}
+      {/* ✅✅✅ ২. নিচের সেকশন: Trending Movies (3D Carousel) ✅✅✅ */}
       {/* ========================================================= */}
       <div className="relative z-10 px-4 mt-2">
 
@@ -483,4 +476,4 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
       </div>
     </section>
   )
-                }
+}

@@ -15,7 +15,7 @@ interface TrendingCarouselProps {
 }
 
 export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps) {
-  // ✅ স্টেট
+  // ✅ স্টেট (sessionStorage থেকে রিস্টোর করা হবে)
   const [topIndex, setTopIndex] = useState(0)
   const [topDragDistance, setTopDragDistance] = useState(0)
   const [topIsDragging, setTopIsDragging] = useState(false)
@@ -39,6 +39,45 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
   const topSeriesMovies = movies.filter((m) => topSeriesIds.includes(m.id))
   const trendingMovies = movies.filter((m) => trendingIds.includes(m.id))
   const totalMovieCount = movies.length
+
+  // ✅ sessionStorage থেকে ইনিশিয়াল ভ্যালু রিস্টোর (কম্পোনেন্ট Mount হওয়ার সময় একবার)
+  useEffect(() => {
+    try {
+      const savedTopIndex = sessionStorage.getItem("topSeriesIndex")
+      const savedTrendingIndex = sessionStorage.getItem("trendingIndex")
+      
+      if (savedTopIndex && topSeriesMovies.length > 0) {
+        const parsed = parseInt(savedTopIndex, 10)
+        if (!isNaN(parsed) && parsed >= 0 && parsed < topSeriesMovies.length) {
+          setTopIndex(parsed)
+        }
+      }
+      
+      if (savedTrendingIndex && trendingMovies.length > 0) {
+        const parsed = parseInt(savedTrendingIndex, 10)
+        if (!isNaN(parsed) && parsed >= 0 && parsed < trendingMovies.length) {
+          setCurrentIndex(parsed)
+        }
+      }
+    } catch (e) {
+      // sessionStorage অ্যাক্সেস না থাকলে কিছুই করবে না
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []) // ✅ শুধু প্রথমবার Mount হওয়ার সময় চলবে
+
+  // ✅ topIndex পরিবর্তন হলে sessionStorage-এ সেভ
+  useEffect(() => {
+    try {
+      sessionStorage.setItem("topSeriesIndex", topIndex.toString())
+    } catch (e) {}
+  }, [topIndex])
+
+  // ✅ currentIndex পরিবর্তন হলে sessionStorage-এ সেভ
+  useEffect(() => {
+    try {
+      sessionStorage.setItem("trendingIndex", currentIndex.toString())
+    } catch (e) {}
+  }, [currentIndex])
 
   // ✅ মোবাইল এবং কন্টেইনার উইডথ ডিটেক্ট
   useEffect(() => {
@@ -197,7 +236,6 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
   // =========================================================
   // ✅ উপরের স্লাইডারের পজিশন (ট্রেন্ডিং এর মতো পাশাপাশি পোস্টার)
   // =========================================================
-  // ✅ মূল ঠিক: topIndex এবং topDragDistance একসাথে ক্যালকুলেট
   const topTranslateX = -(topIndex * containerWidth) + topDragDistance
 
   // ✅ নিচের কারোসেলের 3D কার্ড পজিশন (Free Swipe)
@@ -257,7 +295,7 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
   }
 
   // ✅ উপরের স্লাইডারের কারেন্ট মুভি (টেক্সট সেকশনের জন্য)
-  const currentTopMovie = topSeriesMovies[topIndex]
+  const currentTopMovie = topSeriesMovies[topIndex] || topSeriesMovies[0]
 
   return (
     <section className="relative pb-4 overflow-hidden bg-black">
@@ -279,7 +317,7 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
       >
         {topSeriesMovies.length > 0 && currentTopMovie && (
           <>
-            {/* ✅ ১.১ সব পোস্টার পাশাপাশি (ট্রেন্ডিং এর মতো) */}
+            {/* ✅ ১.১ সব পোস্টার পাশাপাশি */}
             <div
               className="absolute inset-0 flex"
               style={{
@@ -303,7 +341,7 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
               ))}
             </div>
 
-            {/* ✅ ১.২ গ্রেডিয়েন্ট ওভারলে (টেক্সট পড়ার জন্য) */}
+            {/* ✅ ১.২ গ্রেডিয়েন্ট ওভারলে */}
             <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent pointer-events-none" />
             <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-transparent to-transparent pointer-events-none" />
 
@@ -330,7 +368,7 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
                 />
               </div>
 
-              {/* টাইটেল, ইয়ার, রেটিং, জেনার */}
+              {/* টাইটেল, ইয়ার, রেটিং, জেনার */}
               <div className="flex-1 min-w-0 pb-1">
                 <h2 className="text-white text-lg md:text-2xl font-bold mb-1 truncate drop-shadow-lg">
                   {currentTopMovie.title}
@@ -352,7 +390,7 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
                 </div>
               </div>
 
-              {/* প্লে বাটন (স্ক্রিনশটের মতো) */}
+              {/* প্লে বাটন */}
               <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0 shadow-lg">
                 <Play className="w-5 h-5 md:w-6 md:h-6 text-white fill-white ml-0.5" />
               </div>
@@ -481,4 +519,4 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
       </div>
     </section>
   )
-              }
+        }

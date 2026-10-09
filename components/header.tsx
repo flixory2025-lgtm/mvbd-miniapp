@@ -338,12 +338,12 @@ export default function Header({
   return (
     // ✅ নতুন: ডাইনামিক className — একদম টপে থাকলে transparent, স্ক্রল করলে solid
     <header
-      className={`sticky top-0 z-40 transition-all duration-300 ease-in-out ${
-        isScrolled
-          ? "bg-black/60 backdrop-blur-xl border-b border-white/10 shadow-lg"
-          : "bg-transparent backdrop-blur-none border-b border-transparent shadow-none"
-      }`}
-    >
+  className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ease-in-out ${
+    isScrolled
+      ? "bg-black/60 backdrop-blur-xl border-b border-white/10 shadow-lg"
+      : "bg-transparent border-b border-transparent shadow-none"
+  }`}
+>
       <style>{`
         @keyframes liquidGlassZoom {
           0% { transform: scale(1); background: rgba(255,255,255,.05); backdrop-filter: blur(20px); }

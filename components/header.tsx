@@ -77,6 +77,9 @@ export default function Header({
 }: HeaderProps) {
   const [isFocused, setIsFocused] = useState(false)
 
+  // ✅ নতুন: Scroll ট্র্যাক করার জন্য স্টেট
+  const [isScrolled, setIsScrolled] = useState(false)
+
   const [bubbles, setBubbles] = useState<
     Array<{ id: number; x: number; y: number }>
   >([])
@@ -150,6 +153,21 @@ export default function Header({
 
     return () => clearInterval(interval)
   }, [historyScope])
+
+  // ✅ নতুন: Scroll ট্র্যাক করার জন্য (Header Transparent ↔ Solid)
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 10) {
+        setIsScrolled(true)
+      } else {
+        setIsScrolled(false)
+      }
+    }
+
+    handleScroll() // পেজ লোড হওয়ার সময় একবার চেক
+    window.addEventListener("scroll", handleScroll, { passive: true })
+    return () => window.removeEventListener("scroll", handleScroll)
+  }, [])
 
   // When user logs in, sync Firestore history
   useEffect(() => {
@@ -318,7 +336,14 @@ export default function Header({
   const showCube = !isFocused && !hasQuery
 
   return (
-    <header className="sticky top-0 z-40 bg-black/40 backdrop-blur-xl border-b border-white/10 shadow-lg">
+    // ✅ নতুন: ডাইনামিক className — একদম টপে থাকলে transparent, স্ক্রল করলে solid
+    <header
+      className={`sticky top-0 z-40 transition-all duration-300 ease-in-out ${
+        isScrolled
+          ? "bg-black/60 backdrop-blur-xl border-b border-white/10 shadow-lg"
+          : "bg-transparent backdrop-blur-none border-b border-transparent shadow-none"
+      }`}
+    >
       <style>{`
         @keyframes liquidGlassZoom {
           0% { transform: scale(1); background: rgba(255,255,255,.05); backdrop-filter: blur(20px); }
@@ -662,4 +687,4 @@ export default function Header({
       </div>
     </header>
   )
-}
+                        }

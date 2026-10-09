@@ -87,7 +87,9 @@ export default function LandingPage({
     e.preventDefault();
     if (document.documentElement.classList.contains("zooming")) return;
 
-    const root = document.querySelector(".landing-page-root") as HTMLElement | null;
+    const root = document.querySelector(
+      ".landing-page-root"
+    ) as HTMLElement | null;
     if (root) {
       root.style.transition = "opacity 400ms ease, transform 400ms ease";
       root.style.opacity = "0";
@@ -182,13 +184,45 @@ export default function LandingPage({
     const cleanupFns: Array<() => void> = [];
 
     sliders.forEach((slider) => {
-      let isDown = false, startX = 0, scrollLeft = 0, moved = false;
-      const onMouseDown = (e: any) => { isDown = true; moved = false; (slider as HTMLElement).style.cursor = "grabbing"; startX = e.pageX - (slider as HTMLElement).offsetLeft; scrollLeft = (slider as HTMLElement).scrollLeft; };
-      const onMouseLeave = () => { isDown = false; (slider as HTMLElement).style.cursor = "grab"; };
-      const onMouseUp = () => { isDown = false; (slider as HTMLElement).style.cursor = "grab"; };
-      const onMouseMove = (e: any) => { if (!isDown) return; e.preventDefault(); const x = e.pageX - (slider as HTMLElement).offsetLeft; const walk = (x - startX) * 1.6; if (Math.abs(walk) > 5) moved = true; (slider as HTMLElement).scrollLeft = scrollLeft - walk; };
-      const onClick = (e: any) => { if (moved) { e.preventDefault(); e.stopPropagation(); } };
-      const onWheel = (e: any) => { if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) { e.preventDefault(); (slider as HTMLElement).scrollLeft += e.deltaY; } };
+      let isDown = false,
+        startX = 0,
+        scrollLeft = 0,
+        moved = false;
+      const onMouseDown = (e: any) => {
+        isDown = true;
+        moved = false;
+        (slider as HTMLElement).style.cursor = "grabbing";
+        startX = e.pageX - (slider as HTMLElement).offsetLeft;
+        scrollLeft = (slider as HTMLElement).scrollLeft;
+      };
+      const onMouseLeave = () => {
+        isDown = false;
+        (slider as HTMLElement).style.cursor = "grab";
+      };
+      const onMouseUp = () => {
+        isDown = false;
+        (slider as HTMLElement).style.cursor = "grab";
+      };
+      const onMouseMove = (e: any) => {
+        if (!isDown) return;
+        e.preventDefault();
+        const x = e.pageX - (slider as HTMLElement).offsetLeft;
+        const walk = (x - startX) * 1.6;
+        if (Math.abs(walk) > 5) moved = true;
+        (slider as HTMLElement).scrollLeft = scrollLeft - walk;
+      };
+      const onClick = (e: any) => {
+        if (moved) {
+          e.preventDefault();
+          e.stopPropagation();
+        }
+      };
+      const onWheel = (e: any) => {
+        if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+          e.preventDefault();
+          (slider as HTMLElement).scrollLeft += e.deltaY;
+        }
+      };
 
       slider.addEventListener("mousedown", onMouseDown);
       slider.addEventListener("mouseleave", onMouseLeave);
@@ -212,7 +246,9 @@ export default function LandingPage({
     function handleEnterSiteClick(e: Event) {
       e.preventDefault();
       if (document.documentElement.classList.contains("zooming")) return;
-      const root = document.querySelector(".landing-page-root") as HTMLElement | null;
+      const root = document.querySelector(
+        ".landing-page-root"
+      ) as HTMLElement | null;
       if (root) {
         root.style.transition = "opacity 400ms ease, transform 400ms ease";
         root.style.opacity = "0";
@@ -225,7 +261,9 @@ export default function LandingPage({
     }
 
     const siteLinks = document.querySelectorAll("[data-site-link]");
-    siteLinks.forEach((link) => link.addEventListener("click", handleEnterSiteClick));
+    siteLinks.forEach((link) =>
+      link.addEventListener("click", handleEnterSiteClick)
+    );
 
     const nav = document.getElementById("nav");
     const handleScroll = () => {
@@ -247,7 +285,9 @@ export default function LandingPage({
     return () => {
       window.removeEventListener("scroll", handleScroll);
       revealObs.disconnect();
-      siteLinks.forEach((link) => link.removeEventListener("click", handleEnterSiteClick));
+      siteLinks.forEach((link) =>
+        link.removeEventListener("click", handleEnterSiteClick)
+      );
       cleanupFns.forEach((fn) => fn());
     };
   }, [onMovieClick]);
@@ -256,6 +296,94 @@ export default function LandingPage({
     <div className="landing-page-root">
       <div className="zoom-vignette"></div>
       <div className="zoom-flash"></div>
+
+      {/* ✅ Local CSS keyframes for button animation */}
+      <style>{`
+        @keyframes heroButtonPulse {
+          0%, 100% {
+            box-shadow:
+              0 0 20px rgba(34, 197, 94, 0.7),
+              0 0 40px rgba(34, 197, 94, 0.5),
+              0 0 60px rgba(34, 197, 94, 0.3),
+              inset 0 1px 0 rgba(255, 255, 255, 0.3);
+            transform: scale(1);
+          }
+          50% {
+            box-shadow:
+              0 0 30px rgba(34, 197, 94, 1),
+              0 0 60px rgba(34, 197, 94, 0.8),
+              0 0 90px rgba(34, 197, 94, 0.6),
+              inset 0 1px 0 rgba(255, 255, 255, 0.4);
+            transform: scale(1.05);
+          }
+        }
+        @keyframes heroButtonGlow {
+          0%, 100% {
+            opacity: 0.6;
+            transform: scale(1);
+          }
+          50% {
+            opacity: 1;
+            transform: scale(1.15);
+          }
+        }
+        @keyframes heroArrowBounce {
+          0%, 100% { transform: translateX(0); }
+          50% { transform: translateX(6px); }
+        }
+        @keyframes heroShine {
+          0% { transform: translateX(-100%) skewX(-20deg); }
+          100% { transform: translateX(200%) skewX(-20deg); }
+        }
+        .hero-visit-btn {
+          animation: heroButtonPulse 2s ease-in-out infinite;
+          position: relative;
+          overflow: hidden;
+        }
+        .hero-visit-btn::before {
+          content: "";
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 50%;
+          height: 100%;
+          background: linear-gradient(
+            90deg,
+            transparent,
+            rgba(255, 255, 255, 0.5),
+            transparent
+          );
+          animation: heroShine 3s ease-in-out infinite;
+          pointer-events: none;
+        }
+        .hero-visit-btn:hover {
+          animation-play-state: paused;
+          transform: scale(1.08) !important;
+          box-shadow:
+            0 0 40px rgba(34, 197, 94, 1),
+            0 0 80px rgba(34, 197, 94, 0.8),
+            0 0 120px rgba(34, 197, 94, 0.6),
+            inset 0 1px 0 rgba(255, 255, 255, 0.5) !important;
+        }
+        .hero-visit-btn .btn-arrow {
+          animation: heroArrowBounce 1.5s ease-in-out infinite;
+        }
+        .hero-glow-ring {
+          position: absolute;
+          inset: -8px;
+          border-radius: 9999px;
+          background: radial-gradient(
+            circle,
+            rgba(34, 197, 94, 0.6) 0%,
+            rgba(34, 197, 94, 0.3) 40%,
+            transparent 70%
+          );
+          filter: blur(12px);
+          animation: heroButtonGlow 2s ease-in-out infinite;
+          pointer-events: none;
+          z-index: -1;
+        }
+      `}</style>
 
       {/* ✅ Nav — obhabei */}
       <nav id="nav">
@@ -276,7 +404,14 @@ export default function LandingPage({
         <div className="nav-right">
           <a href="#" className="nav-cta" data-site-link>
             <span>Visit Main Site</span>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
               <path d="M5 12h14M13 5l7 7-7 7" />
             </svg>
           </a>
@@ -287,7 +422,7 @@ export default function LandingPage({
       <section className="relative overflow-hidden bg-black">
         {/* Background image upore */}
         <div
-          className="absolute top-0 left-0 w-full h-[320px] md:h-[440px] z-0 pointer-events-none"
+          className="absolute top-0 left-0 w-full h-[340px] md:h-[460px] z-0 pointer-events-none"
           style={{
             backgroundImage:
               "url('https://i.postimg.cc/7hLqB21s/Netflix-all-movies-and-series-featured-image.jpg')",
@@ -300,7 +435,7 @@ export default function LandingPage({
         </div>
 
         {/* Content */}
-        <div className="relative z-10 px-4 pt-2 pb-10">
+        <div className="relative z-10 px-4 pt-2 pb-12">
           {/* MoviesVerseBD Logo */}
           <div className="relative flex justify-center -mt-2 mb-4">
             <img
@@ -310,44 +445,39 @@ export default function LandingPage({
             />
           </div>
 
-          {/* ✅ Visit Main Site Button — highlight kora, click korle home page e jabe */}
-          <div className="flex justify-center mb-6">
+          {/* ✅ Visit Main Site Button — BORO size, ANIMATED glow */}
+          <div className="flex justify-center mb-6 relative">
             <button
               type="button"
               onClick={handleHeroEnterSite}
-              className="group relative inline-flex items-center gap-3 px-8 py-4 rounded-full font-bold text-white text-base md:text-lg transition-all duration-300 hover:scale-105 active:scale-95"
+              className="hero-visit-btn group relative inline-flex items-center gap-3 px-10 py-5 md:px-14 md:py-6 rounded-full font-extrabold text-white text-lg md:text-2xl tracking-wide transition-all duration-300 cursor-pointer"
               style={{
-                background: "linear-gradient(135deg, #16a34a 0%, #22c55e 50%, #16a34a 100%)",
-                boxShadow:
-                  "0 0 20px rgba(34, 197, 94, 0.6), 0 0 40px rgba(34, 197, 94, 0.4), inset 0 1px 0 rgba(255,255,255,0.3)",
-                border: "1px solid rgba(34, 197, 94, 0.8)",
+                background:
+                  "linear-gradient(135deg, #15803d 0%, #16a34a 30%, #22c55e 50%, #16a34a 70%, #15803d 100%)",
+                border: "2px solid rgba(34, 197, 94, 0.9)",
+                textShadow: "0 2px 8px rgba(0, 0, 0, 0.5)",
+                letterSpacing: "0.03em",
               }}
             >
+              {/* Glow ring behind button */}
+              <span className="hero-glow-ring" />
+
               <span className="relative z-10">Visit Main Site</span>
               <svg
-                className="w-5 h-5 relative z-10 transition-transform duration-300 group-hover:translate-x-1"
+                className="btn-arrow w-6 h-6 md:w-8 md:h-8 relative z-10"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
-                strokeWidth="2.5"
+                strokeWidth="3"
                 strokeLinecap="round"
                 strokeLinejoin="round"
               >
                 <path d="M5 12h14M13 5l7 7-7 7" />
               </svg>
-              {/* Animated glow ring */}
-              <span
-                className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
-                style={{
-                  background:
-                    "radial-gradient(circle, rgba(34,197,94,0.4) 0%, transparent 70%)",
-                  filter: "blur(12px)",
-                }}
-              />
             </button>
           </div>
 
-          {/* ✅ Typing animation — Visit Main Site button er niche */}
+          {/* ✅ Typing animation — Visit Main Site button er niche (ei jaygay i thakbe) */}
           <div className="flex justify-center items-center gap-2 mb-2 min-h-[30px]">
             <svg
               className="w-5 h-5 text-green-400 flex-shrink-0"
@@ -369,8 +499,8 @@ export default function LandingPage({
         </div>
       </section>
 
-      {/* ✅ Steps bar — arektu niche namiye dewa hoyeche (mt-8 add kore) */}
-      <div className="steps-bar reveal mt-8">
+      {/* ✅ Steps bar — ARO NICHE namiye dewa hoyeche (mt-16 add kore) */}
+      <div className="steps-bar reveal mt-16">
         <div className="step-item">
           <div className="num-badge">1</div>
           <div className="text">

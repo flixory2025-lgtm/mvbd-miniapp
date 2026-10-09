@@ -18,22 +18,26 @@ const trendingIds = [
 
 // ✅ Aro beshi messages — prottek bar notun line ashbe
 const TYPING_MESSAGES = [
-  "Click the green button above to enter MoviesVerseBD",
-  "Stream thousands of movies in HD — completely free",
-  "Bangla subtitles available for most titles",
-  "New releases added every single day",
-  "No signup required. Just click and watch.",
-  "Bangladesh's most loved streaming experience",
-  "Hollywood · Bollywood · South Indian · Web Series",
-  "Your next favourite movie is one click away",
-  "Watch anytime, anywhere — on any device",
-  "Thousands of movies, endless entertainment",
-  "From blockbusters to hidden gems — all in one place",
-  "No ads, no interruptions — pure cinematic joy",
-  "Explore trending titles updated daily for you",
-  "Your gateway to unlimited entertainment awaits",
-];
+  "Welcome to MoviesVerseBD — Your Ultimate Destination for Movies, Web Series, and Endless Entertainment. Discover Your Next Favourite Story Today!",
 
+  "From Hollywood Blockbusters to Bollywood Hits, South Indian Action, Korean Dramas, and Trending Web Series — Explore the World of Entertainment with MoviesVerseBD!",
+
+  "Every Movie Has a Story, Every Story Creates a Memory. Dive Into Amazing Adventures, Powerful Performances, Mind-Blowing Thrillers, and Unforgettable Cinematic Moments!",
+
+  "Your Next Binge-Worthy Series Is Waiting! Explore Exciting Stories, Discover New Releases, Revisit Your Favourite Movies, and Make Every Moment an Entertainment Experience!",
+
+  "Welcome to a World Where Entertainment Never Ends! MoviesVerseBD Brings Movie Lovers Closer to the Stories, Characters, and Cinematic Universes They Love!",
+
+  "Love Action, Horror, Romance, Comedy, or Sci-Fi? Whatever Your Mood, Discover Different Genres, Explore New Stories, and Find Something Exciting to Watch on MoviesVerseBD!",
+
+  "From Legendary Classics to the Latest Trending Titles, MoviesVerseBD Is Your Place to Explore the Incredible World of Cinema and Discover Entertainment Beyond Boundaries!",
+
+  "Lights Off, Screen On, Entertainment Begins! Get Ready to Explore Fascinating Movies, Thrilling Mysteries, Epic Adventures, and Stories That Keep You Watching!",
+
+  "Made for Movie Lovers, Inspired by Great Stories! Explore Hollywood, Bollywood, South Indian Cinema, Korean Dramas, and Web Series — All in One MoviesVerseBD Experience!",
+
+  "Your Entertainment Journey Starts Here! Discover New Favourites, Explore Different Cinematic Worlds, and Join the MoviesVerseBD Community Where Every Movie Lover Belongs!",
+];
 export default function LandingPage({
   onEnterSite,
   onMovieClick,

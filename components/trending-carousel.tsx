@@ -20,13 +20,13 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
   const [topDragDistance, setTopDragDistance] = useState(0)
   const [topIsDragging, setTopIsDragging] = useState(false)
   const [topIsTransitioning, setTopIsTransitioning] = useState(true)
+  const [containerWidth, setContainerWidth] = useState(0)
 
   const [currentIndex, setCurrentIndex] = useState(0)
   const [dragDistance, setDragDistance] = useState(0)
   const [isDragging, setIsDragging] = useState(false)
   const [isTransitioning, setIsTransitioning] = useState(true)
   const [isMobile, setIsMobile] = useState(false)
-  const [containerWidth, setContainerWidth] = useState(0)
 
   // ✅ রেফারেন্স
   const topStartXRef = useRef(0)
@@ -128,7 +128,7 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
     setTopIsDragging(false)
     setTopIsTransitioning(true)
 
-    const threshold = containerWidth * 0.15 // ১৫% টানা হলেই স্লাইড হবে
+    const threshold = containerWidth * 0.15
 
     if (topDragDistance < -threshold) {
       setTopIndex((prev) => (prev + 1) % topSeriesMovies.length)
@@ -250,14 +250,14 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
     }
   }
 
-  // ✅ উপরের স্লাইডারের ডাটা
+  // ✅ উপরের স্লাইডারের কারেন্ট মুভি
   const currentTopMovie = topSeriesMovies[topIndex]
 
   return (
     <section className="relative pb-4 overflow-hidden bg-black">
 
       {/* ========================================================= */}
-      {/* ✅✅✅ ১. উপরের সেকশন: Top Movie Series (স্ক্রিনশটের মতো) ✅✅✅ */}
+      {/* ✅✅✅ ১. উপরের সেকশন: Top Movie Series (একটি করে পোস্টার) ✅✅✅ */}
       {/* ========================================================= */}
       <div
         ref={topContainerRef}
@@ -271,29 +271,21 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
         onMouseUp={handleTopMouseUp}
         onMouseLeave={handleTopMouseUp}
       >
-        {topSeriesMovies.length > 0 && (
+        {topSeriesMovies.length > 0 && currentTopMovie && (
           <>
-            {/* ✅ ১.১ ব্যাকগ্রাউন্ড পোস্টার (ফুল স্ক্রিন) */}
+            {/* ✅ ১.১ শুধুমাত্র বর্তমান পোস্টার (একটি করে দেখাবে) */}
             <div
-              className="absolute inset-0 flex"
+              className="absolute inset-0"
               style={{
                 transform: `translateX(${topDragDistance}px)`,
                 transition: topIsTransitioning ? "transform 0.5s cubic-bezier(0.25, 1, 0.5, 1)" : "none",
               }}
             >
-              {topSeriesMovies.map((movie, idx) => (
-                <div
-                  key={movie.id}
-                  className="relative w-full h-full flex-shrink-0"
-                  style={{ width: `${100 / topSeriesMovies.length}%` }}
-                >
-                  <img
-                    src={movie.poster || "/placeholder.svg"}
-                    alt={movie.title}
-                    className="w-full h-full object-cover object-top pointer-events-none"
-                  />
-                </div>
-              ))}
+              <img
+                src={currentTopMovie.poster || "/placeholder.svg"}
+                alt={currentTopMovie.title}
+                className="w-full h-full object-cover object-top pointer-events-none"
+              />
             </div>
 
             {/* ✅ ১.২ গ্রেডিয়েন্ট ওভারলে (টেক্সট পড়ার জন্য) */}
@@ -304,7 +296,7 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
             <div
               className="absolute inset-0 z-10"
               onClick={() => {
-                if (Math.abs(topDragDistance) < 5 && currentTopMovie) {
+                if (Math.abs(topDragDistance) < 5) {
                   onMovieClick(currentTopMovie)
                 }
               }}
@@ -317,29 +309,29 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
               {/* ছোট থাম্বনেইল পোস্টার */}
               <div className="w-16 h-24 md:w-20 md:h-28 rounded-lg overflow-hidden border-2 border-white/20 shadow-lg flex-shrink-0">
                 <img
-                  src={currentTopMovie?.poster || "/placeholder.svg"}
-                  alt={currentTopMovie?.title || "Poster"}
+                  src={currentTopMovie.poster || "/placeholder.svg"}
+                  alt={currentTopMovie.title}
                   className="w-full h-full object-cover"
                 />
               </div>
 
-              {/* টাইটেল, ইয়ার, রেটিং */}
+              {/* টাইটেল, ইয়ার, রেটিং, জেনার */}
               <div className="flex-1 min-w-0 pb-1">
                 <h2 className="text-white text-lg md:text-2xl font-bold mb-1 truncate drop-shadow-lg">
-                  {currentTopMovie?.title}
+                  {currentTopMovie.title}
                 </h2>
                 <div className="flex items-center gap-3 text-xs md:text-sm text-gray-300">
-                  {currentTopMovie?.year && (
+                  {currentTopMovie.year && (
                     <span className="flex items-center gap-1">
                       <Film className="w-3 h-3 md:w-4 md:h-4" /> {currentTopMovie.year}
                     </span>
                   )}
-                  {currentTopMovie?.rating && currentTopMovie.rating !== "not available" && (
+                  {currentTopMovie.rating && currentTopMovie.rating !== "not available" && (
                     <span className="flex items-center gap-1 text-yellow-400">
                       <Star className="w-3 h-3 md:w-4 md:h-4 fill-yellow-400" /> {currentTopMovie.rating}
                     </span>
                   )}
-                  {currentTopMovie?.genre && (
+                  {currentTopMovie.genre && (
                     <span className="truncate">{currentTopMovie.genre}</span>
                   )}
                 </div>
@@ -350,8 +342,6 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
                 <Play className="w-5 h-5 md:w-6 md:h-6 text-white fill-white ml-0.5" />
               </div>
             </div>
-
-            {/* ✅ ডট ইন্ডিকেটর (হাইড করা হয়েছে) */}
           </>
         )}
       </div>

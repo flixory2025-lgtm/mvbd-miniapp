@@ -76,8 +76,6 @@ export default function Header({
   searchData,
 }: HeaderProps) {
   const [isFocused, setIsFocused] = useState(false)
-
-  // ✅ নতুন: Scroll ট্র্যাক করার জন্য স্টেট
   const [isScrolled, setIsScrolled] = useState(false)
 
   const [bubbles, setBubbles] = useState<
@@ -121,16 +119,13 @@ export default function Header({
     const query = searchQuery.trim().toLowerCase()
     if (!query) return []
 
-    // Query কে word এ ভাগ করি (space দিয়ে)
     const queryWords = query.split(/\s+/).filter(Boolean)
 
-    // Prottek word title er moddhe ache kina check kori
     const matches = dataSource.filter((item) => {
       const title = String(item.title || "").toLowerCase()
       return queryWords.every((word) => title.includes(word))
     })
 
-    // Latest (highest id) upore dekhabo
     return [...matches].sort((a, b) => {
       const idA = typeof a.id === "number" ? a.id : 0
       const idB = typeof b.id === "number" ? b.id : 0
@@ -154,7 +149,7 @@ export default function Header({
     return () => clearInterval(interval)
   }, [historyScope])
 
-  // ✅ নতুন: Scroll ট্র্যাক করার জন্য (Header Transparent ↔ Solid)
+  // ✅ Scroll ট্র্যাক করার জন্য (Header Transparent ↔ Solid)
   useEffect(() => {
     const handleScroll = () => {
       if (window.scrollY > 10) {
@@ -164,7 +159,7 @@ export default function Header({
       }
     }
 
-    handleScroll() // পেজ লোড হওয়ার সময় একবার চেক
+    handleScroll()
     window.addEventListener("scroll", handleScroll, { passive: true })
     return () => window.removeEventListener("scroll", handleScroll)
   }, [])
@@ -336,14 +331,14 @@ export default function Header({
   const showCube = !isFocused && !hasQuery
 
   return (
-    // ✅ নতুন: ডাইনামিক className — একদম টপে থাকলে transparent, স্ক্রল করলে solid
+    // ✅ FIXED HEADER — Transparent at top, Solid on scroll
     <header
-  className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ease-in-out ${
-    isScrolled
-      ? "bg-black/60 backdrop-blur-xl border-b border-white/10 shadow-lg"
-      : "bg-transparent border-b border-transparent shadow-none"
-  }`}
->
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ease-in-out ${
+        isScrolled
+          ? "bg-black/60 backdrop-blur-xl border-b border-white/10 shadow-lg"
+          : "bg-transparent border-b border-transparent shadow-none"
+      }`}
+    >
       <style>{`
         @keyframes liquidGlassZoom {
           0% { transform: scale(1); background: rgba(255,255,255,.05); backdrop-filter: blur(20px); }
@@ -687,4 +682,4 @@ export default function Header({
       </div>
     </header>
   )
-                        }
+    }

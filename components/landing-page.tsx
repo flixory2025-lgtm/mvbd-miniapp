@@ -359,7 +359,8 @@ export default function LandingPage({
 
         {/* Content */}
         <div className="relative z-10 px-4 pt-24 md:pt-28 pb-24 w-full">
-          {/* ✅ Heading (Netflix style) */}
+          
+          {/* ✅ Heading (Netflix style) — Ekhon Logo er upore */}
           <h1
             className="text-center text-white font-extrabold text-4xl md:text-6xl leading-tight max-w-3xl mx-auto mt-6 md:mt-10"
             style={{ textShadow: "0 2px 20px rgba(0,0,0,0.6)" }}
@@ -367,7 +368,7 @@ export default function LandingPage({
             Entertainment for every moment
           </h1>
 
-          {/* MoviesVerseBD Logo */}
+          {/* MoviesVerseBD Logo — Ekhon Heading er niche */}
           <div className="relative flex justify-center -my-3 md:-my-6">
             <img
               src="https://i.postimg.cc/Bn4cPRwz/20288-removebg-preview.png"
@@ -376,7 +377,7 @@ export default function LandingPage({
             />
           </div>
 
-          {/* ✅ Ready to watch text */}
+          {/* ✅ Ready to watch text — Ekhon Logo er niche */}
           <p className="text-center text-white text-base md:text-xl max-w-xl mx-auto mb-6">
             Ready to watch? Enter your email to create or restart your
             membership.
@@ -705,4 +706,4 @@ export default function LandingPage({
       </footer>
     </div>
   );
-                                                                                                                                                                                                                                                                                                                                                     }
+}

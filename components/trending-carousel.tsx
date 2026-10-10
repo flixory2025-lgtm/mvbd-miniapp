@@ -313,7 +313,7 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
       >
         {topSeriesMovies.length > 0 && currentTopMovie && (
           <>
-            {/* ✅ ১.১ সব পোস্টার পাশাপাশি */}
+            {/* ✅ ১.১ সব পোস্টার পাশাপাশি — Fixed for Desktop */}
             <div
               className="absolute inset-0 flex"
               style={{
@@ -326,12 +326,24 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
                 <div
                   key={movie.id}
                   className="relative h-full flex-shrink-0"
-                  style={{ width: `${100 / topSeriesMovies.length}%` }}
+                  style={{ 
+                    width: `${100 / topSeriesMovies.length}%`,
+                    minWidth: `${100 / topSeriesMovies.length}%`,
+                    height: "100%",
+                    overflow: "hidden"
+                  }}
                 >
                   <img
                     src={movie.poster || "/placeholder.svg"}
                     alt={movie.title}
                     className="w-full h-full object-cover object-top pointer-events-none"
+                    style={{ 
+                      width: "100%", 
+                      height: "100%", 
+                      objectFit: "cover", 
+                      objectPosition: "top center",
+                      display: "block"
+                    }}
                   />
                 </div>
               ))}
@@ -511,7 +523,7 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
         <style>{`
           @keyframes carouselNavGlow {
             0%, 100% { box-shadow: 0 0 15px rgba(34, 197, 94, 0.6), inset 0 0 20px rgba(255, 255, 255, 0.1); }
-            50% { box-shadow: 0 0 25px rgba(34, 197, 94, 0.8), inset 0 0 30px rgba(255, 255, 255, 0.15); }
+            50% { box-shadow: 0 0 25px rgba(34, 197, 94, 0.8), inset 0 0 30px rgba(255, 255, 255, 0.1); }
           }
           .carousel-nav-button {
             background: rgba(34, 197, 94, 0.15);
@@ -530,4 +542,4 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
       </div>
     </section>
   )
-}
+        }

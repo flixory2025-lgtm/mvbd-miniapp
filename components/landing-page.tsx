@@ -736,7 +736,7 @@ export default function LandingPage({
             <a href="#">Sitemap</a>
           </div>
           <div className="made-with">
-            © 2025 MoviesVerseBD · Crafted with <span className="heart">❤</span> in Bangladesh
+            © 2025 MoviesVerseBD · powered by <span className="heart">🎓</span> Elix industry 
           </div>
         </div>
       </footer>

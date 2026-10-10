@@ -297,12 +297,12 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
     <section className="relative pb-4 overflow-hidden bg-black">
 
       {/* ========================================================= */}
-      {/* ✅✅✅ ১. উপরের সেকশন: Top Movie Series ✅✅✅ */}
+      {/* ✅✅✅ ১. উপরের সেকশন: Top Movie Series (Fixed for Desktop) ✅✅✅ */}
       {/* ========================================================= */}
       <div
         ref={topContainerRef}
-        className="relative w-full h-[420px] md:h-[620px] overflow-hidden cursor-grab active:cursor-grabbing select-none bg-gray-900 pt-[72px]"
-        style={{ touchAction: "pan-y" }}
+        className="relative w-full h-[420px] md:h-[620px] overflow-hidden cursor-grab active:cursor-grabbing select-none"
+        style={{ touchAction: "pan-y", backgroundColor: "#000000" }}
         onTouchStart={handleTopTouchStart}
         onTouchMove={handleTopTouchMove}
         onTouchEnd={handleTopTouchEnd}
@@ -313,7 +313,7 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
       >
         {topSeriesMovies.length > 0 && currentTopMovie && (
           <>
-            {/* ✅ ১.১ সব পোস্টার পাশাপাশি — Fixed for Desktop */}
+            {/* ✅ ১.১ স্লাইডিং কন্টেইনার */}
             <div
               className="absolute inset-0 flex"
               style={{
@@ -325,50 +325,61 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
               {topSeriesMovies.map((movie, idx) => (
                 <div
                   key={movie.id}
-                  className="relative h-full flex-shrink-0"
-                  style={{ 
+                  className="relative h-full flex-shrink-0 flex items-center justify-center"
+                  style={{
                     width: `${100 / topSeriesMovies.length}%`,
                     minWidth: `${100 / topSeriesMovies.length}%`,
                     height: "100%",
-                    overflow: "hidden"
+                    backgroundColor: "#000000",
+                    paddingTop: "72px" // ✅ হেডারের জন্য জায়গা
                   }}
                 >
-                  <img
-                    src={movie.poster || "/placeholder.svg"}
-                    alt={movie.title}
-                    className="w-full h-full object-cover object-top pointer-events-none"
-                    style={{ 
-                      width: "100%", 
-                      height: "100%", 
-                      objectFit: "cover", 
-                      objectPosition: "top center",
-                      display: "block"
+                  {/* ✅ ডেস্কটপের জন্য নির্দিষ্ট সাইজের ইমেজ কার্ড (মোবাইলের মতো) */}
+                  <div
+                    className="relative w-full h-full flex items-center justify-center"
+                    style={{
+                      maxWidth: isMobile ? "100%" : "900px", // ডেস্কটপে ইমেজ ৯০০px এর বেশি হবে না
+                      margin: "0 auto",
+                      overflow: "hidden",
                     }}
-                  />
+                  >
+                    <img
+                      src={movie.poster || "/placeholder.svg"}
+                      alt={movie.title}
+                      className="w-full h-full object-cover pointer-events-none"
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover",
+                        objectPosition: "center center", // ✅ মাঝখানে ফোকাস
+                        display: "block",
+                      }}
+                    />
+                  </div>
                 </div>
               ))}
             </div>
 
-            {/* ✅ ১.২ উপরের Blur + Dark (শুধু হেডারের এলাকায়, নিচে গিয়ে পরিষ্কার) */}
-<div
-  className="absolute top-0 left-0 w-full pointer-events-none z-[5]"
-  style={{
-    height: "140px", // ← শুধু হেডার + একটু নিচ পর্যন্ত
-    background:
-      "linear-gradient(to bottom, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.65) 35%, rgba(0,0,0,0.3) 65%, rgba(0,0,0,0) 100%)",
-    backdropFilter: "blur(12px)",
-    WebkitBackdropFilter: "blur(12px)",
-    maskImage:
-      "linear-gradient(to bottom, black 0%, black 45%, rgba(0,0,0,0.4) 70%, transparent 100%)",
-    WebkitMaskImage:
-      "linear-gradient(to bottom, black 0%, black 45%, rgba(0,0,0,0.4) 70%, transparent 100%)",
-  }}
-/>
+            {/* ✅ ১.২ উপরের Blur + Dark (শুধু হেডারের এলাকায়) */}
+            <div
+              className="absolute top-0 left-0 w-full pointer-events-none z-[5]"
+              style={{
+                height: "140px",
+                background:
+                  "linear-gradient(to bottom, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.65) 35%, rgba(0,0,0,0.3) 65%, rgba(0,0,0,0) 100%)",
+                backdropFilter: "blur(12px)",
+                WebkitBackdropFilter: "blur(12px)",
+                maskImage:
+                  "linear-gradient(to bottom, black 0%, black 45%, rgba(0,0,0,0.4) 70%, transparent 100%)",
+                WebkitMaskImage:
+                  "linear-gradient(to bottom, black 0%, black 45%, rgba(0,0,0,0.4) 70%, transparent 100%)",
+              }}
+            />
 
-            {/* ✅ ১.৩ নিচের গ্রেডিয়েন্ট (টেক্সট সেকশনের জন্য) */}
+            {/* ✅ ১.৩ নিচের গ্রেডিয়েন্ট */}
             <div className="absolute bottom-0 left-0 w-full h-[45%] bg-gradient-to-t from-black via-black/60 to-transparent pointer-events-none z-[5]" />
 
-            {/* ✅ ১.৪ ক্লিক করার জন্য ট্রান্সপারেন্ট ওভারলে */}
+            {/* ✅ ১.৪ ক্লিক ওভারলে */}
             <div
               className="absolute inset-0 z-10"
               onClick={() => {
@@ -379,10 +390,8 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
               style={{ cursor: "pointer" }}
             />
 
-            {/* ✅ ১.৫ নিচের টেক্সট সেকশন (স্ক্রিনশটের মতো) */}
+            {/* ✅ ১.৫ নিচের টেক্সট সেকশন */}
             <div className="absolute bottom-0 left-0 w-full p-4 md:p-6 z-20 pointer-events-none flex items-end gap-4">
-              
-              {/* ছোট থাম্বনেইল পোস্টার */}
               <div className="w-16 h-24 md:w-20 md:h-28 rounded-lg overflow-hidden border-2 border-white/20 shadow-lg flex-shrink-0">
                 <img
                   src={currentTopMovie.poster || "/placeholder.svg"}
@@ -390,8 +399,6 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
                   className="w-full h-full object-cover"
                 />
               </div>
-
-              {/* টাইটেল, ইয়ার, রেটিং, জেনার */}
               <div className="flex-1 min-w-0 pb-1">
                 <h2 className="text-white text-lg md:text-2xl font-bold mb-1 truncate drop-shadow-lg">
                   {currentTopMovie.title}
@@ -412,8 +419,6 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
                   )}
                 </div>
               </div>
-
-              {/* প্লে বাটন */}
               <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0 shadow-lg">
                 <Play className="w-5 h-5 md:w-6 md:h-6 text-white fill-white ml-0.5" />
               </div>
@@ -523,7 +528,7 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
         <style>{`
           @keyframes carouselNavGlow {
             0%, 100% { box-shadow: 0 0 15px rgba(34, 197, 94, 0.6), inset 0 0 20px rgba(255, 255, 255, 0.1); }
-            50% { box-shadow: 0 0 25px rgba(34, 197, 94, 0.8), inset 0 0 30px rgba(255, 255, 255, 0.1); }
+            50% { box-shadow: 0 0 25px rgba(34, 197, 94, 0.8), inset 0 0 30px rgba(255, 255, 255, 0.15); }
           }
           .carousel-nav-button {
             background: rgba(34, 197, 94, 0.15);
@@ -542,4 +547,4 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
       </div>
     </section>
   )
-        }
+                              }

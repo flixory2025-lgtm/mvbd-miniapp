@@ -332,7 +332,7 @@ export default function LandingPage({
         </div>
       </nav>
 
-      {/* ✅✅✅ HERO SECTION — Background image extended to cover typing animation ✅✅✅ */}
+      {/* ✅✅✅ HERO SECTION — Perfectly Centered ✅✅✅ */}
       <section
         className="relative overflow-hidden flex flex-col justify-center"
         style={{ background: "#000000", minHeight: "100svh" }}
@@ -358,33 +358,65 @@ export default function LandingPage({
         </div>
 
         {/* Content */}
-        <div className="relative z-10 px-4 pt-24 md:pt-28 pb-24 w-full">
+        <div className="relative z-10 w-full" style={{ padding: "100px 20px 60px 20px" }}>
           
-          {/* ✅ Heading (Netflix style) — Ekhon Logo er upore */}
+          {/* ✅ Heading — Logo er upore, ekdom majhkhane */}
           <h1
-            className="text-center text-white font-extrabold text-4xl md:text-6xl leading-tight max-w-3xl mx-auto mt-6 md:mt-10"
-            style={{ textShadow: "0 2px 20px rgba(0,0,0,0.6)" }}
+            style={{
+              textAlign: "center",
+              color: "#ffffff",
+              fontWeight: 800,
+              fontSize: "clamp(2.2rem, 6vw, 4.5rem)",
+              lineHeight: 1.1,
+              maxWidth: "900px",
+              margin: "0 auto 10px auto",
+              textShadow: "0 2px 20px rgba(0,0,0,0.6)",
+              display: "block",
+              width: "100%",
+            }}
           >
             Entertainment for every moment
           </h1>
 
-          {/* MoviesVerseBD Logo — Ekhon Heading er niche */}
-          <div className="relative flex justify-center -my-3 md:-my-6">
+          {/* ✅ Logo — Heading er niche, ekdom majhkhane */}
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              margin: "-10px auto 10px auto",
+              width: "100%",
+            }}
+          >
             <img
               src="https://i.postimg.cc/Bn4cPRwz/20288-removebg-preview.png"
               alt="MoviesVerseBD Logo"
-              className="relative z-20 w-64 h-64 md:w-96 md:h-96 object-contain"
+              style={{
+                width: "100%",
+                maxWidth: "400px",
+                height: "auto",
+                objectFit: "contain",
+              }}
             />
           </div>
 
-          {/* ✅ Ready to watch text — Ekhon Logo er niche */}
-          <p className="text-center text-white text-base md:text-xl max-w-xl mx-auto mb-6">
+          {/* ✅ Ready to watch text — Logo er niche, ekdom majhkhane */}
+          <p
+            style={{
+              textAlign: "center",
+              color: "#ffffff",
+              fontSize: "clamp(1rem, 2vw, 1.35rem)",
+              maxWidth: "600px",
+              margin: "0 auto 30px auto",
+              display: "block",
+              width: "100%",
+            }}
+          >
             Ready to watch? Enter your email to create or restart your
             membership.
           </p>
 
-          {/* ✅ Visit Main Site Button */}
-          <div className="flex justify-center mb-8">
+          {/* ✅ Visit Main Site Button — Center */}
+          <div style={{ display: "flex", justifyContent: "center", width: "100%", marginBottom: "30px" }}>
             <a
               href="#"
               onClick={handleHeroEnterSite}
@@ -435,10 +467,14 @@ export default function LandingPage({
             </a>
           </div>
 
-          {/* ✅ Typing animation — EKHON HERO SECTION ER VITORE, background transparent */}
+          {/* ✅ Typing animation — Center */}
           <div
-            className="flex justify-center items-center gap-2"
             style={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              gap: "8px",
+              width: "100%",
               paddingTop: "8px",
               paddingBottom: "8px",
             }}

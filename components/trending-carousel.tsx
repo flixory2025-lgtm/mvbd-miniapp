@@ -331,7 +331,8 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
                   <img
                     src={movie.poster || "/placeholder.svg"}
                     alt={movie.title}
-                    className="w-full h-full object-cover object-top pointer-events-none"
+                    className="w-full h-full object-cover pointer-events-none"
+                    style={{ objectPosition: isMobile ? "top" : "center 30%" }}
                   />
                 </div>
               ))}

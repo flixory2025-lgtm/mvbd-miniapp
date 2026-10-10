@@ -297,7 +297,7 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
     <section className="relative pb-4 overflow-hidden bg-black">
 
       {/* ========================================================= */}
-      {/* ✅✅✅ ১. উপরের সেকশন: Top Movie Series (Fixed for Desktop) ✅✅✅ */}
+      {/* ✅✅✅ ১. উপরের সেকশন: Top Movie Series ✅✅✅ */}
       {/* ========================================================= */}
       <div
         ref={topContainerRef}
@@ -325,37 +325,28 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
               {topSeriesMovies.map((movie, idx) => (
                 <div
                   key={movie.id}
-                  className="relative h-full flex-shrink-0 flex items-center justify-center"
+                  className="relative h-full flex-shrink-0"
                   style={{
                     width: `${100 / topSeriesMovies.length}%`,
                     minWidth: `${100 / topSeriesMovies.length}%`,
                     height: "100%",
                     backgroundColor: "#000000",
-                    paddingTop: "72px" // ✅ হেডারের জন্য জায়গা
+                    paddingTop: "72px" // হেডারের জন্য জায়গা
                   }}
                 >
-                  {/* ✅ ডেস্কটপের জন্য নির্দিষ্ট সাইজের ইমেজ কার্ড (মোবাইলের মতো) */}
-                  <div
-                    className="relative w-full h-full flex items-center justify-center"
+                  {/* ✅ ইমেজটি পুরো কন্টেইনার জুড়ে থাকবে, কিন্তু মাঝখানে ফোকাস হবে */}
+                  <img
+                    src={movie.poster || "/placeholder.svg"}
+                    alt={movie.title}
+                    className="w-full h-full object-cover pointer-events-none"
                     style={{
-                      maxWidth: isMobile ? "100%" : "900px", // ডেস্কটপে ইমেজ ৯০০px এর বেশি হবে না
-                      margin: "0 auto",
-                      overflow: "hidden",
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                      objectPosition: "center center", // ✅ এটিই মূল ফিক্স (উপরে নয়, মাঝখানে)
+                      display: "block",
                     }}
-                  >
-                    <img
-                      src={movie.poster || "/placeholder.svg"}
-                      alt={movie.title}
-                      className="w-full h-full object-cover pointer-events-none"
-                      style={{
-                        width: "100%",
-                        height: "100%",
-                        objectFit: "cover",
-                        objectPosition: "center center", // ✅ মাঝখানে ফোকাস
-                        display: "block",
-                      }}
-                    />
-                  </div>
+                  />
                 </div>
               ))}
             </div>
@@ -547,4 +538,4 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
       </div>
     </section>
   )
-                              }
+}

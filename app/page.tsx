@@ -56,6 +56,37 @@ const WELCOME_POPUP_SEEN_KEY = "mvbd_welcome_popup_seen"
 
 const LANDING_SEEN_KEY = "mvbd_landing_seen"
 
+/* =========================================================
+   ✅ LANGUAGE NORMALIZE HELPER (must match genre-categories)
+========================================================= */
+
+const normalizeLanguage = (lang: string): string => {
+  if (!lang) return "Others"
+  const l = lang.toLowerCase().trim()
+
+  if (l.includes("hindi") || l === "dual audio" || l.includes("हिंदी")) return "Hindi"
+  if (l.includes("bangla") || l.includes("bengali") || l.includes("বাংলা")) return "Bangla"
+  if (l.includes("korean") || l.includes("kurean")) return "Korean"
+  if (l.includes("english") || l === "eng") return "English"
+  if (l.includes("telugu")) return "Telugu"
+  if (l.includes("malayalam")) return "Malayalam"
+  if (l.includes("japanese")) return "Japanese"
+  if (l.includes("tamil")) return "Tamil"
+  if (l.includes("indonesian")) return "Indonesian"
+  if (l.includes("filipino") || l.includes("tagalog")) return "Filipino"
+  if (l.includes("thai")) return "Thai"
+
+  return "Others"
+}
+
+/* =========================================================
+   ✅ TYPE CHECK HELPER (must match genre-categories)
+========================================================= */
+
+const isSeriesTitle = (title: string): boolean => {
+  return /season|সিজন|season \d|part \d/i.test(title)
+}
+
 export default function Page() {
   /* =========================================================
      LANDING PAGE STATE
@@ -117,6 +148,12 @@ export default function Page() {
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedGenre, setSelectedGenre] =
     useState<string | null>(null)
+
+  /* ✅ NEW: Filter states */
+  const [selectedYear, setSelectedYear] = useState<string>("All")
+  const [selectedRating, setSelectedRating] = useState<string>("All")
+  const [selectedLanguage, setSelectedLanguage] = useState<string>("All")
+  const [selectedType, setSelectedType] = useState<string>("All")
 
   const [selectedMovie, setSelectedMovie] = useState<
     (typeof movies)[0] | null
@@ -410,12 +447,13 @@ export default function Page() {
   }
 
   /* =========================================================
-     FILTERED MOVIES
+     ✅ FILTERED MOVIES (with new filters)
   ========================================================= */
 
   const filteredMovies = useMemo(() => {
     let filtered = movies
 
+    // Search filter
     if (searchQuery.trim()) {
       filtered = filtered.filter((movie) =>
         movie.title
@@ -426,6 +464,7 @@ export default function Page() {
       )
     }
 
+    // Genre filter
     if (
       selectedGenre &&
       !searchQuery.trim()
@@ -435,12 +474,50 @@ export default function Page() {
       )
     }
 
+    // ✅ Year filter
+    if (selectedYear !== "All") {
+      filtered = filtered.filter(
+        (movie) => movie.year?.trim() === selectedYear
+      )
+    }
+
+    // ✅ Rating filter (range based: 2.0 → 2.0-2.9, 8.0 → 8.0-8.9)
+    if (selectedRating !== "All") {
+      const minRating = parseFloat(selectedRating)
+      const maxRating = minRating + 1
+      filtered = filtered.filter((movie) => {
+        const r = parseFloat(movie.rating)
+        if (isNaN(r)) return false
+        return r >= minRating && r < maxRating
+      })
+    }
+
+    // ✅ Language filter (normalized)
+    if (selectedLanguage !== "All") {
+      filtered = filtered.filter(
+        (movie) =>
+          normalizeLanguage(movie.language || "") === selectedLanguage
+      )
+    }
+
+    // ✅ Type filter (Movie/Series based on title)
+    if (selectedType !== "All") {
+      filtered = filtered.filter((movie) => {
+        const series = isSeriesTitle(movie.title)
+        return selectedType === "Series" ? series : !series
+      })
+    }
+
     return [...filtered].sort(
       (a, b) => b.id - a.id
     )
   }, [
     searchQuery,
     selectedGenre,
+    selectedYear,
+    selectedRating,
+    selectedLanguage,
+    selectedType,
   ])
 
   const itemsPerPage = 30
@@ -484,6 +561,23 @@ export default function Page() {
     setShowAdultContent(
       genre === "Adult"
     )
+  }
+
+  /* =========================================================
+     ✅ NEW: FILTER CHANGE HANDLER
+  ========================================================= */
+
+  const handleFilterChange = (filters: {
+    year?: string
+    rating?: string
+    language?: string
+    type?: string
+  }) => {
+    if (filters.year !== undefined) setSelectedYear(filters.year)
+    if (filters.rating !== undefined) setSelectedRating(filters.rating)
+    if (filters.language !== undefined) setSelectedLanguage(filters.language)
+    if (filters.type !== undefined) setSelectedType(filters.type)
+    setCurrentPage(1)
   }
 
   /* =========================================================
@@ -647,6 +741,12 @@ export default function Page() {
               showAdultContent={
                 showAdultContent
               }
+              // ✅ NEW: Filter props
+              selectedYear={selectedYear}
+              selectedRating={selectedRating}
+              selectedLanguage={selectedLanguage}
+              selectedType={selectedType}
+              onFilterChange={handleFilterChange}
             />
           )}
 
@@ -975,4 +1075,4 @@ export default function Page() {
       )}
     </div>
   )
-}
+          }

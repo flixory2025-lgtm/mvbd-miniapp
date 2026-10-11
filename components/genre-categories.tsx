@@ -10,7 +10,6 @@ interface GenreCategoriesProps {
   selectedGenre: string | null
   onGenreSelect: (genre: string | null) => void
   showAdultContent?: boolean
-  // ✅ NEW: Filter props
   selectedYear: string
   selectedRating: string
   selectedLanguage: string
@@ -29,7 +28,6 @@ type FilterType = "year" | "rating" | "language" | "type" | null
 const tutorialVideoId = "fs9yrwNbvZs"
 const apkDownloadUrl = "https://github.com/flixory2025-lgtm/mvbd-miniapp/releases/download/2.0.5v/MVBD.MINI.APP.apk"
 
-// ✅ Language normalize function
 const normalizeLanguage = (lang: string): string => {
   if (!lang) return "Others"
   const l = lang.toLowerCase().trim()
@@ -49,7 +47,6 @@ const normalizeLanguage = (lang: string): string => {
   return "Others"
 }
 
-// ✅ Type check: title এ "season" থাকলে Series
 const isSeries = (title: string): boolean => {
   return /season|সিজন|season \d|part \d/i.test(title)
 }
@@ -69,7 +66,6 @@ export default function GenreCategories({
   const [openFilter, setOpenFilter] = useState<FilterType>(null)
   const filterBarRef = useRef<HTMLDivElement>(null)
 
-  // ✅ Years — data থেকে unique years, descending
   const availableYears = useMemo(() => {
     const years = new Set<string>()
     movies.forEach((m) => {
@@ -80,7 +76,6 @@ export default function GenreCategories({
     return Array.from(years).sort((a, b) => parseInt(b) - parseInt(a))
   }, [])
 
-  // ✅ Languages — normalize করে unique
   const availableLanguages = useMemo(() => {
     const langs = new Set<string>()
     movies.forEach((m) => {
@@ -91,13 +86,9 @@ export default function GenreCategories({
     return Array.from(langs).sort()
   }, [])
 
-  // ✅ Rating options
   const availableRatings = ["2.0", "3.0", "4.0", "5.0", "6.0", "7.0", "8.0", "9.0"]
-
-  // ✅ Type options
   const availableTypes = ["All", "Movie", "Series"]
 
-  // ✅ Outside click এ popup close
   useEffect(() => {
     if (!openFilter) return
 
@@ -137,7 +128,6 @@ export default function GenreCategories({
     }
   }, [activeModal])
 
-  // ✅ Filter select handler
   const handleFilterSelect = (
     type: "year" | "rating" | "language" | "type",
     value: string
@@ -146,7 +136,6 @@ export default function GenreCategories({
     setOpenFilter(null)
   }
 
-  // ✅ Filter label (button এ দেখানোর জন্য)
   const getFilterLabel = (
     type: "year" | "rating" | "language" | "type",
     value: string
@@ -158,7 +147,6 @@ export default function GenreCategories({
     return value
   }
 
-  // ✅ Dropdown এর জন্য options
   const getOptions = (type: "year" | "rating" | "language" | "type") => {
     if (type === "year") return ["All", ...availableYears]
     if (type === "rating") return ["All", ...availableRatings]
@@ -167,7 +155,6 @@ export default function GenreCategories({
     return []
   }
 
-  // ✅ Selected value
   const getSelectedValue = (type: "year" | "rating" | "language" | "type") => {
     if (type === "year") return selectedYear
     if (type === "rating") return selectedRating
@@ -211,11 +198,10 @@ export default function GenreCategories({
           animation: liquidGlassButtonZoom 0.5s ease-out;
         }
 
-        /* ✅ Dropdown নিচে open হবে (top-full) */
-        @keyframes filterDropdownOpenDown {
+        @keyframes filterDropdownOpenUp {
           from {
             opacity: 0;
-            transform: translateY(-8px) scale(0.95);
+            transform: translateY(8px) scale(0.95);
           }
           to {
             opacity: 1;
@@ -223,7 +209,7 @@ export default function GenreCategories({
           }
         }
         .filter-dropdown {
-          animation: filterDropdownOpenDown 0.25s cubic-bezier(0.25, 1, 0.5, 1);
+          animation: filterDropdownOpenUp 0.25s cubic-bezier(0.25, 1, 0.5, 1);
         }
         @keyframes filterItemSlide {
           from { opacity: 0; transform: translateX(-10px); }
@@ -300,8 +286,8 @@ export default function GenreCategories({
         </div>
 
         {/* ========================================================= */}
-        {/* ✅ ৪টা Filter Selector — ডান corner থেকে বাম corner */}
-        {/* ✅ Dropdown এখন নিচে open হবে (header এর পিছনে লুকাবে না) */}
+        {/* ✅ Filter Selectors with smart dropdown positioning */}
+        {/* Year & Language dropdown opens LEFT, others open RIGHT  */}
         {/* ========================================================= */}
         <div
           ref={filterBarRef}
@@ -311,6 +297,8 @@ export default function GenreCategories({
             const selectedValue = getSelectedValue(type)
             const hasValue = selectedValue !== "All"
             const isOpen = openFilter === type
+            // ✅ Year এবং Language dropdown বাম দিক থেকে open হবে
+            const openFromLeft = type === "year" || type === "language"
 
             return (
               <div key={type} className="relative">
@@ -331,10 +319,12 @@ export default function GenreCategories({
                   />
                 </button>
 
-                {/* ✅ Dropdown Popup — নিচে open (top-full) */}
+                {/* ✅ Smart dropdown positioning */}
                 {isOpen && (
                   <div
-                    className="filter-dropdown absolute top-full right-0 mt-2 w-44 md:w-52 max-h-72 overflow-y-auto rounded-xl border border-white/20 bg-slate-950/95 backdrop-blur-2xl shadow-2xl z-[100]"
+                    className={`filter-dropdown absolute bottom-full mb-2 w-44 md:w-52 max-h-72 overflow-y-auto rounded-xl border border-white/20 bg-slate-950/95 backdrop-blur-2xl shadow-2xl z-[100] ${
+                      openFromLeft ? "left-0" : "right-0"
+                    }`}
                     style={{
                       scrollbarWidth: "thin",
                       scrollbarColor: "rgba(100,200,255,0.4) transparent",
@@ -347,9 +337,7 @@ export default function GenreCategories({
                           <button
                             key={option}
                             type="button"
-                            onClick={() =>
-                              handleFilterSelect(type, option)
-                            }
+                            onClick={() => handleFilterSelect(type, option)}
                             className={`filter-item-anim w-full text-left px-4 py-2.5 text-sm font-medium transition-colors ${
                               isSelected
                                 ? "bg-cyan-500/20 text-cyan-200"
@@ -379,9 +367,7 @@ export default function GenreCategories({
         </div>
       </div>
 
-      {/* ========================================================= */}
-      {/* Tutorial / Download Modal (unchanged) */}
-      {/* ========================================================= */}
+      {/* Tutorial / Download Modal */}
       {activeModal && typeof document !== "undefined" &&
         createPortal(
           <div

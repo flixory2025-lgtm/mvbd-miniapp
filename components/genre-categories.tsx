@@ -211,11 +211,11 @@ export default function GenreCategories({
           animation: liquidGlassButtonZoom 0.5s ease-out;
         }
 
-        /* ✅ Filter selector animations */
-        @keyframes filterDropdownOpen {
+        /* ✅ Filter selector animations - NOW OPENS UPWARD */
+        @keyframes filterDropdownOpenUp {
           from {
             opacity: 0;
-            transform: translateY(-8px) scale(0.95);
+            transform: translateY(8px) scale(0.95);
           }
           to {
             opacity: 1;
@@ -223,7 +223,7 @@ export default function GenreCategories({
           }
         }
         .filter-dropdown {
-          animation: filterDropdownOpen 0.25s cubic-bezier(0.25, 1, 0.5, 1);
+          animation: filterDropdownOpenUp 0.25s cubic-bezier(0.25, 1, 0.5, 1);
         }
         @keyframes filterItemSlide {
           from { opacity: 0; transform: translateX(-10px); }
@@ -301,6 +301,7 @@ export default function GenreCategories({
 
         {/* ========================================================= */}
         {/* ✅ ৪টা Filter Selector — ডান corner থেকে বাম corner */}
+        {/* ✅ Dropdown এখন উপরে open হবে (poster এর উপর পড়বে না) */}
         {/* ========================================================= */}
         <div
           ref={filterBarRef}
@@ -330,10 +331,10 @@ export default function GenreCategories({
                   />
                 </button>
 
-                {/* ✅ Dropdown Popup */}
+                {/* ✅ Dropdown Popup — এখন bottom-full (উপরে open) */}
                 {isOpen && (
                   <div
-                    className="filter-dropdown absolute top-full right-0 mt-2 w-44 md:w-52 max-h-72 overflow-y-auto rounded-xl border border-white/20 bg-slate-950/95 backdrop-blur-2xl shadow-2xl z-[60]"
+                    className="filter-dropdown absolute bottom-full right-0 mb-2 w-44 md:w-52 max-h-72 overflow-y-auto rounded-xl border border-white/20 bg-slate-950/95 backdrop-blur-2xl shadow-2xl z-[100]"
                     style={{
                       scrollbarWidth: "thin",
                       scrollbarColor: "rgba(100,200,255,0.4) transparent",

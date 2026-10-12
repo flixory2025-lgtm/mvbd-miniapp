@@ -5969,7 +5969,7 @@ export const movies3 = [
     poster: "/2428id.jpg",
     trailer: "https://www.youtube.com/embed/GrGfIHBIVL4?si",
     telegramLink: "https://t.me/mvbdstore_bot?start=f_MTEwNDEsMTEwNTk",
-    telegram4kLink: "https://t.me/+gerJUkv5KS85YzM1",
+    telegram4kLink: "http://t.me/mvbdcdn_bot?start=f_MTksMzc",
     genre: "Drama | History | Biblical",
     year: "2025",
     rating: "7.5",

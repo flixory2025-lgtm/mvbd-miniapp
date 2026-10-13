@@ -2,7 +2,6 @@
 
 import {
   useEffect,
-  useMemo,
   useRef,
   useState,
   type ReactNode,
@@ -47,35 +46,7 @@ const COMPARISON_FEATURES = [
   { icon: "HD", name: "480p Quality", free: true, premium: true },
 ]
 
-const AUTOPLAY_DELAY = 3000
-
-/* =========================================================
-   BODY SCROLL LOCK (ref-counted)
-========================================================= */
-
-let bodyLockCount = 0
-let savedOverflow = ""
-let savedTouchAction = ""
-
-function lockBodyScroll() {
-  if (typeof document === "undefined") return
-  if (bodyLockCount === 0) {
-    savedOverflow = document.body.style.overflow
-    savedTouchAction = document.body.style.touchAction
-    document.body.style.overflow = "hidden"
-    document.body.style.touchAction = "auto"
-  }
-  bodyLockCount += 1
-}
-
-function unlockBodyScroll() {
-  if (typeof document === "undefined") return
-  bodyLockCount = Math.max(0, bodyLockCount - 1)
-  if (bodyLockCount === 0) {
-    document.body.style.overflow = savedOverflow
-    document.body.style.touchAction = savedTouchAction
-  }
-}
+const AUTOPLAY_DELAY = 3000 // 3 seconds
 
 /* =========================================================
    VIEWPORT MODAL
@@ -92,9 +63,15 @@ function ViewportModal({
 
   useEffect(() => {
     setMounted(true)
-    lockBodyScroll()
+
+    const oldOverflow = document.body.style.overflow
+
+    // ✅ Only lock scroll — do NOT touch touchAction.
+    // Touching touchAction caused swipe kapakapi on mobile.
+    document.body.style.overflow = "hidden"
+
     return () => {
-      unlockBodyScroll()
+      document.body.style.overflow = oldOverflow
     }
   }, [])
 
@@ -167,12 +144,6 @@ export default function SeriesSection({
   const successTimerRef = useRef<number | null>(null)
   const swiperInstanceRef = useRef<any>(null)
   const swiperContainerRef = useRef<HTMLDivElement | null>(null)
-  const swiperScriptPromiseRef = useRef<Promise<void> | null>(null)
-
-  const anyModalOpen =
-    showPayment || showFreeAccess || showProcessing || showSuccess
-
-  const cardPlans = useMemo(() => SUBSCRIPTION_PLANS, [])
 
   /* =======================================================
      CLEANUP
@@ -190,74 +161,89 @@ export default function SeriesSection({
   }, [])
 
   /* =======================================================
-     SWIPER 11 CDN LOADER + INIT (once)
+     ✅ PAUSE / RESUME SWIPER WHEN MODAL OPENS
+     - Prevents background autoplay from fighting modal
+     - Prevents jerk on first swipe after modal close
+  ======================================================= */
+
+  useEffect(() => {
+    const swiper = swiperInstanceRef.current
+    if (!swiper) return
+
+    const anyModalOpen =
+      showPayment ||
+      showFreeAccess ||
+      showProcessing ||
+      showSuccess
+
+    try {
+      if (anyModalOpen) {
+        swiper.autoplay?.stop?.()
+      } else {
+        swiper.autoplay?.start?.()
+      }
+    } catch {}
+  }, [showPayment, showFreeAccess, showProcessing, showSuccess])
+
+  /* =======================================================
+     SWIPER CDN LOADER + INITIALIZATION
+     - Ultra smooth drag
+     - Auto-slide every 3s
+     - Pauses on hover/touch, resumes after
+     - Infinite loop (last → first → last)
   ======================================================= */
 
   useEffect(() => {
     let cancelled = false
 
     const loadSwiper = (): Promise<void> => {
-      if (swiperScriptPromiseRef.current) {
-        return swiperScriptPromiseRef.current
-      }
+      return new Promise((resolve, reject) => {
+        if (typeof window === "undefined") {
+          resolve()
+          return
+        }
 
-      swiperScriptPromiseRef.current = new Promise<void>(
-        (resolve, reject) => {
-          if (typeof window === "undefined") {
-            resolve()
-            return
-          }
+        // Load CSS once
+        if (
+          !document.querySelector(
+            'link[data-swiper-css="true"]',
+          )
+        ) {
+          const cssLink = document.createElement("link")
+          cssLink.rel = "stylesheet"
+          cssLink.href =
+            "https://cdn.jsdelivr.net/npm/swiper@8/swiper-bundle.min.css"
+          cssLink.setAttribute("data-swiper-css", "true")
+          document.head.appendChild(cssLink)
+        }
 
-          // CSS (v11)
-          if (
-            !document.querySelector(
-              'link[data-swiper-css="true"]',
-            )
-          ) {
-            const cssLink = document.createElement("link")
-            cssLink.rel = "stylesheet"
-            cssLink.href =
-              "https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"
-            cssLink.setAttribute("data-swiper-css", "true")
-            document.head.appendChild(cssLink)
-          }
+        if ((window as any).Swiper) {
+          resolve()
+          return
+        }
 
-          if ((window as any).Swiper) {
-            resolve()
-            return
-          }
+        const existingScript = document.querySelector(
+          'script[data-swiper-js="true"]',
+        ) as HTMLScriptElement | null
 
-          const existingScript = document.querySelector(
-            'script[data-swiper-js="true"]',
-          ) as HTMLScriptElement | null
+        if (existingScript) {
+          existingScript.addEventListener("load", () => resolve())
+          existingScript.addEventListener("error", () =>
+            reject(new Error("Failed to load Swiper")),
+          )
+          return
+        }
 
-          if (existingScript) {
-            if ((window as any).Swiper) {
-              resolve()
-            } else {
-              existingScript.addEventListener("load", () =>
-                resolve(),
-              )
-              existingScript.addEventListener("error", () =>
-                reject(new Error("Failed to load Swiper")),
-              )
-            }
-            return
-          }
-
-          const script = document.createElement("script")
-          script.src =
-            "https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"
-          script.async = true
-          script.setAttribute("data-swiper-js", "true")
-          script.onload = () => resolve()
-          script.onerror = () =>
-            reject(new Error("Failed to load Swiper"))
-          document.body.appendChild(script)
-        },
-      )
-
-      return swiperScriptPromiseRef.current
+        const script = document.createElement("script")
+        script.src =
+          "https://cdn.jsdelivr.net/npm/swiper@8/swiper-bundle.min.js"
+        script.async = true
+        script.setAttribute("data-swiper-js", "true")
+        script.onload = () => resolve()
+        script.onerror = () =>
+          reject(new Error("Failed to load Swiper"))
+        document.body.appendChild(script)
+      })
     }
 
     const initSwiper = async () => {
@@ -274,62 +260,69 @@ export default function SeriesSection({
         const el = swiperContainerRef.current
         if (!el) return
 
-        if (swiperInstanceRef.current) return
+        if (swiperInstanceRef.current) {
+          try {
+            swiperInstanceRef.current.destroy(true, true)
+          } catch {}
+          swiperInstanceRef.current = null
+        }
 
         swiperInstanceRef.current = new Swiper(el, {
           effect: "cards",
           grabCursor: true,
           initialSlide: 0,
 
-          /* ---------- INFINITE LOOP ---------- */
+          /* ---- ✅ INFINITE LOOP (last → first → last) ---- */
           loop: true,
-          loopedSlides: cardPlans.length,
+          loopedSlides: 4,
           loopAdditionalSlides: 1,
-          loopPreventsSlide: false,
 
-          /* ---------- Smooth drag ---------- */
-          speed: 600,
-          resistanceRatio: 0.65,
-          followFinger: true,
-          touchRatio: 1,
-          touchAngle: 40,
+          /* ---- Ultra smooth drag ---- */
+          speed: 500,                  // smooth transition time
+          resistanceRatio: 0.7,        // soft resistance at edges
+          followFinger: true,          // follows your finger 1:1
+          touchRatio: 1,               // exact 1:1 finger movement
+          touchAngle: 45,              // any direction swipe
           longSwipes: true,
-          longSwipesRatio: 0.25,
-          longSwipesMs: 300,
+          longSwipesRatio: 0.15,       // small swipe = next slide
+          longSwipesMs: 200,
           shortSwipes: true,
-          threshold: 8,
+          threshold: 3,                // very sensitive
           touchStartPreventDefault: false,
           touchMoveStopPropagation: true,
+
+          // ✅ This was TRUE before → caused swipe lock right after
+          // modal close, then sudden release = kapakapi.
           preventInteractionOnTransition: false,
+
           simulateTouch: true,
           allowTouchMove: true,
-          watchSlidesProgress: false,
-          watchOverflow: false,
+          watchSlidesProgress: true,
+          watchOverflow: false,        // ✅ loop এ watchOverflow true হলে loop break করে
           roundLengths: true,
           passiveListeners: true,
-          touchReleaseOnEdges: false,
-          resistanceRatio: 0.65,
+          touchReleaseOnEdges: false,  // ✅ loop এ edge release বন্ধ
 
-          /* ---------- Autoplay ---------- */
+          /* ---- Auto slide (slideshow) ---- */
           autoplay: {
-            delay: AUTOPLAY_DELAY,
-            disableOnInteraction: false,
-            pauseOnMouseEnter: true,
-            waitForTransition: true,
+            delay: AUTOPLAY_DELAY,     // 3 seconds
+            disableOnInteraction: false, // keep autoplay after user drag
+            pauseOnMouseEnter: true,   // pause on hover
+            waitForTransition: true,   // wait for slide transition to finish
           },
 
-          /* ---------- Cards effect ---------- */
+          /* ---- Cards effect ---- */
           cardsEffect: {
-            perSlideOffset: 10,
+            perSlideOffset: 8,
             perSlideRotate: 2,
-            slideShadows: false,
-            rotate: false,
+            slideShadows: true,
+            rotate: true,
           },
 
-          /* ---------- Other ---------- */
+          /* ---- Other ---- */
           mousewheel: {
             forceToAxis: true,
-            releaseOnEdges: false,
+            releaseOnEdges: false,     // ✅ loop এ edge release বন্ধ
             sensitivity: 0.5,
           },
           keyboard: {
@@ -339,6 +332,7 @@ export default function SeriesSection({
 
           on: {
             slideChange: (swiper: any) => {
+              // realIndex loop এর clone ignore করে original index দেয়
               setActiveCard(swiper.realIndex)
             },
           },
@@ -359,32 +353,7 @@ export default function SeriesSection({
         swiperInstanceRef.current = null
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
-
-  /* =======================================================
-     PAUSE / RESUME SWIPER WHEN MODAL OPENS
-  ======================================================= */
-
-  useEffect(() => {
-    const swiper = swiperInstanceRef.current
-    if (!swiper) return
-
-    try {
-      if (anyModalOpen) {
-        swiper.autoplay?.stop?.()
-        swiper.allowTouchMove = false
-      } else {
-        swiper.allowTouchMove = true
-        const t = window.setTimeout(() => {
-          try {
-            swiper.autoplay?.start?.()
-          } catch {}
-        }, 250)
-        return () => window.clearTimeout(t)
-      }
-    } catch {}
-  }, [anyModalOpen])
 
   /* =======================================================
      OPEN PLAN
@@ -562,6 +531,8 @@ export default function SeriesSection({
     return "PREMIUM ACCESS"
   }
 
+  const cardPlans = SUBSCRIPTION_PLANS
+
   /* =======================================================
      RENDER
   ======================================================= */
@@ -623,7 +594,7 @@ export default function SeriesSection({
             </p>
           </section>
 
-          {/* PLAN CARD STACK (SWIPER CARDS + LOOP + AUTOPLAY) */}
+          {/* PLAN CARD STACK (SWIPER CARDS + AUTOPLAY + LOOP) */}
           <section className="mvbd-plan-showcase">
             <div className="mvbd-showcase-header">
               <div>
@@ -688,7 +659,6 @@ export default function SeriesSection({
                         <button
                           type="button"
                           className="mvbd-stack-bottom"
-                          data-swiper-no-swiping="true"
                           onPointerDown={(e) => e.stopPropagation()}
                           onClick={() => openPlan(plan)}
                         >
@@ -1006,8 +976,6 @@ export default function SeriesSection({
             );
             filter: blur(18px);
             animation: mvbdSunPulse 8s ease-in-out infinite;
-            /* GPU-friendly */
-            will-change: transform, opacity;
           }
 
           .mvbd-ray {
@@ -1055,7 +1023,6 @@ export default function SeriesSection({
             pointer-events: none;
             filter: blur(70px);
             animation: mvbdOrbFloat 15s ease-in-out infinite;
-            will-change: transform;
           }
 
           .mvbd-orb-1 {
@@ -1289,8 +1256,6 @@ export default function SeriesSection({
             touch-action: pan-y;
             user-select: none;
             -webkit-user-select: none;
-            /* no backdrop-filter here (heavy on mobile GPU) */
-            contain: layout paint;
           }
 
           .mvbd-stage-glow {
@@ -1305,7 +1270,6 @@ export default function SeriesSection({
             );
             filter: blur(25px);
             pointer-events: none;
-            will-change: transform;
           }
 
           /* SWIPER WRAPPER - Ultra smooth */
@@ -1342,12 +1306,16 @@ export default function SeriesSection({
               rgba(27, 32, 38, 0.96),
               rgba(7, 10, 14, 0.98)
             );
+            /* Critical: no transition, let Swiper handle */
+            transition: none !important;
+            will-change: transform;
             backface-visibility: hidden;
             -webkit-backface-visibility: hidden;
+            transform: translateZ(0);
             transform-origin: center bottom;
           }
 
-          /* Loop duplicates — identical styling */
+          /* Loop duplicates — same look as originals */
           .swiper-slide-duplicate {
             width: 300px;
             height: 375px;
@@ -1361,22 +1329,33 @@ export default function SeriesSection({
               rgba(27, 32, 38, 0.96),
               rgba(7, 10, 14, 0.98)
             );
+            transition: none !important;
+            will-change: transform;
             backface-visibility: hidden;
             -webkit-backface-visibility: hidden;
+            transform: translateZ(0);
             transform-origin: center bottom;
           }
 
-          /* Only the ACTIVE slide gets heavy shadow (perf) */
-          .swiper-slide-active,
-          .swiper-slide-duplicate-active {
+          /* Smooth GPU-accelerated transitions */
+          .swiper-cards .swiper-slide {
+            transition-property: transform, opacity;
+            transition-timing-function: cubic-bezier(0.22, 0.61, 0.36, 1);
+          }
+
+          /* Reset !important rule for swiper-cards */
+          .swiper-cards .swiper-slide {
+            transition: transform 0.5s cubic-bezier(0.22, 0.61, 0.36, 1) !important;
+          }
+
+          .swiper-slide-active {
             box-shadow:
               0 45px 100px rgba(0,0,0,0.72),
               0 0 60px rgba(225,196,116,0.10);
             border-color: rgba(236,211,143,0.22);
           }
 
-          .swiper-slide::before,
-          .swiper-slide-duplicate::before {
+          .swiper-slide::before {
             content: "";
             position: absolute;
             inset: 0;
@@ -1418,10 +1397,9 @@ export default function SeriesSection({
               transparent 70%
             );
             filter: blur(8px);
+            animation: mvbdCardLight 5s ease-in-out infinite;
             z-index: 0;
             pointer-events: none;
-            /* NOTE: no infinite animation here — was a major cause
-               of mobile kapakapi with looped/cloned slides */
           }
 
           .mvbd-stack-popular {
@@ -2053,11 +2031,9 @@ export default function SeriesSection({
             justify-content: center;
             padding: 18px;
             background: rgba(1,3,6,0.82);
-            /* NOTE: no backdrop-filter — heavy on mobile GPU
-               and one of the main sources of kapakapi */
-            animation: mvbdModalIn 0.2s ease both;
-            overscroll-behavior: contain;
-            touch-action: manipulation;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            animation: mvbdModalIn 0.22s ease both;
           }
 
           .mvbd-modal {
@@ -2076,15 +2052,12 @@ export default function SeriesSection({
             box-shadow:
               0 35px 100px rgba(0,0,0,0.82),
               0 0 60px rgba(227,202,133,0.05);
-            animation: mvbdModalScale 0.24s cubic-bezier(
+            animation: mvbdModalScale 0.26s cubic-bezier(
               0.2,
               0.8,
               0.2,
               1
             ) both;
-            overscroll-behavior: contain;
-            -webkit-overflow-scrolling: touch;
-            will-change: transform;
           }
 
           .mvbd-modal::-webkit-scrollbar { width: 4px; }
@@ -2137,7 +2110,7 @@ export default function SeriesSection({
             color: #ffffff;
             text-align: left;
             cursor: pointer;
-            transition: background 0.2s ease, border-color 0.2s ease;
+            transition: all 0.2s ease;
           }
 
           .mvbd-access-button:hover {
@@ -2280,7 +2253,7 @@ export default function SeriesSection({
             border: 1px solid rgba(255,255,255,0.08);
             color: #ffffff;
             background: rgba(255,255,255,0.035);
-            font-size: 16px; /* >=16px prevents iOS zoom on focus */
+            font-size: 13px;
           }
 
           .mvbd-input:focus {
@@ -2411,6 +2384,17 @@ export default function SeriesSection({
             50% { transform: translate3d(25px,-20px,0) scale(1.08); }
           }
 
+          @keyframes mvbdCardLight {
+            0%, 100% {
+              opacity: 0.45;
+              transform: translateX(-50%) scale(0.92);
+            }
+            50% {
+              opacity: 0.9;
+              transform: translateX(-50%) scale(1.08);
+            }
+          }
+
           @keyframes mvbdStatusPulse {
             0%, 100% {
               opacity: 0.45;
@@ -2435,7 +2419,7 @@ export default function SeriesSection({
           @keyframes mvbdModalScale {
             from {
               opacity: 0;
-              transform: translateY(10px) scale(0.98);
+              transform: translateY(12px) scale(0.97);
             }
             to {
               opacity: 1;
@@ -2883,4 +2867,4 @@ export default function SeriesSection({
 
     </>
   )
-                  }
+}

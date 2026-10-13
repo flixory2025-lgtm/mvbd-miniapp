@@ -49,6 +49,37 @@ const COMPARISON_FEATURES = [
 const AUTOPLAY_DELAY = 3000 // 3 seconds
 
 /* =========================================================
+   BODY SCROLL LOCK (shared, ref-counted so multiple modals
+   don't fight each other and unlock too early)
+========================================================= */
+
+let bodyLockCount = 0
+let savedOverflow = ""
+let savedTouchAction = ""
+
+function lockBodyScroll() {
+  if (typeof document === "undefined") return
+  if (bodyLockCount === 0) {
+    savedOverflow = document.body.style.overflow
+    savedTouchAction = document.body.style.touchAction
+    document.body.style.overflow = "hidden"
+    // NOTE: we intentionally do NOT set touch-action: none here.
+    // Setting it caused the swipe-after-modal kapakapi on mobile.
+    document.body.style.touchAction = "auto"
+  }
+  bodyLockCount += 1
+}
+
+function unlockBodyScroll() {
+  if (typeof document === "undefined") return
+  bodyLockCount = Math.max(0, bodyLockCount - 1)
+  if (bodyLockCount === 0) {
+    document.body.style.overflow = savedOverflow
+    document.body.style.touchAction = savedTouchAction
+  }
+}
+
+/* =========================================================
    VIEWPORT MODAL
 ========================================================= */
 
@@ -63,15 +94,9 @@ function ViewportModal({
 
   useEffect(() => {
     setMounted(true)
-
-    const oldOverflow = document.body.style.overflow
-
-    // ✅ Only lock scroll — do NOT touch touchAction.
-    // Touching touchAction caused swipe kapakapi on mobile.
-    document.body.style.overflow = "hidden"
-
+    lockBodyScroll()
     return () => {
-      document.body.style.overflow = oldOverflow
+      unlockBodyScroll()
     }
   }, [])
 
@@ -144,6 +169,11 @@ export default function SeriesSection({
   const successTimerRef = useRef<number | null>(null)
   const swiperInstanceRef = useRef<any>(null)
   const swiperContainerRef = useRef<HTMLDivElement | null>(null)
+  const swiperScriptPromiseRef = useRef<Promise<void> | null>(null)
+
+  /* Any modal open? */
+  const anyModalOpen =
+    showPayment || showFreeAccess || showProcessing || showSuccess
 
   /* =======================================================
      CLEANUP
@@ -161,91 +191,77 @@ export default function SeriesSection({
   }, [])
 
   /* =======================================================
-     ✅ PAUSE / RESUME SWIPER WHEN MODAL OPENS
-     - Prevents background autoplay from fighting modal
-     - Prevents jerk on first swipe after modal close
-  ======================================================= */
-
-  useEffect(() => {
-    const swiper = swiperInstanceRef.current
-    if (!swiper) return
-
-    const anyModalOpen =
-      showPayment ||
-      showFreeAccess ||
-      showProcessing ||
-      showSuccess
-
-    try {
-      if (anyModalOpen) {
-        swiper.autoplay?.stop?.()
-      } else {
-        swiper.autoplay?.start?.()
-      }
-    } catch {}
-  }, [showPayment, showFreeAccess, showProcessing, showSuccess])
-
-  /* =======================================================
-     SWIPER CDN LOADER + INITIALIZATION
-     - Ultra smooth drag
-     - Auto-slide every 3s
-     - Pauses on hover/touch, resumes after
-     - Infinite loop (last → first → last)
+     SWIPER CDN LOADER (memoized, only once)
   ======================================================= */
 
   useEffect(() => {
     let cancelled = false
 
     const loadSwiper = (): Promise<void> => {
-      return new Promise((resolve, reject) => {
-        if (typeof window === "undefined") {
-          resolve()
-          return
-        }
+      if (swiperScriptPromiseRef.current) {
+        return swiperScriptPromiseRef.current
+      }
 
-        // Load CSS once
-        if (
-          !document.querySelector(
-            'link[data-swiper-css="true"]',
-          )
-        ) {
-          const cssLink = document.createElement("link")
-          cssLink.rel = "stylesheet"
-          cssLink.href =
-            "https://cdn.jsdelivr.net/npm/swiper@8/swiper-bundle.min.css"
-          cssLink.setAttribute("data-swiper-css", "true")
-          document.head.appendChild(cssLink)
-        }
+      swiperScriptPromiseRef.current = new Promise<void>(
+        (resolve, reject) => {
+          if (typeof window === "undefined") {
+            resolve()
+            return
+          }
 
-        if ((window as any).Swiper) {
-          resolve()
-          return
-        }
+          // Load CSS once
+          if (
+            !document.querySelector(
+              'link[data-swiper-css="true"]',
+            )
+          ) {
+            const cssLink = document.createElement("link")
+            cssLink.rel = "stylesheet"
+            cssLink.href =
+              "https://cdn.jsdelivr.net/npm/swiper@8/swiper-bundle.min.css"
+            cssLink.setAttribute("data-swiper-css", "true")
+            document.head.appendChild(cssLink)
+          }
 
-        const existingScript = document.querySelector(
-          'script[data-swiper-js="true"]',
-        ) as HTMLScriptElement | null
+          if ((window as any).Swiper) {
+            resolve()
+            return
+          }
 
-        if (existingScript) {
-          existingScript.addEventListener("load", () => resolve())
-          existingScript.addEventListener("error", () =>
-            reject(new Error("Failed to load Swiper")),
-          )
-          return
-        }
+          const existingScript = document.querySelector(
+            'script[data-swiper-js="true"]',
+          ) as HTMLScriptElement | null
 
-        const script = document.createElement("script")
-        script.src =
-          "https://cdn.jsdelivr.net/npm/swiper@8/swiper-bundle.min.js"
-        script.async = true
-        script.setAttribute("data-swiper-js", "true")
-        script.onload = () => resolve()
-        script.onerror = () =>
-          reject(new Error("Failed to load Swiper"))
-        document.body.appendChild(script)
-      })
+          if (existingScript) {
+            if ((window as any).Swiper) {
+              resolve()
+            } else {
+              existingScript.addEventListener("load", () =>
+                resolve(),
+              )
+              existingScript.addEventListener("error", () =>
+                reject(new Error("Failed to load Swiper")),
+              )
+            }
+            return
+          }
+
+          const script = document.createElement("script")
+          script.src =
+            "https://cdn.jsdelivr.net/npm/swiper@8/swiper-bundle.min.js"
+          script.async = true
+          script.setAttribute("data-swiper-js", "true")
+          script.onload = () => resolve()
+          script.onerror = () =>
+            reject(new Error("Failed to load Swiper"))
+          document.body.appendChild(script)
+        },
+      )
+
+      return swiperScriptPromiseRef.current
     }
 
+    /* ---- Init Swiper (ONLY ONCE per mount) ---- */
     const initSwiper = async () => {
       try {
         await loadSwiper()
@@ -260,69 +276,59 @@ export default function SeriesSection({
         const el = swiperContainerRef.current
         if (!el) return
 
-        if (swiperInstanceRef.current) {
-          try {
-            swiperInstanceRef.current.destroy(true, true)
-          } catch {}
-          swiperInstanceRef.current = null
-        }
+        // Already initialized? Don't destroy / re-create.
+        if (swiperInstanceRef.current) return
 
         swiperInstanceRef.current = new Swiper(el, {
           effect: "cards",
           grabCursor: true,
           initialSlide: 0,
 
-          /* ---- ✅ INFINITE LOOP (last → first → last) ---- */
-          loop: true,
-          loopedSlides: 4,
-          loopAdditionalSlides: 1,
-
-          /* ---- Ultra smooth drag ---- */
-          speed: 500,                  // smooth transition time
-          resistanceRatio: 0.7,        // soft resistance at edges
-          followFinger: true,          // follows your finger 1:1
-          touchRatio: 1,               // exact 1:1 finger movement
-          touchAngle: 45,              // any direction swipe
+          /* ---- Smooth drag (tuned: was too sensitive before) ---- */
+          speed: 550,
+          resistanceRatio: 0.65,
+          followFinger: true,
+          touchRatio: 1,
+          touchAngle: 45,
           longSwipes: true,
-          longSwipesRatio: 0.15,       // small swipe = next slide
-          longSwipesMs: 200,
+          longSwipesRatio: 0.25,   // was 0.15 → too twitchy
+          longSwipesMs: 250,
           shortSwipes: true,
-          threshold: 3,                // very sensitive
+          threshold: 8,            // was 3 → caused accidental slides
           touchStartPreventDefault: false,
           touchMoveStopPropagation: true,
-
-          // ✅ This was TRUE before → caused swipe lock right after
-          // modal close, then sudden release = kapakapi.
+          // IMPORTANT: false → no forced lock right after transition.
+          // That was a big cause of "popup → swipe" kapakapi.
           preventInteractionOnTransition: false,
-
           simulateTouch: true,
           allowTouchMove: true,
-          watchSlidesProgress: true,
-          watchOverflow: false,        // ✅ loop এ watchOverflow true হলে loop break করে
+          watchSlidesProgress: false, // was true → extra reflow
+          watchOverflow: true,
           roundLengths: true,
           passiveListeners: true,
-          touchReleaseOnEdges: false,  // ✅ loop এ edge release বন্ধ
+          // Prevent page scroll only along the horizontal axis
+          touchReleaseOnEdges: true,
 
           /* ---- Auto slide (slideshow) ---- */
           autoplay: {
-            delay: AUTOPLAY_DELAY,     // 3 seconds
-            disableOnInteraction: false, // keep autoplay after user drag
-            pauseOnMouseEnter: true,   // pause on hover
-            waitForTransition: true,   // wait for slide transition to finish
+            delay: AUTOPLAY_DELAY,
+            disableOnInteraction: false,
+            pauseOnMouseEnter: true,
+            waitForTransition: true,
           },
 
-          /* ---- Cards effect ---- */
+          /* ---- Cards effect (tuned for mobile smoothness) ---- */
           cardsEffect: {
             perSlideOffset: 8,
             perSlideRotate: 2,
-            slideShadows: true,
-            rotate: true,
+            slideShadows: false,   // shadows on transform = jank on mobile
+            rotate: false,         // rotates cause subpixel kapakapi
           },
 
           /* ---- Other ---- */
           mousewheel: {
             forceToAxis: true,
-            releaseOnEdges: false,     // ✅ loop এ edge release বন্ধ
+            releaseOnEdges: true,
             sensitivity: 0.5,
           },
           keyboard: {
@@ -332,7 +338,6 @@ export default function SeriesSection({
 
           on: {
             slideChange: (swiper: any) => {
-              // realIndex loop এর clone ignore করে original index দেয়
               setActiveCard(swiper.realIndex)
             },
           },
@@ -346,6 +351,7 @@ export default function SeriesSection({
 
     return () => {
       cancelled = true
+      // Only destroy on real unmount
       if (swiperInstanceRef.current) {
         try {
           swiperInstanceRef.current.destroy(true, true)
@@ -354,6 +360,33 @@ export default function SeriesSection({
       }
     }
   }, [])
+
+  /* =======================================================
+     PAUSE / RESUME SWIPER WHEN A MODAL IS OPEN
+     - Prevents background autoplay + prevents scroll chaining
+  ======================================================= */
+
+  useEffect(() => {
+    const swiper = swiperInstanceRef.current
+    if (!swiper) return
+
+    try {
+      if (anyModalOpen) {
+        swiper.autoplay?.stop?.()
+        swiper.allowTouchMove = false
+      } else {
+        swiper.allowTouchMove = true
+        // Resume after a short delay so any pending transitions
+        // finish before autoplay restarts (avoids a jump).
+        const t = window.setTimeout(() => {
+          try {
+            swiper.autoplay?.start?.()
+          } catch {}
+        }, 250)
+        return () => window.clearTimeout(t)
+      }
+    } catch {}
+  }, [anyModalOpen])
 
   /* =======================================================
      OPEN PLAN
@@ -594,7 +627,7 @@ export default function SeriesSection({
             </p>
           </section>
 
-          {/* PLAN CARD STACK (SWIPER CARDS + AUTOPLAY + LOOP) */}
+          {/* PLAN CARD STACK (SWIPER CARDS + AUTOPLAY) */}
           <section className="mvbd-plan-showcase">
             <div className="mvbd-showcase-header">
               <div>
@@ -1253,6 +1286,7 @@ export default function SeriesSection({
               transparent 58%
             );
             border: 1px solid rgba(255,255,255,0.045);
+            /* pan-y allows vertical scroll; horizontal is captured by Swiper */
             touch-action: pan-y;
             user-select: none;
             -webkit-user-select: none;
@@ -1306,46 +1340,14 @@ export default function SeriesSection({
               rgba(27, 32, 38, 0.96),
               rgba(7, 10, 14, 0.98)
             );
-            /* Critical: no transition, let Swiper handle */
-            transition: none !important;
+            /* Let Swiper fully control transform/transition.
+               Do NOT add our own transition — that was a source
+               of the kapakapi / double-animation. */
             will-change: transform;
             backface-visibility: hidden;
             -webkit-backface-visibility: hidden;
             transform: translateZ(0);
             transform-origin: center bottom;
-          }
-
-          /* Loop duplicates — same look as originals */
-          .swiper-slide-duplicate {
-            width: 300px;
-            height: 375px;
-            border-radius: 27px;
-            overflow: hidden;
-            position: relative;
-            box-shadow: 0 35px 70px rgba(0, 0, 0, 0.65);
-            border: 1px solid rgba(255, 255, 255, 0.10);
-            background: linear-gradient(
-              145deg,
-              rgba(27, 32, 38, 0.96),
-              rgba(7, 10, 14, 0.98)
-            );
-            transition: none !important;
-            will-change: transform;
-            backface-visibility: hidden;
-            -webkit-backface-visibility: hidden;
-            transform: translateZ(0);
-            transform-origin: center bottom;
-          }
-
-          /* Smooth GPU-accelerated transitions */
-          .swiper-cards .swiper-slide {
-            transition-property: transform, opacity;
-            transition-timing-function: cubic-bezier(0.22, 0.61, 0.36, 1);
-          }
-
-          /* Reset !important rule for swiper-cards */
-          .swiper-cards .swiper-slide {
-            transition: transform 0.5s cubic-bezier(0.22, 0.61, 0.36, 1) !important;
           }
 
           .swiper-slide-active {
@@ -2034,6 +2036,8 @@ export default function SeriesSection({
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
             animation: mvbdModalIn 0.22s ease both;
+            /* Block scroll chaining from modal to page */
+            overscroll-behavior: contain;
           }
 
           .mvbd-modal {
@@ -2058,6 +2062,8 @@ export default function SeriesSection({
               0.2,
               1
             ) both;
+            overscroll-behavior: contain;
+            -webkit-overflow-scrolling: touch;
           }
 
           .mvbd-modal::-webkit-scrollbar { width: 4px; }
@@ -2479,8 +2485,7 @@ export default function SeriesSection({
               min-height: 355px;
             }
 
-            .swiper-slide,
-            .swiper-slide-duplicate {
+            .swiper-slide {
               width: 250px;
               height: 340px;
             }
@@ -2567,8 +2572,7 @@ export default function SeriesSection({
               min-height: 345px;
             }
 
-            .swiper-slide,
-            .swiper-slide-duplicate {
+            .swiper-slide {
               width: 235px;
               height: 330px;
             }
@@ -2867,4 +2871,4 @@ export default function SeriesSection({
 
     </>
   )
-}
+          }

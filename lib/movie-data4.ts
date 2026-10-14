@@ -1196,7 +1196,7 @@ export const movies4 = [
     poster: "/3190id.jpg",
     trailer: "https://www.youtube.com/embed/95xXBEsmWLU?si",
     telegramLink: "https://t.me/mvbdstore_bot?start=f_MTUxODgsMTUxODk",
-    telegram4kLink: "https://t.me/+gerJUkv5KS85YzM1",
+    telegram4kLink: "http://t.me/mvbdcdn_bot?start=f_MzgsNDA",
     genre: "Drama | Family | Romance | Sport",
     year: "2026",
     rating: "7.6",

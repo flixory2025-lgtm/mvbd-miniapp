@@ -327,10 +327,11 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
                   className="relative h-full flex-shrink-0"
                   style={{ width: `${100 / topSeriesMovies.length}%` }}
                 >
+                  {/* ✅ ১.১.১ ডেস্কটপের জন্য ইমেজ অ্যাডজাস্টমেন্ট (রেফারেন্স ইমেজের মতো) */}
                   <img
                     src={movie.poster || "/placeholder.svg"}
                     alt={movie.title}
-                    className="w-full h-full object-cover pointer-events-none"
+                    className="w-full h-full object-cover pointer-events-none md:object-[75%_center]"
                     style={{ objectPosition: isMobile ? "top" : "center 30%" }}
                   />
                 </div>
@@ -544,4 +545,4 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
       </div>
     </section>
   )
-        }
+}

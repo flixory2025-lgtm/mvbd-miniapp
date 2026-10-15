@@ -444,7 +444,8 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
           `}</style>
         </div>
 
-        <p className="text-center text-green-400 text-sm mb-3 font-medium relative z-20">
+        {/* ✅ Uploaded লেখা: Roboto Bold + স্লো মোশন গ্রিন গ্রেডিয়েন্ট অ্যানিমেশন */}
+        <p className="uploaded-text text-center text-sm md:text-base mb-3 relative z-20">
           {totalMovieCount} Movie & Series Uploaded
         </p>
 
@@ -500,6 +501,8 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
         </button>
 
         <style>{`
+          @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@700&display=swap');
+
           @keyframes carouselNavGlow {
             0%, 100% { box-shadow: 0 0 15px rgba(34, 197, 94, 0.6), inset 0 0 20px rgba(255, 255, 255, 0.1); }
             50% { box-shadow: 0 0 25px rgba(34, 197, 94, 0.8), inset 0 0 30px rgba(255, 255, 255, 0.15); }
@@ -516,6 +519,26 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
             backdrop-filter: blur(25px);
             border: 1px solid rgba(34, 197, 94, 0.6);
             transform: scale(1.1) translateY(-50%);
+          }
+
+          /* ✅ Uploaded text: Roboto Bold + slow green gradient flow */
+          @keyframes uploadedGreenFlow {
+            0%   { background-position: 0% 50%; }
+            50%  { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+          }
+          .uploaded-text {
+            font-family: 'Roboto', sans-serif;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+            background: linear-gradient(90deg, #15803d, #22c55e, #86efac, #22c55e, #15803d);
+            background-size: 300% 100%;
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 0 6px rgba(34, 197, 94, 0.45));
+            animation: uploadedGreenFlow 8s ease-in-out infinite;
           }
         `}</style>
       </div>

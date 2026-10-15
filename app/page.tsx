@@ -754,16 +754,33 @@ export default function Page() {
               {/* ✅✅✅ Recently Uploaded - Year/Rating/Language/Type এর ঠিক নিচে ✅✅✅ */}
               {/* ========================================================= */}
               <div className="w-full flex justify-center items-center py-5 bg-black">
-                <h2
-                  className="text-2xl md:text-3xl font-extrabold text-center tracking-[0.2em]"
-                  style={{
-                    fontFamily: "'Times New Roman', serif",
-                    color: "#ffffff",
-                    textShadow: "0 0 10px rgba(255, 255, 255, 0.5), 0 0 20px rgba(255, 255, 255, 0.3)",
-                  }}
-                >
+                <h2 className="recently-uploaded-text text-2xl md:text-3xl text-center">
                   Recently Uploaded
                 </h2>
+
+                <style>{`
+                  @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@700&display=swap');
+
+                  @keyframes recentlyGreenFlow {
+                    0%   { background-position: 0% 50%; }
+                    50%  { background-position: 100% 50%; }
+                    100% { background-position: 0% 50%; }
+                  }
+
+                  .recently-uploaded-text {
+                    font-family: 'Roboto', sans-serif;
+                    font-weight: 700;
+                    letter-spacing: 0.02em;
+                    background: linear-gradient(90deg, #15803d, #22c55e, #86efac, #22c55e, #15803d);
+                    background-size: 300% 100%;
+                    -webkit-background-clip: text;
+                    background-clip: text;
+                    color: transparent;
+                    -webkit-text-fill-color: transparent;
+                    filter: drop-shadow(0 0 6px rgba(34, 197, 94, 0.45));
+                    animation: recentlyGreenFlow 8s ease-in-out infinite;
+                  }
+                `}</style>
               </div>
             </>
           )}
@@ -1093,4 +1110,4 @@ export default function Page() {
       )}
     </div>
   )
-}
+            }

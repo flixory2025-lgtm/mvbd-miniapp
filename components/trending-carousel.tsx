@@ -412,40 +412,19 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
       </div>
 
       {/* ========================================================= */}
-      {/* ✅✅✅ ২. নতুন সেকশন: Recently Uploaded (ফায়ার অ্যানিমেশন) ✅✅✅ */}
+      {/* ✅✅✅ ২. নতুন সেকশন: Recently Uploaded (Year/Rating এর নিচে) ✅✅✅ */}
       {/* ========================================================= */}
-      <div className="relative z-20 mt-4 mb-2 flex flex-col items-center justify-center">
+      <div className="relative z-20 mt-5 mb-2 flex flex-col items-center justify-center">
         <h2
-          className="text-xl md:text-2xl font-bold text-center tracking-widest animate-pulse"
+          className="text-2xl md:text-3xl font-extrabold text-center tracking-[0.2em]"
           style={{
             fontFamily: "'Times New Roman', serif",
-            letterSpacing: "0.2em",
-            background: "linear-gradient(to right, #ff6b00, #ffa500, #ff6b00)",
-            WebkitBackgroundClip: "text",
-            backgroundClip: "text",
-            color: "transparent",
-            textShadow: "0 0 10px rgba(255, 107, 0, 0.7), 0 0 15px rgba(255, 165, 0, 0.5)",
-            animation: "fireGlow 2s ease-in-out infinite alternate",
+            color: "#ffffff",
+            textShadow: "0 0 10px rgba(255, 255, 255, 0.5), 0 0 20px rgba(255, 255, 255, 0.3)",
           }}
         >
           Recently Uploaded
         </h2>
-        <style jsx>{`
-          @keyframes fireGlow {
-            0% {
-              text-shadow: 0 0 8px rgba(255, 107, 0, 0.7), 0 0 15px rgba(255, 165, 0, 0.5);
-              background: linear-gradient(to right, #ff6b00, #ffa500, #ff6b00);
-              -webkit-background-clip: text;
-              background-clip: text;
-            }
-            100% {
-              text-shadow: 0 0 15px rgba(255, 107, 0, 0.9), 0 0 25px rgba(255, 165, 0, 0.7), 0 0 35px rgba(255, 69, 0, 0.6);
-              background: linear-gradient(to right, #ff4500, #ff8c00, #ff4500);
-              -webkit-background-clip: text;
-              background-clip: text;
-            }
-          }
-        `}</style>
       </div>
 
       {/* ========================================================= */}
@@ -568,4 +547,4 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
       </div>
     </section>
   )
-          }
+              }

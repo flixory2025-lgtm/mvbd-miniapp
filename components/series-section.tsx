@@ -31,11 +31,6 @@ interface SeriesSectionProps {
 const MVBD_LOGO =
   "https://i.postimg.cc/cLtfLFRX/17773-removebg-preview.png"
 
-const SWIPER_CSS =
-  "https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"
-const SWIPER_JS =
-  "https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"
-
 const COMPARISON_FEATURES = [
   { icon: "📱", name: "Phone Logins", free: "∞", premium: "∞" },
   { icon: "🖥️", name: "Desktop Logins", free: "∞", premium: "∞" },
@@ -51,8 +46,6 @@ const COMPARISON_FEATURES = [
   { icon: "HD", name: "480p Quality", free: true, premium: true },
 ]
 
-const AUTOPLAY_DELAY = 3000 // 3 seconds
-
 /* =========================================================
    BODY SCROLL LOCK (shared, ref-counted so multiple modals
    don't fight each other and unlock too early)
@@ -66,7 +59,6 @@ let savedPaddingRight = ""
 function lockBodyScroll() {
   if (typeof document === "undefined") return
   if (bodyLockCount === 0) {
-    // Scrollbar width compensation → no layout jump on desktop
     const scrollbarWidth =
       window.innerWidth - document.documentElement.clientWidth
 
@@ -75,7 +67,6 @@ function lockBodyScroll() {
     savedPaddingRight = document.body.style.paddingRight
 
     document.body.style.overflow = "hidden"
-    // NOTE: we intentionally do NOT set touch-action: none here.
     document.body.style.touchAction = "auto"
     if (scrollbarWidth > 0) {
       document.body.style.paddingRight = `${scrollbarWidth}px`
@@ -178,13 +169,9 @@ export default function SeriesSection({
   const [progress, setProgress] = useState(0)
   const [copied, setCopied] = useState(false)
   const [error, setError] = useState("")
-  const [activeCard, setActiveCard] = useState(0)
 
   const processingTimerRef = useRef<number | null>(null)
   const successTimerRef = useRef<number | null>(null)
-  const swiperInstanceRef = useRef<any>(null)
-  const swiperContainerRef = useRef<HTMLDivElement | null>(null)
-  const swiperScriptPromiseRef = useRef<Promise<void> | null>(null)
 
   /* Any modal open? */
   const anyModalOpen =
@@ -204,187 +191,6 @@ export default function SeriesSection({
       }
     }
   }, [])
-
-  /* =======================================================
-     SWIPER CDN LOADER (memoized, only once)
-  ======================================================= */
-
-  useEffect(() => {
-    let cancelled = false
-
-    const loadSwiper = (): Promise<void> => {
-      if (swiperScriptPromiseRef.current) {
-        return swiperScriptPromiseRef.current
-      }
-
-      swiperScriptPromiseRef.current = new Promise<void>(
-        (resolve, reject) => {
-          if (typeof window === "undefined") {
-            resolve()
-            return
-          }
-
-          // Load CSS once
-          if (
-            !document.querySelector(
-              'link[data-swiper-css="true"]',
-            )
-          ) {
-            const cssLink = document.createElement("link")
-            cssLink.rel = "stylesheet"
-            cssLink.href = SWIPER_CSS
-            cssLink.setAttribute("data-swiper-css", "true")
-            document.head.appendChild(cssLink)
-          }
-
-          if ((window as any).Swiper) {
-            resolve()
-            return
-          }
-
-          const existingScript = document.querySelector(
-            'script[data-swiper-js="true"]',
-          ) as HTMLScriptElement | null
-
-          if (existingScript) {
-            if ((window as any).Swiper) {
-              resolve()
-            } else {
-              existingScript.addEventListener("load", () =>
-                resolve(),
-              )
-              existingScript.addEventListener("error", () =>
-                reject(new Error("Failed to load Swiper")),
-              )
-            }
-            return
-          }
-
-          const script = document.createElement("script")
-          script.src = SWIPER_JS
-          script.async = true
-          script.setAttribute("data-swiper-js", "true")
-          script.onload = () => resolve()
-          script.onerror = () =>
-            reject(new Error("Failed to load Swiper"))
-          document.body.appendChild(script)
-        },
-      )
-
-      return swiperScriptPromiseRef.current
-    }
-
-    /* ---- Init Swiper (ONLY ONCE per mount) ---- */
-    const initSwiper = async () => {
-      try {
-        await loadSwiper()
-        if (cancelled) return
-
-        const Swiper = (window as any).Swiper
-        if (!Swiper) {
-          console.error("Swiper not available on window")
-          return
-        }
-
-        const el = swiperContainerRef.current
-        if (!el) return
-
-        // Already initialized? Don't destroy / re-create.
-        if (swiperInstanceRef.current) return
-
-        swiperInstanceRef.current = new Swiper(el, {
-          effect: "cards",
-          grabCursor: true,
-
-          /* last → first AND first → last (swipe + autoplay) */
-          rewind: true,
-
-          speed: 500,
-          threshold: 8,
-          longSwipesRatio: 0.25,
-          shortSwipes: true,
-          touchStartPreventDefault: false,
-          touchMoveStopPropagation: true,
-          preventInteractionOnTransition: false,
-          watchSlidesProgress: false,
-          roundLengths: true,
-
-          /* ---- Auto slide (slideshow) ---- */
-          autoplay: {
-            delay: AUTOPLAY_DELAY,
-            disableOnInteraction: false,
-            pauseOnMouseEnter: true,
-            waitForTransition: true,
-          },
-
-          /* ---- Cards effect (tuned for mobile smoothness) ---- */
-          cardsEffect: {
-            perSlideOffset: 8,
-            perSlideRotate: 2,
-            slideShadows: false,
-            rotate: false,
-          },
-
-          mousewheel: {
-            forceToAxis: true,
-            sensitivity: 0.5,
-          },
-          keyboard: {
-            enabled: true,
-            onlyInViewport: true,
-          },
-
-          on: {
-            slideChange: (swiper: any) => {
-              setActiveCard(swiper.activeIndex)
-            },
-          },
-        })
-      } catch (err) {
-        console.error("Swiper init failed:", err)
-      }
-    }
-
-    initSwiper()
-
-    return () => {
-      cancelled = true
-      // Only destroy on real unmount
-      if (swiperInstanceRef.current) {
-        try {
-          swiperInstanceRef.current.destroy(true, true)
-        } catch {}
-        swiperInstanceRef.current = null
-      }
-    }
-  }, [])
-
-  /* =======================================================
-     PAUSE / RESUME SWIPER WHEN A MODAL IS OPEN
-     - Prevents background autoplay + prevents scroll chaining
-  ======================================================= */
-
-  useEffect(() => {
-    const swiper = swiperInstanceRef.current
-    if (!swiper) return
-
-    try {
-      if (anyModalOpen) {
-        swiper.autoplay?.stop?.()
-        swiper.allowTouchMove = false
-      } else {
-        swiper.allowTouchMove = true
-        // Resume after a short delay so any pending transitions
-        // finish before autoplay restarts (avoids a jump).
-        const t = window.setTimeout(() => {
-          try {
-            swiper.autoplay?.start?.()
-          } catch {}
-        }, 250)
-        return () => window.clearTimeout(t)
-      }
-    } catch {}
-  }, [anyModalOpen])
 
   /* =======================================================
      OPEN PLAN
@@ -562,8 +368,6 @@ export default function SeriesSection({
     return "PREMIUM ACCESS"
   }
 
-  const cardPlans = SUBSCRIPTION_PLANS
-
   /* =======================================================
      RENDER
   ======================================================= */
@@ -629,91 +433,76 @@ export default function SeriesSection({
             </p>
           </section>
 
-          {/* PLAN CARD STACK (SWIPER CARDS + AUTOPLAY) */}
+          {/* PLAN CARDS GRID (Static, no swipe) */}
           <section className="mvbd-plan-showcase">
             <div className="mvbd-showcase-header">
               <div>
                 <span className="mvbd-section-kicker">MEMBERSHIP</span>
                 <h2>Choose the Right Plan</h2>
-                <p>Swipe or tap a plan to explore your membership.</p>
-              </div>
-              <div className="mvbd-card-counter">
-                <span>{String(activeCard + 1).padStart(2, "0")}</span>
-                <i>/</i>
-                <span>{String(cardPlans.length).padStart(2, "0")}</span>
+                <p>Tap a plan to explore your membership.</p>
               </div>
             </div>
 
             <div className="mvbd-card-stage">
               <div className="mvbd-stage-glow" />
+              <div className="mvbd-static-cards">
+                {SUBSCRIPTION_PLANS.map((plan) => (
+                  <div
+                    className={`mvbd-static-card ${
+                      plan.popular ? "mvbd-static-card-popular" : ""
+                    }`}
+                    key={plan.planId}
+                  >
+                    <div className="mvbd-stack-card-inner">
+                      <div className="mvbd-stack-light" />
 
-              <div
-                ref={swiperContainerRef}
-                className="swiper mySwiper"
-              >
-                <div className="swiper-wrapper">
-                  {cardPlans.map((plan) => (
-                    <div
-                      className="swiper-slide"
-                      key={plan.planId}
-                    >
-                      <div className="mvbd-stack-card-inner">
-                        <div className="mvbd-stack-light" />
-
-                        {plan.popular && (
-                          <div className="mvbd-stack-popular">
-                            ✦ MOST POPULAR
-                          </div>
-                        )}
-
-                        <div className="mvbd-stack-top">
-                          <div className="mvbd-stack-icon">
-                            {plan.sticker || "✦"}
-                          </div>
-                          <div>
-                            <span>MOVIESVERSEBD</span>
-                            <strong>{getPlanLabel(plan)}</strong>
-                          </div>
+                      {plan.popular && (
+                        <div className="mvbd-stack-popular">
+                          ✦ MOST POPULAR
                         </div>
+                      )}
 
-                        <div className="mvbd-stack-price">
-                          {plan.planId === "trial" ? "FREE" : plan.price}
+                      <div className="mvbd-stack-top">
+                        <div className="mvbd-stack-icon">
+                          {plan.sticker || "✦"}
                         </div>
-
-                        <div className="mvbd-stack-duration">
-                          {getPlanDuration(plan)}
+                        <div>
+                          <span>MOVIESVERSEBD</span>
+                          <strong>{getPlanLabel(plan)}</strong>
                         </div>
-
-                        <div className="mvbd-stack-divider" />
-
-                        <div className="mvbd-stack-quality">
-                          <span>🎥</span>
-                          <span>{plan.videoQuality}</span>
-                        </div>
-
-                        <button
-                          type="button"
-                          className="mvbd-stack-bottom"
-                          onClick={() => openPlan(plan)}
-                        >
-                          <span>
-                            {plan.planId === "trial"
-                              ? "Explore Free Access"
-                              : "Unlock Premium Access"}
-                          </span>
-                          <b>→</b>
-                        </button>
                       </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
 
-            <div className="mvbd-stack-hint">
-              <span>←</span>
-              Swipe or tap a card to select
-              <span>→</span>
+                      <div className="mvbd-stack-price">
+                        {plan.planId === "trial" ? "FREE" : plan.price}
+                      </div>
+
+                      <div className="mvbd-stack-duration">
+                        {getPlanDuration(plan)}
+                      </div>
+
+                      <div className="mvbd-stack-divider" />
+
+                      <div className="mvbd-stack-quality">
+                        <span>🎥</span>
+                        <span>{plan.videoQuality}</span>
+                      </div>
+
+                      <button
+                        type="button"
+                        className="mvbd-stack-bottom"
+                        onClick={() => openPlan(plan)}
+                      >
+                        <span>
+                          {plan.planId === "trial"
+                            ? "Explore Free Access"
+                            : "Unlock Premium Access"}
+                        </span>
+                        <b>→</b>
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           </section>
 
@@ -1263,24 +1052,6 @@ export default function SeriesSection({
             font-size: 11px;
           }
 
-          .mvbd-card-counter {
-            display: flex;
-            align-items: center;
-            gap: 7px;
-            color: rgba(255,255,255,0.35);
-            font-size: 11px;
-            font-weight: 700;
-          }
-
-          .mvbd-card-counter span:first-child {
-            color: #e8d394;
-          }
-
-          .mvbd-card-counter i {
-            font-style: normal;
-            opacity: 0.35;
-          }
-
           /* CARD STAGE */
           .mvbd-card-stage {
             position: relative;
@@ -1295,8 +1066,6 @@ export default function SeriesSection({
               transparent 58%
             );
             border: 1px solid rgba(255,255,255,0.045);
-            /* pan-y allows vertical scroll; horizontal is captured by Swiper */
-            touch-action: pan-y;
             user-select: none;
             -webkit-user-select: none;
           }
@@ -1315,31 +1084,24 @@ export default function SeriesSection({
             pointer-events: none;
           }
 
-          /* SWIPER WRAPPER
-             (no display:flex here — it breaks Swiper's own layout) */
-          .mySwiper {
-            width: 100%;
-            max-width: 330px;
-            min-height: 395px;
-            overflow: visible !important;
+          /* STATIC CARDS LAYOUT */
+          .mvbd-static-cards {
             position: relative;
-            margin: 0 auto;
-            touch-action: pan-y;
-            user-select: none;
-            -webkit-user-select: none;
-            -webkit-tap-highlight-color: transparent;
+            z-index: 2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 18px;
+            padding: 20px;
+            width: 100%;
           }
 
-          .mySwiper.swiper-cards {
-            overflow: visible;
-          }
-
-          .swiper-slide {
+          .mvbd-static-card {
+            position: relative;
             width: 300px;
             height: 375px;
             border-radius: 27px;
             overflow: hidden;
-            position: relative;
             box-shadow: 0 35px 70px rgba(0, 0, 0, 0.65);
             border: 1px solid rgba(255, 255, 255, 0.10);
             background: linear-gradient(
@@ -1347,21 +1109,23 @@ export default function SeriesSection({
               rgba(27, 32, 38, 0.96),
               rgba(7, 10, 14, 0.98)
             );
-            /* Swiper fully controls transform/transition. */
-            will-change: transform;
-            backface-visibility: hidden;
-            -webkit-backface-visibility: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
             transform-origin: center bottom;
           }
 
-          .swiper-slide-active {
+          .mvbd-static-card:hover {
+            transform: translateY(-6px);
             box-shadow:
               0 45px 100px rgba(0,0,0,0.72),
               0 0 60px rgba(225,196,116,0.10);
             border-color: rgba(236,211,143,0.22);
           }
 
-          .swiper-slide::before {
+          .mvbd-static-card-popular {
+            border-color: rgba(236,211,143,0.20);
+          }
+
+          .mvbd-static-card::before {
             content: "";
             position: absolute;
             inset: 0;
@@ -1551,22 +1315,6 @@ export default function SeriesSection({
           .mvbd-stack-bottom b {
             font-size: 17px;
             line-height: 0;
-          }
-
-          .mvbd-stack-hint {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-            margin-top: 14px;
-            color: rgba(255,255,255,0.28);
-            font-size: 9px;
-            letter-spacing: 0.7px;
-          }
-
-          .mvbd-stack-hint span {
-            color: rgba(239,211,139,0.55);
-            font-size: 13px;
           }
 
           /* PLAN CARDS */
@@ -2040,7 +1788,6 @@ export default function SeriesSection({
             backdrop-filter: blur(6px);
             -webkit-backdrop-filter: blur(6px);
             animation: mvbdModalIn 0.22s ease both;
-            /* Block scroll chaining from modal to page */
             overscroll-behavior: contain;
           }
 
@@ -2386,7 +2133,6 @@ export default function SeriesSection({
             }
           }
 
-          /* opacity only — animating filter: blur() is very heavy */
           @keyframes mvbdRayMove {
             0%, 100% { opacity: 0.32; }
             50% { opacity: 0.68; }
@@ -2446,6 +2192,13 @@ export default function SeriesSection({
 
           /* TABLET */
           @media (max-width: 1050px) {
+            .mvbd-static-cards {
+              gap: 14px;
+            }
+            .mvbd-static-card {
+              width: 260px;
+              height: 340px;
+            }
             .mvbd-plans-grid {
               grid-template-columns: repeat(2, minmax(0, 1fr));
             }
@@ -2487,12 +2240,13 @@ export default function SeriesSection({
               border-radius: 27px;
             }
 
-            .mySwiper {
-              max-width: 275px;
-              min-height: 355px;
+            .mvbd-static-cards {
+              flex-wrap: wrap;
+              gap: 14px;
+              padding: 16px;
             }
 
-            .swiper-slide {
+            .mvbd-static-card {
               width: 250px;
               height: 340px;
             }
@@ -2574,12 +2328,7 @@ export default function SeriesSection({
             .mvbd-status { display: none; }
             .mvbd-premium-hero h1 { font-size: 32px; }
 
-            .mySwiper {
-              max-width: 260px;
-              min-height: 345px;
-            }
-
-            .swiper-slide {
+            .mvbd-static-card {
               width: 235px;
               height: 330px;
             }
@@ -2614,7 +2363,8 @@ export default function SeriesSection({
 
             .mvbd-plan-card,
             .mvbd-choose-button,
-            .mvbd-access-button {
+            .mvbd-access-button,
+            .mvbd-static-card {
               transition: none !important;
             }
           }
@@ -2878,4 +2628,4 @@ export default function SeriesSection({
 
     </>
   )
-        }
+          }

@@ -293,7 +293,6 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
   const currentTopMovie = topSeriesMovies[topIndex] || topSeriesMovies[0]
 
   return (
-    // ✅ -mt সরিয়ে ফেলা হয়েছে, পোস্টার স্বাভাবিক জায়গা থেকে শুরু হবে
     <section className="relative pb-4 overflow-hidden bg-black">
 
       {/* ========================================================= */}
@@ -338,11 +337,11 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
               ))}
             </div>
 
-            {/* ✅ ১.২ উপরের Blur + Dark (শুধু হেডারের এলাকায়, নিচে গিয়ে পরিষ্কার) */}
+            {/* ✅ ১.২ উপরের Blur + Dark */}
             <div
               className="absolute top-0 left-0 w-full pointer-events-none z-[5]"
               style={{
-                height: "140px", // ← শুধু হেডার + একটু নিচ পর্যন্ত
+                height: "140px",
                 background:
                   "linear-gradient(to bottom, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.65) 35%, rgba(0,0,0,0.3) 65%, rgba(0,0,0,0) 100%)",
                 backdropFilter: "blur(12px)",
@@ -354,7 +353,7 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
               }}
             />
 
-            {/* ✅ ১.৩ নিচের গ্রেডিয়েন্ট (টেক্সট সেকশনের জন্য) */}
+            {/* ✅ ১.৩ নিচের গ্রেডিয়েন্ট */}
             <div className="absolute bottom-0 left-0 w-full h-[45%] bg-gradient-to-t from-black via-black/60 to-transparent pointer-events-none z-[5]" />
 
             {/* ✅ ১.৪ ক্লিক করার জন্য ট্রান্সপারেন্ট ওভারলে */}
@@ -368,10 +367,8 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
               style={{ cursor: "pointer" }}
             />
 
-            {/* ✅ ১.৫ নিচের টেক্সট সেকশন (স্ক্রিনশটের মতো) */}
+            {/* ✅ ১.৫ নিচের টেক্সট সেকশন */}
             <div className="absolute bottom-0 left-0 w-full p-4 md:p-6 z-20 pointer-events-none flex items-end gap-4">
-              
-              {/* ছোট থাম্বনেইল পোস্টার */}
               <div className="w-16 h-24 md:w-20 md:h-28 rounded-lg overflow-hidden border-2 border-white/20 shadow-lg flex-shrink-0">
                 <img
                   src={currentTopMovie.poster || "/placeholder.svg"}
@@ -380,7 +377,6 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
                 />
               </div>
 
-              {/* টাইটেল, ইয়ার, রেটিং, জেনার */}
               <div className="flex-1 min-w-0 pb-1">
                 <h2 className="text-white text-lg md:text-2xl font-bold mb-1 truncate drop-shadow-lg">
                   {currentTopMovie.title}
@@ -402,7 +398,6 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
                 </div>
               </div>
 
-              {/* প্লে বাটন */}
               <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0 shadow-lg">
                 <Play className="w-5 h-5 md:w-6 md:h-6 text-white fill-white ml-0.5" />
               </div>
@@ -412,27 +407,9 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
       </div>
 
       {/* ========================================================= */}
-      {/* ✅✅✅ ২. নতুন সেকশন: Recently Uploaded (Year/Rating এর নিচে) ✅✅✅ */}
-      {/* ========================================================= */}
-      <div className="relative z-20 mt-5 mb-2 flex flex-col items-center justify-center">
-        <h2
-          className="text-2xl md:text-3xl font-extrabold text-center tracking-[0.2em]"
-          style={{
-            fontFamily: "'Times New Roman', serif",
-            color: "#ffffff",
-            textShadow: "0 0 10px rgba(255, 255, 255, 0.5), 0 0 20px rgba(255, 255, 255, 0.3)",
-          }}
-        >
-          Recently Uploaded
-        </h2>
-      </div>
-
-      {/* ========================================================= */}
-      {/* ✅✅✅ ৩. নিচের সেকশন: Trending Movies (3D Carousel) ✅✅✅ */}
+      {/* ✅✅✅ ২. নিচের সেকশন: Trending Movies (3D Carousel) ✅✅✅ */}
       {/* ========================================================= */}
       <div className="relative z-10 px-4 mt-2">
-
-        {/* Trending Now Title */}
         <div className="relative z-20 mb-1 flex flex-col items-center justify-center">
           <h2
             className="text-xl font-bold text-center tracking-wider animate-pulse"
@@ -467,12 +444,10 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
           `}</style>
         </div>
 
-        {/* Counter */}
         <p className="text-center text-green-400 text-sm mb-3 font-medium relative z-20">
           {totalMovieCount} Movie & Series Uploaded
         </p>
 
-        {/* ✅ 3D Card Carousel with Free Swipe */}
         <div
           className="relative z-20 flex justify-center items-center h-[280px] md:h-[480px] w-full cursor-grab active:cursor-grabbing select-none"
           style={{ touchAction: "pan-y", perspective: "1400px" }}
@@ -511,7 +486,6 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
           ))}
         </div>
 
-        {/* Navigation Buttons */}
         <button
           onClick={handlePrev}
           className="absolute left-2 md:left-6 top-[60%] transform -translate-y-1/2 z-30 hidden md:flex items-center justify-center w-12 h-12 rounded-full carousel-nav-button text-white"
@@ -547,4 +521,4 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
       </div>
     </section>
   )
-              }
+        }

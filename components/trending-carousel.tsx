@@ -487,18 +487,30 @@ export default function TrendingCarousel({
               />
             )}
 
-            {/* Top fade — mobile fixed: light gradient only, NO blur */}
+            {/* Top fade — mobile: exactly the ORIGINAL (with mask), desktop: lighter */}
             <div
-              className={`absolute top-0 left-0 w-full pointer-events-none z-[6] ${
-                isMobile ? "h-[100px]" : "h-[90px]"
-              }`}
-              style={{
-                background: isMobile
-                  ? "linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.3) 55%, transparent 100%)"
-                  : "linear-gradient(to bottom, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.45) 55%, transparent 100%)",
-                backdropFilter: isMobile ? "none" : "blur(5px)",
-                WebkitBackdropFilter: isMobile ? "none" : "blur(5px)",
-              }}
+              className="absolute top-0 left-0 w-full pointer-events-none z-[6]"
+              style={
+                isMobile
+                  ? {
+                      height: "140px",
+                      background:
+                        "linear-gradient(to bottom, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.65) 35%, rgba(0,0,0,0.3) 65%, rgba(0,0,0,0) 100%)",
+                      backdropFilter: "blur(12px)",
+                      WebkitBackdropFilter: "blur(12px)",
+                      maskImage:
+                        "linear-gradient(to bottom, black 0%, black 45%, rgba(0,0,0,0.4) 70%, transparent 100%)",
+                      WebkitMaskImage:
+                        "linear-gradient(to bottom, black 0%, black 45%, rgba(0,0,0,0.4) 70%, transparent 100%)",
+                    }
+                  : {
+                      height: "90px",
+                      background:
+                        "linear-gradient(to bottom, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.45) 55%, transparent 100%)",
+                      backdropFilter: "blur(5px)",
+                      WebkitBackdropFilter: "blur(5px)",
+                    }
+              }
             />
 
             {/* Bottom gradient */}
@@ -876,4 +888,4 @@ export default function TrendingCarousel({
       </div>
     </section>
   )
-                      }
+          }

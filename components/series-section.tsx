@@ -31,11 +31,6 @@ interface SeriesSectionProps {
 const MVBD_LOGO =
   "https://i.postimg.cc/cLtfLFRX/17773-removebg-preview.png"
 
-const SWIPER_CSS =
-  "https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"
-const SWIPER_JS =
-  "https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"
-
 const COMPARISON_FEATURES = [
   { icon: "📱", name: "Phone Logins", free: "∞", premium: "∞" },
   { icon: "🖥️", name: "Desktop Logins", free: "∞", premium: "∞" },
@@ -51,11 +46,8 @@ const COMPARISON_FEATURES = [
   { icon: "HD", name: "480p Quality", free: true, premium: true },
 ]
 
-const AUTOPLAY_DELAY = 3000 // 3 seconds
-
 /* =========================================================
-   BODY SCROLL LOCK (shared, ref-counted so multiple modals
-   don't fight each other and unlock too early)
+   BODY SCROLL LOCK (shared, ref-counted)
 ========================================================= */
 
 let bodyLockCount = 0
@@ -66,7 +58,6 @@ let savedPaddingRight = ""
 function lockBodyScroll() {
   if (typeof document === "undefined") return
   if (bodyLockCount === 0) {
-    // Scrollbar width compensation → no layout jump on desktop
     const scrollbarWidth =
       window.innerWidth - document.documentElement.clientWidth
 
@@ -75,7 +66,6 @@ function lockBodyScroll() {
     savedPaddingRight = document.body.style.paddingRight
 
     document.body.style.overflow = "hidden"
-    // NOTE: we intentionally do NOT set touch-action: none here.
     document.body.style.touchAction = "auto"
     if (scrollbarWidth > 0) {
       document.body.style.paddingRight = `${scrollbarWidth}px`
@@ -114,6 +104,15 @@ function ViewportModal({
       unlockBodyScroll()
     }
   }, [])
+
+  useEffect(() => {
+    if (!onBackdropClick) return
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") onBackdropClick()
+    }
+    window.addEventListener("keydown", onKey)
+    return () => window.removeEventListener("keydown", onKey)
+  }, [onBackdropClick])
 
   if (!mounted) return null
 
@@ -169,6 +168,13 @@ export default function SeriesSection({
 }: SeriesSectionProps) {
   const { user, profile } = useAuth()
 
+  const [activePlanId, setActivePlanId] = useState<string>(
+    () =>
+      (
+        SUBSCRIPTION_PLANS.find((plan) => plan.popular) ||
+        SUBSCRIPTION_PLANS[0]
+      )?.planId || "",
+  )
   const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null)
   const [showPayment, setShowPayment] = useState(false)
   const [showFreeAccess, setShowFreeAccess] = useState(false)
@@ -178,17 +184,17 @@ export default function SeriesSection({
   const [progress, setProgress] = useState(0)
   const [copied, setCopied] = useState(false)
   const [error, setError] = useState("")
-  const [activeCard, setActiveCard] = useState(0)
 
   const processingTimerRef = useRef<number | null>(null)
   const successTimerRef = useRef<number | null>(null)
-  const swiperInstanceRef = useRef<any>(null)
-  const swiperContainerRef = useRef<HTMLDivElement | null>(null)
-  const swiperScriptPromiseRef = useRef<Promise<void> | null>(null)
+  const copyTimerRef = useRef<number | null>(null)
 
-  /* Any modal open? */
   const anyModalOpen =
     showPayment || showFreeAccess || showProcessing || showSuccess
+
+  const activePlan: Plan | undefined =
+    SUBSCRIPTION_PLANS.find((plan) => plan.planId === activePlanId) ||
+    SUBSCRIPTION_PLANS[0]
 
   /* =======================================================
      CLEANUP
@@ -202,189 +208,11 @@ export default function SeriesSection({
       if (successTimerRef.current) {
         window.clearTimeout(successTimerRef.current)
       }
-    }
-  }, [])
-
-  /* =======================================================
-     SWIPER CDN LOADER (memoized, only once)
-  ======================================================= */
-
-  useEffect(() => {
-    let cancelled = false
-
-    const loadSwiper = (): Promise<void> => {
-      if (swiperScriptPromiseRef.current) {
-        return swiperScriptPromiseRef.current
-      }
-
-      swiperScriptPromiseRef.current = new Promise<void>(
-        (resolve, reject) => {
-          if (typeof window === "undefined") {
-            resolve()
-            return
-          }
-
-          // Load CSS once
-          if (
-            !document.querySelector(
-              'link[data-swiper-css="true"]',
-            )
-          ) {
-            const cssLink = document.createElement("link")
-            cssLink.rel = "stylesheet"
-            cssLink.href = SWIPER_CSS
-            cssLink.setAttribute("data-swiper-css", "true")
-            document.head.appendChild(cssLink)
-          }
-
-          if ((window as any).Swiper) {
-            resolve()
-            return
-          }
-
-          const existingScript = document.querySelector(
-            'script[data-swiper-js="true"]',
-          ) as HTMLScriptElement | null
-
-          if (existingScript) {
-            if ((window as any).Swiper) {
-              resolve()
-            } else {
-              existingScript.addEventListener("load", () =>
-                resolve(),
-              )
-              existingScript.addEventListener("error", () =>
-                reject(new Error("Failed to load Swiper")),
-              )
-            }
-            return
-          }
-
-          const script = document.createElement("script")
-          script.src = SWIPER_JS
-          script.async = true
-          script.setAttribute("data-swiper-js", "true")
-          script.onload = () => resolve()
-          script.onerror = () =>
-            reject(new Error("Failed to load Swiper"))
-          document.body.appendChild(script)
-        },
-      )
-
-      return swiperScriptPromiseRef.current
-    }
-
-    /* ---- Init Swiper (ONLY ONCE per mount) ---- */
-    const initSwiper = async () => {
-      try {
-        await loadSwiper()
-        if (cancelled) return
-
-        const Swiper = (window as any).Swiper
-        if (!Swiper) {
-          console.error("Swiper not available on window")
-          return
-        }
-
-        const el = swiperContainerRef.current
-        if (!el) return
-
-        // Already initialized? Don't destroy / re-create.
-        if (swiperInstanceRef.current) return
-
-        swiperInstanceRef.current = new Swiper(el, {
-          effect: "cards",
-          grabCursor: true,
-
-          /* last → first AND first → last (swipe + autoplay) */
-          rewind: true,
-
-          speed: 500,
-          threshold: 8,
-          longSwipesRatio: 0.25,
-          shortSwipes: true,
-          touchStartPreventDefault: false,
-          touchMoveStopPropagation: true,
-          preventInteractionOnTransition: false,
-          watchSlidesProgress: false,
-          roundLengths: true,
-
-          /* ---- Auto slide (slideshow) ---- */
-          autoplay: {
-            delay: AUTOPLAY_DELAY,
-            disableOnInteraction: false,
-            pauseOnMouseEnter: true,
-            waitForTransition: true,
-          },
-
-          /* ---- Cards effect (tuned for mobile smoothness) ---- */
-          cardsEffect: {
-            perSlideOffset: 8,
-            perSlideRotate: 2,
-            slideShadows: false,
-            rotate: false,
-          },
-
-          mousewheel: {
-            forceToAxis: true,
-            sensitivity: 0.5,
-          },
-          keyboard: {
-            enabled: true,
-            onlyInViewport: true,
-          },
-
-          on: {
-            slideChange: (swiper: any) => {
-              setActiveCard(swiper.activeIndex)
-            },
-          },
-        })
-      } catch (err) {
-        console.error("Swiper init failed:", err)
-      }
-    }
-
-    initSwiper()
-
-    return () => {
-      cancelled = true
-      // Only destroy on real unmount
-      if (swiperInstanceRef.current) {
-        try {
-          swiperInstanceRef.current.destroy(true, true)
-        } catch {}
-        swiperInstanceRef.current = null
+      if (copyTimerRef.current) {
+        window.clearTimeout(copyTimerRef.current)
       }
     }
   }, [])
-
-  /* =======================================================
-     PAUSE / RESUME SWIPER WHEN A MODAL IS OPEN
-     - Prevents background autoplay + prevents scroll chaining
-  ======================================================= */
-
-  useEffect(() => {
-    const swiper = swiperInstanceRef.current
-    if (!swiper) return
-
-    try {
-      if (anyModalOpen) {
-        swiper.autoplay?.stop?.()
-        swiper.allowTouchMove = false
-      } else {
-        swiper.allowTouchMove = true
-        // Resume after a short delay so any pending transitions
-        // finish before autoplay restarts (avoids a jump).
-        const t = window.setTimeout(() => {
-          try {
-            swiper.autoplay?.start?.()
-          } catch {}
-        }, 250)
-        return () => window.clearTimeout(t)
-      }
-    } catch {}
-  }, [anyModalOpen])
 
   /* =======================================================
      OPEN PLAN
@@ -422,7 +250,11 @@ export default function SeriesSection({
     try {
       await navigator.clipboard.writeText(PAYMENT_NUMBER)
       setCopied(true)
-      window.setTimeout(() => setCopied(false), 1800)
+      if (copyTimerRef.current) window.clearTimeout(copyTimerRef.current)
+      copyTimerRef.current = window.setTimeout(
+        () => setCopied(false),
+        1800,
+      )
     } catch {
       setCopied(false)
     }
@@ -562,7 +394,8 @@ export default function SeriesSection({
     return "PREMIUM ACCESS"
   }
 
-  const cardPlans = SUBSCRIPTION_PLANS
+  const getCtaLabel = (plan: Plan) =>
+    plan.planId === "trial" ? "Explore Free Access" : "Next"
 
   /* =======================================================
      RENDER
@@ -575,23 +408,14 @@ export default function SeriesSection({
           anyModalOpen ? " is-modal-open" : ""
         }`}
       >
-
         {/* Background */}
         <div className="mvbd-page-background">
-          <div className="mvbd-sun-glow" />
-          <div className="mvbd-ray mvbd-ray-1" />
-          <div className="mvbd-ray mvbd-ray-2" />
-          <div className="mvbd-ray mvbd-ray-3" />
-          <div className="mvbd-ray mvbd-ray-4" />
-          <div className="mvbd-light-orb mvbd-orb-1" />
-          <div className="mvbd-light-orb mvbd-orb-2" />
+          <div className="mvbd-glow mvbd-glow-top" />
+          <div className="mvbd-glow mvbd-glow-bottom" />
           <div className="mvbd-grain" />
         </div>
 
-        <div className="mvbd-page-overlay" />
-
         <div className="mvbd-page-content">
-
           {/* HEADER */}
           <header className="mvbd-premium-header">
             <div className="mvbd-brand">
@@ -615,119 +439,169 @@ export default function SeriesSection({
 
           {/* HERO */}
           <section className="mvbd-premium-hero">
-            <div className="mvbd-eyebrow">
-              ✦ MOVIESVERSEBD PREMIUM
-            </div>
+            <p className="mvbd-step">Step 1 of 2</p>
             <h1>
-              Choose Your
-              <span>Premium Plan</span>
+              <span className="mvbd-title-silver">Choose Your</span>{" "}
+              <span className="mvbd-title-green">Premium Plan</span>
             </h1>
-            <p>
-              Unlock a better MoviesVerseBD
-              experience with flexible
-              membership plans.
+            <p className="mvbd-hero-sub">
+              Unlock a better MoviesVerseBD experience with flexible
+              membership plans. Cancel the hassle, pick what fits you.
             </p>
           </section>
 
-          {/* PLAN CARD STACK (SWIPER CARDS + AUTOPLAY) */}
-          <section className="mvbd-plan-showcase">
-            <div className="mvbd-showcase-header">
-              <div>
-                <span className="mvbd-section-kicker">MEMBERSHIP</span>
-                <h2>Choose the Right Plan</h2>
-                <p>Swipe or tap a plan to explore your membership.</p>
-              </div>
-              <div className="mvbd-card-counter">
-                <span>{String(activeCard + 1).padStart(2, "0")}</span>
-                <i>/</i>
-                <span>{String(cardPlans.length).padStart(2, "0")}</span>
-              </div>
-            </div>
+          {/* PLAN SELECTOR (Netflix style) */}
+          <section className="mvbd-plan-select" aria-label="Plans">
+            <div
+              className="mvbd-plan-options"
+              role="radiogroup"
+              aria-label="Choose a plan"
+            >
+              {SUBSCRIPTION_PLANS.map((plan) => {
+                const isFree = plan.planId === "trial"
+                const isActive = plan.planId === activePlanId
 
-            <div className="mvbd-card-stage">
-              <div className="mvbd-stage-glow" />
+                return (
+                  <button
+                    key={plan.planId}
+                    type="button"
+                    role="radio"
+                    aria-checked={isActive}
+                    className={[
+                      "mvbd-option",
+                      isActive ? "is-active" : "",
+                      plan.popular ? "is-popular" : "",
+                    ].join(" ")}
+                    onClick={() => setActivePlanId(plan.planId)}
+                  >
+                    {plan.popular && (
+                      <span className="mvbd-option-badge">
+                        Most Popular
+                      </span>
+                    )}
 
-              <div
-                ref={swiperContainerRef}
-                className="swiper mySwiper"
-              >
-                <div className="swiper-wrapper">
-                  {cardPlans.map((plan) => (
-                    <div
-                      className="swiper-slide"
-                      key={plan.planId}
-                    >
-                      <div className="mvbd-stack-card-inner">
-                        <div className="mvbd-stack-light" />
+                    <span className="mvbd-option-top">
+                      <span className="mvbd-option-icon">
+                        {plan.sticker || "✦"}
+                      </span>
+                      <span className="mvbd-option-name">
+                        <small>MoviesVerseBD</small>
+                        <strong>{getPlanLabel(plan)}</strong>
+                      </span>
+                      <span className="mvbd-radio" aria-hidden="true">
+                        <i />
+                      </span>
+                    </span>
 
-                        {plan.popular && (
-                          <div className="mvbd-stack-popular">
-                            ✦ MOST POPULAR
-                          </div>
-                        )}
+                    <span className="mvbd-option-price">
+                      {isFree ? "FREE" : plan.price}
+                    </span>
 
-                        <div className="mvbd-stack-top">
-                          <div className="mvbd-stack-icon">
-                            {plan.sticker || "✦"}
-                          </div>
-                          <div>
-                            <span>MOVIESVERSEBD</span>
-                            <strong>{getPlanLabel(plan)}</strong>
-                          </div>
-                        </div>
-
-                        <div className="mvbd-stack-price">
-                          {plan.planId === "trial" ? "FREE" : plan.price}
-                        </div>
-
-                        <div className="mvbd-stack-duration">
-                          {getPlanDuration(plan)}
-                        </div>
-
-                        <div className="mvbd-stack-divider" />
-
-                        <div className="mvbd-stack-quality">
-                          <span>🎥</span>
-                          <span>{plan.videoQuality}</span>
-                        </div>
-
-                        <button
-                          type="button"
-                          className="mvbd-stack-bottom"
-                          onClick={() => openPlan(plan)}
-                        >
-                          <span>
-                            {plan.planId === "trial"
-                              ? "Explore Free Access"
-                              : "Unlock Premium Access"}
-                          </span>
-                          <b>→</b>
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            <div className="mvbd-stack-hint">
-              <span>←</span>
-              Swipe or tap a card to select
-              <span>→</span>
+                    <span className="mvbd-option-meta">
+                      <span className="mvbd-pill">
+                        {getPlanDuration(plan)}
+                      </span>
+                      <span className="mvbd-option-quality">
+                        🎥 {plan.videoQuality}
+                      </span>
+                    </span>
+                  </button>
+                )
+              })}
             </div>
           </section>
+
+          {/* PLAN DETAILS */}
+          {activePlan && (
+            <section className="mvbd-details" aria-live="polite">
+              <div className="mvbd-panel">
+                <div className="mvbd-panel-head">
+                  <div className="mvbd-ps-badge">
+                    <img src={MVBD_LOGO} alt="" />
+                  </div>
+                  <div>
+                    <h2>
+                      <span className="mvbd-title-silver">Plan</span>{" "}
+                      <span className="mvbd-title-green">Details</span>
+                    </h2>
+                    <p>
+                      {getPlanLabel(activePlan)} •{" "}
+                      {activePlan.planId === "trial"
+                        ? "FREE"
+                        : activePlan.price}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="mvbd-detail-rows">
+                  <div className="mvbd-detail-row">
+                    <span>Price</span>
+                    <strong>
+                      {activePlan.planId === "trial"
+                        ? "FREE"
+                        : activePlan.price}
+                    </strong>
+                  </div>
+                  <div className="mvbd-detail-row">
+                    <span>Access</span>
+                    <strong>{getPlanDuration(activePlan)}</strong>
+                  </div>
+                  <div className="mvbd-detail-row">
+                    <span>Video quality</span>
+                    <strong>{activePlan.videoQuality}</strong>
+                  </div>
+                </div>
+
+                <ul className="mvbd-feature-list">
+                  {(activePlan.features || []).map((feature, index) => (
+                    <li
+                      key={`${activePlan.planId}-${index}`}
+                      className={
+                        feature.type === "locked" ||
+                        feature.type === "restricted"
+                          ? "locked"
+                          : ""
+                      }
+                    >
+                      <span
+                        className={
+                          feature.type === "locked"
+                            ? "feature-cross"
+                            : feature.type === "restricted"
+                              ? "feature-restricted"
+                              : feature.type === "quality"
+                                ? "feature-quality"
+                                : "feature-check"
+                        }
+                      >
+                        {feature.type === "locked"
+                          ? "🔒"
+                          : feature.type === "restricted"
+                            ? "🔞"
+                            : feature.type === "quality"
+                              ? "🎥"
+                              : "✓"}
+                      </span>
+                      <span className="feature-text">
+                        {feature.text}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </section>
+          )}
 
           {/* FEATURES COMPARISON */}
           <section className="mvbd-features-section">
             <div className="mvbd-features-heading">
               <div>
-                <span className="mvbd-section-kicker">
-                  MEMBERSHIP BENEFITS
-                </span>
-                <h2>Features</h2>
+                <h2>
+                  <span className="mvbd-title-silver">Compare</span>{" "}
+                  <span className="mvbd-title-green">Features</span>
+                </h2>
                 <p>
-                  Compare what you get with
-                  Free and Premium access.
+                  Compare what you get with Free and Premium access.
                 </p>
               </div>
               <div className="mvbd-features-crown">
@@ -788,9 +662,7 @@ export default function SeriesSection({
             <div>
               <strong>Secure Payment</strong>
               <span>
-                Paid plans are activated
-                after transaction
-                verification.
+                Paid plans are activated after transaction verification.
               </span>
             </div>
             <div className="mvbd-secure-badge">VERIFIED</div>
@@ -801,18 +673,52 @@ export default function SeriesSection({
             <div className="mvbd-footer-logo">
               <img src={MVBD_LOGO} alt="" />
             </div>
-            <span>
-              MoviesVerseBD • MVBD Premium Membership
-            </span>
+            <span>MoviesVerseBD • MVBD Premium Membership</span>
           </footer>
-
         </div>
+
+        {/* STICKY CHECKOUT BAR */}
+        {activePlan && (
+          <div className="mvbd-checkout-bar">
+            <div className="mvbd-checkout-inner">
+              <div className="mvbd-checkout-summary">
+                <small>Selected plan</small>
+                <strong>
+                  {getPlanLabel(activePlan)} •{" "}
+                  {activePlan.planId === "trial"
+                    ? "FREE"
+                    : activePlan.price}
+                </strong>
+              </div>
+              <button
+                type="button"
+                className="mvbd-next-pill"
+                onClick={() => openPlan(activePlan)}
+              >
+                {getCtaLabel(activePlan)}
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* =================================================
             GLOBAL CSS
         ================================================= */}
 
         <style jsx global>{`
+          @import url("https://fonts.googleapis.com/css2?family=Raleway:wght@500;600;700;800;900&display=swap");
+
+          :root {
+            --mv-green: #3cf25c;
+            --mv-green-deep: #14b83a;
+            --mv-green-soft: rgba(60, 242, 92, 0.12);
+            --mv-red: #ff2f45;
+            --mv-bg: #020403;
+            --mv-text: #f4f6f4;
+            --mv-muted: rgba(255, 255, 255, 0.55);
+            --mv-font: "Raleway", "Inter", system-ui, -apple-system,
+              "Segoe UI", Roboto, sans-serif;
+          }
 
           * {
             box-sizing: border-box;
@@ -822,7 +728,7 @@ export default function SeriesSection({
           body {
             margin: 0;
             padding: 0;
-            background: #05070b;
+            background: var(--mv-bg);
           }
 
           button,
@@ -835,169 +741,132 @@ export default function SeriesSection({
             min-height: 100svh;
             width: 100%;
             overflow-x: hidden;
-            background: #05070b;
-            color: #ffffff;
+            background: var(--mv-bg);
+            color: var(--mv-text);
+            font-family: var(--mv-font);
             isolation: isolate;
           }
 
-          /* Pause heavy background animations while a modal is open */
-          .mvbd-premium-page.is-modal-open .mvbd-page-background *,
-          .mvbd-premium-page.is-modal-open .mvbd-stack-light,
-          .mvbd-premium-page.is-modal-open .mvbd-status-dot,
-          .mvbd-premium-page.is-modal-open .mvbd-premium-hero h1 span {
+          .mvbd-premium-page.is-modal-open .mvbd-status-dot {
             animation-play-state: paused !important;
           }
 
+          /* ---------- BACKGROUND ---------- */
           .mvbd-page-background {
             position: fixed;
             inset: 0;
             z-index: -5;
             overflow: hidden;
             pointer-events: none;
-            background:
-              radial-gradient(
-                ellipse 80% 45% at 50% -10%,
-                rgba(248, 213, 130, 0.11),
-                transparent 65%
-              ),
-              linear-gradient(
-                180deg,
-                #07090e 0%,
-                #05080c 45%,
-                #020407 100%
-              );
+            background: #020403;
           }
 
-          .mvbd-page-overlay {
-            position: fixed;
-            inset: 0;
-            z-index: -4;
-            pointer-events: none;
-            background:
-              radial-gradient(
-                ellipse at 50% 0%,
-                rgba(255, 227, 158, 0.08),
-                transparent 48%
-              ),
-              linear-gradient(
-                90deg,
-                rgba(0, 0, 0, 0.42),
-                transparent 45%,
-                rgba(0, 0, 0, 0.48)
-              );
-          }
-
-          .mvbd-sun-glow {
+          .mvbd-glow {
             position: absolute;
-            width: 380px;
-            height: 380px;
-            top: -250px;
             left: 50%;
             transform: translateX(-50%);
             border-radius: 50%;
+            filter: blur(60px);
+          }
+
+          .mvbd-glow-top {
+            top: -320px;
+            width: 900px;
+            height: 520px;
             background: radial-gradient(
-              circle,
-              rgba(255, 237, 183, 0.42) 0%,
-              rgba(255, 212, 113, 0.15) 24%,
-              rgba(255, 181, 79, 0.05) 44%,
-              transparent 72%
+              ellipse,
+              rgba(30, 190, 60, 0.42),
+              transparent 70%
             );
-            filter: blur(18px);
-            animation: mvbdSunPulse 8s ease-in-out infinite;
           }
 
-          .mvbd-ray {
-            position: absolute;
-            top: -15%;
-            left: 50%;
-            height: 125%;
-            width: 130px;
-            transform-origin: 50% 0;
-            background: linear-gradient(
-              180deg,
-              rgba(255, 239, 188, 0.12),
-              rgba(255, 207, 117, 0.035),
-              transparent 75%
+          .mvbd-glow-bottom {
+            bottom: -340px;
+            width: 1000px;
+            height: 480px;
+            background: radial-gradient(
+              ellipse,
+              rgba(30, 190, 60, 0.3),
+              transparent 70%
             );
-            filter: blur(18px);
-            opacity: 0.6;
-            mix-blend-mode: screen;
-            animation: mvbdRayMove 13s ease-in-out infinite;
-          }
-
-          .mvbd-ray-1 { transform: translateX(-50%) rotate(-25deg); }
-          .mvbd-ray-2 {
-            width: 95px;
-            transform: translateX(-50%) rotate(-10deg);
-            opacity: 0.35;
-            animation-delay: -3s;
-          }
-          .mvbd-ray-3 {
-            width: 160px;
-            transform: translateX(-50%) rotate(17deg);
-            opacity: 0.28;
-            animation-delay: -6s;
-          }
-          .mvbd-ray-4 {
-            width: 75px;
-            transform: translateX(-50%) rotate(32deg);
-            opacity: 0.24;
-            animation-delay: -9s;
-          }
-
-          .mvbd-light-orb {
-            position: absolute;
-            border-radius: 50%;
-            pointer-events: none;
-            filter: blur(70px);
-            animation: mvbdOrbFloat 15s ease-in-out infinite;
-          }
-
-          .mvbd-orb-1 {
-            width: 340px;
-            height: 340px;
-            top: 30%;
-            left: -200px;
-            background: rgba(21, 123, 108, 0.08);
-          }
-
-          .mvbd-orb-2 {
-            width: 300px;
-            height: 300px;
-            right: -180px;
-            top: 55%;
-            background: rgba(82, 68, 147, 0.08);
-            animation-delay: -7s;
           }
 
           .mvbd-grain {
             position: absolute;
             inset: 0;
-            opacity: 0.035;
-            pointer-events: none;
+            opacity: 0.05;
             background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.7'/%3E%3C/svg%3E");
           }
 
           .mvbd-page-content {
             position: relative;
             z-index: 2;
-            width: min(1180px, calc(100% - 36px));
+            width: min(1120px, calc(100% - 36px));
             margin: 0 auto;
-            padding: 18px 0 70px;
+            padding: 18px 0 150px;
           }
 
+          /* ---------- SHARED: curved outline (reference style) ---------- */
+          .mvbd-option,
+          .mvbd-panel,
+          .mvbd-comparison,
+          .mvbd-payment-info {
+            position: relative;
+          }
+
+          .mvbd-option::before,
+          .mvbd-panel::before,
+          .mvbd-comparison::before,
+          .mvbd-payment-info::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            padding: 1.5px;
+            background: linear-gradient(
+              135deg,
+              var(--mv-green) 0%,
+              rgba(60, 242, 92, 0) 32%,
+              rgba(60, 242, 92, 0) 68%,
+              var(--mv-green) 100%
+            );
+            -webkit-mask: linear-gradient(#000 0 0) content-box,
+              linear-gradient(#000 0 0);
+            -webkit-mask-composite: xor;
+            mask: linear-gradient(#000 0 0) content-box exclude,
+              linear-gradient(#000 0 0);
+            pointer-events: none;
+            opacity: 0.85;
+          }
+
+          /* ---------- TITLES (white/silver + green like reference) ---------- */
+          .mvbd-title-silver {
+            background: linear-gradient(180deg, #ffffff, #9aa09a);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+          }
+
+          .mvbd-title-green {
+            background: linear-gradient(180deg, #6dff86, #1fd04a);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 0 18px rgba(60, 242, 92, 0.35));
+          }
+
+          /* ---------- HEADER ---------- */
           .mvbd-premium-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
             gap: 20px;
             padding: 11px 16px;
-            border: 1px solid rgba(255,255,255,0.09);
-            border-radius: 18px;
-            background: rgba(8, 11, 16, 0.62);
-            backdrop-filter: blur(22px);
-            -webkit-backdrop-filter: blur(22px);
-            box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+            border: 1px solid rgba(60, 242, 92, 0.16);
+            border-radius: 20px;
+            background: rgba(4, 8, 5, 0.7);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
           }
 
           .mvbd-brand {
@@ -1012,13 +881,9 @@ export default function SeriesSection({
             display: grid;
             place-items: center;
             border-radius: 13px;
-            background: linear-gradient(
-              145deg,
-              rgba(255,255,255,0.11),
-              rgba(255,255,255,0.025)
-            );
-            border: 1px solid rgba(255,255,255,0.10);
-            box-shadow: 0 0 30px rgba(255, 214, 130, 0.07);
+            background: rgba(60, 242, 92, 0.07);
+            border: 1px solid rgba(60, 242, 92, 0.25);
+            box-shadow: 0 0 24px rgba(60, 242, 92, 0.18);
             overflow: hidden;
           }
 
@@ -1033,430 +898,382 @@ export default function SeriesSection({
             display: block;
             font-size: 14px;
             font-weight: 800;
-            letter-spacing: -0.2px;
           }
 
           .mvbd-brand-text span {
             display: block;
             margin-top: 3px;
-            color: rgba(255,255,255,0.48);
-            font-size: 9px;
-            letter-spacing: 0.6px;
-            text-transform: uppercase;
+            color: var(--mv-muted);
+            font-size: 10px;
+            font-weight: 600;
           }
 
           .mvbd-status {
             display: flex;
             align-items: center;
             gap: 7px;
-            padding: 7px 12px;
+            padding: 7px 13px;
             border-radius: 999px;
-            color: #f5d991;
-            background: rgba(242, 207, 121, 0.07);
-            border: 1px solid rgba(242, 207, 121, 0.15);
-            font-size: 9px;
+            color: var(--mv-green);
+            background: var(--mv-green-soft);
+            border: 1px solid rgba(60, 242, 92, 0.3);
+            font-size: 10px;
             font-weight: 800;
-            letter-spacing: 1px;
+            letter-spacing: 0.8px;
           }
 
           .mvbd-status-dot {
             width: 6px;
             height: 6px;
             border-radius: 50%;
-            background: #f7d982;
-            box-shadow: 0 0 12px rgba(247,217,130,0.9);
+            background: var(--mv-green);
+            box-shadow: 0 0 12px var(--mv-green);
             animation: mvbdStatusPulse 2s ease-in-out infinite;
           }
 
+          /* ---------- HERO ---------- */
           .mvbd-premium-hero {
             text-align: center;
-            padding: 76px 12px 48px;
+            padding: 64px 8px 38px;
           }
 
-          .mvbd-eyebrow {
-            display: inline-flex;
-            align-items: center;
-            color: #e8d39b;
-            font-size: 10px;
-            font-weight: 900;
-            letter-spacing: 4px;
-            margin-bottom: 17px;
+          .mvbd-step {
+            margin: 0 0 12px;
+            color: var(--mv-muted);
+            font-size: 12px;
+            font-weight: 600;
           }
 
           .mvbd-premium-hero h1 {
             margin: 0;
-            font-size: clamp(38px, 6vw, 70px);
-            line-height: 0.98;
-            letter-spacing: -3px;
-            font-weight: 850;
-            color: #f8f7f2;
-            text-shadow: 0 8px 40px rgba(0,0,0,0.35);
+            font-size: clamp(36px, 6.2vw, 68px);
+            line-height: 1.04;
+            letter-spacing: -2px;
+            font-weight: 800;
           }
 
-          .mvbd-premium-hero h1 span {
-            display: block;
-            margin-top: 9px;
-            background: linear-gradient(
-              100deg,
-              #ffffff 0%,
-              #f3dda3 38%,
-              #b8e6d5 72%,
-              #ffffff 100%
-            );
-            background-size: 200% auto;
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
-            animation: mvbdGradientText 7s ease-in-out infinite;
-          }
-
-          .mvbd-premium-hero p {
+          .mvbd-hero-sub {
             max-width: 520px;
-            margin: 20px auto 0;
-            color: rgba(255,255,255,0.48);
+            margin: 18px auto 0;
+            color: var(--mv-muted);
             font-size: 13px;
             line-height: 1.7;
+            font-weight: 500;
           }
 
-          .mvbd-section-kicker {
-            color: #cdbb83;
-            font-size: 9px;
-            font-weight: 900;
-            letter-spacing: 2.5px;
+          /* ---------- PLAN OPTIONS ---------- */
+          .mvbd-plan-options {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 14px;
           }
 
-          .mvbd-plan-showcase h2,
-          .mvbd-features-section h2 {
-            margin: 7px 0 0;
-            color: #f5f4ef;
-            font-size: clamp(24px, 4vw, 34px);
-            line-height: 1.05;
-            letter-spacing: -1.2px;
-          }
-
-          .mvbd-showcase-header {
-            display: flex;
-            align-items: flex-end;
-            justify-content: space-between;
-            gap: 20px;
-            margin-bottom: 22px;
-          }
-
-          .mvbd-showcase-header p,
-          .mvbd-features-heading p {
-            margin: 8px 0 0;
-            color: rgba(255,255,255,0.42);
-            font-size: 11px;
-          }
-
-          .mvbd-card-counter {
-            display: flex;
-            align-items: center;
-            gap: 7px;
-            color: rgba(255,255,255,0.35);
-            font-size: 11px;
-            font-weight: 700;
-          }
-
-          .mvbd-card-counter span:first-child {
-            color: #e8d394;
-          }
-
-          .mvbd-card-counter i {
-            font-style: normal;
-            opacity: 0.35;
-          }
-
-          /* CARD STAGE */
-          .mvbd-card-stage {
-            position: relative;
-            min-height: 450px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 34px;
-            background: radial-gradient(
-              ellipse at 50% 20%,
-              rgba(255,220,139,0.055),
-              transparent 58%
-            );
-            border: 1px solid rgba(255,255,255,0.045);
-            /* pan-y allows vertical scroll; horizontal is captured by Swiper */
-            touch-action: pan-y;
-            user-select: none;
-            -webkit-user-select: none;
-          }
-
-          .mvbd-stage-glow {
-            position: absolute;
-            width: 320px;
-            height: 320px;
-            border-radius: 50%;
-            background: radial-gradient(
-              circle,
-              rgba(239,208,125,0.10),
-              transparent 68%
-            );
-            filter: blur(25px);
-            pointer-events: none;
-          }
-
-          /* SWIPER WRAPPER
-             (no display:flex here — it breaks Swiper's own layout) */
-          .mySwiper {
-            width: 100%;
-            max-width: 330px;
-            min-height: 395px;
-            overflow: visible !important;
-            position: relative;
-            margin: 0 auto;
-            touch-action: pan-y;
-            user-select: none;
-            -webkit-user-select: none;
-            -webkit-tap-highlight-color: transparent;
-          }
-
-          .mySwiper.swiper-cards {
-            overflow: visible;
-          }
-
-          .swiper-slide {
-            width: 300px;
-            height: 375px;
-            border-radius: 27px;
-            overflow: hidden;
-            position: relative;
-            box-shadow: 0 35px 70px rgba(0, 0, 0, 0.65);
-            border: 1px solid rgba(255, 255, 255, 0.10);
-            background: linear-gradient(
-              145deg,
-              rgba(27, 32, 38, 0.96),
-              rgba(7, 10, 14, 0.98)
-            );
-            /* Swiper fully controls transform/transition. */
-            will-change: transform;
-            backface-visibility: hidden;
-            -webkit-backface-visibility: hidden;
-            transform-origin: center bottom;
-          }
-
-          .swiper-slide-active {
-            box-shadow:
-              0 45px 100px rgba(0,0,0,0.72),
-              0 0 60px rgba(225,196,116,0.10);
-            border-color: rgba(236,211,143,0.22);
-          }
-
-          .swiper-slide::before {
-            content: "";
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(
-              130deg,
-              rgba(255,255,255,0.075),
-              transparent 27%,
-              transparent 68%,
-              rgba(255,221,139,0.025)
-            );
-            pointer-events: none;
-            z-index: 1;
-          }
-
-          .mvbd-stack-card-inner {
-            width: 100%;
-            height: 100%;
-            padding: 25px 23px;
-            position: relative;
+          .mvbd-option {
             display: flex;
             flex-direction: column;
-            pointer-events: auto;
-            user-select: none;
-            -webkit-user-select: none;
-          }
-
-          .mvbd-stack-light {
-            position: absolute;
-            width: 210px;
-            height: 210px;
-            top: -115px;
-            left: 50%;
-            transform: translateX(-50%);
-            border-radius: 50%;
-            background: radial-gradient(
-              circle,
-              rgba(246,218,148,0.23),
-              rgba(246,218,148,0.04) 42%,
-              transparent 70%
-            );
-            filter: blur(8px);
-            animation: mvbdCardLight 5s ease-in-out infinite;
-            z-index: 0;
-            pointer-events: none;
-          }
-
-          .mvbd-stack-popular {
-            position: absolute;
-            top: 0;
-            right: 0;
-            padding: 8px 13px;
-            border-radius: 0 0 0 14px;
-            color: #17130b;
-            background: linear-gradient(
-              135deg,
-              #f6dda0,
-              #c9ad61
-            );
-            font-size: 7px;
-            font-weight: 950;
-            letter-spacing: 0.8px;
-            box-shadow: 0 0 25px rgba(236,207,126,0.20);
-            z-index: 2;
-          }
-
-          .mvbd-stack-top {
-            position: relative;
-            z-index: 3;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-          }
-
-          .mvbd-stack-icon {
-            width: 50px;
-            height: 50px;
-            display: grid;
-            place-items: center;
-            flex: 0 0 50px;
-            border-radius: 15px;
-            color: #f2d88e;
-            background: rgba(242,214,139,0.08);
-            border: 1px solid rgba(242,214,139,0.16);
-            font-size: 22px;
-            box-shadow: inset 0 0 25px rgba(255,255,255,0.02);
-          }
-
-          .mvbd-stack-top span {
-            display: block;
-            color: rgba(255,255,255,0.38);
-            font-size: 7px;
-            letter-spacing: 1.5px;
-            font-weight: 800;
-          }
-
-          .mvbd-stack-top strong {
-            display: block;
-            margin-top: 5px;
-            color: #f5f3ed;
-            font-size: 17px;
-            font-weight: 850;
-          }
-
-          .mvbd-stack-price {
-            position: relative;
-            z-index: 3;
-            margin-top: 42px;
-            color: #f5dda0;
-            font-size: 44px;
-            line-height: 1;
-            font-weight: 900;
-            letter-spacing: -2px;
-            text-shadow: 0 0 35px rgba(241,213,139,0.18);
-          }
-
-          .mvbd-stack-duration {
-            position: relative;
-            z-index: 3;
-            display: inline-flex;
-            margin-top: 12px;
-            padding: 7px 12px;
-            border-radius: 999px;
-            color: rgba(255,255,255,0.65);
-            background: rgba(255,255,255,0.045);
-            border: 1px solid rgba(255,255,255,0.07);
-            font-size: 8px;
-            font-weight: 800;
-            letter-spacing: 0.7px;
-            align-self: flex-start;
-          }
-
-          .mvbd-stack-divider {
-            position: relative;
-            z-index: 3;
-            height: 1px;
-            margin: 24px 0 15px;
-            background: linear-gradient(
-              90deg,
-              rgba(255,255,255,0.11),
-              transparent
-            );
-          }
-
-          .mvbd-stack-quality {
-            position: relative;
-            z-index: 3;
-            display: flex;
-            align-items: center;
-            gap: 7px;
-            color: rgba(255,255,255,0.65);
-            font-size: 10px;
-            font-weight: 700;
-          }
-
-          .mvbd-stack-bottom {
-            position: absolute;
-            z-index: 3;
-            left: 23px;
-            right: 23px;
-            bottom: 22px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 12px 14px;
-            border-radius: 13px;
-            color: #15120b;
-            background: linear-gradient(
-              100deg,
-              #f4dda0,
-              #d1b968
-            );
-            font-size: 9px;
-            font-weight: 900;
-            box-shadow: 0 8px 25px rgba(217,188,105,0.10);
-            border: none;
+            align-items: stretch;
+            gap: 0;
+            min-width: 0;
+            padding: 20px 18px 18px;
+            text-align: left;
+            color: inherit;
             cursor: pointer;
-            width: calc(100% - 46px);
-            transition: filter 0.2s ease;
+            border: 0;
+            border-radius: 26px 26px 26px 26px;
+            background: linear-gradient(
+              150deg,
+              rgba(14, 22, 16, 0.92),
+              rgba(3, 6, 4, 0.96)
+            );
+            transition: transform 0.2s ease, box-shadow 0.2s ease,
+              background 0.2s ease;
             touch-action: manipulation;
             -webkit-tap-highlight-color: transparent;
           }
 
-          .mvbd-stack-bottom:hover {
-            filter: brightness(1.1);
+          .mvbd-option:hover {
+            transform: translateY(-3px);
           }
 
-          .mvbd-stack-bottom b {
-            font-size: 17px;
-            line-height: 0;
+          .mvbd-option:focus-visible,
+          .mvbd-next-pill:focus-visible,
+          .mvbd-access-button:focus-visible {
+            outline: 2px solid var(--mv-green);
+            outline-offset: 3px;
           }
 
-          .mvbd-stack-hint {
+          .mvbd-option.is-active {
+            background: linear-gradient(
+              150deg,
+              rgba(24, 70, 32, 0.85),
+              rgba(4, 14, 6, 0.97)
+            );
+            box-shadow: 0 0 0 1.5px var(--mv-green),
+              0 0 44px rgba(60, 242, 92, 0.22);
+          }
+
+          .mvbd-option.is-active::before {
+            opacity: 0;
+          }
+
+          .mvbd-option-badge {
+            position: absolute;
+            top: -11px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 5px 13px;
+            border-radius: 999px;
+            white-space: nowrap;
+            color: #03110a;
+            background: linear-gradient(135deg, #7dff93, #22d24d);
+            font-size: 10px;
+            font-weight: 800;
+            box-shadow: 0 0 22px rgba(60, 242, 92, 0.45);
+            z-index: 2;
+          }
+
+          .mvbd-option-top {
             display: flex;
             align-items: center;
-            justify-content: center;
-            gap: 12px;
-            margin-top: 14px;
-            color: rgba(255,255,255,0.28);
-            font-size: 9px;
-            letter-spacing: 0.7px;
+            gap: 11px;
           }
 
-          .mvbd-stack-hint span {
-            color: rgba(239,211,139,0.55);
+          .mvbd-option-icon {
+            width: 44px;
+            height: 44px;
+            flex: 0 0 44px;
+            display: grid;
+            place-items: center;
+            border-radius: 13px;
+            font-size: 21px;
+            color: var(--mv-green);
+            background: var(--mv-green-soft);
+            border: 1px solid rgba(60, 242, 92, 0.25);
+          }
+
+          .mvbd-option-name {
+            flex: 1;
+            min-width: 0;
+          }
+
+          .mvbd-option-name small {
+            display: block;
+            color: var(--mv-muted);
+            font-size: 9px;
+            font-weight: 600;
+          }
+
+          .mvbd-option-name strong {
+            display: block;
+            margin-top: 3px;
+            font-size: 17px;
+            font-weight: 800;
+          }
+
+          .mvbd-radio {
+            width: 22px;
+            height: 22px;
+            flex: 0 0 22px;
+            display: grid;
+            place-items: center;
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            transition: border-color 0.2s ease;
+          }
+
+          .mvbd-radio i {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--mv-green);
+            box-shadow: 0 0 10px var(--mv-green);
+            transform: scale(0);
+            transition: transform 0.2s ease;
+          }
+
+          .mvbd-option.is-active .mvbd-radio {
+            border-color: var(--mv-green);
+          }
+
+          .mvbd-option.is-active .mvbd-radio i {
+            transform: scale(1);
+          }
+
+          .mvbd-option-price {
+            display: block;
+            margin-top: 28px;
+            font-size: 38px;
+            line-height: 1;
+            font-weight: 900;
+            letter-spacing: -1.5px;
+            color: #ffffff;
+          }
+
+          .mvbd-option-meta {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 9px;
+            margin-top: 16px;
+          }
+
+          .mvbd-pill {
+            padding: 6px 12px;
+            border-radius: 999px;
+            color: var(--mv-green);
+            background: var(--mv-green-soft);
+            border: 1px solid rgba(60, 242, 92, 0.22);
+            font-size: 10px;
+            font-weight: 800;
+          }
+
+          .mvbd-option-quality {
+            color: var(--mv-muted);
+            font-size: 12px;
+            font-weight: 600;
+          }
+
+          /* ---------- DETAILS PANEL ---------- */
+          .mvbd-details {
+            margin-top: 38px;
+          }
+
+          .mvbd-panel {
+            padding: 26px 24px 20px;
+            border-radius: 30px;
+            background: linear-gradient(
+              150deg,
+              rgba(8, 14, 10, 0.92),
+              rgba(2, 4, 3, 0.97)
+            );
+          }
+
+          .mvbd-panel-head {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+          }
+
+          .mvbd-ps-badge {
+            width: 48px;
+            height: 48px;
+            flex: 0 0 48px;
+            display: grid;
+            place-items: center;
+            border-radius: 14px;
+            background: rgba(60, 242, 92, 0.12);
+            border: 1px solid rgba(60, 242, 92, 0.5);
+            box-shadow: 0 0 28px rgba(60, 242, 92, 0.4);
+          }
+
+          .mvbd-ps-badge img {
+            width: 32px;
+            height: 32px;
+            object-fit: contain;
+          }
+
+          .mvbd-panel-head h2 {
+            margin: 0;
+            font-size: clamp(24px, 4vw, 32px);
+            font-weight: 800;
+            letter-spacing: -1px;
+            line-height: 1.1;
+          }
+
+          .mvbd-panel-head p {
+            margin: 5px 0 0;
+            color: var(--mv-muted);
+            font-size: 12px;
+            font-weight: 600;
+          }
+
+          .mvbd-detail-rows {
+            margin-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+          }
+
+          .mvbd-detail-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            padding: 14px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
             font-size: 13px;
           }
 
-          /* FEATURES */
-          .mvbd-features-section { margin-top: 68px; }
+          .mvbd-detail-row span {
+            color: var(--mv-muted);
+            font-weight: 600;
+          }
+
+          .mvbd-detail-row strong {
+            font-weight: 800;
+            text-align: right;
+          }
+
+          .mvbd-feature-list {
+            list-style: none;
+            margin: 14px 0 0;
+            padding: 0;
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            column-gap: 28px;
+          }
+
+          .mvbd-feature-list li {
+            display: flex;
+            align-items: flex-start;
+            gap: 11px;
+            padding: 10px 0;
+            color: rgba(255, 255, 255, 0.82);
+            font-size: 13px;
+            line-height: 1.45;
+            font-weight: 500;
+          }
+
+          .mvbd-feature-list li.locked {
+            color: rgba(255, 255, 255, 0.38);
+          }
+
+          .mvbd-feature-list li > span:first-child {
+            width: 20px;
+            height: 20px;
+            flex: 0 0 20px;
+            display: grid;
+            place-items: center;
+            margin-top: 1px;
+            border-radius: 50%;
+            font-size: 10px;
+            font-weight: 900;
+          }
+
+          .feature-check,
+          .feature-quality {
+            color: #03110a;
+            background: var(--mv-green);
+            box-shadow: 0 0 12px rgba(60, 242, 92, 0.4);
+          }
+
+          .feature-cross {
+            color: #ff7d86;
+            background: rgba(255, 47, 69, 0.1);
+            border: 1px solid rgba(255, 47, 69, 0.25);
+          }
+
+          .feature-restricted {
+            color: #ffffff;
+            background: #b3202f;
+          }
+
+          .mvbd-feature-list .feature-text {
+            flex: 1;
+          }
+
+          /* ---------- COMPARISON ---------- */
+          .mvbd-features-section {
+            margin-top: 64px;
+          }
 
           .mvbd-features-heading {
             display: flex;
@@ -1466,50 +1283,61 @@ export default function SeriesSection({
             margin-bottom: 20px;
           }
 
+          .mvbd-features-heading h2 {
+            margin: 0;
+            font-size: clamp(26px, 4.4vw, 40px);
+            font-weight: 800;
+            letter-spacing: -1.2px;
+            line-height: 1.05;
+          }
+
+          .mvbd-features-heading p {
+            margin: 8px 0 0;
+            color: var(--mv-muted);
+            font-size: 12px;
+            font-weight: 500;
+          }
+
           .mvbd-features-crown {
             display: flex;
             align-items: center;
             gap: 7px;
-            color: #e6cf8f;
-            font-size: 8px;
-            font-weight: 900;
-            letter-spacing: 1px;
-            padding: 8px 11px;
+            padding: 8px 12px;
             border-radius: 999px;
-            border: 1px solid rgba(230,207,143,0.14);
-            background: rgba(230,207,143,0.05);
+            color: var(--mv-green);
+            background: var(--mv-green-soft);
+            border: 1px solid rgba(60, 242, 92, 0.25);
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: 0.8px;
           }
 
-          .mvbd-features-crown span { font-size: 13px; }
+          .mvbd-features-crown span {
+            font-size: 14px;
+          }
 
           .mvbd-comparison {
-            position: relative;
             display: grid;
             grid-template-columns: minmax(220px, 1fr) 105px 105px;
             overflow: hidden;
-            border-radius: 23px;
-            border: 1px solid rgba(255,255,255,0.07);
-            background: rgba(7,10,15,0.72);
-            box-shadow: 0 30px 80px rgba(0,0,0,0.34);
-            backdrop-filter: blur(18px);
+            border-radius: 28px;
+            background: rgba(4, 8, 5, 0.8);
           }
 
           .mvbd-comparison-feature-column,
-          .mvbd-comparison-plan { min-width: 0; }
-
-          .mvbd-comparison-feature-column {
-            background: rgba(255,255,255,0.012);
+          .mvbd-comparison-plan {
+            min-width: 0;
           }
 
           .mvbd-comparison-plan {
-            border-left: 1px solid rgba(255,255,255,0.055);
+            border-left: 1px solid rgba(255, 255, 255, 0.06);
           }
 
           .mvbd-premium-column {
             background: linear-gradient(
               180deg,
-              rgba(228,204,137,0.095),
-              rgba(228,204,137,0.025)
+              rgba(60, 242, 92, 0.12),
+              rgba(60, 242, 92, 0.02)
             );
           }
 
@@ -1518,24 +1346,22 @@ export default function SeriesSection({
             height: 62px;
             display: flex;
             align-items: center;
-            font-size: 11px;
+            font-size: 12px;
             font-weight: 800;
           }
 
           .mvbd-comparison-title {
             padding: 0 20px;
-            color: rgba(255,255,255,0.44);
-            text-transform: uppercase;
-            letter-spacing: 1px;
+            color: var(--mv-muted);
           }
 
           .mvbd-comparison-plan-title {
             justify-content: center;
-            color: rgba(255,255,255,0.55);
+            color: rgba(255, 255, 255, 0.65);
           }
 
           .mvbd-premium-column .mvbd-comparison-plan-title {
-            color: #e9d393;
+            color: var(--mv-green);
           }
 
           .mvbd-comparison-feature {
@@ -1544,22 +1370,21 @@ export default function SeriesSection({
             align-items: center;
             gap: 11px;
             padding: 0 20px;
-            border-top: 1px solid rgba(255,255,255,0.045);
-            color: rgba(255,255,255,0.70);
-            font-size: 11px;
-            font-weight: 500;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            color: rgba(255, 255, 255, 0.82);
+            font-size: 12px;
+            font-weight: 600;
           }
 
           .mvbd-feature-icon {
-            width: 27px;
-            height: 27px;
-            flex: 0 0 27px;
+            width: 28px;
+            height: 28px;
+            flex: 0 0 28px;
             display: grid;
             place-items: center;
-            border-radius: 8px;
-            color: rgba(255,255,255,0.82);
-            background: rgba(255,255,255,0.045);
-            border: 1px solid rgba(255,255,255,0.055);
+            border-radius: 9px;
+            background: var(--mv-green-soft);
+            border: 1px solid rgba(60, 242, 92, 0.18);
             font-size: 12px;
             text-align: center;
           }
@@ -1569,7 +1394,7 @@ export default function SeriesSection({
             display: flex;
             align-items: center;
             justify-content: center;
-            border-top: 1px solid rgba(255,255,255,0.045);
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
           }
 
           .mvbd-feature-check,
@@ -1586,23 +1411,19 @@ export default function SeriesSection({
           }
 
           .mvbd-feature-check {
-            color: #11150f;
-            background: #e7dda9;
-            box-shadow: 0 0 20px rgba(232,218,158,0.08);
+            color: #03110a;
+            background: var(--mv-green);
+            box-shadow: 0 0 16px rgba(60, 242, 92, 0.35);
           }
 
           .mvbd-feature-cross {
-            color: rgba(255,255,255,0.27);
-            background: rgba(255,255,255,0.045);
+            color: rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.05);
           }
 
           .mvbd-feature-unlimited {
-            color: #11150f;
-            background: linear-gradient(
-              135deg,
-              #f3dda0,
-              #c9b067
-            );
+            color: #03110a;
+            background: linear-gradient(135deg, #7dff93, #22d24d);
             font-size: 17px;
           }
 
@@ -1612,63 +1433,63 @@ export default function SeriesSection({
             height: 26px;
             padding: 0 9px;
             border-radius: 999px;
-            color: #e4d292;
-            background: rgba(228,210,146,0.08);
-            border: 1px solid rgba(228,210,146,0.13);
-            font-size: 7px;
+            color: var(--mv-green);
+            background: var(--mv-green-soft);
+            border: 1px solid rgba(60, 242, 92, 0.22);
+            font-size: 8px;
             letter-spacing: 0.4px;
             text-transform: uppercase;
           }
 
-          /* PAYMENT INFO */
+          /* ---------- PAYMENT INFO ---------- */
           .mvbd-payment-info {
             display: flex;
             align-items: center;
             gap: 13px;
-            max-width: 700px;
-            margin: 28px auto 0;
-            padding: 15px 17px;
-            border-radius: 17px;
-            background: rgba(12,16,21,0.70);
-            border: 1px solid rgba(255,255,255,0.07);
-            backdrop-filter: blur(18px);
+            max-width: 720px;
+            margin: 32px auto 0;
+            padding: 16px 18px;
+            border-radius: 22px;
+            background: rgba(6, 10, 7, 0.8);
           }
 
           .mvbd-info-icon {
-            width: 38px;
-            height: 38px;
+            width: 40px;
+            height: 40px;
             display: grid;
             place-items: center;
-            flex: 0 0 38px;
-            border-radius: 11px;
-            color: #e8d391;
-            background: rgba(232,211,145,0.07);
-            border: 1px solid rgba(232,211,145,0.12);
+            flex: 0 0 40px;
+            border-radius: 50%;
+            color: #fff;
+            background: var(--mv-red);
+            box-shadow: 0 0 22px rgba(255, 47, 69, 0.5);
+            font-weight: 800;
           }
 
           .mvbd-payment-info strong {
             display: block;
-            color: rgba(255,255,255,0.82);
-            font-size: 11px;
+            font-size: 13px;
+            font-weight: 800;
           }
 
           .mvbd-payment-info span {
             display: block;
             margin-top: 3px;
-            color: rgba(255,255,255,0.38);
-            font-size: 9px;
+            color: var(--mv-muted);
+            font-size: 11px;
+            font-weight: 500;
           }
 
           .mvbd-secure-badge {
             margin-left: auto;
-            padding: 6px 9px;
+            padding: 6px 10px;
             border-radius: 999px;
-            color: #a8d5c3;
-            background: rgba(107,193,157,0.06);
-            border: 1px solid rgba(107,193,157,0.11);
-            font-size: 7px;
-            font-weight: 900;
-            letter-spacing: 0.7px;
+            color: var(--mv-green);
+            background: var(--mv-green-soft);
+            border: 1px solid rgba(60, 242, 92, 0.25);
+            font-size: 9px;
+            font-weight: 800;
+            letter-spacing: 0.6px;
           }
 
           .mvbd-premium-footer {
@@ -1676,9 +1497,10 @@ export default function SeriesSection({
             align-items: center;
             justify-content: center;
             gap: 8px;
-            margin-top: 30px;
-            color: rgba(255,255,255,0.25);
-            font-size: 9px;
+            margin-top: 34px;
+            color: rgba(255, 255, 255, 0.3);
+            font-size: 10px;
+            font-weight: 600;
           }
 
           .mvbd-footer-logo {
@@ -1687,7 +1509,7 @@ export default function SeriesSection({
             display: grid;
             place-items: center;
             border-radius: 7px;
-            background: rgba(255,255,255,0.035);
+            background: rgba(255, 255, 255, 0.04);
           }
 
           .mvbd-footer-logo img {
@@ -1696,7 +1518,91 @@ export default function SeriesSection({
             object-fit: contain;
           }
 
-          /* MODAL BACKDROP */
+          /* ---------- STICKY CHECKOUT BAR ---------- */
+          .mvbd-checkout-bar {
+            position: fixed;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 50;
+            padding: 14px 18px calc(14px + env(safe-area-inset-bottom, 0px));
+            background: linear-gradient(
+              180deg,
+              rgba(2, 4, 3, 0),
+              rgba(2, 4, 3, 0.92) 38%
+            );
+            pointer-events: none;
+          }
+
+          .mvbd-checkout-inner {
+            width: min(720px, 100%);
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+            padding: 10px 10px 10px 20px;
+            border-radius: 999px;
+            border: 1px solid rgba(60, 242, 92, 0.25);
+            background: rgba(4, 8, 5, 0.88);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            pointer-events: auto;
+          }
+
+          .mvbd-checkout-summary {
+            min-width: 0;
+          }
+
+          .mvbd-checkout-summary small {
+            display: block;
+            color: var(--mv-muted);
+            font-size: 10px;
+            font-weight: 600;
+          }
+
+          .mvbd-checkout-summary strong {
+            display: block;
+            margin-top: 2px;
+            font-size: 14px;
+            font-weight: 800;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+          }
+
+          .mvbd-next-pill {
+            min-width: 150px;
+            min-height: 50px;
+            padding: 0 28px;
+            border: 0;
+            border-radius: 999px;
+            color: #fff;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 800;
+            background: radial-gradient(
+              ellipse at 50% 20%,
+              #ff5a6b,
+              var(--mv-red) 60%,
+              #d81a30
+            );
+            box-shadow: 0 0 34px rgba(255, 47, 69, 0.55),
+              inset 0 1px 0 rgba(255, 255, 255, 0.25);
+            transition: transform 0.15s ease, filter 0.15s ease;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+          }
+
+          .mvbd-next-pill:hover {
+            filter: brightness(1.08);
+          }
+
+          .mvbd-next-pill:active {
+            transform: scale(0.97);
+          }
+
+          /* ---------- MODALS ---------- */
           .mvbd-modal-backdrop {
             position: fixed;
             inset: 0;
@@ -1705,19 +1611,19 @@ export default function SeriesSection({
             align-items: center;
             justify-content: center;
             padding: 18px;
-            background: rgba(1,3,6,0.82);
+            background: rgba(1, 3, 2, 0.84);
             backdrop-filter: blur(6px);
             -webkit-backdrop-filter: blur(6px);
             animation: mvbdModalIn 0.22s ease both;
-            /* Block scroll chaining from modal to page */
             overscroll-behavior: contain;
+            font-family: var(--mv-font);
           }
 
           @media (max-width: 700px) {
             .mvbd-modal-backdrop {
               backdrop-filter: none;
               -webkit-backdrop-filter: none;
-              background: rgba(1,3,6,0.92);
+              background: rgba(1, 3, 2, 0.93);
             }
           }
 
@@ -1727,43 +1633,37 @@ export default function SeriesSection({
             max-height: min(88svh, 700px);
             overflow-y: auto;
             padding: 27px;
-            border-radius: 23px;
-            border: 1px solid rgba(231,208,143,0.17);
-            background: linear-gradient(
-              145deg,
-              #10161d,
-              #05080c
-            );
-            box-shadow:
-              0 35px 100px rgba(0,0,0,0.82),
-              0 0 60px rgba(227,202,133,0.05);
-            animation: mvbdModalScale 0.26s cubic-bezier(
-              0.2,
-              0.8,
-              0.2,
-              1
-            ) both;
+            color: #fff;
+            border-radius: 26px;
+            border: 1px solid rgba(60, 242, 92, 0.3);
+            background: linear-gradient(145deg, #0b150e, #030604);
+            box-shadow: 0 35px 100px rgba(0, 0, 0, 0.85),
+              0 0 60px rgba(60, 242, 92, 0.12);
+            animation: mvbdModalScale 0.26s cubic-bezier(0.2, 0.8, 0.2, 1) both;
             overscroll-behavior: contain;
             -webkit-overflow-scrolling: touch;
           }
 
-          .mvbd-modal::-webkit-scrollbar { width: 4px; }
+          .mvbd-modal::-webkit-scrollbar {
+            width: 4px;
+          }
           .mvbd-modal::-webkit-scrollbar-thumb {
-            background: rgba(230,207,142,0.25);
+            background: rgba(60, 242, 92, 0.35);
             border-radius: 99px;
           }
 
           .mvbd-modal-title {
-            color: #f6f4ed;
+            color: #f6f8f6;
             font-size: 20px;
             font-weight: 800;
           }
 
           .mvbd-modal-subtitle {
-            margin-top: 8px;
-            color: rgba(255,255,255,0.48);
+            margin: 8px 0 0;
+            color: var(--mv-muted);
             font-size: 12px;
             line-height: 1.65;
+            font-weight: 500;
           }
 
           .mvbd-modal-close {
@@ -1772,13 +1672,12 @@ export default function SeriesSection({
             height: 32px;
             border: 0;
             border-radius: 50%;
-            color: rgba(255,255,255,0.55);
-            background: rgba(255,255,255,0.06);
+            color: rgba(255, 255, 255, 0.7);
+            background: rgba(255, 255, 255, 0.07);
             cursor: pointer;
             font-size: 17px;
           }
 
-          /* FREE ACCESS */
           .mvbd-free-access-list {
             display: grid;
             gap: 9px;
@@ -1791,18 +1690,19 @@ export default function SeriesSection({
             align-items: center;
             gap: 12px;
             padding: 13px;
-            border: 1px solid rgba(255,255,255,0.07);
-            border-radius: 14px;
-            background: rgba(255,255,255,0.035);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.035);
             color: #ffffff;
             text-align: left;
+            text-decoration: none;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: background 0.2s ease, border-color 0.2s ease;
           }
 
           .mvbd-access-button:hover {
-            background: rgba(235,211,143,0.07);
-            border-color: rgba(235,211,143,0.18);
+            background: var(--mv-green-soft);
+            border-color: rgba(60, 242, 92, 0.35);
           }
 
           .mvbd-access-icon {
@@ -1811,9 +1711,9 @@ export default function SeriesSection({
             flex: 0 0 38px;
             display: grid;
             place-items: center;
-            border-radius: 10px;
-            color: #e9d392;
-            background: rgba(233,211,146,0.07);
+            border-radius: 11px;
+            color: var(--mv-green);
+            background: var(--mv-green-soft);
           }
 
           .mvbd-access-text {
@@ -1823,23 +1723,30 @@ export default function SeriesSection({
 
           .mvbd-access-text strong {
             display: block;
-            font-size: 12px;
+            font-size: 13px;
+            font-weight: 800;
           }
 
           .mvbd-access-text span {
             display: block;
             margin-top: 3px;
-            color: rgba(255,255,255,0.40);
-            font-size: 10px;
+            color: var(--mv-muted);
+            font-size: 11px;
             line-height: 1.4;
           }
 
           .mvbd-access-arrow {
-            color: #e9d392;
+            color: var(--mv-green);
             font-size: 16px;
           }
 
-          .mvbd-access-info { cursor: default; }
+          .mvbd-access-info {
+            cursor: default;
+          }
+          .mvbd-access-info:hover {
+            background: rgba(255, 255, 255, 0.035);
+            border-color: rgba(255, 255, 255, 0.08);
+          }
           .mvbd-access-restricted {
             cursor: not-allowed;
             opacity: 0.55;
@@ -1848,16 +1755,14 @@ export default function SeriesSection({
           .mvbd-not-included {
             margin-top: 22px;
             padding-top: 17px;
-            border-top: 1px solid rgba(255,255,255,0.07);
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
           }
 
           .mvbd-not-included-title {
             margin-bottom: 11px;
-            color: rgba(255,255,255,0.38);
-            font-size: 9px;
+            color: var(--mv-muted);
+            font-size: 11px;
             font-weight: 800;
-            letter-spacing: 1px;
-            text-transform: uppercase;
           }
 
           .mvbd-not-included ul {
@@ -1869,38 +1774,37 @@ export default function SeriesSection({
           }
 
           .mvbd-not-included li {
-            color: rgba(255,255,255,0.28);
-            font-size: 11px;
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 12px;
           }
 
           .mvbd-not-included li::before {
             content: "×";
             margin-right: 8px;
-            color: rgba(220,100,100,0.55);
+            color: var(--mv-red);
           }
 
-          /* PAYMENT MODAL */
           .mvbd-selected-plan {
             margin-top: 18px;
             padding: 15px;
-            border-radius: 13px;
-            background: rgba(232,211,145,0.045);
-            border: 1px solid rgba(232,211,145,0.11);
+            border-radius: 16px;
+            background: var(--mv-green-soft);
+            border: 1px solid rgba(60, 242, 92, 0.25);
           }
 
           .mvbd-selected-plan small {
             display: block;
-            color: rgba(255,255,255,0.35);
-            font-size: 9px;
-            font-weight: 800;
-            letter-spacing: 0.5px;
+            color: var(--mv-muted);
+            font-size: 10px;
+            font-weight: 700;
           }
 
           .mvbd-selected-plan strong {
             display: block;
             margin-top: 6px;
-            color: #f0dfaa;
+            color: var(--mv-green);
             font-size: 15px;
+            font-weight: 800;
           }
 
           .mvbd-payment-number {
@@ -1910,24 +1814,26 @@ export default function SeriesSection({
             justify-content: space-between;
             gap: 10px;
             padding: 13px;
-            border-radius: 12px;
-            background: rgba(255,255,255,0.035);
-            border: 1px solid rgba(255,255,255,0.07);
+            border-radius: 14px;
+            background: rgba(255, 255, 255, 0.035);
+            border: 1px solid rgba(255, 255, 255, 0.08);
           }
 
           .mvbd-payment-number strong {
-            color: #e9d392;
+            color: #ffffff;
             font-size: 15px;
+            font-weight: 800;
           }
 
           .mvbd-copy-button {
-            border: 1px solid rgba(255,255,255,0.09);
-            border-radius: 8px;
-            padding: 7px 11px;
-            color: rgba(255,255,255,0.65);
-            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(60, 242, 92, 0.3);
+            border-radius: 9px;
+            padding: 7px 12px;
+            color: var(--mv-green);
+            background: var(--mv-green-soft);
             cursor: pointer;
-            font-size: 10px;
+            font-size: 11px;
+            font-weight: 700;
           }
 
           .mvbd-input {
@@ -1936,49 +1842,51 @@ export default function SeriesSection({
             min-height: 48px;
             padding: 0 15px;
             outline: none;
-            border-radius: 12px;
-            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
             color: #ffffff;
-            background: rgba(255,255,255,0.035);
-            font-size: 13px;
+            background: rgba(255, 255, 255, 0.035);
+            font-size: 14px;
           }
 
           .mvbd-input:focus {
-            border-color: rgba(234,211,143,0.45);
-            box-shadow: 0 0 0 3px rgba(234,211,143,0.05);
+            border-color: rgba(60, 242, 92, 0.6);
+            box-shadow: 0 0 0 3px rgba(60, 242, 92, 0.1);
           }
 
           .mvbd-error {
             margin-top: 11px;
             padding: 11px;
-            border-radius: 10px;
-            color: #ffaaaa;
-            background: rgba(255,60,60,0.07);
-            font-size: 11px;
-            border: 1px solid rgba(255,60,60,0.12);
+            border-radius: 12px;
+            color: #ff9aa4;
+            background: rgba(255, 47, 69, 0.08);
+            font-size: 12px;
+            border: 1px solid rgba(255, 47, 69, 0.2);
           }
 
           .mvbd-submit-button {
             width: 100%;
-            min-height: 50px;
+            min-height: 52px;
             margin-top: 15px;
             border: 0;
-            border-radius: 13px;
-            color: #17130b;
-            background: linear-gradient(
-              135deg,
-              #f3dda0,
-              #c8af67
+            border-radius: 999px;
+            color: #fff;
+            background: radial-gradient(
+              ellipse at 50% 20%,
+              #ff5a6b,
+              var(--mv-red) 60%,
+              #d81a30
             );
-            font-size: 12px;
-            font-weight: 900;
+            font-size: 14px;
+            font-weight: 800;
             cursor: pointer;
-            box-shadow: 0 12px 30px rgba(220,193,111,0.09);
+            box-shadow: 0 0 30px rgba(255, 47, 69, 0.45);
           }
 
-          .mvbd-submit-button:hover { filter: brightness(1.07); }
+          .mvbd-submit-button:hover {
+            filter: brightness(1.08);
+          }
 
-          /* PROCESSING */
           .mvbd-processing {
             text-align: center;
             padding: 22px 8px;
@@ -1989,8 +1897,8 @@ export default function SeriesSection({
             height: 62px;
             margin: 0 auto 23px;
             border-radius: 50%;
-            border: 3px solid rgba(255,255,255,0.07);
-            border-top-color: #e7d18f;
+            border: 3px solid rgba(255, 255, 255, 0.08);
+            border-top-color: var(--mv-green);
             animation: mvbdSpin 0.8s linear infinite;
           }
 
@@ -1999,28 +1907,24 @@ export default function SeriesSection({
             margin-top: 23px;
             overflow: hidden;
             border-radius: 99px;
-            background: rgba(255,255,255,0.06);
+            background: rgba(255, 255, 255, 0.07);
           }
 
           .mvbd-progress-fill {
             height: 100%;
             border-radius: inherit;
-            background: linear-gradient(
-              90deg,
-              #e7d18f,
-              #b6d8c9
-            );
+            background: linear-gradient(90deg, #1fd04a, #7dff93);
+            box-shadow: 0 0 14px rgba(60, 242, 92, 0.6);
             transition: width 0.2s linear;
           }
 
           .mvbd-progress-text {
             margin-top: 11px;
-            color: rgba(255,255,255,0.40);
-            font-size: 11px;
-            font-weight: 600;
+            color: var(--mv-muted);
+            font-size: 12px;
+            font-weight: 700;
           }
 
-          /* SUCCESS */
           .mvbd-success {
             text-align: center;
             padding: 15px 8px;
@@ -2033,52 +1937,17 @@ export default function SeriesSection({
             place-items: center;
             margin: 0 auto 20px;
             border-radius: 50%;
-            color: #11150f;
-            background: linear-gradient(
-              135deg,
-              #f1dda1,
-              #b9d9c9
-            );
+            color: #03110a;
+            background: linear-gradient(135deg, #7dff93, #22d24d);
+            box-shadow: 0 0 40px rgba(60, 242, 92, 0.5);
             font-size: 27px;
             font-weight: 900;
           }
 
-          /* ANIMATIONS */
-          @keyframes mvbdSunPulse {
-            0%, 100% {
-              opacity: 0.65;
-              transform: translateX(-50%) scale(0.94);
-            }
-            50% {
-              opacity: 1;
-              transform: translateX(-50%) scale(1.08);
-            }
-          }
-
-          /* opacity only — animating filter: blur() is very heavy */
-          @keyframes mvbdRayMove {
-            0%, 100% { opacity: 0.32; }
-            50% { opacity: 0.68; }
-          }
-
-          @keyframes mvbdOrbFloat {
-            0%, 100% { transform: translate3d(0,0,0) scale(1); }
-            50% { transform: translate3d(25px,-20px,0) scale(1.08); }
-          }
-
-          @keyframes mvbdCardLight {
-            0%, 100% {
-              opacity: 0.45;
-              transform: translateX(-50%) scale(0.92);
-            }
-            50% {
-              opacity: 0.9;
-              transform: translateX(-50%) scale(1.08);
-            }
-          }
-
+          /* ---------- ANIMATIONS ---------- */
           @keyframes mvbdStatusPulse {
-            0%, 100% {
+            0%,
+            100% {
               opacity: 0.45;
               transform: scale(0.85);
             }
@@ -2088,14 +1957,13 @@ export default function SeriesSection({
             }
           }
 
-          @keyframes mvbdGradientText {
-            0%, 100% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-          }
-
           @keyframes mvbdModalIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+            from {
+              opacity: 0;
+            }
+            to {
+              opacity: 1;
+            }
           }
 
           @keyframes mvbdModalScale {
@@ -2110,104 +1978,136 @@ export default function SeriesSection({
           }
 
           @keyframes mvbdSpin {
-            to { transform: rotate(360deg); }
+            to {
+              transform: rotate(360deg);
+            }
           }
 
-          /* TABLET */
+          /* ---------- TABLET ---------- */
           @media (max-width: 1050px) {
-            .mvbd-plan-card { min-height: 600px; }
+            .mvbd-plan-options {
+              grid-template-columns: repeat(2, minmax(0, 1fr));
+              row-gap: 22px;
+            }
           }
 
-          /* MOBILE */
+          /* ---------- MOBILE ---------- */
           @media (max-width: 700px) {
             .mvbd-page-content {
-              width: calc(100% - 18px);
-              padding: 10px 0 35px;
+              width: calc(100% - 20px);
+              padding: 10px 0 140px;
             }
 
             .mvbd-premium-header {
               padding: 10px 12px;
-              border-radius: 16px;
-            }
-
-            .mvbd-brand-logo-wrap { width: 39px; height: 39px; }
-            .mvbd-brand-logo { width: 32px; height: 32px; }
-            .mvbd-brand-text strong { font-size: 12px; }
-            .mvbd-brand-text span { font-size: 8px; }
-            .mvbd-status { padding: 6px 9px; font-size: 7px; }
-
-            .mvbd-premium-hero { padding: 48px 5px 30px; }
-            .mvbd-eyebrow { font-size: 8px; letter-spacing: 2.4px; }
-            .mvbd-premium-hero h1 {
-              font-size: 36px;
-              letter-spacing: -1.8px;
-            }
-            .mvbd-premium-hero p { font-size: 11px; }
-
-            .mvbd-showcase-header { align-items: flex-end; }
-            .mvbd-plan-showcase h2,
-            .mvbd-features-section h2 { font-size: 25px; }
-
-            .mvbd-card-stage {
-              min-height: 405px;
-              border-radius: 27px;
-            }
-
-            .mySwiper {
-              max-width: 275px;
-              min-height: 355px;
-            }
-
-            .swiper-slide {
-              width: 250px;
-              height: 340px;
-            }
-
-            .mvbd-stack-card-inner { padding: 21px 19px; }
-            .mvbd-stack-top strong { font-size: 15px; }
-            .mvbd-stack-price { margin-top: 32px; font-size: 38px; }
-
-            .mvbd-stack-bottom {
-              left: 19px;
-              right: 19px;
-              bottom: 18px;
-              padding: 11px 12px;
-              width: calc(100% - 38px);
-            }
-
-            .mvbd-features-section { margin-top: 48px; }
-            .mvbd-features-heading { align-items: center; }
-            .mvbd-features-crown { display: none; }
-
-            .mvbd-comparison {
-              grid-template-columns: minmax(0, 1fr) 74px 74px;
               border-radius: 18px;
             }
 
-            .mvbd-comparison-title { padding: 0 13px; }
+            .mvbd-brand-logo-wrap {
+              width: 39px;
+              height: 39px;
+            }
+            .mvbd-brand-logo {
+              width: 32px;
+              height: 32px;
+            }
+            .mvbd-brand-text strong {
+              font-size: 13px;
+            }
+            .mvbd-status {
+              padding: 6px 10px;
+              font-size: 9px;
+            }
 
+            .mvbd-premium-hero {
+              padding: 44px 4px 28px;
+            }
+            .mvbd-premium-hero h1 {
+              font-size: 38px;
+              letter-spacing: -1.4px;
+            }
+            .mvbd-hero-sub {
+              font-size: 12px;
+            }
+
+            .mvbd-plan-options {
+              grid-template-columns: 1fr;
+              row-gap: 20px;
+              gap: 20px;
+            }
+
+            .mvbd-option {
+              display: grid;
+              grid-template-columns: 1fr auto;
+              grid-template-areas:
+                "top top"
+                "price meta";
+              align-items: end;
+              padding: 18px 16px;
+              row-gap: 18px;
+            }
+            .mvbd-option-top {
+              grid-area: top;
+            }
+            .mvbd-option-price {
+              grid-area: price;
+              margin-top: 0;
+              font-size: 34px;
+            }
+            .mvbd-option-meta {
+              grid-area: meta;
+              margin-top: 0;
+              align-items: flex-end;
+            }
+
+            .mvbd-details {
+              margin-top: 30px;
+            }
+            .mvbd-panel {
+              padding: 22px 18px 14px;
+              border-radius: 26px;
+            }
+            .mvbd-feature-list {
+              grid-template-columns: 1fr;
+            }
+
+            .mvbd-features-section {
+              margin-top: 48px;
+            }
+            .mvbd-features-heading {
+              align-items: center;
+            }
+            .mvbd-features-crown {
+              display: none;
+            }
+
+            .mvbd-comparison {
+              grid-template-columns: minmax(0, 1fr) 74px 74px;
+              border-radius: 22px;
+            }
+            .mvbd-comparison-title {
+              padding: 0 13px;
+            }
             .mvbd-comparison-feature {
               min-height: 57px;
               padding: 0 12px;
               gap: 8px;
-              font-size: 9.5px;
+              font-size: 10.5px;
             }
-
             .mvbd-feature-icon {
               width: 25px;
               height: 25px;
               flex-basis: 25px;
               font-size: 10px;
             }
-
             .mvbd-comparison-title,
             .mvbd-comparison-plan-title {
               height: 57px;
-              font-size: 9px;
+              font-size: 10px;
             }
-
-            .mvbd-comparison-value { min-height: 57px; }
-
+            .mvbd-comparison-value {
+              min-height: 57px;
+            }
             .mvbd-feature-check,
             .mvbd-feature-cross,
             .mvbd-feature-unlimited,
@@ -2216,68 +2116,71 @@ export default function SeriesSection({
               height: 25px;
               font-size: 11px;
             }
-
-            .mvbd-feature-unlimited { font-size: 15px; }
+            .mvbd-feature-unlimited {
+              font-size: 15px;
+            }
             .mvbd-feature-limited {
               min-width: 49px;
               padding: 0 5px;
-              font-size: 6px;
+              font-size: 7px;
             }
 
-            .mvbd-payment-info { padding: 12px; gap: 10px; }
-            .mvbd-secure-badge { display: none; }
+            .mvbd-payment-info {
+              padding: 13px;
+              gap: 10px;
+            }
+            .mvbd-secure-badge {
+              display: none;
+            }
+
+            .mvbd-checkout-bar {
+              padding: 12px 10px calc(12px + env(safe-area-inset-bottom, 0px));
+            }
+            .mvbd-checkout-inner {
+              padding: 8px 8px 8px 16px;
+            }
+            .mvbd-next-pill {
+              min-width: 120px;
+              padding: 0 22px;
+            }
           }
 
-          /* SMALL MOBILE */
           @media (max-width: 390px) {
-            .mvbd-status { display: none; }
-            .mvbd-premium-hero h1 { font-size: 32px; }
-
-            .mySwiper {
-              max-width: 260px;
-              min-height: 345px;
+            .mvbd-status {
+              display: none;
             }
-
-            .swiper-slide {
-              width: 235px;
-              height: 330px;
+            .mvbd-premium-hero h1 {
+              font-size: 33px;
             }
-
-            .mvbd-card-stage { min-height: 390px; }
-
             .mvbd-comparison {
               grid-template-columns: minmax(0, 1fr) 67px 67px;
             }
-
             .mvbd-comparison-feature {
               padding-left: 9px;
               padding-right: 7px;
             }
           }
 
-          /* REDUCED MOTION */
+          /* ---------- REDUCED MOTION ---------- */
           @media (prefers-reduced-motion: reduce) {
-            *, *::before, *::after {
+            *,
+            *::before,
+            *::after {
               scroll-behavior: auto !important;
             }
 
-            .mvbd-sun-glow,
-            .mvbd-ray,
-            .mvbd-light-orb,
-            .mvbd-stack-light,
             .mvbd-status-dot,
-            .mvbd-loader,
-            .mvbd-premium-hero h1 span {
+            .mvbd-loader {
               animation: none !important;
             }
 
-            .mvbd-plan-card,
-            .mvbd-choose-button,
+            .mvbd-option,
+            .mvbd-radio i,
+            .mvbd-next-pill,
             .mvbd-access-button {
               transition: none !important;
             }
           }
-
         `}</style>
       </main>
 
@@ -2304,10 +2207,8 @@ export default function SeriesSection({
             </div>
 
             <p className="mvbd-modal-subtitle">
-              আপনার Free Plan-এ যেসব
-              access available আছে সেগুলো
-              এখান থেকে ব্যবহার করতে
-              পারবেন।
+              আপনার Free Plan-এ যেসব access available আছে সেগুলো এখান
+              থেকে ব্যবহার করতে পারবেন।
             </p>
 
             <div className="mvbd-free-access-list">
@@ -2420,13 +2321,10 @@ export default function SeriesSection({
               ×
             </button>
 
-            <div className="mvbd-modal-title">
-              💳 Complete Payment
-            </div>
+            <div className="mvbd-modal-title">💳 Complete Payment</div>
 
             <p className="mvbd-modal-subtitle">
-              Send the exact plan amount to
-              the payment number below and
+              Send the exact plan amount to the payment number below and
               enter your transaction ID.
             </p>
 
@@ -2452,9 +2350,7 @@ export default function SeriesSection({
             <input
               className="mvbd-input"
               value={transactionId}
-              onChange={(event) =>
-                setTransactionId(event.target.value)
-              }
+              onChange={(event) => setTransactionId(event.target.value)}
               placeholder="Enter transaction ID"
               autoComplete="off"
             />
@@ -2482,12 +2378,9 @@ export default function SeriesSection({
           >
             <div className="mvbd-processing">
               <div className="mvbd-loader" />
-              <div className="mvbd-modal-title">
-                ⏳ Processing Request
-              </div>
+              <div className="mvbd-modal-title">⏳ Processing Request</div>
               <p className="mvbd-modal-subtitle">
-                Your payment request has been
-                submitted. Please wait while
+                Your payment request has been submitted. Please wait while
                 the request is being processed.
               </p>
               <div className="mvbd-progress-track">
@@ -2514,14 +2407,10 @@ export default function SeriesSection({
           >
             <div className="mvbd-success">
               <div className="mvbd-success-icon">✓</div>
-              <div className="mvbd-modal-title">
-                🎉 Request Submitted
-              </div>
+              <div className="mvbd-modal-title">🎉 Request Submitted</div>
               <p className="mvbd-modal-subtitle">
-                Your subscription request has
-                been submitted successfully.
-                Your membership will be
-                updated after verification.
+                Your subscription request has been submitted successfully.
+                Your membership will be updated after verification.
               </p>
               <button
                 type="button"
@@ -2534,7 +2423,6 @@ export default function SeriesSection({
           </div>
         </ViewportModal>
       )}
-
     </>
   )
-                        }
+        }

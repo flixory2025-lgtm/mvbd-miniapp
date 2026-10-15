@@ -25,65 +25,53 @@ interface TrendingCarouselProps {
 export default function TrendingCarousel({
   onMovieClick,
 }: TrendingCarouselProps) {
+  const topSeriesMovies = movies.filter((m) => topSeriesIds.includes(m.id))
+  const trendingMovies = movies.filter((m) => trendingIds.includes(m.id))
+  const trendingCount = trendingMovies.length
+  const totalMovieCount = movies.length
+
+  // Top hero state
   const [topIndex, setTopIndex] = useState(0)
   const [topDragDistance, setTopDragDistance] = useState(0)
   const [topIsDragging, setTopIsDragging] = useState(false)
   const [topIsTransitioning, setTopIsTransitioning] = useState(true)
   const [containerWidth, setContainerWidth] = useState(0)
 
+  // Trending state (currentIndex = mobile 3D carousel, deskPos = desktop infinite strip)
   const [currentIndex, setCurrentIndex] = useState(0)
+  const [deskPos, setDeskPos] = useState(trendingCount)
+  const [deskTransition, setDeskTransition] = useState(true)
   const [dragDistance, setDragDistance] = useState(0)
   const [isDragging, setIsDragging] = useState(false)
   const [isTransitioning, setIsTransitioning] = useState(true)
   const [isMobile, setIsMobile] = useState(false)
-
-  // Desktop-only infinite carousel state.
-  const [desktopIndex, setDesktopIndex] = useState(0)
-  const [desktopTransition, setDesktopTransition] = useState(true)
+  const [isLarge, setIsLarge] = useState(false)
 
   const topStartXRef = useRef(0)
+  const topDidDragRef = useRef(false)
   const startXRef = useRef(0)
   const autoSlideRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const topAutoSlideRef = useRef<ReturnType<typeof setInterval> | null>(null)
-  const desktopAutoSlideRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const topContainerRef = useRef<HTMLDivElement>(null)
-  const desktopTrackRef = useRef<HTMLDivElement>(null)
-  const desktopViewportRef = useRef<HTMLDivElement>(null)
-  const desktopPausedRef = useRef(false)
 
-  const topSeriesMovies = movies.filter((m) =>
-    topSeriesIds.includes(m.id)
-  )
-
-  const trendingMovies = movies.filter((m) =>
-    trendingIds.includes(m.id)
-  )
-
-  // Duplicate the list so the Desktop carousel can loop seamlessly.
-  const desktopMovies = [...trendingMovies, ...trendingMovies]
-
-  const totalMovieCount = movies.length
-
-  // Restore existing saved positions.
+  // Restore saved carousel positions.
   useEffect(() => {
     try {
       const savedTopIndex = sessionStorage.getItem("topSeriesIndex")
       const savedTrendingIndex = sessionStorage.getItem("trendingIndex")
 
       if (savedTopIndex && topSeriesMovies.length > 0) {
-        const value = parseInt(savedTopIndex, 10)
-
-        if (!isNaN(value) && value >= 0 && value < topSeriesMovies.length) {
-          setTopIndex(value)
+        const parsed = parseInt(savedTopIndex, 10)
+        if (!isNaN(parsed) && parsed >= 0 && parsed < topSeriesMovies.length) {
+          setTopIndex(parsed)
         }
       }
 
       if (savedTrendingIndex && trendingMovies.length > 0) {
-        const value = parseInt(savedTrendingIndex, 10)
-
-        if (!isNaN(value) && value >= 0 && value < trendingMovies.length) {
-          setCurrentIndex(value)
-          setDesktopIndex(value)
+        const parsed = parseInt(savedTrendingIndex, 10)
+        if (!isNaN(parsed) && parsed >= 0 && parsed < trendingMovies.length) {
+          setCurrentIndex(parsed)
+          setDeskPos(trendingMovies.length + parsed)
         }
       }
     } catch {}
@@ -92,20 +80,21 @@ export default function TrendingCarousel({
 
   useEffect(() => {
     try {
-      sessionStorage.setItem("topSeriesIndex", String(topIndex))
+      sessionStorage.setItem("topSeriesIndex", topIndex.toString())
     } catch {}
   }, [topIndex])
 
   useEffect(() => {
     try {
-      sessionStorage.setItem("trendingIndex", String(currentIndex))
+      sessionStorage.setItem("trendingIndex", currentIndex.toString())
     } catch {}
   }, [currentIndex])
 
-  // Screen size and container measurement.
+  // Detect screen size and hero width.
   useEffect(() => {
     const updateSize = () => {
       setIsMobile(window.innerWidth < 768)
+      setIsLarge(window.innerWidth >= 1024)
 
       if (topContainerRef.current) {
         setContainerWidth(topContainerRef.current.offsetWidth)
@@ -114,7 +103,6 @@ export default function TrendingCarousel({
 
     updateSize()
     window.addEventListener("resize", updateSize)
-
     const resizeTimeout = setTimeout(updateSize, 100)
 
     return () => {
@@ -123,37 +111,59 @@ export default function TrendingCarousel({
     }
   }, [])
 
-  // Top Series auto-slide.
+  // Top series auto-slide: every 4 seconds.
   useEffect(() => {
     if (topSeriesMovies.length === 0 || topIsDragging) return
 
-    if (topAutoSlideRef.current) {
-      clearInterval(topAutoSlideRef.current)
-    }
+    if (topAutoSlideRef.current) clearInterval(topAutoSlideRef.current)
 
     topAutoSlideRef.current = setInterval(() => {
       setTopIndex((prev) => (prev + 1) % topSeriesMovies.length)
     }, 4000)
 
     return () => {
-      if (topAutoSlideRef.current) {
-        clearInterval(topAutoSlideRef.current)
-      }
+      if (topAutoSlideRef.current) clearInterval(topAutoSlideRef.current)
     }
   }, [topSeriesMovies.length, topIsDragging])
 
-  // Original Mobile Trending auto-slide.
+  // One function moves both the mobile index and the desktop infinite strip.
+  const slide = useCallback(
+    (dir: 1 | -1) => {
+      if (trendingCount === 0) return
+      setIsTransitioning(true)
+      setDeskTransition(true)
+      setCurrentIndex((prev) => (prev + dir + trendingCount) % trendingCount)
+      setDeskPos((prev) => prev + dir)
+    },
+    [trendingCount]
+  )
+
+  // Desktop strip = 3 copies of the list. Position is kept inside the middle
+  // copy; when it drifts out, snap back silently (copies look identical),
+  // so there is never an empty gap at either end.
+  useEffect(() => {
+    const n = trendingCount
+    if (n === 0) return
+    if (deskPos >= n && deskPos < 2 * n) return
+
+    const t = setTimeout(() => {
+      setDeskTransition(false)
+      setDeskPos((p) => (p >= 2 * n ? p - n : p < n ? p + n : p))
+      requestAnimationFrame(() =>
+        requestAnimationFrame(() => setDeskTransition(true))
+      )
+    }, 520)
+
+    return () => clearTimeout(t)
+  }, [deskPos, trendingCount])
+
+  // Trending auto-slide: every 3 seconds.
   const startAutoSlide = useCallback(() => {
-    if (autoSlideRef.current) {
-      clearInterval(autoSlideRef.current)
-    }
+    if (autoSlideRef.current) clearInterval(autoSlideRef.current)
+    if (trendingCount === 0) return
 
-    if (trendingMovies.length === 0) return
-
-    autoSlideRef.current = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % trendingMovies.length)
-    }, 3000)
-  }, [trendingMovies.length])
+    autoSlideRef.current = setInterval(() => slide(1), 3000)
+  }, [trendingCount, slide])
 
   const stopAutoSlide = useCallback(() => {
     if (autoSlideRef.current) {
@@ -167,110 +177,35 @@ export default function TrendingCarousel({
     return () => stopAutoSlide()
   }, [startAutoSlide, stopAutoSlide])
 
-  // Independent Desktop infinite auto-slide.
-  useEffect(() => {
-    if (isMobile || trendingMovies.length <= 1) return
-
-    desktopAutoSlideRef.current = setInterval(() => {
-      if (!desktopPausedRef.current) {
-        setDesktopTransition(true)
-        setDesktopIndex((prev) => prev + 1)
-      }
-    }, 3000)
-
-    return () => {
-      if (desktopAutoSlideRef.current) {
-        clearInterval(desktopAutoSlideRef.current)
-      }
-    }
-  }, [isMobile, trendingMovies.length])
-
-  // Re-enable transitions after resetting the duplicate track.
-  useEffect(() => {
-    if (desktopTransition) return
-
-    const frame = requestAnimationFrame(() => {
-      setDesktopTransition(true)
-    })
-
-    return () => cancelAnimationFrame(frame)
-  }, [desktopTransition])
-
-  // Keyboard controls.
+  // Keyboard navigation.
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (trendingMovies.length === 0) return
-
-      if (e.key === "ArrowRight") {
-        setCurrentIndex((prev) => (prev + 1) % trendingMovies.length)
-        if (!isMobile) {
-          setDesktopTransition(true)
-          setDesktopIndex((prev) => prev + 1)
-        }
-      } else if (e.key === "ArrowLeft") {
-        setCurrentIndex(
-          (prev) => (prev - 1 + trendingMovies.length) % trendingMovies.length
-        )
-
-        if (!isMobile) {
-          setDesktopTransition(true)
-          setDesktopIndex((prev) => Math.max(0, prev - 1))
-        }
-      }
+      if (e.key === "ArrowRight") slide(1)
+      else if (e.key === "ArrowLeft") slide(-1)
     }
 
     window.addEventListener("keydown", handleKeyDown)
     return () => window.removeEventListener("keydown", handleKeyDown)
-  }, [trendingMovies.length, isMobile])
+  }, [slide])
 
-  const handlePrev = () => {
-    if (!trendingMovies.length) return
+  const handlePrev = () => slide(-1)
+  const handleNext = () => slide(1)
 
-    setIsTransitioning(true)
-    setCurrentIndex(
-      (prev) => (prev - 1 + trendingMovies.length) % trendingMovies.length
-    )
-
-    if (!isMobile) {
-      setDesktopTransition(true)
-      setDesktopIndex((prev) => Math.max(0, prev - 1))
-    }
-  }
-
-  const handleNext = () => {
-    if (!trendingMovies.length) return
-
-    setIsTransitioning(true)
-    setCurrentIndex((prev) => (prev + 1) % trendingMovies.length)
-
-    if (!isMobile) {
-      setDesktopTransition(true)
-      setDesktopIndex((prev) => prev + 1)
-    }
-  }
-
-  // Reset to the original copy after the duplicate's first complete loop.
-  const handleDesktopTransitionEnd = () => {
-    if (desktopIndex >= trendingMovies.length) {
-      setDesktopTransition(false)
-      setDesktopIndex(0)
-    }
-  }
-
-  // Top Series drag handlers.
+  // Top series swipe / drag handlers.
   const handleTopDragStart = (clientX: number) => {
     setTopIsDragging(true)
     setTopIsTransitioning(false)
     topStartXRef.current = clientX
+    topDidDragRef.current = false
 
-    if (topAutoSlideRef.current) {
-      clearInterval(topAutoSlideRef.current)
-    }
+    if (topAutoSlideRef.current) clearInterval(topAutoSlideRef.current)
   }
 
   const handleTopDragMove = (clientX: number) => {
     if (!topIsDragging) return
-    setTopDragDistance(clientX - topStartXRef.current)
+    const dx = clientX - topStartXRef.current
+    if (Math.abs(dx) > 5) topDidDragRef.current = true
+    setTopDragDistance(dx)
   }
 
   const handleTopDragEnd = () => {
@@ -281,9 +216,9 @@ export default function TrendingCarousel({
 
     const threshold = containerWidth * 0.15
 
-    if (topDragDistance < -threshold && topSeriesMovies.length) {
+    if (topDragDistance < -threshold) {
       setTopIndex((prev) => (prev + 1) % topSeriesMovies.length)
-    } else if (topDragDistance > threshold && topSeriesMovies.length) {
+    } else if (topDragDistance > threshold) {
       setTopIndex(
         (prev) => (prev - 1 + topSeriesMovies.length) % topSeriesMovies.length
       )
@@ -294,21 +229,16 @@ export default function TrendingCarousel({
 
   const handleTopTouchStart = (e: React.TouchEvent) =>
     handleTopDragStart(e.touches[0].clientX)
-
   const handleTopTouchMove = (e: React.TouchEvent) =>
     handleTopDragMove(e.touches[0].clientX)
-
   const handleTopTouchEnd = handleTopDragEnd
-
   const handleTopMouseDown = (e: React.MouseEvent) =>
     handleTopDragStart(e.clientX)
-
   const handleTopMouseMove = (e: React.MouseEvent) =>
     handleTopDragMove(e.clientX)
-
   const handleTopMouseUp = handleTopDragEnd
 
-  // Original Mobile 3D carousel drag handlers.
+  // Trending swipe / drag handlers (mobile 3D carousel).
   const handleDragStart = (clientX: number) => {
     setIsDragging(true)
     setIsTransitioning(false)
@@ -327,15 +257,11 @@ export default function TrendingCarousel({
     setIsDragging(false)
     setIsTransitioning(true)
 
-    const threshold = 140 * 0.2
+    const cardWidth = isMobile ? 140 : 240
+    const threshold = cardWidth * 0.2
 
-    if (dragDistance < -threshold && trendingMovies.length) {
-      setCurrentIndex((prev) => (prev + 1) % trendingMovies.length)
-    } else if (dragDistance > threshold && trendingMovies.length) {
-      setCurrentIndex(
-        (prev) => (prev - 1 + trendingMovies.length) % trendingMovies.length
-      )
-    }
+    if (dragDistance < -threshold) slide(1)
+    else if (dragDistance > threshold) slide(-1)
 
     setDragDistance(0)
     startAutoSlide()
@@ -343,18 +269,11 @@ export default function TrendingCarousel({
 
   const handleTouchStart = (e: React.TouchEvent) =>
     handleDragStart(e.touches[0].clientX)
-
   const handleTouchMove = (e: React.TouchEvent) =>
     handleDragMove(e.touches[0].clientX)
-
   const handleTouchEnd = handleDragEnd
-
-  const handleMouseDown = (e: React.MouseEvent) =>
-    handleDragStart(e.clientX)
-
-  const handleMouseMove = (e: React.MouseEvent) =>
-    handleDragMove(e.clientX)
-
+  const handleMouseDown = (e: React.MouseEvent) => handleDragStart(e.clientX)
+  const handleMouseMove = (e: React.MouseEvent) => handleDragMove(e.clientX)
   const handleMouseUp = handleDragEnd
 
   const handleMouseWheel = (e: React.WheelEvent) => {
@@ -363,15 +282,16 @@ export default function TrendingCarousel({
     else handlePrev()
   }
 
-  // Original 3D card positioning.
+  const topTranslateX = -(topIndex * containerWidth) + topDragDistance
+
+  // Mobile 3D card positioning (unchanged).
   const getCardStyle = (index: number) => {
     const total = trendingMovies.length
-    if (!total) return {}
-
     let offset = (index - currentIndex + total) % total
+
     if (offset > total / 2) offset -= total
 
-    const cardWidth = 140
+    const cardWidth = isMobile ? 140 : 240
     const dragProgress = dragDistance / cardWidth
     const adjustedOffset = offset + dragProgress
 
@@ -391,7 +311,7 @@ export default function TrendingCarousel({
     let shadow = ""
     let rotateY = 0
 
-    const xSpacing = 110
+    const xSpacing = isMobile ? 110 : 130
     const zSpacing = -70
 
     if (adjustedOffset >= 0 && adjustedOffset <= 1) {
@@ -400,9 +320,8 @@ export default function TrendingCarousel({
       z = zSpacing * p
       scale = 1 - 0.15 * p
       opacity = 1 - 0.3 * p
-      shadow = p > 0.5
-        ? "0 15px 30px rgba(0,0,0,0.5)"
-        : "0 30px 60px rgba(0,0,0,0.9)"
+      shadow =
+        p > 0.5 ? "0 15px 30px rgba(0,0,0,0.5)" : "0 30px 60px rgba(0,0,0,0.9)"
       rotateY = 5 * p
     } else if (adjustedOffset > 1 && adjustedOffset <= 4) {
       const p = adjustedOffset - 1
@@ -418,9 +337,8 @@ export default function TrendingCarousel({
       z = zSpacing * p
       scale = 1 - 0.15 * p
       opacity = 1 - 0.3 * p
-      shadow = p > 0.5
-        ? "0 15px 30px rgba(0,0,0,0.5)"
-        : "0 30px 60px rgba(0,0,0,0.9)"
+      shadow =
+        p > 0.5 ? "0 15px 30px rgba(0,0,0,0.5)" : "0 30px 60px rgba(0,0,0,0.9)"
       rotateY = -5 * p
     } else if (adjustedOffset < -1 && adjustedOffset >= -4) {
       const p = Math.abs(adjustedOffset) - 1
@@ -430,6 +348,13 @@ export default function TrendingCarousel({
       opacity = 0.7 - 0.2 * p
       shadow = "0 10px 20px rgba(0,0,0,0.4)"
       rotateY = -5 - 2 * p
+    } else {
+      x = adjustedOffset > 0 ? 600 : -600
+      z = -400
+      scale = 0.4
+      opacity = 0
+      shadow = "none"
+      rotateY = 0
     }
 
     if (offset === 0 && Math.abs(dragProgress) < 0.05) {
@@ -438,8 +363,7 @@ export default function TrendingCarousel({
       scale = 1
       opacity = 1
       rotateY = 0
-      shadow =
-        "0 30px 60px rgba(0,0,0,0.9), 0 0 30px rgba(255,255,255,0.05)"
+      shadow = "0 30px 60px rgba(0,0,0,0.9), 0 0 30px rgba(255,255,255,0.05)"
     }
 
     return {
@@ -455,14 +379,20 @@ export default function TrendingCarousel({
 
   const currentTopMovie = topSeriesMovies[topIndex] || topSeriesMovies[0]
 
+  // Desktop strip: card width + 16px gap
+  const deskStep = isLarge ? 196 + 16 : 180 + 16
+  const deskStrip = [...trendingMovies, ...trendingMovies, ...trendingMovies]
+
   return (
     <section className="relative pb-4 overflow-hidden bg-black">
-      {/* TOP SERIES */}
+      {/* ====================================================== */}
+      {/* TOP SERIES HERO */}
+      {/* ====================================================== */}
       <div
         ref={topContainerRef}
         className={`relative w-full overflow-hidden select-none bg-gray-900 ${
           isMobile
-            ? "h-[420px] cursor-grab active:cursor-grabbing pt-[72px]"
+            ? "h-[420px] pt-[72px] cursor-grab active:cursor-grabbing"
             : "h-[520px] lg:h-[620px] cursor-grab active:cursor-grabbing"
         }`}
         style={{ touchAction: "pan-y" }}
@@ -476,8 +406,7 @@ export default function TrendingCarousel({
       >
         {topSeriesMovies.length > 0 && currentTopMovie && (
           <>
-            {/* Keep the original full-width Mobile slider.
-                On Desktop, show the complete poster on the right. */}
+            {/* Background poster slider */}
             <div
               className="absolute inset-0 flex"
               style={{
@@ -491,92 +420,111 @@ export default function TrendingCarousel({
               {topSeriesMovies.map((movie) => (
                 <div
                   key={movie.id}
-                  className="relative h-full flex-shrink-0"
+                  className="relative h-full flex-shrink-0 overflow-hidden"
                   style={{ width: `${100 / topSeriesMovies.length}%` }}
                 >
-                  <img
-                    src={movie.poster || "/placeholder.svg"}
-                    alt={movie.title}
-                    className={
-                      isMobile
-                        ? "w-full h-full object-cover pointer-events-none"
-                        : "absolute right-0 top-0 w-full md:w-[65%] lg:w-[60%] h-full object-contain object-right pointer-events-none"
-                    }
-                    style={{
-                      objectPosition: isMobile ? "top" : "right center",
-                    }}
-                  />
-                  {!isMobile && (
-                    <div className="absolute inset-0 bg-[#071014]/20 pointer-events-none" />
+                  {isMobile ? (
+                    <img
+                      src={movie.poster || "/placeholder.svg"}
+                      alt={movie.title}
+                      className="w-full h-full object-cover pointer-events-none"
+                      style={{ objectPosition: "top" }}
+                    />
+                  ) : (
+                    <>
+                      {/* Blurred, dimmed copy fills the whole hero */}
+                      <img
+                        src={movie.poster || "/placeholder.svg"}
+                        alt=""
+                        aria-hidden="true"
+                        className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+                        style={{
+                          filter: "blur(28px) brightness(0.55) saturate(1.1)",
+                          transform: "scale(1.25)",
+                        }}
+                      />
+
+                      {/* Full, uncropped poster on the right side */}
+                      <div className="absolute inset-y-0 right-0 w-[52%] flex items-center justify-center pt-[84px] pb-8 pr-6 lg:pr-14">
+                        <img
+                          src={movie.poster || "/placeholder.svg"}
+                          alt={movie.title}
+                          className="h-full max-w-full object-contain rounded-xl pointer-events-none"
+                          style={{
+                            boxShadow:
+                              "0 25px 60px rgba(0,0,0,0.85), 0 0 40px rgba(0,0,0,0.5)",
+                          }}
+                        />
+                      </div>
+                    </>
                   )}
                 </div>
               ))}
             </div>
 
-            {/* MOBILE: restore original top blur and mask.
-                DESKTOP: use a left-side dark gradient and subtle blur. */}
-            {isMobile ? (
+            {/* Overlay: desktop = dark left side, mobile = light */}
+            <div
+              className="absolute inset-0 z-[5] pointer-events-none"
+              style={{
+                background: isMobile
+                  ? "linear-gradient(to right, rgba(0,0,0,0.18), transparent 75%)"
+                  : "linear-gradient(90deg, rgba(3,8,12,0.98) 0%, rgba(3,8,12,0.92) 28%, rgba(3,8,12,0.70) 46%, rgba(3,8,12,0.15) 70%, rgba(3,8,12,0.05) 100%), linear-gradient(0deg, rgba(0,0,0,0.95) 0%, transparent 36%)",
+              }}
+            />
+
+            {/* Desktop: extra blur on the left (text side) fading out to the right */}
+            {!isMobile && (
               <div
-                className="absolute top-0 left-0 w-full pointer-events-none z-[5]"
+                className="absolute inset-y-0 left-0 w-[55%] z-[5] pointer-events-none"
                 style={{
-                  height: "140px",
-                  background:
-                    "linear-gradient(to bottom, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.65) 35%, rgba(0,0,0,0.3) 65%, rgba(0,0,0,0) 100%)",
-                  backdropFilter: "blur(12px)",
-                  WebkitBackdropFilter: "blur(12px)",
+                  backdropFilter: "blur(14px)",
+                  WebkitBackdropFilter: "blur(14px)",
                   maskImage:
-                    "linear-gradient(to bottom, black 0%, black 45%, rgba(0,0,0,0.4) 70%, transparent 100%)",
+                    "linear-gradient(to right, black 35%, transparent 100%)",
                   WebkitMaskImage:
-                    "linear-gradient(to bottom, black 0%, black 45%, rgba(0,0,0,0.4) 70%, transparent 100%)",
+                    "linear-gradient(to right, black 35%, transparent 100%)",
                 }}
               />
-            ) : (
-              <>
-                <div
-                  className="absolute inset-0 z-[5] pointer-events-none"
-                  style={{
-                    background:
-                      "linear-gradient(90deg, rgba(3,8,12,0.99) 0%, rgba(3,8,12,0.96) 22%, rgba(3,8,12,0.80) 38%, rgba(3,8,12,0.25) 58%, transparent 76%), linear-gradient(0deg, rgba(0,0,0,0.85) 0%, transparent 35%)",
-                  }}
-                />
-
-                <div
-                  className="absolute top-0 left-0 w-[48%] h-full z-[6] pointer-events-none"
-                  style={{
-                    backdropFilter: "blur(5px)",
-                    WebkitBackdropFilter: "blur(5px)",
-                    maskImage:
-                      "linear-gradient(90deg, black 0%, black 65%, transparent 100%)",
-                    WebkitMaskImage:
-                      "linear-gradient(90deg, black 0%, black 65%, transparent 100%)",
-                  }}
-                />
-              </>
             )}
 
-            {/* Original bottom gradient restored on Mobile. */}
+            {/* Top fade — mobile fixed: light gradient only, NO blur */}
             <div
-              className={`absolute bottom-0 left-0 w-full pointer-events-none z-[5] ${
-                isMobile ? "h-[45%]" : "h-[28%]"
+              className={`absolute top-0 left-0 w-full pointer-events-none z-[6] ${
+                isMobile ? "h-[100px]" : "h-[90px]"
+              }`}
+              style={{
+                background: isMobile
+                  ? "linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.3) 55%, transparent 100%)"
+                  : "linear-gradient(to bottom, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.45) 55%, transparent 100%)",
+                backdropFilter: isMobile ? "none" : "blur(5px)",
+                WebkitBackdropFilter: isMobile ? "none" : "blur(5px)",
+              }}
+            />
+
+            {/* Bottom gradient */}
+            <div
+              className={`absolute bottom-0 left-0 w-full pointer-events-none z-[6] ${
+                isMobile ? "h-[45%]" : "h-[32%]"
               }`}
               style={{
                 background: isMobile
                   ? "linear-gradient(to top, #000 0%, rgba(0,0,0,0.6) 55%, transparent 100%)"
-                  : "linear-gradient(to top, #000 0%, rgba(0,0,0,0.35) 45%, transparent 100%)",
+                  : "linear-gradient(to top, #000 0%, rgba(0,0,0,0.45) 45%, transparent 100%)",
               }}
             />
 
+            {/* Click overlay */}
             <div
               className="absolute inset-0 z-10"
               onClick={() => {
-                if (Math.abs(topDragDistance) < 5) {
+                if (!topDidDragRef.current) {
                   onMovieClick(currentTopMovie)
                 }
               }}
               style={{ cursor: "pointer" }}
             />
 
-            {/* MOBILE: original bottom information layout. */}
+            {/* MOBILE: bottom information layout */}
             {isMobile ? (
               <div className="absolute bottom-0 left-0 w-full p-4 z-20 pointer-events-none flex items-end gap-4">
                 <div className="w-16 h-24 rounded-lg overflow-hidden border-2 border-white/20 shadow-lg flex-shrink-0">
@@ -609,9 +557,7 @@ export default function TrendingCarousel({
                       )}
 
                     {currentTopMovie.genre && (
-                      <span className="truncate">
-                        {currentTopMovie.genre}
-                      </span>
+                      <span className="truncate">{currentTopMovie.genre}</span>
                     )}
                   </div>
                 </div>
@@ -621,22 +567,22 @@ export default function TrendingCarousel({
                 </div>
               </div>
             ) : (
-              /* DESKTOP: information on the left. */
-              <div className="absolute inset-y-0 left-0 z-20 flex items-center w-[58%] px-8 lg:px-12 xl:px-16 pointer-events-none">
-                <div className="w-full max-w-2xl pt-5">
-                  <p className="text-cyan-300 text-sm font-bold mb-3">
+              /* DESKTOP: hero content on the left */
+              <div className="absolute inset-y-0 left-0 z-20 flex items-center w-full md:w-[50%] lg:w-[46%] px-8 lg:px-12 xl:px-16 pointer-events-none">
+                <div className="w-full max-w-2xl pt-6">
+                  <div className="text-cyan-300 text-sm lg:text-base font-bold tracking-wide mb-3">
                     TOP SERIES
-                  </p>
+                  </div>
 
-                  <p className="text-gray-300 text-xs tracking-[0.3em] uppercase mb-4">
+                  <div className="text-white/70 text-xs lg:text-sm font-semibold tracking-[0.3em] uppercase mb-4">
                     Featured Series
-                  </p>
+                  </div>
 
                   <h1 className="text-white text-4xl lg:text-5xl xl:text-6xl font-extrabold leading-tight mb-5 drop-shadow-2xl line-clamp-2">
                     {currentTopMovie.title}
                   </h1>
 
-                  <div className="flex flex-wrap items-center gap-4 text-gray-200 text-sm mb-5">
+                  <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-gray-200 text-sm lg:text-base mb-5">
                     {currentTopMovie.year && (
                       <span className="flex items-center gap-2">
                         <Film className="w-4 h-4" />
@@ -661,19 +607,20 @@ export default function TrendingCarousel({
 
                   <div className="flex items-center gap-4">
                     <div className="w-14 h-14 lg:w-16 lg:h-16 rounded-full bg-white text-black flex items-center justify-center shadow-xl">
-                      <Play className="w-7 h-7 fill-current ml-1" />
+                      <Play className="w-7 h-7 lg:w-8 lg:h-8 fill-current ml-1" />
                     </div>
 
                     <div>
-                      <p className="text-white font-bold text-lg">
+                      <div className="text-white font-bold text-base lg:text-lg">
                         Explore Series
-                      </p>
-                      <p className="text-gray-300 text-sm">
+                      </div>
+                      <div className="text-gray-300 text-sm">
                         Discover your next favorite
-                      </p>
+                      </div>
                     </div>
                   </div>
 
+                  {/* Hero slide indicators */}
                   <div className="flex items-center gap-2 mt-8">
                     {topSeriesMovies.slice(0, 8).map((movie, index) => (
                       <div
@@ -693,11 +640,17 @@ export default function TrendingCarousel({
         )}
       </div>
 
-      {/* TRENDING NOW */}
-      <div className={`relative z-10 ${isMobile ? "px-4 mt-2" : "px-6 lg:px-10 mt-5"}`}>
+      {/* ====================================================== */}
+      {/* TRENDING MOVIES */}
+      {/* ====================================================== */}
+      <div
+        className={`relative z-10 ${
+          isMobile ? "px-4 mt-2" : "px-6 lg:px-10 mt-5"
+        }`}
+      >
         <div className="relative z-20 mb-1 flex flex-col items-center justify-center">
           <h2
-            className="text-xl font-bold text-center tracking-wider"
+            className="text-xl font-bold text-center tracking-wider animate-pulse"
             style={{
               fontFamily: "'Times New Roman', serif",
               letterSpacing: "0.2em",
@@ -716,10 +669,19 @@ export default function TrendingCarousel({
           <style jsx>{`
             @keyframes fireGlow {
               0% {
-                text-shadow: 0 0 8px rgba(255,107,0,.7), 0 0 15px rgba(255,165,0,.5);
+                text-shadow: 0 0 8px rgba(255, 107, 0, 0.7),
+                  0 0 15px rgba(255, 165, 0, 0.5);
+                background: linear-gradient(to right, #ff6b00, #ffa500, #ff6b00);
+                -webkit-background-clip: text;
+                background-clip: text;
               }
               100% {
-                text-shadow: 0 0 15px rgba(255,107,0,.9), 0 0 25px rgba(255,165,0,.7), 0 0 35px rgba(255,69,0,.6);
+                text-shadow: 0 0 15px rgba(255, 107, 0, 0.9),
+                  0 0 25px rgba(255, 165, 0, 0.7),
+                  0 0 35px rgba(255, 69, 0, 0.6);
+                background: linear-gradient(to right, #ff4500, #ff8c00, #ff4500);
+                -webkit-background-clip: text;
+                background-clip: text;
               }
             }
           `}</style>
@@ -729,65 +691,54 @@ export default function TrendingCarousel({
           {totalMovieCount} Movie &amp; Series Uploaded
         </p>
 
-        {/* DESKTOP: continuous horizontal poster carousel */}
-        {!isMobile && trendingMovies.length > 0 && (
-          <div className="relative z-20">
+        {/* DESKTOP: infinite horizontal poster carousel (no gap at the end) */}
+        {!isMobile && (
+          <div className="relative z-20 group">
             <button
               onClick={handlePrev}
               aria-label="Previous trending movies"
-              className="absolute left-0 top-1/2 -translate-y-1/2 z-30 flex items-center justify-center w-11 h-11 rounded-full carousel-nav-button text-white"
+              className="absolute left-0 top-1/2 -translate-y-1/2 z-30 hidden md:flex items-center justify-center w-11 h-11 rounded-full carousel-nav-button text-white"
             >
               <ChevronLeft className="w-6 h-6" />
             </button>
 
-            <div
-              ref={desktopViewportRef}
-              className="overflow-hidden mx-5"
-              onMouseEnter={() => {
-                desktopPausedRef.current = true
-              }}
-              onMouseLeave={() => {
-                desktopPausedRef.current = false
-              }}
-            >
+            <div className="overflow-hidden px-1 md:px-2">
               <div
-                ref={desktopTrackRef}
                 className="flex items-start gap-4 py-4"
-                onTransitionEnd={handleDesktopTransitionEnd}
                 style={{
                   width: "max-content",
-                  transform: `translateX(-${desktopIndex * 212}px)`,
-                  transition: desktopTransition
+                  transform: `translateX(-${deskPos * deskStep}px)`,
+                  transition: deskTransition
                     ? "transform 0.5s cubic-bezier(0.25, 1, 0.5, 1)"
                     : "none",
                 }}
+                onMouseEnter={stopAutoSlide}
+                onMouseLeave={startAutoSlide}
               >
-                {desktopMovies.map((movie, index) => (
+                {deskStrip.map((movie, i) => (
                   <div
-                    key={`${movie.id}-${index}`}
-                    className="relative w-[196px] flex-shrink-0 cursor-pointer"
+                    key={`${i}-${movie.id}`}
+                    className="relative w-[180px] lg:w-[196px] flex-shrink-0 cursor-pointer group/card"
                     onClick={() => onMovieClick(movie)}
                   >
-                    <div className="relative aspect-[2/3] overflow-hidden rounded-lg bg-gray-900 shadow-lg transition-transform duration-300 hover:scale-[1.03]">
+                    <div className="relative aspect-[2/3] overflow-hidden rounded-lg bg-gray-900 shadow-lg transition-transform duration-300 group-hover/card:scale-[1.04]">
                       <img
                         src={movie.poster || "/placeholder.svg"}
                         alt={movie.title}
                         loading="lazy"
-                        draggable={false}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover/card:scale-105"
                       />
 
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-transparent to-transparent pointer-events-none" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-transparent to-transparent opacity-90" />
 
-                      {movie.rating &&
-                        movie.rating !== "not available" && (
-                          <span className="absolute top-2 right-2 bg-black/75 text-white text-xs px-2 py-1 rounded-md font-semibold border border-white/20">
-                            ⭐ {movie.rating}
-                          </span>
-                        )}
+                      {movie.rating && movie.rating !== "not available" && (
+                        <span className="absolute top-2 right-2 bg-black/75 text-white text-xs px-2 py-1 rounded-md font-semibold border border-white/20">
+                          ⭐ {movie.rating}
+                        </span>
+                      )}
 
                       <div className="absolute inset-x-0 bottom-0 p-3">
-                        <h3 className="text-white text-sm font-bold line-clamp-2">
+                        <h3 className="text-white text-sm lg:text-base font-bold leading-snug line-clamp-2">
                           {movie.title}
                         </h3>
 
@@ -806,14 +757,14 @@ export default function TrendingCarousel({
             <button
               onClick={handleNext}
               aria-label="Next trending movies"
-              className="absolute right-0 top-1/2 -translate-y-1/2 z-30 flex items-center justify-center w-11 h-11 rounded-full carousel-nav-button text-white"
+              className="absolute right-0 top-1/2 -translate-y-1/2 z-30 hidden md:flex items-center justify-center w-11 h-11 rounded-full carousel-nav-button text-white"
             >
               <ChevronRight className="w-6 h-6" />
             </button>
           </div>
         )}
 
-        {/* MOBILE: original 3D carousel */}
+        {/* MOBILE: 3D carousel */}
         {isMobile && (
           <div
             className="relative z-20 flex justify-center items-center h-[280px] w-full cursor-grab active:cursor-grabbing select-none"
@@ -827,11 +778,11 @@ export default function TrendingCarousel({
             onMouseLeave={handleMouseUp}
             onWheel={handleMouseWheel}
           >
-            {trendingMovies.map((movie, index) => (
+            {trendingMovies.map((movie, idx) => (
               <div
                 key={movie.id}
-                className="absolute w-[140px] h-[190px] rounded-2xl overflow-hidden cursor-pointer"
-                style={getCardStyle(index)}
+                className="absolute w-[140px] h-[190px] rounded-2xl overflow-hidden hover:scale-105 cursor-pointer"
+                style={getCardStyle(idx)}
                 onClick={() => onMovieClick(movie)}
               >
                 <img
@@ -840,12 +791,11 @@ export default function TrendingCarousel({
                   className="w-full h-full object-cover pointer-events-none"
                 />
 
-                {movie.rating &&
-                  movie.rating !== "not available" && (
-                    <span className="absolute top-1.5 right-1.5 bg-black/70 text-white text-[9px] px-1.5 py-0.5 rounded-full font-semibold border border-white/20">
-                      ⭐ {movie.rating}
-                    </span>
-                  )}
+                {movie.rating && movie.rating !== "not available" && (
+                  <span className="absolute top-1.5 right-1.5 bg-black/70 text-white text-[9px] px-1.5 py-0.5 rounded-full font-semibold border border-white/20">
+                    ⭐ {movie.rating}
+                  </span>
+                )}
 
                 <div className="absolute bottom-0 left-0 w-full p-2 bg-gradient-to-t from-black/90 to-transparent">
                   <h3 className="text-white text-[10px] font-bold truncate">
@@ -853,9 +803,7 @@ export default function TrendingCarousel({
                   </h3>
 
                   {movie.year && (
-                    <p className="text-gray-300 text-[8px]">
-                      {movie.year}
-                    </p>
+                    <p className="text-gray-300 text-[8px]">{movie.year}</p>
                   )}
                 </div>
               </div>
@@ -868,26 +816,27 @@ export default function TrendingCarousel({
 
           @keyframes carouselNavGlow {
             0%, 100% {
-              box-shadow: 0 0 15px rgba(34,197,94,.6),
-                inset 0 0 20px rgba(255,255,255,.1);
+              box-shadow: 0 0 15px rgba(34,197,94,0.6),
+                inset 0 0 20px rgba(255,255,255,0.1);
             }
             50% {
-              box-shadow: 0 0 25px rgba(34,197,94,.8),
-                inset 0 0 30px rgba(255,255,255,.15);
+              box-shadow: 0 0 25px rgba(34,197,94,0.8),
+                inset 0 0 30px rgba(255,255,255,0.15);
             }
           }
 
           .carousel-nav-button {
-            background: rgba(34,197,94,.15);
+            background: rgba(34,197,94,0.15);
             backdrop-filter: blur(20px);
-            border: 1px solid rgba(34,197,94,.4);
-            transition: all .3s ease;
-            animation: carouselNavGlow .8s ease-in-out infinite;
+            border: 1px solid rgba(34,197,94,0.4);
+            transition: all 0.3s ease;
+            animation: carouselNavGlow 0.8s ease-in-out infinite;
           }
 
           .carousel-nav-button:hover {
-            background: rgba(34,197,94,.25);
-            border-color: rgba(34,197,94,.6);
+            background: rgba(34,197,94,0.25);
+            backdrop-filter: blur(25px);
+            border: 1px solid rgba(34,197,94,0.6);
           }
 
           @keyframes uploadedGreenFlow {
@@ -899,16 +848,21 @@ export default function TrendingCarousel({
           .uploaded-text {
             font-family: 'Roboto', sans-serif;
             font-weight: 700;
-            letter-spacing: .02em;
+            letter-spacing: 0.02em;
             background: linear-gradient(
-              90deg, #15803d, #22c55e, #86efac, #22c55e, #15803d
+              90deg,
+              #15803d,
+              #22c55e,
+              #86efac,
+              #22c55e,
+              #15803d
             );
             background-size: 300% 100%;
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
             -webkit-text-fill-color: transparent;
-            filter: drop-shadow(0 0 6px rgba(34,197,94,.45));
+            filter: drop-shadow(0 0 6px rgba(34,197,94,0.45));
             animation: uploadedGreenFlow 8s ease-in-out infinite;
           }
 
@@ -922,4 +876,4 @@ export default function TrendingCarousel({
       </div>
     </section>
   )
-        }
+                      }

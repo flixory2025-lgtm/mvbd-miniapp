@@ -339,20 +339,20 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
             </div>
 
             {/* ✅ ১.২ উপরের Blur + Dark (শুধু হেডারের এলাকায়, নিচে গিয়ে পরিষ্কার) */}
-<div
-  className="absolute top-0 left-0 w-full pointer-events-none z-[5]"
-  style={{
-    height: "140px", // ← শুধু হেডার + একটু নিচ পর্যন্ত
-    background:
-      "linear-gradient(to bottom, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.65) 35%, rgba(0,0,0,0.3) 65%, rgba(0,0,0,0) 100%)",
-    backdropFilter: "blur(12px)",
-    WebkitBackdropFilter: "blur(12px)",
-    maskImage:
-      "linear-gradient(to bottom, black 0%, black 45%, rgba(0,0,0,0.4) 70%, transparent 100%)",
-    WebkitMaskImage:
-      "linear-gradient(to bottom, black 0%, black 45%, rgba(0,0,0,0.4) 70%, transparent 100%)",
-  }}
-/>
+            <div
+              className="absolute top-0 left-0 w-full pointer-events-none z-[5]"
+              style={{
+                height: "140px", // ← শুধু হেডার + একটু নিচ পর্যন্ত
+                background:
+                  "linear-gradient(to bottom, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.65) 35%, rgba(0,0,0,0.3) 65%, rgba(0,0,0,0) 100%)",
+                backdropFilter: "blur(12px)",
+                WebkitBackdropFilter: "blur(12px)",
+                maskImage:
+                  "linear-gradient(to bottom, black 0%, black 45%, rgba(0,0,0,0.4) 70%, transparent 100%)",
+                WebkitMaskImage:
+                  "linear-gradient(to bottom, black 0%, black 45%, rgba(0,0,0,0.4) 70%, transparent 100%)",
+              }}
+            />
 
             {/* ✅ ১.৩ নিচের গ্রেডিয়েন্ট (টেক্সট সেকশনের জন্য) */}
             <div className="absolute bottom-0 left-0 w-full h-[45%] bg-gradient-to-t from-black via-black/60 to-transparent pointer-events-none z-[5]" />
@@ -412,7 +412,44 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
       </div>
 
       {/* ========================================================= */}
-      {/* ✅✅✅ ২. নিচের সেকশন: Trending Movies (3D Carousel) ✅✅✅ */}
+      {/* ✅✅✅ ২. নতুন সেকশন: Recently Uploaded (ফায়ার অ্যানিমেশন) ✅✅✅ */}
+      {/* ========================================================= */}
+      <div className="relative z-20 mt-4 mb-2 flex flex-col items-center justify-center">
+        <h2
+          className="text-xl md:text-2xl font-bold text-center tracking-widest animate-pulse"
+          style={{
+            fontFamily: "'Times New Roman', serif",
+            letterSpacing: "0.2em",
+            background: "linear-gradient(to right, #ff6b00, #ffa500, #ff6b00)",
+            WebkitBackgroundClip: "text",
+            backgroundClip: "text",
+            color: "transparent",
+            textShadow: "0 0 10px rgba(255, 107, 0, 0.7), 0 0 15px rgba(255, 165, 0, 0.5)",
+            animation: "fireGlow 2s ease-in-out infinite alternate",
+          }}
+        >
+          Recently Uploaded
+        </h2>
+        <style jsx>{`
+          @keyframes fireGlow {
+            0% {
+              text-shadow: 0 0 8px rgba(255, 107, 0, 0.7), 0 0 15px rgba(255, 165, 0, 0.5);
+              background: linear-gradient(to right, #ff6b00, #ffa500, #ff6b00);
+              -webkit-background-clip: text;
+              background-clip: text;
+            }
+            100% {
+              text-shadow: 0 0 15px rgba(255, 107, 0, 0.9), 0 0 25px rgba(255, 165, 0, 0.7), 0 0 35px rgba(255, 69, 0, 0.6);
+              background: linear-gradient(to right, #ff4500, #ff8c00, #ff4500);
+              -webkit-background-clip: text;
+              background-clip: text;
+            }
+          }
+        `}</style>
+      </div>
+
+      {/* ========================================================= */}
+      {/* ✅✅✅ ৩. নিচের সেকশন: Trending Movies (3D Carousel) ✅✅✅ */}
       {/* ========================================================= */}
       <div className="relative z-10 px-4 mt-2">
 
@@ -531,4 +568,4 @@ export default function TrendingCarousel({ onMovieClick }: TrendingCarouselProps
       </div>
     </section>
   )
-}
+          }

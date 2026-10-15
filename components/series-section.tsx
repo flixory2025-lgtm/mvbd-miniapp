@@ -1518,12 +1518,15 @@ export default function SeriesSection({
             object-fit: contain;
           }
 
-          /* ---------- STICKY CHECKOUT BAR ---------- */
+          /* =======================================================
+             STICKY CHECKOUT BAR (সংশোধিত)
+             ======================================================= */
           .mvbd-checkout-bar {
             position: fixed;
             left: 0;
             right: 0;
-            bottom: 0;
+            /* ডেস্কটপের জন্য নেভিগেশন বারের উপরে জায়গা */
+            bottom: 85px; 
             z-index: 50;
             padding: 14px 18px calc(14px + env(safe-area-inset-bottom, 0px));
             background: linear-gradient(
@@ -2133,7 +2136,9 @@ export default function SeriesSection({
               display: none;
             }
 
+            /* মোবাইলের জন্য চেকআউট বার (নেভিগেশন বারের উপরে) */
             .mvbd-checkout-bar {
+              bottom: 75px; 
               padding: 12px 10px calc(12px + env(safe-area-inset-bottom, 0px));
             }
             .mvbd-checkout-inner {

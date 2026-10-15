@@ -730,24 +730,42 @@ export default function Page() {
           )}
 
           {!isSearching && (
-            <GenreCategories
-              genres={genres}
-              selectedGenre={
-                selectedGenre
-              }
-              onGenreSelect={
-                handleGenreSelect
-              }
-              showAdultContent={
-                showAdultContent
-              }
-              // ✅ NEW: Filter props
-              selectedYear={selectedYear}
-              selectedRating={selectedRating}
-              selectedLanguage={selectedLanguage}
-              selectedType={selectedType}
-              onFilterChange={handleFilterChange}
-            />
+            <>
+              <GenreCategories
+                genres={genres}
+                selectedGenre={
+                  selectedGenre
+                }
+                onGenreSelect={
+                  handleGenreSelect
+                }
+                showAdultContent={
+                  showAdultContent
+                }
+                // ✅ NEW: Filter props
+                selectedYear={selectedYear}
+                selectedRating={selectedRating}
+                selectedLanguage={selectedLanguage}
+                selectedType={selectedType}
+                onFilterChange={handleFilterChange}
+              />
+
+              {/* ========================================================= */}
+              {/* ✅✅✅ Recently Uploaded - Year/Rating/Language/Type এর ঠিক নিচে ✅✅✅ */}
+              {/* ========================================================= */}
+              <div className="w-full flex justify-center items-center py-5 bg-black">
+                <h2
+                  className="text-2xl md:text-3xl font-extrabold text-center tracking-[0.2em]"
+                  style={{
+                    fontFamily: "'Times New Roman', serif",
+                    color: "#ffffff",
+                    textShadow: "0 0 10px rgba(255, 255, 255, 0.5), 0 0 20px rgba(255, 255, 255, 0.3)",
+                  }}
+                >
+                  Recently Uploaded
+                </h2>
+              </div>
+            </>
           )}
 
           {/* ✅ সার্চ রেজাল্ট সেকশন — pt-[96px] যোগ করা হয়েছে */}
@@ -1075,4 +1093,4 @@ export default function Page() {
       )}
     </div>
   )
-          }
+}

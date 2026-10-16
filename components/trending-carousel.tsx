@@ -38,16 +38,12 @@ export default function TrendingCarousel({
   const [topIsTransitioning, setTopIsTransitioning] = useState(true)
   const [containerWidth, setContainerWidth] = useState(0)
 
-  // Trending state
+  // Mobile 3D carousel state
   const [currentIndex, setCurrentIndex] = useState(0)
   const [dragDistance, setDragDistance] = useState(0)
   const [isDragging, setIsDragging] = useState(false)
   const [isTransitioning, setIsTransitioning] = useState(true)
   const [isMobile, setIsMobile] = useState(false)
-
-  // ✅ Native scroll refs (desktop strip + mobile 3D)
-  const deskScrollRef = useRef<HTMLDivElement>(null)
-  const mobileScrollRef = useRef<HTMLDivElement>(null)
 
   const topStartXRef = useRef(0)
   const topDidDragRef = useRef(false)
@@ -55,21 +51,23 @@ export default function TrendingCarousel({
   const autoSlideRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const topAutoSlideRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const topContainerRef = useRef<HTMLDivElement>(null)
-  const isPausedRef = useRef(false)
 
-  // Restore saved carousel positions.
+  // ✅ Native scroll refs
+  const deskScrollRef = useRef<HTMLDivElement>(null)
+  const isUserInteractingRef = useRef(false)
+  const interactionTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  // Restore saved positions
   useEffect(() => {
     try {
       const savedTopIndex = sessionStorage.getItem("topSeriesIndex")
       const savedTrendingIndex = sessionStorage.getItem("trendingIndex")
-
       if (savedTopIndex && topSeriesMovies.length > 0) {
         const parsed = parseInt(savedTopIndex, 10)
         if (!isNaN(parsed) && parsed >= 0 && parsed < topSeriesMovies.length) {
           setTopIndex(parsed)
         }
       }
-
       if (savedTrendingIndex && trendingMovies.length > 0) {
         const parsed = parseInt(savedTrendingIndex, 10)
         if (!isNaN(parsed) && parsed >= 0 && parsed < trendingMovies.length) {
@@ -92,7 +90,7 @@ export default function TrendingCarousel({
     } catch {}
   }, [currentIndex])
 
-  // Detect screen size and hero width.
+  // Detect screen size
   useEffect(() => {
     const updateSize = () => {
       setIsMobile(window.innerWidth < 768)
@@ -102,14 +100,14 @@ export default function TrendingCarousel({
     }
     updateSize()
     window.addEventListener("resize", updateSize)
-    const resizeTimeout = setTimeout(updateSize, 100)
+    const t = setTimeout(updateSize, 100)
     return () => {
       window.removeEventListener("resize", updateSize)
-      clearTimeout(resizeTimeout)
+      clearTimeout(t)
     }
   }, [])
 
-  // Top series auto-slide: every 4 seconds.
+  // Top hero auto-slide: 4s
   useEffect(() => {
     if (topSeriesMovies.length === 0 || topIsDragging) return
     if (topAutoSlideRef.current) clearInterval(topAutoSlideRef.current)
@@ -121,110 +119,129 @@ export default function TrendingCarousel({
     }
   }, [topSeriesMovies.length, topIsDragging])
 
-  // ✅ DESKTOP: native scroll step (এক কার্ড করে)
-  const advanceDesktop = useCallback(() => {
-    const el = deskScrollRef.current
-    if (!el) return
-    const firstCard = el.querySelector("[data-trend-card]") as HTMLElement | null
-    if (!firstCard) return
-    const step = firstCard.offsetWidth + 16
-    const maxScroll = el.scrollWidth - el.clientWidth
-    if (el.scrollLeft >= maxScroll - 5) {
-      el.scrollTo({ left: 0, behavior: "smooth" })
-      return
-    }
-    const next = Math.min(el.scrollLeft + step, maxScroll)
-    el.scrollTo({ left: next, behavior: "smooth" })
-  }, [])
-
-  // ✅ MOBILE: 3D carousel step
-  const advanceMobile = useCallback(() => {
-    if (trendingCount === 0) return
-    setIsTransitioning(true)
-    setCurrentIndex((prev) => (prev + 1) % trendingCount)
-  }, [trendingCount])
-
-  // Trending auto-slide: every 3 seconds.
-  const startAutoSlide = useCallback(() => {
+  // ✅ Desktop auto-slide — শুধু তখনই চলে যখন ইউজার interact করছে না
+  useEffect(() => {
+    if (isMobile || trendingCount === 0) return
     if (autoSlideRef.current) clearInterval(autoSlideRef.current)
-    if (trendingCount === 0) return
+
     autoSlideRef.current = setInterval(() => {
-      if (isPausedRef.current) return
-      if (isMobile) advanceMobile()
-      else advanceDesktop()
-    }, 3000)
-  }, [trendingCount, isMobile, advanceMobile, advanceDesktop])
-
-  const stopAutoSlide = useCallback(() => {
-    if (autoSlideRef.current) {
-      clearInterval(autoSlideRef.current)
-      autoSlideRef.current = null
-    }
-  }, [])
-
-  useEffect(() => {
-    startAutoSlide()
-    return () => stopAutoSlide()
-  }, [startAutoSlide, stopAutoSlide])
-
-  // Pause helpers
-  const pauseAuto = () => {
-    isPausedRef.current = true
-  }
-  const resumeAuto = () => {
-    isPausedRef.current = false
-  }
-
-  // Keyboard navigation.
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "ArrowRight") {
-        if (isMobile) advanceMobile()
-        else advanceDesktop()
-      } else if (e.key === "ArrowLeft") {
-        if (isMobile) {
-          setIsTransitioning(true)
-          setCurrentIndex((prev) => (prev - 1 + trendingCount) % trendingCount)
-        } else {
-          const el = deskScrollRef.current
-          if (!el) return
-          const firstCard = el.querySelector(
-            "[data-trend-card]"
-          ) as HTMLElement | null
-          if (!firstCard) return
-          const step = firstCard.offsetWidth + 16
-          el.scrollTo({
-            left: Math.max(0, el.scrollLeft - step),
-            behavior: "smooth",
-          })
-        }
-      }
-    }
-    window.addEventListener("keydown", handleKeyDown)
-    return () => window.removeEventListener("keydown", handleKeyDown)
-  }, [isMobile, trendingCount, advanceMobile, advanceDesktop])
-
-  const handlePrev = () => {
-    if (isMobile) {
-      setIsTransitioning(true)
-      setCurrentIndex((prev) => (prev - 1 + trendingCount) % trendingCount)
-    } else {
+      if (isUserInteractingRef.current) return
       const el = deskScrollRef.current
       if (!el) return
       const firstCard = el.querySelector(
         "[data-trend-card]"
       ) as HTMLElement | null
       if (!firstCard) return
-      const step = firstCard.offsetWidth + 16
-      el.scrollTo({ left: Math.max(0, el.scrollLeft - step), behavior: "smooth" })
+      const gap = 16
+      const step = firstCard.offsetWidth + gap
+      const maxScroll = el.scrollWidth - el.clientWidth
+      if (el.scrollLeft >= maxScroll - 5) {
+        el.scrollTo({ left: 0, behavior: "smooth" })
+        return
+      }
+      el.scrollTo({ left: el.scrollLeft + step, behavior: "smooth" })
+    }, 3000)
+
+    return () => {
+      if (autoSlideRef.current) clearInterval(autoSlideRef.current)
     }
-  }
-  const handleNext = () => {
-    if (isMobile) advanceMobile()
-    else advanceDesktop()
+  }, [isMobile, trendingCount])
+
+  // ✅ Mobile 3D auto-slide: 3s
+  const advanceMobile = useCallback(() => {
+    if (trendingCount === 0) return
+    setIsTransitioning(true)
+    setCurrentIndex((prev) => (prev + 1) % trendingCount)
+  }, [trendingCount])
+
+  useEffect(() => {
+    if (!isMobile || trendingCount === 0) return
+    if (autoSlideRef.current) clearInterval(autoSlideRef.current)
+    autoSlideRef.current = setInterval(() => {
+      if (isUserInteractingRef.current) return
+      advanceMobile()
+    }, 3000)
+    return () => {
+      if (autoSlideRef.current) clearInterval(autoSlideRef.current)
+    }
+  }, [isMobile, trendingCount, advanceMobile])
+
+  /* =========================================================
+     ✅ User interaction চিহ্নিত করা
+     যেকোনো swipe / drag / hover শুরু হলে 3 সেকেন্ডের জন্য auto-slide বন্ধ
+  ========================================================= */
+  const markUserInteracting = () => {
+    isUserInteractingRef.current = true
+    if (interactionTimeoutRef.current) {
+      clearTimeout(interactionTimeoutRef.current)
+    }
+    interactionTimeoutRef.current = setTimeout(() => {
+      isUserInteractingRef.current = false
+    }, 3000)
   }
 
-  // Top series swipe / drag handlers.
+  /* =========================================================
+     Keyboard
+  ========================================================= */
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "ArrowRight") {
+        markUserInteracting()
+        if (isMobile) advanceMobile()
+        else {
+          const el = deskScrollRef.current
+          if (!el) return
+          const fc = el.querySelector("[data-trend-card]") as HTMLElement | null
+          if (!fc) return
+          el.scrollBy({ left: fc.offsetWidth + 16, behavior: "smooth" })
+        }
+      } else if (e.key === "ArrowLeft") {
+        markUserInteracting()
+        if (isMobile) {
+          setIsTransitioning(true)
+          setCurrentIndex((prev) => (prev - 1 + trendingCount) % trendingCount)
+        } else {
+          const el = deskScrollRef.current
+          if (!el) return
+          const fc = el.querySelector("[data-trend-card]") as HTMLElement | null
+          if (!fc) return
+          el.scrollBy({ left: -(fc.offsetWidth + 16), behavior: "smooth" })
+        }
+      }
+    }
+    window.addEventListener("keydown", handleKeyDown)
+    return () => window.removeEventListener("keydown", handleKeyDown)
+  }, [isMobile, trendingCount, advanceMobile])
+
+  const handlePrev = () => {
+    markUserInteracting()
+    if (isMobile) {
+      setIsTransitioning(true)
+      setCurrentIndex((prev) => (prev - 1 + trendingCount) % trendingCount)
+    } else {
+      const el = deskScrollRef.current
+      if (!el) return
+      const fc = el.querySelector("[data-trend-card]") as HTMLElement | null
+      if (!fc) return
+      el.scrollBy({ left: -(fc.offsetWidth + 16), behavior: "smooth" })
+    }
+  }
+
+  const handleNext = () => {
+    markUserInteracting()
+    if (isMobile) advanceMobile()
+    else {
+      const el = deskScrollRef.current
+      if (!el) return
+      const fc = el.querySelector("[data-trend-card]") as HTMLElement | null
+      if (!fc) return
+      el.scrollBy({ left: fc.offsetWidth + 16, behavior: "smooth" })
+    }
+  }
+
+  /* =========================================================
+     Top hero swipe handlers
+  ========================================================= */
   const handleTopDragStart = (clientX: number) => {
     setTopIsDragging(true)
     setTopIsTransitioning(false)
@@ -232,14 +249,12 @@ export default function TrendingCarousel({
     topDidDragRef.current = false
     if (topAutoSlideRef.current) clearInterval(topAutoSlideRef.current)
   }
-
   const handleTopDragMove = (clientX: number) => {
     if (!topIsDragging) return
     const dx = clientX - topStartXRef.current
     if (Math.abs(dx) > 5) topDidDragRef.current = true
     setTopDragDistance(dx)
   }
-
   const handleTopDragEnd = () => {
     if (!topIsDragging) return
     setTopIsDragging(false)
@@ -254,7 +269,6 @@ export default function TrendingCarousel({
     }
     setTopDragDistance(0)
   }
-
   const handleTopTouchStart = (e: React.TouchEvent) =>
     handleTopDragStart(e.touches[0].clientX)
   const handleTopTouchMove = (e: React.TouchEvent) =>
@@ -266,39 +280,34 @@ export default function TrendingCarousel({
     handleTopDragMove(e.clientX)
   const handleTopMouseUp = handleTopDragEnd
 
-  // =========================================================
-  // ✅ MOBILE 3D কারোসেলের swipe handlers (free swipe)
-  // =========================================================
+  /* =========================================================
+     ✅ Mobile 3D swipe handlers (free)
+  ========================================================= */
   const handleDragStart = (clientX: number) => {
     setIsDragging(true)
     setIsTransitioning(false)
     startXRef.current = clientX
-    pauseAuto()
+    markUserInteracting()
   }
-
   const handleDragMove = (clientX: number) => {
     if (!isDragging) return
     setDragDistance(clientX - startXRef.current)
+    markUserInteracting()
   }
-
   const handleDragEnd = () => {
     if (!isDragging) return
     setIsDragging(false)
     setIsTransitioning(true)
-
     const cardWidth = isMobile ? 140 : 240
     const threshold = cardWidth * 0.2
-
     if (dragDistance < -threshold) {
       setCurrentIndex((prev) => (prev + 1) % trendingCount)
     } else if (dragDistance > threshold) {
       setCurrentIndex((prev) => (prev - 1 + trendingCount) % trendingCount)
     }
-
     setDragDistance(0)
-    resumeAuto()
+    markUserInteracting()
   }
-
   const handleTouchStart = (e: React.TouchEvent) =>
     handleDragStart(e.touches[0].clientX)
   const handleTouchMove = (e: React.TouchEvent) =>
@@ -310,13 +319,16 @@ export default function TrendingCarousel({
 
   const handleMouseWheel = (e: React.WheelEvent) => {
     if (isDragging) return
+    markUserInteracting()
     if (e.deltaY > 0) handleNext()
     else handlePrev()
   }
 
   const topTranslateX = -(topIndex * containerWidth) + topDragDistance
 
-  // Mobile 3D card positioning (unchanged)
+  /* =========================================================
+     Mobile 3D card style
+  ========================================================= */
   const getCardStyle = (index: number) => {
     const total = trendingMovies.length
     let offset = (index - currentIndex + total) % total
@@ -704,7 +716,7 @@ export default function TrendingCarousel({
           {totalMovieCount} Movie &amp; Series Uploaded
         </p>
 
-        {/* ✅ DESKTOP: Native horizontal scroll — free swipe */}
+        {/* ✅ DESKTOP: Native horizontal scroll — TRUE FREE SWIPE */}
         {!isMobile && (
           <div className="relative z-20 group">
             <button
@@ -717,16 +729,22 @@ export default function TrendingCarousel({
 
             <div
               ref={deskScrollRef}
-              className="overflow-x-auto overflow-y-hidden trending-scroll pb-4"
+              className="trending-scroll pb-4"
               style={{
+                overflowX: "auto",
+                overflowY: "hidden",
                 scrollbarWidth: "none",
                 msOverflowStyle: "none",
                 WebkitOverflowScrolling: "touch",
+                scrollSnapType: "none",
+                cursor: "grab",
               }}
-              onMouseEnter={pauseAuto}
-              onMouseLeave={resumeAuto}
-              onTouchStart={pauseAuto}
-              onTouchEnd={resumeAuto}
+              onMouseDown={markUserInteracting}
+              onMouseMove={markUserInteracting}
+              onWheel={markUserInteracting}
+              onTouchStart={markUserInteracting}
+              onTouchMove={markUserInteracting}
+              onScroll={markUserInteracting}
             >
               <div
                 className="flex items-start gap-4 pt-4"
@@ -745,6 +763,7 @@ export default function TrendingCarousel({
                         alt={movie.title}
                         loading="lazy"
                         className="w-full h-full object-cover transition-transform duration-500 group-hover/card:scale-105"
+                        draggable={false}
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-transparent to-transparent opacity-90" />
                       {movie.rating && movie.rating !== "not available" && (
@@ -850,8 +869,15 @@ export default function TrendingCarousel({
             border: 1px solid rgba(34,197,94,0.6);
           }
 
+          /* ✅ Swipe scroll bar সম্পূর্ণ লুকানো */
           .trending-scroll::-webkit-scrollbar {
             display: none;
+            width: 0;
+            height: 0;
+          }
+          .trending-scroll {
+            scrollbar-width: none;
+            -ms-overflow-style: none;
           }
 
           @keyframes uploadedGreenFlow {
@@ -896,4 +922,4 @@ export default function TrendingCarousel({
       <UpcomingSection onMovieClick={onMovieClick} />
     </section>
   )
-              }
+      }

@@ -21,25 +21,25 @@ export async function GET() {
 
   // তিনটি সোর্স থেকে ডাটা আনি (parallel)
   const [moviesRes, tvRes, kdramaRes] = await Promise.allSettled([
-    // 1. Upcoming Movies (Theatrical + Digital)
+    // Upcoming Movies - sorted by popularity (famous first)
     fetch(
       `https://api.themoviedb.org/3/movie/upcoming?language=en-US&page=1&region=US`,
       { headers, next: { revalidate: 21600 } }
     ),
-    // 2. Upcoming TV Series (On The Air)
+    // On the air TV Series
     fetch(
       `https://api.themoviedb.org/3/tv/on_the_air?language=en-US&page=1`,
       { headers, next: { revalidate: 21600 } }
     ),
-    // 3. Upcoming K-Drama (Discover TV + Korean filter)
+    // Upcoming K-Drama
     fetch(
-      `https://api.themoviedb.org/3/discover/tv?with_original_language=ko&with_origin_country=KR&first_air_date.gte=${today}&sort_by=first_air_date.asc&language=en-US&page=1`,
+      `https://api.themoviedb.org/3/discover/tv?with_original_language=ko&with_origin_country=KR&first_air_date.gte=${today}&sort_by=popularity.desc&language=en-US&page=1`,
       { headers, next: { revalidate: 21600 } }
     ),
   ])
 
   const getResults = (res: PromiseSettledResult<Response>) => {
-    if (res.status !== "fulfilled" || !res.value.ok) return []
+    if (res.status !== "fulfilled" || !res.value.ok) return Promise.resolve([])
     return res.value.json().then((d: any) => d.results || [])
   }
 
@@ -49,43 +49,52 @@ export async function GET() {
     getResults(kdramaRes).catch(() => []),
   ])
 
-  // সব ডাটা একসাথে মার্জ করে ডুপ্লিকেট বাদ দিই
   const seen = new Set<number>()
   const combined: any[] = []
 
-  const pushItem = (item: any, mediaType: "movie" | "tv", tag: string) => {
+  const pushItem = (
+    item: any,
+    mediaType: "movie" | "tv",
+    tag: string,
+    popularityBoost: number = 0
+  ) => {
     if (!item || !item.id) return
     if (seen.has(item.id)) return
     seen.add(item.id)
 
     const isMovie = mediaType === "movie"
+    const releaseDate = isMovie ? item.release_date : item.first_air_date
+
+    // Today বা ভবিষ্যতের তারিখ হলে তবেই upcoming হিসেবে গণ্য হবে
+    // (movies/api সাধারণত ভবিষ্যতেরই দেয়, তবু safety)
     combined.push({
       id: item.id,
       title: isMovie ? item.title : item.name,
-      originalTitle: isMovie ? item.original_title : item.original_name,
       poster: item.poster_path
         ? `https://image.tmdb.org/t/p/w500${item.poster_path}`
         : null,
-      backdrop: item.backdrop_path
-        ? `https://image.tmdb.org/t/p/w780${item.backdrop_path}`
-        : null,
-      year: (isMovie ? item.release_date : item.first_air_date)
-        ? (isMovie ? item.release_date : item.first_air_date).split("-")[0]
-        : "Coming Soon",
-      releaseDate: isMovie ? item.release_date : item.first_air_date,
+      year: releaseDate ? releaseDate.split("-")[0] : "Coming Soon",
+      releaseDate: releaseDate || null,
       rating:
         item.vote_average && item.vote_average > 0
           ? item.vote_average.toFixed(1)
           : "not available",
       overview: item.overview || "",
+      popularity: (item.popularity || 0) + popularityBoost,
       mediaType,
       tag,
     })
   }
 
-  movies.forEach((m: any) => pushItem(m, "movie", "Movie"))
-  tvShows.forEach((t: any) => pushItem(t, "tv", "Series"))
-  kdramas.forEach((k: any) => pushItem(k, "tv", "K-Drama"))
+  // Movies এবং TV-কে popularity boost দিই যাতে famous গুলো আগে আসে
+  movies.forEach((m: any) => pushItem(m, "movie", "Movie", 15))
+  tvShows.forEach((t: any) => pushItem(t, "tv", "Series", 5))
+  kdramas.forEach((k: any) => pushItem(k, "tv", "K-Drama", 0))
 
-  return NextResponse.json({ results: combined })
+  // popularity অনুযায়ী sort করে **শুধু Top 10** নিই
+  const top10 = combined
+    .sort((a, b) => b.popularity - a.popularity)
+    .slice(0, 10)
+
+  return NextResponse.json({ results: top10 })
 }

@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from "react"
 import { ChevronLeft, ChevronRight, Play, Film, Star } from "lucide-react"
 import { movies } from "@/lib/movie-data"
+import UpcomingSection from "@/components/UpcomingSection"
 
 const topSeriesIds = [
   3411, 3412, 3416, 3422, 3426, 3429, 3430, 3432,
@@ -886,6 +887,11 @@ export default function TrendingCarousel({
           }
         `}</style>
       </div>
+
+      {/* ====================================================== */}
+      {/* ✅✅✅ NEW: UPCOMING MOVIES & SERIES ✅✅✅ */}
+      {/* ====================================================== */}
+      <UpcomingSection onMovieClick={onMovieClick} />
     </section>
   )
-          }
+              }

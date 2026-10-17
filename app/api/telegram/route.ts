@@ -94,6 +94,16 @@ const TUTORIAL_REPLIES = [
 // "নেই" রিপ্লাইয়ের নিচে যোগ হওয়া অতিরিক্ত বার্তা
 const NOT_FOUND_NOTE =
   "\n\n💡 <b>আমার ডেটাবেসে এই নামের মুভি/সিরিজ খুঁজে পাইনি।</b> তবে আমাদের MVBD Mini App-এর সার্চ বারে নামটি লিখলে সাজেস্টেড মুভি লিস্ট দেখতে পাবেন, মুভিটি থাকলে সহজেই পেয়ে যাবেন।\n\n🙏 তাই কষ্ট করে রিকোয়েস্ট করার আগে অবশ্যই একবার MVBD Mini App-এ গিয়ে চেক করে আসবেন।\n\n🔎 আর যদি মুভিটি সত্যিই না থাকে, তাহলে Google থেকে মুভি বা সিরিজের <b>সঠিক নামটি (English)</b> দেখে আমাদের শুধু সেই নামটি লিখে জানান। আমরা আবার চেক করে দেখব।";
+
+// প্রাইভেট চ্যাটে অ্যাডমিনকে দেখানো সাহায্য
+const ADMIN_HELP =
+  "👋 বস, আমি রেডি!\n\n" +
+  "গ্রুপে মেসেজ পাঠাতে লিখুন:\n" +
+  "/group আপনার মেসেজ এখানে\n\n" +
+  "উদাহরণ:\n" +
+  "/group সবাইকে জানানো যাচ্ছে, নতুন মুভি আপলোড হয়েছে! 🎬\n\n" +
+  "লাইন ভেঙে লিখলেও সেটা গ্রুপে একই ভাবে যাবে।";
+
 // ---------- মুভি লিস্ট (একবার বানিয়ে ক্যাশ) ----------
 function norm(s: string) {
   return s.toLowerCase().replace(/[^\p{L}\p{M}\p{N}\s]/gu, " ").replace(/\s+/g, " ").trim();
@@ -220,6 +230,41 @@ export async function POST(req: NextRequest) {
     const msg = update.message;
     if (!msg || !msg.text || !msg.from) return NextResponse.json({ ok: true });
 
+    // ================= প্রাইভেট চ্যাট: অ্যাডমিনের /group কমান্ড =================
+    if (msg.chat.type === "private") {
+      // শুধু আপনি (অ্যাডমিন) ব্যবহার করতে পারবেন, অন্য কেউ লিখলে বট চুপ
+      if (msg.from.id !== ADMIN_ID) return NextResponse.json({ ok: true });
+
+      const text = String(msg.text);
+      const m = text.match(/^\/group(?:@\w+)?(?:\s+([\s\S]+))?$/i);
+
+      if (m) {
+        const body = (m[1] || "").trim();
+        if (!body) {
+          await tg("sendMessage", {
+            chat_id: msg.chat.id,
+            text: "বস, /group এর পরে মেসেজটা লিখুন।\nযেমন: /group নতুন মুভি আপলোড হয়েছে! 🎬",
+          });
+        } else {
+          const res = await tg("sendMessage", { chat_id: GROUP_ID, text: body });
+          if (res?.ok) {
+            await tg("sendMessage", { chat_id: msg.chat.id, text: "✅ গ্রুপে পাঠানো হয়েছে।" });
+          } else {
+            await tg("sendMessage", {
+              chat_id: msg.chat.id,
+              text:
+                "❌ গ্রুপে পাঠানো যায়নি।\nকারণ: " + (res?.description || "অজানা") +
+                "\n\nবট গ্রুপে আছে কি না আর মেসেজ পাঠানোর অনুমতি আছে কি না দেখুন।",
+            });
+          }
+        }
+      } else if (text.startsWith("/start") || text.startsWith("/help")) {
+        await tg("sendMessage", { chat_id: msg.chat.id, text: ADMIN_HELP });
+      }
+      return NextResponse.json({ ok: true });
+    }
+
+    // ================= গ্রুপ =================
     const chatId = msg.chat.id;
     if (String(chatId) !== GROUP_ID) return NextResponse.json({ ok: true });
 
@@ -373,4 +418,4 @@ export async function POST(req: NextRequest) {
 
 export async function GET() {
   return NextResponse.json({ ok: true, movies: MOVIES.length });
-  }
+}

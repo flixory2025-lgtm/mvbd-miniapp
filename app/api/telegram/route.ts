@@ -9,22 +9,96 @@ export const maxDuration = 30;
 
 const TOKEN = process.env.BOT_TOKEN || "";
 const SECRET = process.env.WEBHOOK_SECRET || "";
+const BOT_ID = TOKEN.split(":")[0];
 const GROUP_ID = "-1003787014725";
 const ADMIN_ID = 6643046428;
 const WATCH_LINK = "https://mvbds.xyz";
+const TUTORIAL_LINK = "https://youtu.be/fs9yrwNbvZs?si=c6EtydSlFYi-DGHt";
 
+// ---------- শব্দ তালিকা ----------
 const KEYWORDS = ["movie", "cinema", "series", "film"];
+
 const FILLER = new Set([
   "ache", "ase", "ki", "kina", "ta", "ti", "ar", "er", "dao", "den", "deo", "dilen", "din",
   "please", "plz", "pls", "request", "chai", "chacchi", "lagbe", "khujchi", "bhai", "vai",
   "bro", "admin", "ekta", "ei", "oi", "eita", "ota", "download", "link", "dekhte", "dekhbo",
-  "hobe", "hoy", "nei", "nai", "mini", "app", "me",
+  "hobe", "hoy", "nei", "nai", "mini", "app", "me", "upload", "dibe", "pabo",
   "আছে", "কি", "কী", "দেন", "দাও", "চাই", "লাগবে", "ভাই", "প্লিজ",
 ]);
+
+// এই শব্দ থাকলে বোঝা যায় সদস্য মুভি চাইছে (না থাকলে বট চুপ থাকবে)
+const INTENT = new Set([
+  "ache", "ase", "kina", "dao", "den", "deo", "dilen", "please", "plz", "pls", "request",
+  "chai", "chacchi", "lagbe", "khujchi", "upload", "dibe", "pabo", "download", "link",
+  "dekhbo", "dekhte", "admin", "ta", "ti",
+  "আছে", "দাও", "দেন", "চাই", "লাগবে", "প্লিজ",
+]);
+
+// সাধারণ সমস্যা
+const PROBLEM_PHRASES = [
+  "problem", "prblm", "somossha", "shomossha", "somosya", "samasya", "error", "bug", "crash",
+  "hocche na", "hochhe na", "hoche na", "hoitese na", "hoy na", "hobe na",
+  "kaj korche na", "kaj kore na", "kaj kortese na", "cholche na", "chole na", "choltese na",
+  "khulche na", "kholche na", "login", "payment", "help", "sahajjo",
+  "sound nai", "audio nai", "subtitle nai", "ashche na", "ase na", "asche na",
+  "সমস্যা", "প্রবলেম", "হচ্ছে না", "হয় না", "কাজ করছে না", "চলছে না", "খুলছে না",
+  "এরর", "সাহায্য",
+];
+
+// মুভি দেখতে না পারার সমস্যা → সরাসরি টিউটোরিয়াল
+const WATCH_PROBLEM_PHRASES = [
+  "dekhte parchi na", "dekhte partechi na", "dekhte partesi na", "dekhte parsi na",
+  "dekhte pari na", "dekhte pacchi na", "dekha jacche na", "dekha jay na", "dekha jai na",
+  "play hocche na", "play hoy na", "play hochhe na", "load hocche na", "load hoy na",
+  "open hocche na", "open hoy na", "buffer", "buffering",
+  "দেখতে পারছি না", "দেখা যাচ্ছে না", "দেখা যায় না", "প্লে হচ্ছে না", "লোড হচ্ছে না",
+];
+
+// "কীভাবে" ধরনের প্রশ্ন
+const HOW_PHRASES = [
+  "kivabe", "kibhabe", "kibhave", "kemne", "kemon kore", "how to", "how",
+  "কীভাবে", "কিভাবে", "কেমনে", "কেমন করে",
+];
+
+// মিনি অ্যাপ/সাইট সংক্রান্ত শব্দ
+const APP_PHRASES = [
+  "mini app", "miniapp", "mvbd", "mvbds", "app", "site", "website", "watch now",
+  "মিনি অ্যাপ", "মিনি এপ", "অ্যাপ", "এপ", "সাইট", "ওয়েবসাইট",
+];
+
+// "দেখা" সংক্রান্ত শব্দ
+const WATCH_WORDS = [
+  "dekhbo", "dekhi", "dekhte", "dekha", "watch", "play",
+  "দেখবো", "দেখব", "দেখতে", "দেখা",
+];
+
+// টিউটোরিয়াল দেখেও বোঝেনি
+const STUCK_PHRASES = [
+  "bujhlam na", "bujhi na", "bujhte parchi na", "bujhte partechi na", "bujhini", "bujhi ni",
+  "tutorial dekhlam", "tutorial dekhechi", "tutorial dekhe", "video dekhlam", "video dekhechi",
+  "বুঝলাম না", "বুঝি না", "বুঝতে পারছি না", "বুঝিনি", "টিউটোরিয়াল দেখলাম", "টিউটোরিয়াল দেখেছি",
+];
+
+const PROBLEM_REPLIES = [
+  "🙏 আপনার সমস্যাটি আমরা দেখেছি। একটু অপেক্ষা করুন, অ্যাডমিনরা অ্যাক্টিভ হলেই সমাধান করে দেবেন।",
+  "😊 আপনার সমস্যাটি অ্যাডমিনদের জানিয়ে দেওয়া হয়েছে। অ্যাক্টিভ হলেই তাঁরা দেখবেন, অনুগ্রহ করে একটু ধৈর্য ধরুন।",
+  "⏳ সমস্যাটি নোট করা হয়েছে। অ্যাডমিন অনলাইনে এলেই আপনাকে সাহায্য করবেন। ততক্ষণ অপেক্ষা করার জন্য ধন্যবাদ। 🙏",
+];
+
+const TUTORIAL_REPLIES = [
+  "📺 MVBD Mini App-এ মুভি দেখতে সমস্যা হচ্ছে? নিচের টিউটোরিয়ালটি দেখুন, ধাপে ধাপে দেখানো আছে। 👇\n\nদেখেও সমস্যা থাকলে এই মেসেজের রিপ্লাইয়ে জানান, অ্যাডমিন অ্যাক্টিভ হলেই সমাধান করে দেবেন।",
+  "🎬 চিন্তা নেই! মিনি অ্যাপে কীভাবে মুভি দেখতে হয় তার একটা টিউটোরিয়াল আছে। নিচের বাটনে ক্লিক করে দেখে নিন। 👇\n\nতবুও না পারলে এই মেসেজের রিপ্লাইয়ে জানান, অ্যাডমিন সাহায্য করবেন।",
+  "🙌 মিনি অ্যাপ ব্যবহারে সমস্যা হলে আগে এই টিউটোরিয়ালটি দেখে নিন। 👇\n\nএরপরও সমাধান না হলে রিপ্লাই দিয়ে জানান, অ্যাডমিনরা অ্যাক্টিভ হলে দেখবেন।",
+];
 
 // ---------- মুভি লিস্ট (একবার বানিয়ে ক্যাশ) ----------
 function norm(s: string) {
   return s.toLowerCase().replace(/[^\p{L}\p{M}\p{N}\s]/gu, " ").replace(/\s+/g, " ").trim();
+}
+
+function hasPhrase(n: string, list: string[]) {
+  const padded = " " + n + " ";
+  return list.some((p) => padded.includes(" " + p + " "));
 }
 
 function collect(node: any, out: string[], depth = 0) {
@@ -83,7 +157,7 @@ function lev(a: string, b: string, max: number) {
   return prev[b.length];
 }
 
-function findMovie(q: string): M | null {
+function findMovie(q: string, allowFuzzy: boolean): M | null {
   const padded = " " + q + " ";
   const qWords = q.split(" ");
 
@@ -108,7 +182,7 @@ function findMovie(q: string): M | null {
   if (best) return best;
 
   // ৪. বানান ভুল সহ্য করা
-  if (q.length >= 4) {
+  if (allowFuzzy && q.length >= 4) {
     const max = q.length <= 8 ? 1 : 2;
     let bestD = max + 1;
     for (const m of MOVIES) {
@@ -150,28 +224,105 @@ export async function POST(req: NextRequest) {
     if (msg.sender_chat || msg.from.is_bot || msg.from.id === ADMIN_ID) {
       return NextResponse.json({ ok: true });
     }
+    const raw = String(msg.text).trim();
+    if (raw.startsWith("/")) return NextResponse.json({ ok: true });
+
+    const nraw = norm(raw);
+    const words = nraw.split(" ").filter(Boolean);
+    if (!words.length) return NextResponse.json({ ok: true });
+
+    // গ্রুপের অন্য অ্যাডমিন/ওনার ইগনোর
     const cm = await tg("getChatMember", { chat_id: chatId, user_id: msg.from.id });
     const status = cm?.result?.status;
     if (status === "administrator" || status === "creator") {
       return NextResponse.json({ ok: true });
     }
 
-    const raw = String(msg.text).trim();
-    if (raw.startsWith("/")) return NextResponse.json({ ok: true });
+    const memberName = msg.from.first_name || "";
+    const shortId = String(chatId).replace("-100", "");
+    const msgLink = "https://t.me/c/" + shortId + "/" + msg.message_id;
 
-    // নাম বের করা
-    const words = norm(raw).split(" ").filter(Boolean);
+    // ================= সমস্যা/টিউটোরিয়াল চেক =================
+    const isExactMovie = MOVIES.some((m) => m.n === nraw);
+
+    if (!isExactMovie) {
+      const isProblem = hasPhrase(nraw, PROBLEM_PHRASES);
+      const isWatchProblem = hasPhrase(nraw, WATCH_PROBLEM_PHRASES);
+      const isHow = hasPhrase(nraw, HOW_PHRASES);
+      const hasApp = hasPhrase(nraw, APP_PHRASES);
+      const hasWatch = hasPhrase(nraw, WATCH_WORDS);
+      const isStuck = hasPhrase(nraw, STUCK_PHRASES);
+      const repliedToBot = String(msg.reply_to_message?.from?.id || "") === BOT_ID;
+
+      const relevant =
+        isProblem || isWatchProblem || isStuck || (isHow && (hasApp || hasWatch));
+
+      if (relevant) {
+        const pick = msg.message_id % 3;
+
+        // টিউটোরিয়াল দেখেও না বুঝলে, বা বটের রিপ্লাইয়ের উত্তরে আবার সমস্যা জানালে → অ্যাডমিনকে জানানো
+        const escalate = isStuck || (repliedToBot && (isProblem || isWatchProblem || isHow));
+        // মিনি অ্যাপ/মুভি দেখার সমস্যা → টিউটোরিয়াল
+        const tutorial =
+          isWatchProblem || (hasApp && (isProblem || isHow)) || (isHow && hasWatch);
+
+        if (escalate) {
+          await tg("sendMessage", {
+            chat_id: chatId,
+            text: PROBLEM_REPLIES[pick],
+            reply_to_message_id: msg.message_id,
+            allow_sending_without_reply: true,
+          });
+          await tg("sendMessage", {
+            chat_id: ADMIN_ID,
+            text:
+              "🚨 টিউটোরিয়াল দেখেও সমস্যা:\n👤 " + memberName +
+              "\n💬 " + raw.slice(0, 300) + "\n🔗 " + msgLink,
+          });
+        } else if (tutorial) {
+          await tg("sendMessage", {
+            chat_id: chatId,
+            text: TUTORIAL_REPLIES[pick],
+            reply_to_message_id: msg.message_id,
+            allow_sending_without_reply: true,
+            reply_markup: {
+              inline_keyboard: [[{ text: "▶️ Tutorial দেখুন", url: TUTORIAL_LINK }]],
+            },
+          });
+        } else {
+          await tg("sendMessage", {
+            chat_id: chatId,
+            text: PROBLEM_REPLIES[pick],
+            reply_to_message_id: msg.message_id,
+            allow_sending_without_reply: true,
+          });
+          await tg("sendMessage", {
+            chat_id: ADMIN_ID,
+            text:
+              "⚠️ সদস্যের সমস্যা:\n👤 " + memberName +
+              "\n💬 " + raw.slice(0, 300) + "\n🔗 " + msgLink,
+          });
+        }
+        return NextResponse.json({ ok: true });
+      }
+    }
+
+    // ================= মুভি খোঁজা =================
     const hasKeyword = words.some((w) => KEYWORDS.includes(w));
     const cleaned = words.filter((w) => !KEYWORDS.includes(w) && !FILLER.has(w));
     const query = cleaned.join(" ");
-    if (!query || !(hasKeyword || cleaned.length <= 6)) return NextResponse.json({ ok: true });
+    if (!query) return NextResponse.json({ ok: true });
+    if (!hasKeyword && cleaned.length > 6) return NextResponse.json({ ok: true });
+
+    const hasIntent = hasKeyword || words.some((w) => INTENT.has(w));
+    const found = findMovie(query, hasIntent || query.length >= 7);
+
+    // মুভি পাওয়া যায়নি আর সদস্য মুভি চাইছেও না → বট চুপ
+    if (!found && !hasIntent) return NextResponse.json({ ok: true });
 
     // Searching...
     const sent = await tg("sendMessage", { chat_id: chatId, text: "Searching... 🔎" });
     const searchId = sent?.result?.message_id;
-
-    const found = findMovie(query);
-
     if (searchId) await tg("deleteMessage", { chat_id: chatId, message_id: searchId });
 
     const pick = msg.message_id % 4;
@@ -203,7 +354,7 @@ export async function POST(req: NextRequest) {
       // অ্যাডমিনকে প্রাইভেটে জানানো
       await tg("sendMessage", {
         chat_id: ADMIN_ID,
-        text: `📥 নতুন রিকোয়েস্ট:\n🎬 ${titleCase(query)}\n👤 ${msg.from.first_name || ""}`,
+        text: `📥 নতুন রিকোয়েস্ট:\n🎬 ${titleCase(query)}\n👤 ${memberName}`,
       });
     }
   } catch (e) {

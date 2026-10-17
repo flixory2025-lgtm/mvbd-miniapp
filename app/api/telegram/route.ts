@@ -91,6 +91,10 @@ const TUTORIAL_REPLIES = [
   "🙌 মিনি অ্যাপ ব্যবহারে সমস্যা হলে আগে এই টিউটোরিয়ালটি দেখে নিন। 👇\n\nএরপরও সমাধান না হলে রিপ্লাই দিয়ে জানান, অ্যাডমিনরা অ্যাক্টিভ হলে দেখবেন।",
 ];
 
+// "নেই" রিপ্লাইয়ের নিচে যোগ হওয়া অতিরিক্ত বার্তা
+const NOT_FOUND_NOTE =
+  "\n\n💡 <b>আমার ডেটাবেসে এই নামের মুভি/সিরিজ খুঁজে পাইনি।</b> তবে আমাদের MVBD Mini App-এর সার্চ বারে নামটি লিখলে সাজেস্টেড মুভি লিস্ট দেখতে পাবেন, মুভিটি থাকলে সহজেই পেয়ে যাবেন।\n\n🙏 তাই কষ্ট করে রিকোয়েস্ট করার আগে অবশ্যই একবার MVBD Mini App-এ গিয়ে চেক করে আসবেন।";
+
 // ---------- মুভি লিস্ট (একবার বানিয়ে ক্যাশ) ----------
 function norm(s: string) {
   return s.toLowerCase().replace(/[^\p{L}\p{M}\p{N}\s]/gu, " ").replace(/\s+/g, " ").trim();
@@ -349,7 +353,12 @@ export async function POST(req: NextRequest) {
         `😕 দুঃখিত, <b>${t}</b> এখনো আমাদের ডেটাবেসে নেই।\n\nসঠিক ইংরেজি নামটি দিয়ে রিকোয়েস্ট করে রাখুন, পেলেই আমরা আপলোড করে দেব! 🚀`,
         `📭 <b>${t}</b> আপাতত আমাদের কাছে নেই।\n\nআপনার রিকোয়েস্ট নোট করা হয়েছে। মুভিটি জোগাড় হলে দ্রুত MVBD Mini App-এ পেয়ে যাবেন। 🙏`,
       ];
-      await tg("sendMessage", { chat_id: chatId, text: replies[pick], parse_mode: "HTML" });
+      await tg("sendMessage", {
+        chat_id: chatId,
+        text: replies[pick] + NOT_FOUND_NOTE,
+        parse_mode: "HTML",
+        reply_markup: { inline_keyboard: [[{ text: "🌐 Visit Now", url: WATCH_LINK }]] },
+      });
 
       // অ্যাডমিনকে প্রাইভেটে জানানো
       await tg("sendMessage", {
@@ -365,4 +374,4 @@ export async function POST(req: NextRequest) {
 
 export async function GET() {
   return NextResponse.json({ ok: true, movies: MOVIES.length });
-}
+  }

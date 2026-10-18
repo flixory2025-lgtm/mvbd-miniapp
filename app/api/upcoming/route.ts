@@ -54,6 +54,8 @@ export async function GET() {
 
   /* =========================================================
      একটি item কে standard format-এ রূপান্তর
+     - Release date আজকের আগে হলে (অর্থাৎ release hoye geche) বাদ
+     - Poster ছাড়া বাদ
   ========================================================= */
   const formatItem = (
     item: any,
@@ -67,10 +69,12 @@ export async function GET() {
     const isMovie = mediaType === "movie"
     const releaseDate = isMovie ? item.release_date : item.first_air_date
 
-    // অতীতের মুভি বাদ (৭ দিনের পুরনো হলে)
+    // Release date না থাকলে "Coming Soon" হিসেবে রাখি
+    // Release date থাকলে শুধু আজ বা ভবিষ্যতের হলেই রাখি
     if (releaseDate) {
       const rel = new Date(releaseDate + "T00:00:00")
-      if (rel.getTime() < now.getTime() - 1000 * 60 * 60 * 24 * 7) {
+      // আজকের আগে (অর্থাৎ release hoye geche) হলে বাদ
+      if (rel.getTime() < now.getTime()) {
         return null
       }
     }
@@ -93,7 +97,7 @@ export async function GET() {
   }
 
   /* =========================================================
-     TOP 5 Famous Movies/Series বাছাই
+     TOP 5 Famous Movies/Series বাছাই (release hoye jawa বাদ)
   ========================================================= */
   const movieSeen = new Set<number>()
   const moviePool: any[] = []
@@ -117,7 +121,7 @@ export async function GET() {
     .slice(0, 5)
 
   /* =========================================================
-     TOP 5 Famous K-Drama বাছাই
+     TOP 5 Famous K-Drama বাছাই (release hoye jawa বাদ)
   ========================================================= */
   const kdramaSeen = new Set<number>()
   const top5Kdrama = kdramas
@@ -135,6 +139,7 @@ export async function GET() {
   /* =========================================================
      Top 5 Movies + Top 5 KDrama মার্জ করে
      Release Date অনুযায়ী sort → Position 1, 2, 3... অটো
+     (শুধু আজ বা ভবিষ্যতের release গুলোই এখানে আছে)
   ========================================================= */
   const combined = [...top5Movies, ...top5Kdrama]
 

@@ -18,65 +18,69 @@ export async function GET() {
   }
 
   const today = new Date().toISOString().split("T")[0]
+  const revalidate = 10800 // 3 hours
 
-  // তিনটি সোর্স থেকে parallel ডাটা আনি
-  const [moviesRes, tvRes, kdramaRes] = await Promise.allSettled([
-    // Famous upcoming movies
-    fetch(
-      `https://api.themoviedb.org/3/movie/upcoming?language=en-US&page=1&region=US`,
-      { headers, next: { revalidate: 21600 } }
-    ),
-    // Famous upcoming TV series
-    fetch(
-      `https://api.themoviedb.org/3/tv/on_the_air?language=en-US&page=1`,
-      { headers, next: { revalidate: 21600 } }
-    ),
-    // Famous upcoming K-Drama
-    fetch(
-      `https://api.themoviedb.org/3/discover/tv?with_original_language=ko&with_origin_country=KR&first_air_date.gte=${today}&sort_by=popularity.desc&language=en-US&page=1`,
-      { headers, next: { revalidate: 21600 } }
-    ),
-  ])
-
-  const getResults = (res: PromiseSettledResult<Response>) => {
-    if (res.status !== "fulfilled" || !res.value.ok) return Promise.resolve([])
-    return res.value.json().then((d: any) => d.results || [])
+  // ---------- helpers ----------
+  const safeFetch = async (url: string) => {
+    try {
+      const res = await fetch(url, { headers, next: { revalidate } })
+      if (!res.ok) return []
+      const data = await res.json()
+      return data.results || []
+    } catch {
+      return []
+    }
   }
 
-  const [movies, tvShows, kdramas] = await Promise.all([
-    getResults(moviesRes).catch(() => []),
-    getResults(tvRes).catch(() => []),
-    getResults(kdramaRes).catch(() => []),
+  // ---------- 1. K-Drama: 8 ta ----------
+  const kdramas = await safeFetch(
+    `https://api.themoviedb.org/3/discover/tv?with_original_language=ko&with_origin_country=KR&first_air_date.gte=${today}&sort_by=popularity.desc&language=en-US&page=1`
+  )
+
+  // ---------- 2. Hollywood / Bollywood / Romance / Fantasy: 4 ta ----------
+  // English movies (US/GB), Indian movies (IN), Romance (10749), Fantasy (14)
+  const [hollywood, bollywood, romance, fantasy] = await Promise.all([
+    safeFetch(`https://api.themoviedb.org/3/discover/movie?with_origin_country=US|GB&with_original_language=en&primary_release_date.gte=${today}&sort_by=popularity.desc&language=en-US&page=1`),
+    safeFetch(`https://api.themoviedb.org/3/discover/movie?with_origin_country=IN&primary_release_date.gte=${today}&sort_by=popularity.desc&language=en-US&page=1`),
+    safeFetch(`https://api.themoviedb.org/3/discover/movie?with_genres=10749&primary_release_date.gte=${today}&sort_by=popularity.desc&language=en-US&page=1`),
+    safeFetch(`https://api.themoviedb.org/3/discover/movie?with_genres=14&primary_release_date.gte=${today}&sort_by=popularity.desc&language=en-US&page=1`),
   ])
 
+  // ---------- 3. Marvel / Superhero / Sci-Fi / Action: 4 ta ----------
+  // Marvel company id = 420; Action = 28; Sci-Fi = 878; Adventure = 12 (superhero-ish)
+  const [marvel, action, scifi, adventure] = await Promise.all([
+    safeFetch(`https://api.themoviedb.org/3/discover/movie?with_companies=420&primary_release_date.gte=${today}&sort_by=popularity.desc&language=en-US&page=1`),
+    safeFetch(`https://api.themoviedb.org/3/discover/movie?with_genres=28&primary_release_date.gte=${today}&sort_by=popularity.desc&language=en-US&page=1`),
+    safeFetch(`https://api.themoviedb.org/3/discover/movie?with_genres=878&primary_release_date.gte=${today}&sort_by=popularity.desc&language=en-US&page=1`),
+    safeFetch(`https://api.themoviedb.org/3/discover/movie?with_genres=12&primary_release_date.gte=${today}&sort_by=popularity.desc&language=en-US&page=1`),
+  ])
+
+  // ---------- 4. Horror / Mystery: 4 ta ----------
+  // Horror = 27; Mystery = 9648
+  const [horror, mystery] = await Promise.all([
+    safeFetch(`https://api.themoviedb.org/3/discover/movie?with_genres=27&primary_release_date.gte=${today}&sort_by=popularity.desc&language=en-US&page=1`),
+    safeFetch(`https://api.themoviedb.org/3/discover/movie?with_genres=9648&primary_release_date.gte=${today}&sort_by=popularity.desc&language=en-US&page=1`),
+  ])
+
+  // ---------- format ----------
   const now = new Date()
   now.setHours(0, 0, 0, 0)
 
-  /* =========================================================
-     একটি item কে standard format-এ রূপান্তর
-     - Release date আজকের আগে হলে (অর্থাৎ release hoye geche) বাদ
-     - Poster ছাড়া বাদ
-  ========================================================= */
   const formatItem = (
     item: any,
     mediaType: "movie" | "tv",
     tag: string,
-    popularityBoost: number = 0
+    popularityBoost = 0
   ) => {
-    if (!item || !item.id) return null
-    if (!item.poster_path) return null // poster ছাড়া বাদ
+    if (!item || !item.id || !item.poster_path) return null
 
     const isMovie = mediaType === "movie"
     const releaseDate = isMovie ? item.release_date : item.first_air_date
 
-    // Release date না থাকলে "Coming Soon" হিসেবে রাখি
-    // Release date থাকলে শুধু আজ বা ভবিষ্যতের হলেই রাখি
+    // release hoye gele bad
     if (releaseDate) {
       const rel = new Date(releaseDate + "T00:00:00")
-      // আজকের আগে (অর্থাৎ release hoye geche) হলে বাদ
-      if (rel.getTime() < now.getTime()) {
-        return null
-      }
+      if (rel.getTime() < now.getTime()) return null
     }
 
     return {
@@ -85,10 +89,7 @@ export async function GET() {
       poster: `https://image.tmdb.org/t/p/w500${item.poster_path}`,
       year: releaseDate ? releaseDate.split("-")[0] : "Coming Soon",
       releaseDate: releaseDate || null,
-      rating:
-        item.vote_average && item.vote_average > 0
-          ? item.vote_average.toFixed(1)
-          : "not available",
+      rating: item.vote_average > 0 ? item.vote_average.toFixed(1) : "not available",
       overview: item.overview || "",
       popularity: (item.popularity || 0) + popularityBoost,
       mediaType,
@@ -96,68 +97,55 @@ export async function GET() {
     }
   }
 
-  /* =========================================================
-     TOP 5 Famous Movies/Series বাছাই (release hoye jawa বাদ)
-  ========================================================= */
-  const movieSeen = new Set<number>()
-  const moviePool: any[] = []
+  // ---------- dedupe helper ----------
+  const seen = new Set<number>()
 
-  movies.forEach((m: any) => {
-    if (movieSeen.has(m.id)) return
-    movieSeen.add(m.id)
-    const item = formatItem(m, "movie", "Movie", 25)
-    if (item) moviePool.push(item)
-  })
+  const pickTop = (pool: any[], mediaType: "movie" | "tv", tag: string, count: number, boost = 0) => {
+    const out: any[] = []
+    for (const raw of pool) {
+      if (out.length >= count) break
+      if (!raw || !raw.id || seen.has(raw.id)) continue
+      const item = formatItem(raw, mediaType, tag, boost)
+      if (!item) continue
+      seen.add(item.id)
+      out.push(item)
+    }
+    return out
+  }
 
-  tvShows.forEach((t: any) => {
-    if (movieSeen.has(t.id)) return
-    movieSeen.add(t.id)
-    const item = formatItem(t, "tv", "Series", 10)
-    if (item) moviePool.push(item)
-  })
+  // ---------- K-Drama: 8 ----------
+  const kdramaPool = kdramas.sort((a: any, b: any) => (b.popularity || 0) - (a.popularity || 0))
+  const topKdrama = pickTop(kdramaPool, "tv", "K-Drama", 8, 50)
 
-  const top5Movies = moviePool
-    .sort((a, b) => b.popularity - a.popularity)
-    .slice(0, 5)
+  // ---------- Hollywood/Bollywood/Romance/Fantasy: 4 ----------
+  // merge, prefer higher popularity
+  const hbrPool = [...hollywood, ...bollywood, ...romance, ...fantasy]
+    .sort((a: any, b: any) => (b.popularity || 0) - (a.popularity || 0))
+  const topHbr = pickTop(hbrPool, "movie", "Movie", 4, 20)
 
-  /* =========================================================
-     TOP 5 Famous K-Drama বাছাই (release hoye jawa বাদ)
-  ========================================================= */
-  const kdramaSeen = new Set<number>()
-  const top5Kdrama = kdramas
-    .filter((k: any) => {
-      if (!k || !k.id) return false
-      if (kdramaSeen.has(k.id)) return false
-      kdramaSeen.add(k.id)
-      return true
-    })
-    .map((k: any) => formatItem(k, "tv", "K-Drama", 0))
-    .filter(Boolean)
-    .sort((a: any, b: any) => b.popularity - a.popularity)
-    .slice(0, 5)
+  // ---------- Marvel/Superhero/SciFi/Action: 4 ----------
+  const msaPool = [...marvel, ...action, ...scifi, ...adventure]
+    .sort((a: any, b: any) => (b.popularity || 0) - (a.popularity || 0))
+  const topMsa = pickTop(msaPool, "movie", "Movie", 4, 20)
 
-  /* =========================================================
-     Top 5 Movies + Top 5 KDrama মার্জ করে
-     Release Date অনুযায়ী sort → Position 1, 2, 3... অটো
-     (শুধু আজ বা ভবিষ্যতের release গুলোই এখানে আছে)
-  ========================================================= */
-  const combined = [...top5Movies, ...top5Kdrama]
+  // ---------- Horror/Mystery: 4 ----------
+  const hmPool = [...horror, ...mystery]
+    .sort((a: any, b: any) => (b.popularity || 0) - (a.popularity || 0))
+  const topHm = pickTop(hmPool, "movie", "Movie", 4, 10)
 
+  // ---------- merge all ----------
+  const combined = [...topKdrama, ...topHbr, ...topMsa, ...topHm]
+
+  // ---------- sort by release date (null last), then popularity ----------
   combined.sort((a, b) => {
-    // যেগুলোর release date আছে সেগুলো আগে
     if (a.releaseDate && !b.releaseDate) return -1
     if (!a.releaseDate && b.releaseDate) return 1
-
     if (a.releaseDate && b.releaseDate) {
-      const da = new Date(a.releaseDate + "T00:00:00").getTime()
-      const db = new Date(b.releaseDate + "T00:00:00").getTime()
-      return da - db // আগে যেটা রিলিজ হবে সেটা আগে
+      return new Date(a.releaseDate + "T00:00:00").getTime() - new Date(b.releaseDate + "T00:00:00").getTime()
     }
-
     return b.popularity - a.popularity
   })
 
-  // Position number (1-10) যোগ করি
   const withPosition = combined.map((item, idx) => ({
     ...item,
     position: idx + 1,

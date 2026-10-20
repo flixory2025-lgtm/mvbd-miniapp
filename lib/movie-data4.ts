@@ -5390,7 +5390,7 @@ export const movies4 = [
   {
     id: 3491,
     title: "Odvuture Ekti Raat (2026)",
-    poster: "/c.jpg",
+    poster: "/3491id.jpg",
     trailer: "https://www.youtube.com/embed/59DetahEqI4?si",
     telegramLink: "https://t.me/mvbdstore_bot?start=f_MTYxOTYsMTYxOTc",
     telegram4kLink: "https://t.me/+gerJUkv5KS85YzM1",

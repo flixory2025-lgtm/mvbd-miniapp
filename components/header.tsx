@@ -335,7 +335,7 @@ export default function Header({
   return (
     // ✅ FIXED HEADER — Transparent at top, Solid on scroll
     <header
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ease-in-out ${
+      className={`fixed top-0 left-0 right-0 lg:left-[220px] z-50 transition-all duration-300 ease-in-out ${
         isScrolled
           ? "bg-black/60 backdrop-blur-xl border-b border-white/10 shadow-lg"
           : "bg-transparent border-b border-transparent shadow-none"
@@ -487,7 +487,7 @@ export default function Header({
 
       <div className="px-4 py-4 flex items-center gap-4">
         {/* MVBD Logo */}
-        <div className="flex-shrink-0">
+        <div className="flex-shrink-0 lg:hidden">
           <img
             src="https://i.postimg.cc/0yqFXMFW/photo-2025-12-11-09-45-29-removebg-preview.png"
             alt="MVBD Logo"

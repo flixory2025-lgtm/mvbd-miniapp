@@ -431,30 +431,29 @@ export default function GenreCategories({
            ========================================================= */
         .category-grid {
           display: grid;
-          grid-template-columns: repeat(2, minmax(0, 1fr));
+          grid-template-columns: repeat(3, minmax(0, 1fr));
           grid-auto-rows: 1fr;
-          gap: 10px;
+          gap: 8px;
         }
         .category-btn {
           width: 100%;
-          min-height: 48px;
-          padding: 6px 10px;
+          min-height: 54px;
+          padding: 6px 6px;
           display: flex;
           align-items: center;
           justify-content: center;
           text-align: center;
-          font-size: 13px;
-          line-height: 1.2;
+          font-size: 12px;
+          line-height: 1.25;
           text-transform: none;
-          word-break: break-word;
+          overflow-wrap: anywhere;
         }
         @media (min-width: 400px) {
-          .category-btn { font-size: 14px; }
+          .category-btn { font-size: 13px; padding: 6px 8px; }
         }
         @media (min-width: 640px) {
-          .category-grid {
-            grid-template-columns: repeat(3, minmax(0, 1fr));
-          }
+          .category-grid { gap: 10px; }
+          .category-btn { font-size: 14px; min-height: 52px; }
         }
         @media (min-width: 768px) {
           .category-grid {
@@ -797,4 +796,4 @@ function CategoryHighlight() {
       <div className="fire-continuous fire-continuous-5" />
     </div>
   )
-                        }
+}

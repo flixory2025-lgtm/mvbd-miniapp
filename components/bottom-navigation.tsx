@@ -237,8 +237,59 @@ export default function BottomNavigation({
   ========================================================= */
 
   return (
+    <>
+    {/* ========== DESKTOP SIDEBAR (lg and up) ========== */}
+    <aside
+      className="hidden lg:flex fixed top-0 left-0 bottom-0 z-[100] w-[220px] flex-col gap-6 bg-[#0b0b0f] border-r border-white/10 px-3 pt-5 pb-4"
+      aria-label="Sidebar navigation"
+    >
+      <img
+        src="https://i.postimg.cc/0yqFXMFW/photo-2025-12-11-09-45-29-removebg-preview.png"
+        alt="MVBD Logo"
+        className="h-10 w-auto object-contain self-start px-2"
+      />
+
+      <div className="flex flex-col gap-1">
+        {tabs.map((tab) => {
+          const isActive = activeTab === tab.id
+
+          return (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => onTabChange(tab.id)}
+              aria-current={isActive ? "page" : undefined}
+              className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition ${
+                isActive
+                  ? "bg-white/10 text-white"
+                  : "text-slate-400 hover:bg-white/5 hover:text-white"
+              }`}
+            >
+              {tab.icon === "anime" ? (
+                <img
+                  src="https://i.postimg.cc/qMRsY9Zh/360-F-616340820-puy-Fuujd-Aam-JVt-Ct9sr-V1dc-PVrku-Kg-Z6-removebg-preview.png"
+                  alt="Anime"
+                  width={20}
+                  height={20}
+                  draggable={false}
+                />
+              ) : (
+                React.createElement(tab.icon, {
+                  size: 20,
+                  strokeWidth: 2.1,
+                })
+              )}
+              <span>{tab.label}</span>
+            </button>
+          )
+        })}
+      </div>
+    </aside>
+
+    {/* ========== MOBILE BOTTOM NAV (lg:hidden) ========== */}
     <nav
       className="
+        lg:hidden
         fixed
         bottom-0
         left-0
@@ -338,5 +389,6 @@ export default function BottomNavigation({
         </div>
       </div>
     </nav>
+    </>
   )
 }

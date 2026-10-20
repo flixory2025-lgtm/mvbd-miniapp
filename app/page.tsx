@@ -1015,7 +1015,9 @@ export default function Page() {
 
   return (
     <div
-      className="w-full bg-black"
+      className={`w-full bg-black ${
+        !showLanding && activeTab !== "mebook" ? "lg:pl-[220px]" : ""
+      }`}
       onTouchStart={
         handleTouchStart
       }
@@ -1110,4 +1112,4 @@ export default function Page() {
       )}
     </div>
   )
-            }
+}

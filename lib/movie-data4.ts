@@ -5485,4 +5485,18 @@ export const movies4 = [
     description: "সাহসী পুলিশ কর্মকর্তা চিত্রা বসু একের পর এক রহস্যময় হত্যাকাণ্ডের তদন্তে নামেন। 🔍🚔 প্রতিটি ঘটনার পেছনে লুকিয়ে থাকে নতুন রহস্য, অজানা সূত্র আর ভয়ংকর সব গোপন সত্য। তদন্ত যত এগোয়, ততই জটিল হয়ে ওঠে অপরাধীর পরিচয়—সত্য উদ্‌ঘাটন করতে গিয়ে চিত্রাকে মুখোমুখি হতে হয় বিপজ্জনক পরিস্থিতির। 🩸😨🕵️‍♀️‍👦",
     views: 23847,
   },
+    {
+    id: 3498,
+    title: "Bachelor Point — Season 5 (Episodes 121–128)",
+    poster: "/3498id.jpg",
+    trailer: "https://www.youtube.com/embed/udDYdbw1OA8?si",
+    telegramLink: "https://t.me/mvbdstore_bot?start=f_MTYyOTUsMTYyOTk",
+    telegram4kLink: "https://t.me/+gerJUkv5KS85YzM1",
+    genre: "Drama | Thriller | natok | bangla",
+    year: "2026",
+    rating: "8.9",
+    language: "Bangla",
+    description: "কাজল আর তার বন্ধুদের হাসি-ঠাট্টা, প্রেম, ঝগড়া আর নিত্যদিনের মজার সব কাণ্ড নিয়ে আবারও জমে উঠেছে Bachelor Point-এর গল্প! 🤣❤️‍🔥 নতুন নতুন পরিস্থিতি, সম্পর্কের টানাপোড়েন আর মজার সংলাপে ভরপুর ১২১–১২৮ নম্বর পর্বগুলোতে অপেক্ষা করছে ব্যাচেলরদের জীবনের আরও কিছু হাস্যকর মুহূর্ত। 🏠😂🔥",
+    views: 23847,
+  },
   ]

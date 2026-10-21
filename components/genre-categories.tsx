@@ -39,7 +39,7 @@ type SelectorType =
   | "platform"
 type FilterType = SelectorType | null
 
-const tutorialVideoId = "fs9yrwNbvZs"
+const tutorialVideoId = "deuVIRqrscs"
 const apkDownloadUrl = "https://github.com/flixory2025-lgtm/mvbd-miniapp/releases/download/2.0.5v/MVBD.MINI.APP.apk"
 
 const useIsoLayoutEffect =
@@ -392,7 +392,7 @@ const platformItems: PlatformItem[] = [
   {
     platform: "youtube",
     label: "YouTube",
-    url: "https://youtube.com/@mvbdstudio?si=G0ZfaJ0N7Hr7fVzk",
+    url: "https://youtube.com/@moviesversebd26?si=gKTfFLJDC4dGc7KW",
     color: "#FF0000",
   },
   {

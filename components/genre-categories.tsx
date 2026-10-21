@@ -88,7 +88,7 @@ const THEMES: Record<string, Theme> = {
   all: {
     k: "all",
     u: "https://i.postimg.cc/Y95sTCrL/619306-bg-full-netflix-grid-v2-desktop.jpg",
-    w: "Recently Uploaded",
+    w: "everything",
     s: "Every story. One place.",
     f: "font:italic 900 clamp(34px,10.5vw,84px) 'Playfair Display',Georgia,serif;color:#fff;text-shadow:0 0 40px #a78bfa",
     a: "#a78bfa",

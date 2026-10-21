@@ -783,12 +783,14 @@ export default function GenreCategories({
   }, [activeModal])
 
   /* =========================================================
-     ✅ PARTICLE ENGINE (canvas, শুধু নিচের stage এর ভেতরে)
+     ✅ PARTICLE ENGINE (canvas)
+     Canvas এর আসল CSS size থেকে মাপ নেওয়া হয়:
+     - Mobile: শুধু নিচের stage এর ভেতরে
+     - Desktop: পুরো Categories section জুড়ে
   ========================================================= */
   useEffect(() => {
     const cv = cvRef.current
-    const st = stageRef.current
-    if (!cv || !st) return
+    if (!cv) return
     const cx = cv.getContext("2d")
     if (!cx) return
     const E = eng.current
@@ -821,8 +823,8 @@ export default function GenreCategories({
 
     const size = () => {
       const d = Math.min(window.devicePixelRatio || 1, 2)
-      E.W = st.clientWidth
-      E.H = st.clientHeight
+      E.W = cv.clientWidth
+      E.H = cv.clientHeight
       cv.width = E.W * d
       cv.height = E.H * d
       cx.setTransform(d, 0, 0, d, 0, 0)
@@ -830,9 +832,9 @@ export default function GenreCategories({
     }
     size()
     const ro = new ResizeObserver(() => {
-      if (st.clientWidth !== E.W || st.clientHeight !== E.H) size()
+      if (cv.clientWidth !== E.W || cv.clientHeight !== E.H) size()
     })
-    ro.observe(st)
+    ro.observe(cv)
 
     const tick = (t: number) => {
       cx.clearRect(0, 0, E.W, E.H)
@@ -980,9 +982,9 @@ export default function GenreCategories({
   }, [])
 
   const burstFrom = (el: HTMLElement, genre: string | null) => {
-    const st = stageRef.current
-    if (!st) return
-    const sr = st.getBoundingClientRect()
+    const cv = cvRef.current
+    if (!cv) return
+    const sr = cv.getBoundingClientRect()
     const q = el.getBoundingClientRect()
     eng.current.burst(
       q.left + q.width / 2 - sr.left,
@@ -1043,7 +1045,7 @@ export default function GenreCategories({
 
   return (
     <div
-      className="bg-black/30 backdrop-blur-lg border-b border-white/10 px-4 py-6"
+      className="gc-root bg-black/30 backdrop-blur-lg border-b border-white/10 px-4 py-6"
       style={{ ["--ac" as any]: theme.a } as CSSProperties}
     >
       <style>{`
@@ -1271,7 +1273,7 @@ export default function GenreCategories({
 
         /* =========================================================
            ✅ নিচের animated stage (background image + title animation)
-           উপরে-নিচে ধীরে ধীরে dark, মাঝখানে image পরিষ্কার
+           Mobile: আগের মতোই শুধু stage এর ভেতরে
            ========================================================= */
         .gc-stage {
           position: relative; overflow: hidden; isolation: isolate;
@@ -1324,7 +1326,7 @@ export default function GenreCategories({
         .gc-lb { position: absolute; left: 0; right: 0; height: 0; background: #000; z-index: 2; transition: height .8s; }
         .gc-lb.t { top: 0; } .gc-lb.b { bottom: 0; }
         .gc-stage.cine .gc-lb { height: 3%; }
-        .gc-cv { position: absolute; inset: 0; z-index: 2; pointer-events: none; transition: opacity .35s; }
+        .gc-cv { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 2; pointer-events: none; transition: opacity .35s; }
         .gc-hc {
           position: relative; z-index: 3; display: flex; flex-direction: column;
           justify-content: center; align-items: center; text-align: center;
@@ -1355,10 +1357,66 @@ export default function GenreCategories({
         @media (prefers-reduced-motion: reduce) {
           .gc-bg, .gc-word, .gc-flash, .gc-scan, .gc-cta::after, .gc-cta .gc-bgi { animation: none !important; }
         }
+
+        /* =========================================================
+           ✅ DESKTOP ONLY (768px+)
+           Background + animation পুরো section জুড়ে ছড়িয়ে যায়:
+           "Categories" লেখা থেকে শুরু করে একদম নিচের stage পর্যন্ত।
+           Image desktop এর মাপে cover/crop হয়ে fit করে, আর theme dark।
+           Title লেখাটা আগের জায়গাতেই (নিচে) থাকে।
+           ========================================================= */
+        @media (min-width: 768px) {
+          .gc-root {
+            position: relative;
+            overflow: hidden;
+            isolation: isolate;
+            padding-top: 32px;
+            padding-bottom: 8px;
+          }
+
+          /* stage নিজে আর background ধরে না — শুধু title এর জায়গা */
+          .gc-stage {
+            position: static;
+            isolation: auto;
+            overflow: visible;
+            aspect-ratio: auto;
+            height: clamp(230px, 26vw, 360px);
+            min-height: 0;
+            max-height: none;
+            margin-top: 16px;
+            -webkit-mask-image: none;
+            mask-image: none;
+          }
+
+          /* background layer গুলো এখন .gc-root এর সাথে মাপে (সব absolute inset:0) */
+          .gc-bgs { z-index: 0; }
+
+          /* dark theme: পুরো area জুড়ে সমান গাঢ় overlay, নিচে আরও dark */
+          .gc-shade {
+            background: linear-gradient(
+              180deg,
+              rgba(0, 0, 0, .86) 0%,
+              rgba(0, 0, 0, .66) 28%,
+              rgba(0, 0, 0, .5) 55%,
+              rgba(0, 0, 0, .72) 82%,
+              rgba(0, 0, 0, .94) 100%
+            );
+          }
+          .gc-vig { background: radial-gradient(ellipse at 50% 45%, transparent 35%, #000a); }
+          .gc-tint { opacity: .4; }
+
+          /* canvas/particles পুরো section জুড়ে */
+          .gc-cv { z-index: 2; }
+
+          /* heading, button, selector — সব background এর উপরে */
+          .gc-h2 { position: relative; z-index: 3; }
+          .category-btn { z-index: 3; }
+          .filter-grid { position: relative; z-index: 4; }
+        }
       `}</style>
 
       <div className="max-w-7xl mx-auto">
-        <h2 className="text-white font-bold text-lg mb-4 md:text-center">
+        <h2 className="gc-h2 text-white font-bold text-lg mb-4 md:text-center">
           Categories
         </h2>
 
@@ -1527,6 +1585,7 @@ export default function GenreCategories({
         {/* ========================================================= */}
         {/* ✅ Animated stage: "Recently Uploaded" এর জায়গা।           */}
         {/*    All = Recently Uploaded, বাকি category = তার নিজের animation */}
+        {/*    Desktop এ background/particles পুরো section জুড়ে ছড়ায়    */}
         {/* ========================================================= */}
         <div
           ref={stageRef}
@@ -1662,4 +1721,4 @@ function CategoryHighlight() {
       <div className="fire-continuous fire-continuous-5" />
     </div>
   )
-          }
+                 }

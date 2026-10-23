@@ -1,329 +1,238 @@
 "use client"
 
 import { useEffect, useRef, useState, useCallback } from "react"
-import { createPortal } from "react-dom"
-import { ChevronLeft, ChevronRight, Star, CalendarDays, X } from "lucide-react"
+import { Calendar } from "lucide-react"
 
-/* =========================================================
-   Upcoming Anime — Jikan API (MyAnimeList data, free, no key)
-   Docs: https://docs.api.jikan.moe/
-   ✅ Sob theke popular (members onujayi) 20 ta upcoming anime
-   ✅ 6 ghontar jonno sessionStorage cache (API rate limit bachate)
-========================================================= */
-
-const API_URL =
-  "https://api.jikan.moe/v4/anime?status=upcoming&order_by=members&sort=desc&sfw=true&limit=20"
-const CACHE_KEY = "animeUpcomingCache_v1"
-const CACHE_TTL = 6 * 60 * 60 * 1000
-
-interface UpcomingAnime {
+interface UpcomingItem {
   id: number
   title: string
-  poster: string
-  date: string
-  score: number | null
-  genres: string[]
-  synopsis: string
-  trailer: string | null
+  poster: string | null
+  year: string
+  releaseDate: string | null
+  rating: string
+  tag: string
+  mediaType: "movie" | "tv"
+  position: number
 }
 
-const MONTHS = [
-  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
-]
-
-function formatDate(a: any): string {
-  const from = a?.aired?.prop?.from
-  if (from?.year) {
-    if (from.month && from.day) return `${MONTHS[from.month - 1]} ${from.day}, ${from.year}`
-    if (from.month) return `${MONTHS[from.month - 1]} ${from.year}`
-    return String(from.year)
-  }
-  if (a?.season && a?.year) {
-    return `${a.season.charAt(0).toUpperCase()}${a.season.slice(1)} ${a.year}`
-  }
-  return "TBA"
+interface AnimeUpcomingSectionProps {
+  onAnimeClick?: (anime: any) => void
 }
 
-function mapAnime(a: any): UpcomingAnime | null {
-  const poster =
-    a?.images?.webp?.large_image_url ||
-    a?.images?.jpg?.large_image_url ||
-    a?.images?.jpg?.image_url
-  if (!a?.mal_id || !poster) return null
-  return {
-    id: a.mal_id,
-    title: a.title_english || a.title,
-    poster,
-    date: formatDate(a),
-    score: typeof a.score === "number" ? a.score : null,
-    genres: Array.isArray(a.genres) ? a.genres.map((g: any) => g.name) : [],
-    synopsis: a.synopsis || "",
-    trailer: a.trailer?.url || null,
-  }
-}
-
-export default function AnimeUpcomingSection() {
-  const [items, setItems] = useState<UpcomingAnime[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(false)
-  const [selected, setSelected] = useState<UpcomingAnime | null>(null)
-  const scrollRef = useRef<HTMLDivElement>(null)
-
-  const load = useCallback(async (signal?: AbortSignal) => {
-    setLoading(true)
-    setError(false)
-    try {
-      const raw = sessionStorage.getItem(CACHE_KEY)
-      if (raw) {
-        const c = JSON.parse(raw)
-        if (Date.now() - c.t < CACHE_TTL && Array.isArray(c.d) && c.d.length) {
-          setItems(c.d)
-          setLoading(false)
-          return
-        }
-      }
-    } catch {}
-
-    try {
-      const res = await fetch(API_URL, { signal })
-      if (!res.ok) throw new Error("API " + res.status)
-      const json = await res.json()
-      const seen = new Set<number>()
-      const list: UpcomingAnime[] = []
-      for (const a of json.data || []) {
-        const m = mapAnime(a)
-        if (m && !seen.has(m.id)) {
-          seen.add(m.id)
-          list.push(m)
-        }
-      }
-      const top = list.slice(0, 20)
-      setItems(top)
-      try {
-        sessionStorage.setItem(CACHE_KEY, JSON.stringify({ t: Date.now(), d: top }))
-      } catch {}
-    } catch (e: any) {
-      if (e?.name !== "AbortError") setError(true)
-    } finally {
-      setLoading(false)
+function formatReleaseDate(dateStr: string | null): string {
+  if (!dateStr) return "Soon"
+  try {
+    const release = new Date(dateStr + "T00:00:00")
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    const diffDays = Math.ceil(
+      (release.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
+    )
+    if (diffDays >= 0) {
+      if (diffDays === 0) return "Today"
+      if (diffDays === 1) return "Tomorrow"
+      const sameYear = release.getFullYear() === today.getFullYear()
+      return release.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: sameYear ? undefined : "numeric",
+      })
     }
+    return release.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+    })
+  } catch {
+    return "Soon"
+  }
+}
+
+export default function AnimeUpcomingSection({}: AnimeUpcomingSectionProps) {
+  const [items, setItems] = useState<UpcomingItem[]>([])
+  const [loading, setLoading] = useState(true)
+  const [cardsPerView, setCardsPerView] = useState(3)
+  const [isPaused, setIsPaused] = useState(false)
+
+  const scrollRef = useRef<HTMLDivElement>(null)
+  const autoRef = useRef<ReturnType<typeof setInterval> | null>(null)
+
+  useEffect(() => {
+    const update = () => {
+      const w = window.innerWidth
+      if (w < 480) setCardsPerView(3)
+      else if (w < 768) setCardsPerView(4)
+      else if (w < 1024) setCardsPerView(5)
+      else setCardsPerView(6)
+    }
+    update()
+    window.addEventListener("resize", update)
+    return () => window.removeEventListener("resize", update)
   }, [])
 
   useEffect(() => {
     const ctrl = new AbortController()
-    load(ctrl.signal)
-    return () => ctrl.abort()
-  }, [load])
-
-  // modal: Esc + body scroll lock
-  useEffect(() => {
-    if (!selected) return
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setSelected(null)
-    document.addEventListener("keydown", onKey)
-    document.body.style.overflow = "hidden"
-    return () => {
-      document.removeEventListener("keydown", onKey)
-      document.body.style.overflow = ""
+    const fetchData = async () => {
+      try {
+        const res = await fetch("/api/anime-upcoming", { signal: ctrl.signal })
+        const data = await res.json()
+        setItems(data.results || [])
+      } catch (err: any) {
+        if (err?.name !== "AbortError") {
+          console.error("Anime upcoming fetch error:", err)
+        }
+      } finally {
+        if (!ctrl.signal.aborted) setLoading(false)
+      }
     }
-  }, [selected])
+    fetchData()
+    return () => ctrl.abort()
+  }, [])
 
-  const scrollByCard = (dir: 1 | -1) => {
+  const advanceSlide = useCallback(() => {
     const el = scrollRef.current
     if (!el) return
-    const card = el.querySelector("[data-up-card]") as HTMLElement | null
-    const step = (card?.offsetWidth ?? 160) + 16
-    el.scrollBy({ left: dir * step * 2, behavior: "smooth" })
+    const firstCard = el.querySelector("[data-card]") as HTMLElement | null
+    if (!firstCard) return
+    const cardWidth = firstCard.offsetWidth
+    const gap = 8
+    const step = cardWidth + gap
+    const maxScroll = el.scrollWidth - el.clientWidth
+    if (el.scrollLeft >= maxScroll - 5) {
+      el.scrollTo({ left: 0, behavior: "smooth" })
+      return
+    }
+    const next = Math.min(el.scrollLeft + step, maxScroll)
+    el.scrollTo({ left: next, behavior: "smooth" })
+  }, [])
+
+  useEffect(() => {
+    if (items.length === 0 || isPaused) return
+    if (autoRef.current) clearInterval(autoRef.current)
+    autoRef.current = setInterval(() => {
+      advanceSlide()
+    }, 3000)
+    return () => {
+      if (autoRef.current) clearInterval(autoRef.current)
+    }
+  }, [items.length, isPaused, advanceSlide])
+
+  const pauseAuto = () => setIsPaused(true)
+  const resumeAuto = () => setIsPaused(false)
+
+  if (loading) {
+    return (
+      <section className="relative px-4 mt-5 mb-5">
+        <div className="h-5 w-48 bg-white/5 rounded animate-pulse mb-3" />
+        <div className="flex gap-2 overflow-hidden">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div
+              key={i}
+              className="w-[calc((100vw-48px)/3)] aspect-[2/3] rounded-lg bg-white/5 animate-pulse"
+            />
+          ))}
+        </div>
+      </section>
+    )
   }
 
+  if (items.length === 0) return null
+
+  const gap = 8
+  const cardWidth = `calc((100vw - 32px - ${
+    (cardsPerView - 1) * gap
+  }px) / ${cardsPerView})`
+
   return (
-    <div className="relative z-10 px-4 md:px-6 lg:px-10 mt-6 pb-6" data-no-page-swipe>
-      <style>{`
-        .up-scroll { scrollbar-width: none; -ms-overflow-style: none; }
-        .up-scroll::-webkit-scrollbar { display: none; width: 0; height: 0; }
-        @keyframes upShimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
-        .up-skel {
-          background: linear-gradient(90deg, #111 25%, #1c1c1c 50%, #111 75%);
-          background-size: 200% 100%; animation: upShimmer 1.4s linear infinite;
-        }
-        @media (prefers-reduced-motion: reduce) { .up-skel { animation: none; } }
-      `}</style>
-
-      <div className="flex flex-col items-center mb-1">
-        <h2
-          className="text-xl font-bold text-center tracking-wider"
-          style={{
-            fontFamily: "'Times New Roman', serif",
-            letterSpacing: "0.2em",
-            background: "linear-gradient(to right, #22c55e, #86efac, #22c55e)",
-            WebkitBackgroundClip: "text",
-            backgroundClip: "text",
-            color: "transparent",
-            textShadow: "0 0 12px rgba(34,197,94,0.45)",
-          }}
-        >
-          Upcoming Anime
+    <section className="relative px-4 mt-5 mb-6">
+      <div className="flex items-center justify-between mb-3">
+        <h2 className="text-white text-sm md:text-base font-bold tracking-wide flex items-center gap-2">
+          <span className="w-1 h-4 bg-green-500 rounded-full"></span>
+          UPCOMING ANIME / RELEASE SOON
         </h2>
-        <p className="text-gray-400 text-xs md:text-sm mt-1 mb-3">
-          Most anticipated releases
-        </p>
+        <span className="text-[9px] text-gray-400 hidden md:block">
+          Top 20 Famous
+        </span>
       </div>
 
-      <div className="relative group">
-        <button
-          onClick={() => scrollByCard(-1)}
-          aria-label="Previous upcoming anime"
-          className="absolute left-0 top-1/2 -translate-y-1/2 z-30 hidden md:flex items-center justify-center w-10 h-10 rounded-full bg-black/60 border border-white/20 text-white hover:bg-black/80"
-        >
-          <ChevronLeft className="w-5 h-5" />
-        </button>
-
-        <div
-          ref={scrollRef}
-          className="up-scroll flex gap-4 overflow-x-auto pb-3 pt-2 snap-x overscroll-x-contain"
-          style={{ touchAction: "pan-x pan-y", WebkitOverflowScrolling: "touch" }}
-          onPointerDown={(e) => e.stopPropagation()}
-          onPointerMove={(e) => e.stopPropagation()}
-          onPointerUp={(e) => e.stopPropagation()}
-        >
-          {loading &&
-            Array.from({ length: 8 }).map((_, i) => (
-              <div
-                key={i}
-                className="up-skel flex-shrink-0 w-[130px] md:w-[170px] aspect-[2/3] rounded-lg"
-              />
-            ))}
-
-          {!loading && error && (
-            <div className="w-full text-center py-10 text-gray-400 text-sm">
-              Upcoming anime load kora jayni.{" "}
-              <button
-                onClick={() => load()}
-                className="text-green-400 underline underline-offset-2"
-              >
-                Retry
-              </button>
-            </div>
-          )}
-
-          {!loading &&
-            !error &&
-            items.map((a) => (
-              <button
-                type="button"
-                key={a.id}
-                data-up-card
-                onClick={() => setSelected(a)}
-                aria-label={`Details of ${a.title}`}
-                className="relative flex-shrink-0 w-[130px] md:w-[170px] text-left snap-start group/card"
-              >
-                <div className="relative aspect-[2/3] overflow-hidden rounded-lg bg-gray-900 shadow-lg transition-transform duration-300 group-hover/card:scale-[1.04]">
-                  <img
-                    src={a.poster}
-                    alt={a.title}
-                    loading="lazy"
-                    referrerPolicy="no-referrer"
-                    draggable={false}
-                    className="w-full h-full object-cover"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-transparent to-transparent" />
-                  <span className="absolute top-2 left-2 flex items-center gap-1 bg-green-500/90 text-black text-[10px] md:text-xs font-bold px-1.5 py-0.5 rounded-md">
-                    <CalendarDays className="w-3 h-3" />
-                    {a.date}
-                  </span>
-                  {a.score && (
-                    <span className="absolute top-2 right-2 bg-black/75 text-white text-[10px] md:text-xs px-1.5 py-0.5 rounded-md font-semibold border border-white/20">
-                      ⭐ {a.score.toFixed(1)}
-                    </span>
-                  )}
-                  <div className="absolute inset-x-0 bottom-0 p-2 md:p-3">
-                    <h3 className="text-white text-xs md:text-sm font-bold leading-snug line-clamp-2">
-                      {a.title}
-                    </h3>
-                  </div>
-                </div>
-              </button>
-            ))}
-        </div>
-
-        <button
-          onClick={() => scrollByCard(1)}
-          aria-label="Next upcoming anime"
-          className="absolute right-0 top-1/2 -translate-y-1/2 z-30 hidden md:flex items-center justify-center w-10 h-10 rounded-full bg-black/60 border border-white/20 text-white hover:bg-black/80"
-        >
-          <ChevronRight className="w-5 h-5" />
-        </button>
-      </div>
-
-      {selected &&
-        typeof document !== "undefined" &&
-        createPortal(
+      <div
+        ref={scrollRef}
+        data-no-page-swipe
+        className="flex overflow-x-auto overflow-y-hidden pb-1 upcoming-scroll"
+        style={{
+          gap: `${gap}px`,
+          scrollbarWidth: "none",
+          msOverflowStyle: "none",
+          WebkitOverflowScrolling: "touch",
+        }}
+        onMouseEnter={pauseAuto}
+        onMouseLeave={resumeAuto}
+        onTouchStart={pauseAuto}
+        onTouchEnd={resumeAuto}
+        onPointerDown={(e) => e.stopPropagation()}
+        onPointerMove={(e) => e.stopPropagation()}
+        onPointerUp={(e) => e.stopPropagation()}
+      >
+        {items.map((item) => (
           <div
-            className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/75 p-4 backdrop-blur-xl"
-            role="presentation"
-            onMouseDown={(e) => {
-              if (e.target === e.currentTarget) setSelected(null)
+            key={item.id}
+            data-card
+            className="relative flex-shrink-0 pointer-events-none"
+            style={{
+              width: cardWidth,
+              maxWidth: "180px",
             }}
           >
-            <section
-              role="dialog"
-              aria-modal="true"
-              aria-label={selected.title}
-              className="relative w-full max-w-lg max-h-[88vh] overflow-y-auto rounded-2xl border border-white/20 bg-slate-950 text-white shadow-2xl"
-            >
-              <button
-                type="button"
-                aria-label="Close"
-                onClick={() => setSelected(null)}
-                className="absolute right-3 top-3 z-10 rounded-full bg-black/60 p-1.5 text-slate-200 hover:bg-white/15"
-              >
-                <X className="w-5 h-5" />
-              </button>
-              <div className="flex gap-4 p-4 pr-12">
+            <div className="relative w-full aspect-[2/3] bg-gray-800 rounded-lg overflow-hidden">
+              {item.poster ? (
                 <img
-                  src={selected.poster}
-                  alt={selected.title}
+                  src={item.poster}
+                  alt={item.title}
+                  className="w-full h-full object-cover"
+                  loading="lazy"
                   referrerPolicy="no-referrer"
-                  className="w-28 aspect-[2/3] object-cover rounded-lg flex-shrink-0"
+                  draggable={false}
                 />
-                <div className="min-w-0">
-                  <h3 className="text-lg font-bold leading-snug">{selected.title}</h3>
-                  <p className="mt-2 flex items-center gap-1.5 text-sm text-green-400">
-                    <CalendarDays className="w-4 h-4" /> {selected.date}
-                  </p>
-                  {selected.score && (
-                    <p className="mt-1 flex items-center gap-1.5 text-sm text-yellow-400">
-                      <Star className="w-4 h-4 fill-yellow-400" /> {selected.score.toFixed(1)}
-                    </p>
-                  )}
-                  {selected.genres.length > 0 && (
-                    <p className="mt-2 text-xs text-gray-300">{selected.genres.join(" • ")}</p>
-                  )}
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-gray-600 text-[10px] p-1 text-center">
+                  {item.title}
                 </div>
+              )}
+
+              <div className="absolute top-0 left-0 z-10">
+                <span
+                  className="block px-1.5 pt-0.5 text-white text-2xl md:text-3xl font-black leading-none"
+                  style={{
+                    textShadow:
+                      "-2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000, 2px 2px 0 #000, 0 3px 8px rgba(0,0,0,0.9)",
+                  }}
+                >
+                  {item.position}
+                </span>
               </div>
-              {selected.synopsis && (
-                <p className="px-4 pb-4 text-sm leading-6 text-slate-300">
-                  {selected.synopsis.length > 420
-                    ? selected.synopsis.slice(0, 420).trimEnd() + "…"
-                    : selected.synopsis}
+
+              <span className="absolute top-1.5 right-1.5 bg-orange-500 text-white text-[9px] md:text-[10px] px-1.5 py-[2px] rounded font-bold shadow-lg border border-white/40 z-10 flex items-center gap-0.5 whitespace-nowrap">
+                <Calendar className="w-2 h-2" />
+                {formatReleaseDate(item.releaseDate)}
+              </span>
+
+              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black via-black/80 to-transparent p-1.5">
+                <h3 className="text-white text-[10px] md:text-[11px] font-bold truncate leading-tight">
+                  {item.title}
+                </h3>
+                <p className="text-gray-400 text-[8px] md:text-[9px] mt-0.5">
+                  {item.year}
                 </p>
-              )}
-              {selected.trailer && (
-                <div className="px-4 pb-5">
-                  <a
-                    href={selected.trailer}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold hover:bg-red-500"
-                  >
-                    ▶ Watch Trailer
-                  </a>
-                </div>
-              )}
-            </section>
-          </div>,
-          document.body
-        )}
-    </div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <style jsx>{`
+        .upcoming-scroll::-webkit-scrollbar {
+          display: none;
+        }
+      `}</style>
+    </section>
   )
 }

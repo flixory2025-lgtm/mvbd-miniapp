@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useCallback } from "react"
 import { ChevronLeft, ChevronRight, Play, Film, Star } from "lucide-react"
 import { animes } from "@/lib/anime-data"
 import type { Anime } from "@/lib/anime-data"
+import AnimeUpcomingSection from "./anime-upcoming-section"
 
 // ✅ Top hero-te kon kon anime dekhabe (ei ID gulo tumi nijer moto change koro)
 const topSeriesIds = [203, 204, 205, 206, 189, 190, 191, 192]
@@ -939,6 +940,10 @@ export default function AnimeTrendingCarousel({
           }
         `}</style>
       </div>
+      {/* ====================================================== */}
+      {/* UPCOMING ANIME (Jikan API) */}
+      {/* ====================================================== */}
+      <AnimeUpcomingSection />
     </section>
   )
-      }
+        }

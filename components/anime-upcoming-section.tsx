@@ -9,6 +9,8 @@ interface UpcomingItem {
   poster: string | null
   year: string
   releaseDate: string | null
+  dateLabel?: string | null
+  sortKey?: string
   rating: string
   tag: string
   mediaType: "movie" | "tv"
@@ -19,8 +21,8 @@ interface AnimeUpcomingSectionProps {
   onAnimeClick?: (anime: any) => void
 }
 
-function formatReleaseDate(dateStr: string | null): string {
-  if (!dateStr) return "Soon"
+function formatReleaseDate(dateStr: string | null, label?: string | null): string {
+  if (!dateStr) return label || "Soon"
   try {
     const release = new Date(dateStr + "T00:00:00")
     const today = new Date()
@@ -80,7 +82,18 @@ export default function AnimeUpcomingSection({}: AnimeUpcomingSectionProps) {
         const res = await fetch("/api/anime-upcoming", { signal: ctrl.signal })
         if (!res.ok) throw new Error("HTTP " + res.status)
         const data = await res.json()
-        const list = data.results || []
+        const today = new Date()
+        today.setHours(0, 0, 0, 0)
+        const todayKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`
+        const list: UpcomingItem[] = (data.results || [])
+          // jeta already release hoye geche (ager tarikh) ta bad
+          .filter((it: UpcomingItem) => (it.sortKey || it.releaseDate || "9999") >= todayKey)
+          .slice(0, 20)
+          // sobcheye kachher release age: Today, Tomorrow, tarpor porer gulo
+          .sort((a: UpcomingItem, b: UpcomingItem) =>
+            (a.sortKey || a.releaseDate || "9999").localeCompare(b.sortKey || b.releaseDate || "9999")
+          )
+          .map((it: UpcomingItem, i: number) => ({ ...it, position: i + 1 }))
         setItems(list)
         if (list.length === 0) setFailed(true)
       } catch (err: any) {
@@ -240,7 +253,7 @@ export default function AnimeUpcomingSection({}: AnimeUpcomingSectionProps) {
 
               <span className="absolute top-1.5 right-1.5 bg-orange-500 text-white text-[9px] md:text-[10px] px-1.5 py-[2px] rounded font-bold shadow-lg border border-white/40 z-10 flex items-center gap-0.5 whitespace-nowrap">
                 <Calendar className="w-2 h-2" />
-                {formatReleaseDate(item.releaseDate)}
+                {formatReleaseDate(item.releaseDate, item.dateLabel)}
               </span>
 
               <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black via-black/80 to-transparent p-1.5">

@@ -17,16 +17,19 @@ interface GenreCategoriesProps {
   selectedGenre: string | null
   onGenreSelect: (genre: string | null) => void
   showAdultContent?: boolean
-  selectedYear: string
-  selectedRating: string
-  selectedLanguage: string
-  selectedType: string
-  onFilterChange: (filters: {
+  selectedYear?: string
+  selectedRating?: string
+  selectedLanguage?: string
+  selectedType?: string
+  onFilterChange?: (filters: {
     year?: string
     rating?: string
     language?: string
     type?: string
   }) => void
+  /* ✅ Selector (Year / Language / Genre) er data source.
+     Home page e dewar dorkar nai (default = movies), Anime page e animes pass korbe */
+  items?: any[]
 }
 
 type AppModal = "tutorial" | "download" | null
@@ -635,16 +638,19 @@ function BgLayerView({ layer, alt }: { layer: BgLayer; alt: boolean }) {
   )
 }
 
+export { normalizeLanguage, isSeries }
+
 export default function GenreCategories({
   genres,
   selectedGenre,
   onGenreSelect,
   showAdultContent = false,
-  selectedYear,
-  selectedRating,
-  selectedLanguage,
-  selectedType,
+  selectedYear = "All",
+  selectedRating = "All",
+  selectedLanguage = "All",
+  selectedType = "All",
   onFilterChange,
+  items = movies,
 }: GenreCategoriesProps) {
   const [activeModal, setActiveModal] = useState<AppModal>(null)
   const [openFilter, setOpenFilter] = useState<FilterType>(null)
@@ -675,23 +681,22 @@ export default function GenreCategories({
 
   const availableYears = useMemo(() => {
     const years = new Set<string>()
-    movies.forEach((m) => {
-      if (m.year && /^\d{4}$/.test(m.year.trim())) {
-        years.add(m.year.trim())
-      }
+    items.forEach((m) => {
+      const y = m.year != null ? String(m.year).trim() : ""
+      if (/^\d{4}$/.test(y)) years.add(y)
     })
     return Array.from(years).sort((a, b) => parseInt(b) - parseInt(a))
-  }, [])
+  }, [items])
 
   const availableLanguages = useMemo(() => {
     const langs = new Set<string>()
-    movies.forEach((m) => {
+    items.forEach((m) => {
       if (m.language) {
-        langs.add(normalizeLanguage(m.language))
+        langs.add(normalizeLanguage(String(m.language)))
       }
     })
     return Array.from(langs).sort()
-  }, [])
+  }, [items])
 
   /* ✅ Genre selector: movie-data এর সব movie থেকে unique genre বের করা হয়
      (genre গুলো "Action | Drama | bangla" এই format এ থাকে)
@@ -710,7 +715,7 @@ export default function GenreCategories({
     // Categories এর নামগুলোকে বেশি গুরুত্ব দেওয়া হলো যেন নামের বানান একই থাকে
     genres.filter((g) => g !== "All").forEach((g) => add(g, 100000))
 
-    movies.forEach((m) => {
+    items.forEach((m) => {
       if (!m.genre) return
       String(m.genre)
         .split("|")
@@ -736,7 +741,7 @@ export default function GenreCategories({
     return result.sort((a, b) =>
       a.toLowerCase().localeCompare(b.toLowerCase())
     )
-  }, [genres])
+  }, [genres, items])
 
   const availableRatings = ["2.0", "3.0", "4.0", "5.0", "6.0", "7.0", "8.0", "9.0"]
   const availableTypes = ["All", "Movie", "Series"]
@@ -1004,7 +1009,7 @@ export default function GenreCategories({
     if (type === "genre") {
       onGenreSelect(value === "All" ? null : value)
     } else if (type !== "platform") {
-      onFilterChange({ [type]: value })
+      onFilterChange?.({ [type]: value })
     }
     setOpenFilter(null)
   }
@@ -1721,4 +1726,4 @@ function CategoryHighlight() {
       <div className="fire-continuous fire-continuous-5" />
     </div>
   )
-                 }
+                                     }

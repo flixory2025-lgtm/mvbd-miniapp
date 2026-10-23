@@ -17,8 +17,8 @@ interface SocialLink {
 }
 
 const FOOTER_BG_URL =
-  "https://i.postimg.cc/jjJhVmLZ/f2890eb44e8fd63f2ec2004e11f742af.jpg"
-const LOGO_URL = "https://i.postimg.cc/RC8VhYFd/20261023-144832.png"
+  "https://i.postimg.cc/fL7zPWZ4/prettiest-and-best-k-dramas-posters-youve-seen-v0-rkzv09n2qrdg1.jpg"
+const LOGO_URL = "https://i.postimg.cc/P5DBy3dH/24131-removebg-preview-(1).png"
 
 /* =========================================================
    BRAND SVG ICONS
@@ -122,7 +122,7 @@ function ThreadsIcon() {
 
 function MailIcon() {
   return (
-    <svg viewBox="0 0 24 24" className="mvbd-btn-svg" fill="currentColor" aria-hidden="true">
+    <svg viewBox="0 0 24 24" className="mvbd-mail-svg" fill="currentColor" aria-hidden="true">
       <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z" />
     </svg>
   )
@@ -132,7 +132,7 @@ function ArrowUpIcon() {
   return (
     <svg
       viewBox="0 0 24 24"
-      className="mvbd-btn-svg"
+      className="mvbd-mail-svg"
       fill="none"
       stroke="currentColor"
       strokeWidth="2.4"
@@ -141,23 +141,6 @@ function ArrowUpIcon() {
       aria-hidden="true"
     >
       <path d="M12 19V5M5 12l7-7 7 7" />
-    </svg>
-  )
-}
-
-function ChevronIcon() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      className="mvbd-chevron"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2.6"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <path d="M9 6l6 6-6 6" />
     </svg>
   )
 }
@@ -248,7 +231,7 @@ export default function UniversalFooter() {
   return (
     <footer className="mvbd-footer">
       {/* =====================================================
-          BACKGROUND  (static image + cheap gradients)
+          BACKGROUND  (static poster image, dark theme)
           ===================================================== */}
       <div className="mvbd-bg" aria-hidden="true">
         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -258,172 +241,130 @@ export default function UniversalFooter() {
           className="mvbd-bg-img"
           decoding="async"
         />
-        <div className="mvbd-bg-tone" />
-        <div className="mvbd-bg-fade-top" />
-        <div className="mvbd-bg-fade-bottom" />
-        <div className="mvbd-orb mvbd-orb-1" />
-        <div className="mvbd-orb mvbd-orb-2" />
-        <div className="mvbd-orb mvbd-orb-3" />
+        <div className="mvbd-bg-shade" />
       </div>
 
       <div className="mvbd-wrap">
         {/* ===================================================
-            HERO  (centered logo, Netflix / HBO style)
+            TOP: BRAND + COLUMNS
             =================================================== */}
-        <section className="mvbd-glass mvbd-hero">
-          <div className="mvbd-hero-logo-wrap">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={LOGO_URL}
-              alt="MoviesVerseBD"
-              className="mvbd-hero-logo"
-              decoding="async"
-            />
-          </div>
-
-          <div className="mvbd-eyebrow">
-            <span className="mvbd-live-dot" />
-            MVBD is always evolving
-          </div>
-
-          <h2 className="mvbd-hero-title">
-            Questions? We&apos;re always here for you.
-          </h2>
-
-          <p className="mvbd-hero-sub">
-            Your ultimate entertainment destination for movies, series, anime
-            and more.
-          </p>
-
-          <div className="mvbd-pills" aria-hidden="true">
-            <span className="mvbd-pill">Movies</span>
-            <span className="mvbd-pill">Series</span>
-            <span className="mvbd-pill">Anime</span>
-            <span className="mvbd-pill">& More</span>
-          </div>
-
-          <div className="mvbd-hero-actions">
-            <a href="#contact" className="mvbd-btn mvbd-btn-primary">
-              Contact Us
-              <ChevronIcon />
+        <div className="mvbd-top">
+          {/* Brand */}
+          <div className="mvbd-brand">
+            <a href="/" className="mvbd-logo-link" aria-label="MoviesVerseBD home">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={LOGO_URL}
+                alt="MoviesVerseBD"
+                className="mvbd-logo"
+                decoding="async"
+              />
             </a>
-            <a href="mailto:support@mvbds.xyz" className="mvbd-btn mvbd-btn-ghost">
-              <MailIcon />
-              support@mvbds.xyz
-            </a>
-          </div>
-        </section>
 
-        {/* ===================================================
-            MAIN GLASS SLAB
-            =================================================== */}
-        <div className="mvbd-glass mvbd-slab">
-          <div className="mvbd-cols">
-            {/* About */}
-            <div className="mvbd-col mvbd-col-about">
-              <h3 className="mvbd-heading">About MVBD</h3>
-              <p className="mvbd-text">
-                Discover your next favourite movie, series or anime with
-                MoviesVerseBD.
-              </p>
-              <div className="mvbd-tagline">YOUR MOVIE UNIVERSE</div>
-            </div>
+            <p className="mvbd-desc">
+              Your ultimate entertainment destination for movies, series,
+              anime and more.
+            </p>
 
-            {/* Quick Links */}
-            <nav className="mvbd-col" aria-label="Quick links">
-              <h3 className="mvbd-heading">Quick Links</h3>
-              <ul className="mvbd-list">
-                <li><a href="#profile" className="mvbd-link">Profile</a></li>
-                <li><a href="#about" className="mvbd-link">About Us</a></li>
-                <li><a href="#contact" className="mvbd-link">Contact Us</a></li>
-                <li><a href="#subscriptions" className="mvbd-link">Subscriptions</a></li>
-              </ul>
-            </nav>
+            <p className="mvbd-desc mvbd-desc-sub">
+              Discover your next favourite movie, series or anime with
+              MoviesVerseBD.
+            </p>
 
-            {/* Legal */}
-            <nav className="mvbd-col" aria-label="Support and legal">
-              <h3 className="mvbd-heading">Support &amp; Legal</h3>
-              <ul className="mvbd-list">
-                <li>
-                  <a href="https://mvbds.xyz/privacy-policy.html" className="mvbd-link">
-                    Privacy Policy
-                  </a>
-                </li>
-                <li>
-                  <a href="https://mvbds.xyz/terms.html" className="mvbd-link">
-                    Terms &amp; Conditions
-                  </a>
-                </li>
-                <li><a href="#contact" className="mvbd-link">Contact</a></li>
-                <li>
-                  <a href="mailto:support@mvbds.xyz" className="mvbd-link">
-                    Email Support
-                  </a>
-                </li>
-              </ul>
-            </nav>
-
-            {/* Social */}
-            <div className="mvbd-col mvbd-col-social">
-              <h3 className="mvbd-heading">Connect With Us</h3>
-              <div className="mvbd-social-grid">
-                {socialLinks.map((social) => (
-                  <a
-                    key={social.name}
-                    href={social.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label={`Visit MVBD on ${social.label}`}
-                    title={social.label}
-                    className={`mvbd-social ${social.platform}`}
-                  >
-                    <span className="mvbd-social-icon">
-                      <SocialIcon platform={social.platform} />
-                    </span>
-                    <span className="mvbd-social-name">{social.label}</span>
-                  </a>
-                ))}
-              </div>
+            <div className="mvbd-status">
+              <span className="mvbd-live-dot" />
+              MVBD is always evolving
             </div>
           </div>
 
-          <div className="mvbd-follow-row">
-            <span className="mvbd-follow-line" />
-            <span className="mvbd-follow">
-              FOLLOW <b>MVBD</b> EVERYWHERE
-            </span>
-            <span className="mvbd-follow-line" />
-          </div>
+          {/* Quick Links */}
+          <nav className="mvbd-col" aria-label="Quick links">
+            <h3 className="mvbd-heading">Quick Links</h3>
+            <ul className="mvbd-list">
+              <li><a href="#profile" className="mvbd-link">Profile</a></li>
+              <li><a href="#about" className="mvbd-link">About Us</a></li>
+              <li><a href="#contact" className="mvbd-link">Contact Us</a></li>
+              <li><a href="#subscriptions" className="mvbd-link">Subscriptions</a></li>
+            </ul>
+          </nav>
 
-          {/* Bottom bar */}
-          <div className="mvbd-bottom">
-            <div className="mvbd-bottom-left">
-              <p className="mvbd-copy">
-                © {currentYear} MoviesVerseBD. All rights reserved.
-              </p>
-              <p className="mvbd-made">
-                Made by{" "}
+          {/* Support & Legal */}
+          <nav className="mvbd-col" aria-label="Support and legal">
+            <h3 className="mvbd-heading">Support</h3>
+            <ul className="mvbd-list">
+              <li>
+                <a href="https://mvbds.xyz/privacy-policy.html" className="mvbd-link">
+                  Privacy Policy
+                </a>
+              </li>
+              <li>
+                <a href="https://mvbds.xyz/terms.html" className="mvbd-link">
+                  Terms &amp; Conditions
+                </a>
+              </li>
+              <li><a href="#contact" className="mvbd-link">Contact</a></li>
+              <li>
+                <a href="mailto:support@mvbds.xyz" className="mvbd-link mvbd-link-mail">
+                  <MailIcon /> support@mvbds.xyz
+                </a>
+              </li>
+            </ul>
+          </nav>
+
+          {/* Social */}
+          <div className="mvbd-col mvbd-col-social">
+            <h3 className="mvbd-heading">Connect With Us</h3>
+            <div className="mvbd-social-grid">
+              {socialLinks.map((social) => (
                 <a
-                  href="https://wa.me/qr/R2ZGCQAMXWRPP1"
+                  key={social.name}
+                  href={social.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="mvbd-maker"
+                  aria-label={`Visit MVBD on ${social.label}`}
+                  title={social.label}
+                  className={`mvbd-social ${social.platform}`}
                 >
-                  Abdul Mazid
+                  <SocialIcon platform={social.platform} />
                 </a>
-              </p>
+              ))}
             </div>
-
-            <button
-              type="button"
-              onClick={handleBackToTop}
-              className="mvbd-top-btn"
-              aria-label="Back to top"
-            >
-              <ArrowUpIcon />
-              <span>Back to top</span>
-            </button>
+            <p className="mvbd-follow">
+              FOLLOW <b>MVBD</b> EVERYWHERE
+            </p>
           </div>
+        </div>
+
+        {/* ===================================================
+            BOTTOM BAR
+            =================================================== */}
+        <div className="mvbd-bottom">
+          <div className="mvbd-bottom-left">
+            <p className="mvbd-copy">
+              © {currentYear} MoviesVerseBD. All rights reserved.
+            </p>
+            <p className="mvbd-made">
+              Made by{" "}
+              <a
+                href="https://wa.me/qr/R2ZGCQAMXWRPP1"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mvbd-maker"
+              >
+                Abdul Mazid
+              </a>
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={handleBackToTop}
+            className="mvbd-top-btn"
+            aria-label="Back to top"
+          >
+            <ArrowUpIcon />
+            <span>Back to top</span>
+          </button>
         </div>
       </div>
 
@@ -436,11 +377,10 @@ export default function UniversalFooter() {
           position: relative;
           isolation: isolate;
           overflow: hidden;
-          background: #05080b;
-          border-top: 1px solid rgba(255, 255, 255, 0.1);
-          color: rgba(255, 255, 255, 0.72);
+          background: #07090c;
+          color: rgba(255, 255, 255, 0.78);
           content-visibility: auto;
-          contain-intrinsic-size: auto 980px;
+          contain-intrinsic-size: auto 560px;
         }
 
         /* ---------- BACKGROUND ---------- */
@@ -458,313 +398,88 @@ export default function UniversalFooter() {
           object-fit: cover;
           object-position: center;
           display: block;
-          opacity: 1;
-          filter: saturate(1.15) contrast(1.05);
         }
-        /* very light tone so the picture stays clearly visible */
-        .mvbd-bg-tone {
+        /* dark theme shade: image stays clearly visible,
+           text stays easy to read */
+        .mvbd-bg-shade {
           position: absolute;
           inset: 0;
-          background: rgba(3, 6, 10, 0.28);
-        }
-        .mvbd-bg-fade-top {
-          position: absolute;
-          left: 0;
-          right: 0;
-          top: 0;
-          height: 140px;
-          background: linear-gradient(180deg, #05080b 0%, rgba(5, 8, 11, 0) 100%);
-        }
-        .mvbd-bg-fade-bottom {
-          position: absolute;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          height: 160px;
-          background: linear-gradient(0deg, rgba(5, 8, 11, 0.85) 0%, rgba(5, 8, 11, 0) 100%);
-        }
-        /* colored light blobs: plain radial gradients, zero blur cost */
-        .mvbd-orb {
-          position: absolute;
-          border-radius: 50%;
-        }
-        .mvbd-orb-1 {
-          width: 620px;
-          height: 620px;
-          top: -220px;
-          left: -160px;
-          background: radial-gradient(circle, rgba(16, 185, 129, 0.34), transparent 68%);
-        }
-        .mvbd-orb-2 {
-          width: 560px;
-          height: 560px;
-          top: 30%;
-          right: -200px;
-          background: radial-gradient(circle, rgba(56, 189, 248, 0.24), transparent 68%);
-        }
-        .mvbd-orb-3 {
-          width: 600px;
-          height: 600px;
-          bottom: -260px;
-          left: 30%;
-          background: radial-gradient(circle, rgba(139, 92, 246, 0.28), transparent 68%);
+          background:
+            linear-gradient(
+              180deg,
+              #07090c 0%,
+              rgba(7, 9, 12, 0.62) 16%,
+              rgba(7, 9, 12, 0.55) 50%,
+              rgba(7, 9, 12, 0.82) 82%,
+              #07090c 100%
+            );
         }
 
         .mvbd-wrap {
           position: relative;
           max-width: 1240px;
           margin: 0 auto;
-          padding: 44px 14px 26px;
+          padding: 56px 20px 24px;
         }
 
-        /* ---------- LIQUID GLASS ---------- */
-        .mvbd-glass {
-          position: relative;
-          overflow: hidden;
-          border-radius: 30px;
-          background:
-            linear-gradient(135deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.05) 40%, rgba(255, 255, 255, 0.03) 60%, rgba(255, 255, 255, 0.1) 100%);
-          -webkit-backdrop-filter: blur(18px) saturate(180%) brightness(1.05);
-          backdrop-filter: blur(18px) saturate(180%) brightness(1.05);
-          box-shadow:
-            inset 0 1.5px 0 rgba(255, 255, 255, 0.4),
-            inset 0 -1.5px 0 rgba(255, 255, 255, 0.08),
-            inset 1px 0 0 rgba(255, 255, 255, 0.12),
-            inset -1px 0 0 rgba(255, 255, 255, 0.08),
-            inset 0 0 40px rgba(255, 255, 255, 0.04),
-            0 30px 80px rgba(0, 0, 0, 0.55);
+        /* ---------- TOP GRID ---------- */
+        .mvbd-top {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 36px 20px;
         }
-        /* refractive gradient edge */
-        .mvbd-glass::after {
-          content: "";
-          position: absolute;
-          inset: 0;
-          border-radius: inherit;
-          padding: 1.2px;
-          background: linear-gradient(
-            140deg,
-            rgba(255, 255, 255, 0.7),
-            rgba(255, 255, 255, 0.08) 28%,
-            rgba(255, 255, 255, 0.04) 68%,
-            rgba(110, 231, 183, 0.5)
-          );
-          -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-          -webkit-mask-composite: xor;
-          mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
-          pointer-events: none;
-        }
-        /* soft specular sheen */
-        .mvbd-glass::before {
-          content: "";
-          position: absolute;
-          inset: 0;
-          border-radius: inherit;
-          background:
-            radial-gradient(90% 55% at 12% 0%, rgba(255, 255, 255, 0.22), transparent 60%),
-            radial-gradient(60% 40% at 100% 100%, rgba(110, 231, 183, 0.1), transparent 70%);
-          pointer-events: none;
-        }
-        .mvbd-glass > * {
-          position: relative;
-          z-index: 1;
+        .mvbd-brand,
+        .mvbd-col-social {
+          grid-column: 1 / -1;
         }
 
-        /* ---------- HERO ---------- */
-        .mvbd-hero {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          text-align: center;
-          padding: 40px 22px 38px;
-          margin-bottom: 22px;
+        .mvbd-logo-link {
+          display: inline-block;
+          margin-bottom: 18px;
         }
-        .mvbd-hero-logo-wrap {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          margin-bottom: 20px;
-        }
-        .mvbd-hero-logo {
+        .mvbd-logo {
           display: block;
-          height: 78px;
+          height: 64px;
           width: auto;
-          max-width: 82%;
+          max-width: 260px;
           object-fit: contain;
-          filter: drop-shadow(0 10px 28px rgba(0, 0, 0, 0.6));
+          filter: drop-shadow(0 4px 14px rgba(0, 0, 0, 0.7));
         }
-        .mvbd-eyebrow {
+        .mvbd-desc {
+          margin: 0;
+          max-width: 360px;
+          font-size: 14px;
+          line-height: 1.75;
+          color: rgba(255, 255, 255, 0.85);
+          text-shadow: 0 1px 8px rgba(0, 0, 0, 0.8);
+        }
+        .mvbd-desc-sub {
+          margin-top: 8px;
+          color: rgba(255, 255, 255, 0.6);
+        }
+        .mvbd-status {
           display: inline-flex;
           align-items: center;
           gap: 8px;
-          padding: 7px 14px;
-          border-radius: 999px;
-          font-size: 11.5px;
-          font-weight: 500;
-          letter-spacing: 0.3px;
-          color: rgba(255, 255, 255, 0.85);
-          background: rgba(255, 255, 255, 0.09);
-          border: 1px solid rgba(255, 255, 255, 0.18);
-          box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25);
+          margin-top: 18px;
+          font-size: 12px;
+          color: rgba(255, 255, 255, 0.7);
         }
         .mvbd-live-dot {
           width: 7px;
           height: 7px;
           border-radius: 50%;
-          background: #4ade80;
-          box-shadow: 0 0 10px #4ade80;
-        }
-        .mvbd-hero-title {
-          margin: 18px 0 10px;
-          font-size: 26px;
-          line-height: 1.18;
-          font-weight: 800;
-          letter-spacing: -0.8px;
-          color: #fff;
-          text-shadow: 0 4px 24px rgba(0, 0, 0, 0.5);
-        }
-        .mvbd-hero-sub {
-          margin: 0;
-          max-width: 520px;
-          font-size: 14.5px;
-          line-height: 1.65;
-          color: rgba(255, 255, 255, 0.78);
-        }
-        .mvbd-pills {
-          display: flex;
-          flex-wrap: wrap;
-          justify-content: center;
-          gap: 8px;
-          margin-top: 20px;
-        }
-        .mvbd-pill {
-          padding: 7px 16px;
-          border-radius: 999px;
-          font-size: 12px;
-          font-weight: 600;
-          color: #d1fae5;
-          background: linear-gradient(145deg, rgba(52, 211, 153, 0.22), rgba(52, 211, 153, 0.06));
-          border: 1px solid rgba(110, 231, 183, 0.32);
-          box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2);
-        }
-        .mvbd-hero-actions {
-          display: flex;
-          flex-direction: column;
-          width: 100%;
-          max-width: 420px;
-          gap: 12px;
-          margin-top: 28px;
-        }
-
-        .mvbd-btn {
-          position: relative;
-          overflow: hidden;
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          gap: 9px;
-          min-height: 52px;
-          padding: 0 26px;
-          border-radius: 999px;
-          font-size: 14.5px;
-          font-weight: 700;
-          text-decoration: none;
-          transition: transform 0.22s ease, box-shadow 0.22s ease, background 0.22s ease;
-        }
-        .mvbd-btn::before {
-          content: "";
-          position: absolute;
-          top: 0;
-          left: -70%;
-          width: 45%;
-          height: 100%;
-          transform: skewX(-20deg);
-          background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.45), transparent);
-          transition: left 0.6s ease;
-        }
-        .mvbd-btn:hover {
-          transform: translateY(-3px);
-        }
-        .mvbd-btn:hover::before {
-          left: 130%;
-        }
-        .mvbd-btn-primary {
-          color: #03140c;
-          background: linear-gradient(135deg, #a7f3d0, #34d399 50%, #10b981);
-          box-shadow: 0 14px 34px rgba(16, 185, 129, 0.45), inset 0 1.5px 0 rgba(255, 255, 255, 0.65);
-        }
-        .mvbd-btn-primary:hover {
-          box-shadow: 0 18px 44px rgba(16, 185, 129, 0.6), inset 0 1.5px 0 rgba(255, 255, 255, 0.7);
-        }
-        .mvbd-btn-ghost {
-          color: #d1fae5;
-          background: linear-gradient(145deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.05));
-          border: 1px solid rgba(255, 255, 255, 0.24);
-          box-shadow: inset 0 1.5px 0 rgba(255, 255, 255, 0.3), 0 10px 26px rgba(0, 0, 0, 0.3);
-        }
-        .mvbd-btn-ghost:hover {
-          background: linear-gradient(145deg, rgba(255, 255, 255, 0.24), rgba(255, 255, 255, 0.08));
-        }
-        .mvbd-btn-svg {
-          width: 17px;
-          height: 17px;
-          flex-shrink: 0;
-        }
-        .mvbd-chevron {
-          width: 17px;
-          height: 17px;
-          flex-shrink: 0;
-          transition: transform 0.22s ease;
-        }
-        .mvbd-btn:hover .mvbd-chevron {
-          transform: translateX(4px);
-        }
-
-        /* ---------- MAIN SLAB ---------- */
-        .mvbd-slab {
-          padding: 34px 22px 22px;
-        }
-        .mvbd-cols {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 32px 18px;
-        }
-        .mvbd-col-about,
-        .mvbd-col-social {
-          grid-column: 1 / -1;
+          background: #34d399;
+          box-shadow: 0 0 8px #34d399;
         }
 
         .mvbd-heading {
-          position: relative;
           margin: 0 0 18px;
-          padding-bottom: 12px;
-          font-size: 15.5px;
+          font-size: 15px;
           font-weight: 700;
-          letter-spacing: 0.2px;
+          letter-spacing: 0.3px;
           color: #fff;
-        }
-        .mvbd-heading::after {
-          content: "";
-          position: absolute;
-          left: 0;
-          bottom: 0;
-          width: 32px;
-          height: 3px;
-          border-radius: 99px;
-          background: linear-gradient(90deg, #34d399, rgba(52, 211, 153, 0));
-          box-shadow: 0 0 14px rgba(52, 211, 153, 0.6);
-        }
-        .mvbd-text {
-          margin: 0;
-          max-width: 340px;
-          font-size: 14px;
-          line-height: 1.75;
-          color: rgba(255, 255, 255, 0.72);
-        }
-        .mvbd-tagline {
-          margin-top: 18px;
-          font-size: 10px;
-          letter-spacing: 4px;
-          color: rgba(255, 255, 255, 0.5);
+          text-shadow: 0 1px 8px rgba(0, 0, 0, 0.8);
         }
 
         .mvbd-list {
@@ -773,119 +488,80 @@ export default function UniversalFooter() {
           padding: 0;
           display: flex;
           flex-direction: column;
-          gap: 13px;
+          gap: 12px;
         }
         .mvbd-link {
-          position: relative;
-          display: inline-block;
+          display: inline-flex;
+          align-items: center;
+          gap: 7px;
           font-size: 14px;
           color: rgba(255, 255, 255, 0.72);
           text-decoration: none;
-          transition: color 0.2s ease, transform 0.2s ease;
-        }
-        .mvbd-link::after {
-          content: "";
-          position: absolute;
-          left: 0;
-          bottom: -3px;
-          width: 100%;
-          height: 1.5px;
-          background: linear-gradient(90deg, #34d399, transparent);
-          transform: scaleX(0);
-          transform-origin: left;
-          transition: transform 0.25s ease;
+          text-shadow: 0 1px 8px rgba(0, 0, 0, 0.8);
+          transition: color 0.2s ease;
         }
         .mvbd-link:hover {
-          color: #a7f3d0;
-          transform: translateX(3px);
+          color: #fff;
+          text-decoration: underline;
+          text-underline-offset: 4px;
         }
-        .mvbd-link:hover::after {
-          transform: scaleX(1);
+        .mvbd-link-mail {
+          color: #6ee7b7;
+        }
+        .mvbd-link-mail:hover {
+          color: #a7f3d0;
+        }
+        .mvbd-mail-svg {
+          width: 15px;
+          height: 15px;
+          flex-shrink: 0;
         }
 
-        /* ---------- SOCIAL (glass tiles) ---------- */
+        /* ---------- SOCIAL (plain, flat) ---------- */
         .mvbd-social-grid {
-          display: grid;
-          grid-template-columns: repeat(4, minmax(0, 1fr));
+          display: flex;
+          flex-wrap: wrap;
           gap: 10px;
         }
         .mvbd-social {
           --platform: #ffffff;
-          position: relative;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          gap: 8px;
-          padding: 12px 4px 10px;
-          border-radius: 18px;
-          color: rgba(255, 255, 255, 0.82);
-          text-decoration: none;
-          background: linear-gradient(150deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.04));
-          border: 1px solid rgba(255, 255, 255, 0.16);
-          box-shadow: inset 0 1.5px 0 rgba(255, 255, 255, 0.28), 0 10px 24px rgba(0, 0, 0, 0.3);
-          transition: transform 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease, background 0.22s ease;
-        }
-        .mvbd-social:hover {
-          transform: translateY(-5px);
-          border-color: color-mix(in srgb, var(--platform) 55%, transparent);
-          background: linear-gradient(150deg, color-mix(in srgb, var(--platform) 26%, transparent), rgba(255, 255, 255, 0.05));
-          box-shadow:
-            inset 0 1.5px 0 rgba(255, 255, 255, 0.35),
-            0 16px 34px rgba(0, 0, 0, 0.4),
-            0 0 26px color-mix(in srgb, var(--platform) 35%, transparent);
-        }
-        .mvbd-social-icon {
           display: flex;
           align-items: center;
           justify-content: center;
-          width: 40px;
-          height: 40px;
-          border-radius: 14px;
-          color: var(--platform);
-          background: rgba(0, 0, 0, 0.28);
-          box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22), inset 0 0 14px color-mix(in srgb, var(--platform) 18%, transparent);
+          width: 42px;
+          height: 42px;
+          border-radius: 50%;
+          color: #fff;
+          background: rgba(255, 255, 255, 0.12);
+          transition: background 0.2s ease, transform 0.2s ease, color 0.2s ease;
+        }
+        .mvbd-social:hover {
+          transform: translateY(-3px);
+          background: var(--platform);
+          color: #fff;
+        }
+        .mvbd-social.tiktok:hover,
+        .mvbd-social.threads:hover {
+          color: #000;
         }
         .mvbd-social-svg {
-          width: 20px;
-          height: 20px;
+          width: 19px;
+          height: 19px;
           display: block;
         }
-        .mvbd-social-name {
-          max-width: 100%;
-          font-size: 10.5px;
-          font-weight: 600;
-          letter-spacing: 0.2px;
-          white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
-        }
-        .mvbd-social.facebook { --platform: #3b8bff; }
-        .mvbd-social.instagram { --platform: #f472b6; }
-        .mvbd-social.telegram { --platform: #38bdf8; }
+        .mvbd-social.facebook { --platform: #1877f2; }
+        .mvbd-social.instagram { --platform: #e1306c; }
+        .mvbd-social.telegram { --platform: #229ed9; }
         .mvbd-social.whatsapp { --platform: #25d366; }
-        .mvbd-social.youtube { --platform: #ff4040; }
+        .mvbd-social.youtube { --platform: #ff0000; }
         .mvbd-social.tiktok { --platform: #ffffff; }
         .mvbd-social.threads { --platform: #ffffff; }
 
-        /* ---------- FOLLOW STRIP ---------- */
-        .mvbd-follow-row {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 14px;
-          margin: 32px 0 20px;
-        }
-        .mvbd-follow-line {
-          flex: 1;
-          max-width: 140px;
-          height: 1px;
-          background: linear-gradient(90deg, transparent, rgba(110, 231, 183, 0.55), transparent);
-        }
         .mvbd-follow {
+          margin: 16px 0 0;
           font-size: 9.5px;
           letter-spacing: 3px;
-          white-space: nowrap;
-          color: rgba(255, 255, 255, 0.55);
+          color: rgba(255, 255, 255, 0.5);
         }
         .mvbd-follow b {
           color: #4ade80;
@@ -896,11 +572,17 @@ export default function UniversalFooter() {
         .mvbd-bottom {
           display: flex;
           flex-direction: column;
-          align-items: center;
+          align-items: flex-start;
           gap: 16px;
-          padding-top: 18px;
-          text-align: center;
-          border-top: 1px solid rgba(255, 255, 255, 0.12);
+          margin-top: 44px;
+          padding-top: 20px;
+          background: linear-gradient(
+              90deg,
+              transparent,
+              rgba(255, 255, 255, 0.16),
+              transparent
+            )
+            top / 100% 1px no-repeat;
         }
         .mvbd-bottom-left {
           display: flex;
@@ -935,123 +617,60 @@ export default function UniversalFooter() {
           display: inline-flex;
           align-items: center;
           gap: 8px;
-          height: 42px;
-          padding: 0 18px;
+          height: 38px;
+          padding: 0 16px;
+          border: 0;
           border-radius: 999px;
           font-size: 12.5px;
           font-weight: 600;
-          color: #d1fae5;
+          color: #fff;
           cursor: pointer;
-          background: linear-gradient(145deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.05));
-          border: 1px solid rgba(255, 255, 255, 0.22);
-          box-shadow: inset 0 1.5px 0 rgba(255, 255, 255, 0.3);
-          transition: transform 0.2s ease, background 0.2s ease;
+          background: rgba(255, 255, 255, 0.12);
+          transition: background 0.2s ease, color 0.2s ease;
         }
         .mvbd-top-btn:hover {
-          transform: translateY(-3px);
-          background: rgba(52, 211, 153, 0.22);
+          background: #10b981;
+          color: #03140c;
         }
 
         /* ---------- TABLET ---------- */
         @media (min-width: 640px) {
           .mvbd-wrap {
-            padding: 56px 24px 30px;
+            padding: 70px 28px 28px;
           }
-          .mvbd-hero {
-            padding: 52px 40px 48px;
-          }
-          .mvbd-hero-logo {
-            height: 96px;
-          }
-          .mvbd-hero-title {
-            font-size: 36px;
-          }
-          .mvbd-hero-actions {
-            flex-direction: row;
-            max-width: none;
-            width: auto;
-          }
-          .mvbd-slab {
-            padding: 42px 36px 26px;
-          }
-          .mvbd-social-grid {
-            grid-template-columns: repeat(4, minmax(0, 1fr));
+          .mvbd-logo {
+            height: 72px;
           }
         }
 
         /* ---------- DESKTOP ---------- */
         @media (min-width: 960px) {
           .mvbd-wrap {
-            padding: 70px 32px 34px;
+            padding: 90px 36px 30px;
           }
-          .mvbd-hero {
-            padding: 64px 48px 58px;
-            margin-bottom: 26px;
+          .mvbd-top {
+            grid-template-columns: 1.5fr 0.8fr 1fr 1.1fr;
+            gap: 56px;
           }
-          .mvbd-hero-logo {
-            height: 112px;
-          }
-          .mvbd-hero-title {
-            font-size: 44px;
-            letter-spacing: -1.2px;
-          }
-          .mvbd-hero-sub {
-            font-size: 16px;
-          }
-          .mvbd-slab {
-            padding: 52px 52px 28px;
-          }
-          .mvbd-cols {
-            grid-template-columns: 1.15fr 0.8fr 0.95fr 1.6fr;
-            gap: 48px;
-          }
-          .mvbd-col-about,
+          .mvbd-brand,
           .mvbd-col-social {
             grid-column: auto;
           }
-          .mvbd-social-grid {
-            grid-template-columns: repeat(4, minmax(0, 1fr));
+          .mvbd-logo {
+            height: 84px;
           }
           .mvbd-bottom {
             flex-direction: row;
+            align-items: center;
             justify-content: space-between;
-            text-align: left;
-          }
-        }
-
-        /* ---------- MOBILE: lighter blur for smoothness ---------- */
-        @media (max-width: 640px) {
-          .mvbd-glass {
-            border-radius: 26px;
-            -webkit-backdrop-filter: blur(12px) saturate(160%);
-            backdrop-filter: blur(12px) saturate(160%);
-            box-shadow:
-              inset 0 1.5px 0 rgba(255, 255, 255, 0.38),
-              inset 0 -1px 0 rgba(255, 255, 255, 0.08),
-              0 20px 50px rgba(0, 0, 0, 0.5);
-          }
-          .mvbd-orb-1,
-          .mvbd-orb-2,
-          .mvbd-orb-3 {
-            width: 380px;
-            height: 380px;
-          }
-        }
-
-        /* no backdrop-filter support -> solid dark glass */
-        @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-          .mvbd-glass {
-            background: rgba(12, 20, 20, 0.86);
+            margin-top: 64px;
           }
         }
 
         @media (prefers-reduced-motion: reduce) {
-          .mvbd-btn,
-          .mvbd-btn::before,
           .mvbd-link,
           .mvbd-social,
-          .mvbd-top-btn,
-          .mvbd-chevron {
+          .mvbd-top-btn {
             transition: none !important;
           }
         }

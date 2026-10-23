@@ -1,7 +1,5 @@
 "use client"
 
-import Link from "next/link"
-
 type SocialPlatform =
   | "facebook"
   | "telegram"
@@ -17,6 +15,10 @@ interface SocialLink {
   url: string
   platform: SocialPlatform
 }
+
+const FOOTER_BG_URL =
+  "https://i.postimg.cc/jjJhVmLZ/f2890eb44e8fd63f2ec2004e11f742af.jpg"
+const LOGO_URL = "https://i.postimg.cc/RC8VhYFd/20261023-144832.png"
 
 /* =========================================================
    BRAND SVG ICONS
@@ -120,8 +122,16 @@ function ThreadsIcon() {
 
 function MailIcon() {
   return (
-    <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 inline-block mr-1" fill="currentColor">
-      <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
+    <svg viewBox="0 0 24 24" className="mvbd-mail-svg" fill="currentColor" aria-hidden="true">
+      <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z" />
+    </svg>
+  )
+}
+
+function ArrowUpIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="mvbd-mail-svg" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M12 19V5M5 12l7-7 7 7" />
     </svg>
   )
 }
@@ -130,33 +140,22 @@ function MailIcon() {
    ICON SELECTOR
    ========================================================= */
 
-function SocialIcon({
-  platform,
-}: {
-  platform: SocialPlatform
-}) {
+function SocialIcon({ platform }: { platform: SocialPlatform }) {
   switch (platform) {
     case "facebook":
       return <FacebookIcon />
-
     case "telegram":
       return <TelegramIcon />
-
     case "instagram":
       return <InstagramIcon />
-
     case "whatsapp":
       return <WhatsappIcon />
-
     case "youtube":
       return <YoutubeIcon />
-
     case "tiktok":
       return <TiktokIcon />
-
     case "threads":
       return <ThreadsIcon />
-
     default:
       return null
   }
@@ -214,146 +213,123 @@ export default function UniversalFooter() {
     },
   ]
 
+  const handleBackToTop = () => {
+    if (typeof window !== "undefined") {
+      window.scrollTo({ top: 0, behavior: "smooth" })
+    }
+  }
+
   return (
-    <footer className="mvbd-footer relative overflow-hidden">
-
+    <footer className="mvbd-footer">
       {/* =====================================================
-          ANIMATED BACKGROUND
+          STATIC BACKGROUND (no heavy animation = no lag)
           ===================================================== */}
-
-      <div className="mvbd-footer-bg">
-
-        {/* Aurora */}
-        <div className="mvbd-aurora mvbd-aurora-1" />
-        <div className="mvbd-aurora mvbd-aurora-2" />
-        <div className="mvbd-aurora mvbd-aurora-3" />
-
-        {/* Moving Grid */}
-        <div className="mvbd-grid" />
-
-        {/* Floating particles */}
-        <span className="mvbd-particle p1" />
-        <span className="mvbd-particle p2" />
-        <span className="mvbd-particle p3" />
-        <span className="mvbd-particle p4" />
-        <span className="mvbd-particle p5" />
-        <span className="mvbd-particle p6" />
-
-        {/* Bottom light */}
-        <div className="mvbd-bottom-light" />
+      <div className="mvbd-bg" aria-hidden="true">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={FOOTER_BG_URL}
+          alt=""
+          className="mvbd-bg-img"
+          loading="lazy"
+          decoding="async"
+        />
+        <div className="mvbd-bg-shade" />
+        <div className="mvbd-bg-glow" />
       </div>
 
-      <div className="relative z-10 px-4 py-10 max-w-6xl mx-auto">
-
+      <div className="mvbd-wrap">
         {/* ===================================================
-            TOP BRAND
+            HERO / CTA PANEL
             =================================================== */}
-
-        <div className="text-center mb-9">
-
-          <div className="inline-flex items-center justify-center gap-2 mb-3">
-
-            <div className="mvbd-brand-orb">
-              <span>M</span>
-            </div>
-
-            <div className="text-left">
-              <div className="mvbd-brand-title">
-                MoviesVerse<span>BD</span>
-              </div>
-
-              <div className="mvbd-brand-subtitle">
-                YOUR MOVIE UNIVERSE
-              </div>
-            </div>
-
-          </div>
-
-          <p className="text-slate-400 text-sm max-w-md mx-auto leading-relaxed">
-            Your ultimate entertainment destination for movies, series,
-            anime and more.
-          </p>
-
-        </div>
-
-        {/* ===================================================
-            MAIN FOOTER CONTENT
-            =================================================== */}
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-9">
-
-          {/* About */}
-          <div className="mvbd-footer-column">
-
-            <div className="mvbd-section-title">
-              <span />
-              About MVBD
-            </div>
-
-            <p className="text-slate-400 text-sm leading-6">
-              Discover your next favourite movie, series or anime
-              with MoviesVerseBD.
-            </p>
-
-            <div className="mvbd-mini-status">
+        <section className="mvbd-glass mvbd-hero">
+          <div className="mvbd-hero-text">
+            <div className="mvbd-eyebrow">
               <span className="mvbd-live-dot" />
               MVBD is always evolving
             </div>
+            <h2 className="mvbd-hero-title">
+              Questions? We&apos;re always here for you.
+            </h2>
+            <p className="mvbd-hero-sub">
+              Your ultimate entertainment destination for movies, series,
+              anime and more.
+            </p>
+          </div>
 
+          <div className="mvbd-hero-actions">
+            <a href="#contact" className="mvbd-btn mvbd-btn-primary">
+              Contact Us
+            </a>
+            <a href="mailto:support@mvbds.xyz" className="mvbd-btn mvbd-btn-ghost">
+              <MailIcon /> support@mvbds.xyz
+            </a>
+          </div>
+        </section>
+
+        {/* ===================================================
+            MAIN COLUMNS
+            =================================================== */}
+        <div className="mvbd-cols">
+          {/* Brand */}
+          <div className="mvbd-col mvbd-col-brand">
+            <a href="/" className="mvbd-logo-link" aria-label="MoviesVerseBD home">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={LOGO_URL}
+                alt="MoviesVerseBD"
+                className="mvbd-logo"
+                loading="lazy"
+                decoding="async"
+              />
+            </a>
+
+            <p className="mvbd-text">
+              Discover your next favourite movie, series or anime with
+              MoviesVerseBD.
+            </p>
+
+            <div className="mvbd-tagline">YOUR MOVIE UNIVERSE</div>
           </div>
 
           {/* Quick Links */}
-          <div className="mvbd-footer-column">
+          <nav className="mvbd-col" aria-label="Quick links">
+            <h3 className="mvbd-heading">Quick Links</h3>
+            <ul className="mvbd-list">
+              <li><a href="#profile" className="mvbd-link">Profile</a></li>
+              <li><a href="#about" className="mvbd-link">About Us</a></li>
+              <li><a href="#contact" className="mvbd-link">Contact Us</a></li>
+              <li><a href="#subscriptions" className="mvbd-link">Subscriptions</a></li>
+            </ul>
+          </nav>
 
-            <div className="mvbd-section-title">
-              <span />
-              Quick Links
-            </div>
-
-            <div className="grid grid-cols-2 gap-2">
-
-              <a
-                href="#profile"
-                className="mvbd-quick-link"
-              >
-                Profile
-              </a>
-
-              <a
-                href="#about"
-                className="mvbd-quick-link"
-              >
-                About Us
-              </a>
-
-              <a
-                href="#contact"
-                className="mvbd-quick-link"
-              >
-                Contact Us
-              </a>
-
-              <a
-                href="#subscriptions"
-                className="mvbd-quick-link"
-              >
-                Subscriptions
-              </a>
-
-            </div>
-
-          </div>
+          {/* Legal */}
+          <nav className="mvbd-col" aria-label="Legal">
+            <h3 className="mvbd-heading">Support &amp; Legal</h3>
+            <ul className="mvbd-list">
+              <li>
+                <a href="https://mvbds.xyz/privacy-policy.html" className="mvbd-link">
+                  Privacy Policy
+                </a>
+              </li>
+              <li>
+                <a href="https://mvbds.xyz/terms.html" className="mvbd-link">
+                  Terms &amp; Conditions
+                </a>
+              </li>
+              <li><a href="#contact" className="mvbd-link">Contact</a></li>
+              <li>
+                <a href="mailto:support@mvbds.xyz" className="mvbd-link">
+                  Email Support
+                </a>
+              </li>
+            </ul>
+          </nav>
 
           {/* Social */}
-          <div className="mvbd-footer-column">
-
-            <div className="mvbd-section-title">
-              <span />
-              Connect With Us
-            </div>
+          <div className="mvbd-col mvbd-col-social">
+            <h3 className="mvbd-heading">Connect With Us</h3>
 
             <div className="mvbd-social-grid">
-
               {socialLinks.map((social) => (
                 <a
                   key={social.name}
@@ -364,70 +340,26 @@ export default function UniversalFooter() {
                   title={social.label}
                   className={`mvbd-social ${social.platform}`}
                 >
-
-                  {/* animated ring */}
-                  <span className="mvbd-social-ring" />
-
-                  {/* orbit dot */}
-                  <span className="mvbd-orbit">
-                    <span />
-                  </span>
-
-                  {/* icon */}
                   <span className="mvbd-social-icon">
                     <SocialIcon platform={social.platform} />
                   </span>
-
-                  {/* shine */}
-                  <span className="mvbd-social-shine" />
-
+                  <span className="mvbd-social-name">{social.label}</span>
                 </a>
               ))}
-
             </div>
-
           </div>
-
         </div>
 
         {/* ===================================================
-            SOCIAL LABEL STRIP
+            BOTTOM BAR
             =================================================== */}
-
-        <div className="mvbd-social-strip">
-
-          <div className="mvbd-social-strip-line" />
-
-          <span>
-            FOLLOW <b>MVBD</b> EVERYWHERE
-          </span>
-
-          <div className="mvbd-social-strip-line" />
-
-        </div>
-
-        {/* ===================================================
-            DIVIDER
-            =================================================== */}
-
-        <div className="mvbd-divider" />
-
-        {/* ===================================================
-            BOTTOM
-            =================================================== */}
-
-        <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-center md:text-left">
-
-          <div className="space-y-1.5">
-
-            <p className="text-slate-500 text-xs">
+        <div className="mvbd-glass mvbd-bottom">
+          <div className="mvbd-bottom-left">
+            <p className="mvbd-copy">
               © {currentYear} MoviesVerseBD. All rights reserved.
             </p>
-
-            <div className="text-slate-600 text-xs">
-
+            <p className="mvbd-made">
               Made by{" "}
-
               <a
                 href="https://wa.me/qr/R2ZGCQAMXWRPP1"
                 target="_blank"
@@ -436,479 +368,326 @@ export default function UniversalFooter() {
               >
                 Abdul Mazid
               </a>
-
-            </div>
-
+            </p>
           </div>
 
-          <div className="flex flex-wrap items-center justify-center gap-3 text-xs text-slate-500">
-
-            <a
-              href="mailto:support@mvbds.xyz"
-              className="mvbd-bottom-link text-emerald-400 hover:text-emerald-300 font-medium flex items-center"
+          <div className="mvbd-bottom-right">
+            <span className="mvbd-follow">
+              FOLLOW <b>MVBD</b> EVERYWHERE
+            </span>
+            <button
+              type="button"
+              onClick={handleBackToTop}
+              className="mvbd-top-btn"
+              aria-label="Back to top"
             >
-              <MailIcon /> support@mvbds.xyz
-            </a>
-
-            <span className="text-slate-700">•</span>
-
-            <a
-              href="https://mvbds.xyz/privacy-policy.html"
-              className="mvbd-bottom-link"
-            >
-              Privacy Policy
-            </a>
-
-            <span className="text-slate-700">•</span>
-
-            <a
-              href="https://mvbds.xyz/terms.html"
-              className="mvbd-bottom-link"
-            >
-              Terms & Conditions
-            </a>
-
-            <span className="text-slate-700">•</span>
-
-            <a
-              href="#contact"
-              className="mvbd-bottom-link"
-            >
-              Contact
-            </a>
-
+              <ArrowUpIcon />
+            </button>
           </div>
-
         </div>
-
       </div>
 
       {/* =====================================================
-          ALL FOOTER CSS (PERFORMANCE OPTIMIZED)
+          CSS  (global-scoped so child icon components are styled)
           ===================================================== */}
-
-      <style jsx>{`
-
-        /* =========================
-           FOOTER BASE
-           ========================= */
-
+      <style jsx global>{`
+        /* ---------- BASE ---------- */
         .mvbd-footer {
-          min-height: 420px;
-          background:
-            radial-gradient(
-              circle at 50% 0%,
-              rgba(16,185,129,.075),
-              transparent 35%
-            ),
-            #020504;
-          border-top: 1px solid rgba(255,255,255,.08);
-          contain: content;
+          position: relative;
+          isolation: isolate;
+          overflow: hidden;
+          background: #04070a;
+          border-top: 1px solid rgba(255, 255, 255, 0.08);
+          color: rgba(255, 255, 255, 0.7);
+          /* Skip rendering work until the footer is near the viewport */
+          content-visibility: auto;
+          contain-intrinsic-size: auto 760px;
         }
 
-        .mvbd-footer-bg {
+        /* ---------- BACKGROUND (static, cheap) ---------- */
+        .mvbd-bg {
           position: absolute;
           inset: 0;
+          z-index: -1;
+          pointer-events: none;
+        }
+        .mvbd-bg-img {
+          position: absolute;
+          inset: 0;
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          object-position: center;
+          opacity: 0.55;
+        }
+        .mvbd-bg-shade {
+          position: absolute;
+          inset: 0;
+          background:
+            linear-gradient(180deg, #04070a 0%, rgba(4, 7, 10, 0.55) 28%, rgba(4, 7, 10, 0.72) 70%, #04070a 100%),
+            linear-gradient(90deg, rgba(4, 7, 10, 0.55), rgba(4, 7, 10, 0.15) 50%, rgba(4, 7, 10, 0.55));
+        }
+        .mvbd-bg-glow {
+          position: absolute;
+          inset: 0;
+          background:
+            radial-gradient(ellipse 60% 45% at 50% 0%, rgba(16, 185, 129, 0.16), transparent 70%),
+            radial-gradient(ellipse 45% 40% at 90% 100%, rgba(56, 189, 248, 0.09), transparent 70%),
+            radial-gradient(ellipse 40% 40% at 5% 100%, rgba(124, 58, 237, 0.1), transparent 70%);
+        }
+
+        .mvbd-wrap {
+          position: relative;
+          max-width: 1240px;
+          margin: 0 auto;
+          padding: 40px 16px 24px;
+        }
+
+        /* ---------- LIQUID GLASS ---------- */
+        .mvbd-glass {
+          position: relative;
+          border-radius: 26px;
+          background:
+            linear-gradient(140deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.04) 45%, rgba(255, 255, 255, 0.07) 100%);
+          border: 1px solid rgba(255, 255, 255, 0.14);
+          box-shadow:
+            inset 0 1px 0 rgba(255, 255, 255, 0.28),
+            inset 0 -1px 0 rgba(255, 255, 255, 0.05),
+            inset 0 0 22px rgba(255, 255, 255, 0.03),
+            0 18px 50px rgba(0, 0, 0, 0.45);
+          -webkit-backdrop-filter: blur(16px) saturate(165%);
+          backdrop-filter: blur(16px) saturate(165%);
           overflow: hidden;
+        }
+        /* soft specular highlight */
+        .mvbd-glass::before {
+          content: "";
+          position: absolute;
+          inset: 0;
+          border-radius: inherit;
+          background: radial-gradient(120% 70% at 0% 0%, rgba(255, 255, 255, 0.14), transparent 55%);
           pointer-events: none;
         }
 
-        /* =========================
-           AURORA (OPTIMIZED BLUR)
-           ========================= */
-
-        .mvbd-aurora {
-          position: absolute;
-          width: 320px;
-          height: 180px;
-          border-radius: 50%;
-          filter: blur(40px);
-          opacity: .13;
-          mix-blend-mode: screen;
-          will-change: transform;
-          transform: translateZ(0);
-        }
-
-        .mvbd-aurora-1 {
-          top: -110px;
-          left: 5%;
-          background: #00ff88;
-          animation: mvbdAurora1 12s ease-in-out infinite alternate;
-        }
-
-        .mvbd-aurora-2 {
-          top: 80px;
-          right: -100px;
-          background: #00b7ff;
-          animation: mvbdAurora2 15s ease-in-out infinite alternate;
-        }
-
-        .mvbd-aurora-3 {
-          bottom: -150px;
-          left: 35%;
-          background: #7c3aed;
-          animation: mvbdAurora3 18s ease-in-out infinite alternate;
-        }
-
-        @keyframes mvbdAurora1 {
-          0% {
-            transform: translate3d(-40px,0,0) scale(.8);
-          }
-          100% {
-            transform: translate3d(230px,90px,0) scale(1.25);
-          }
-        }
-
-        @keyframes mvbdAurora2 {
-          0% {
-            transform: translate3d(0,40px,0) scale(1);
-          }
-          100% {
-            transform: translate3d(-220px,-80px,0) scale(1.35);
-          }
-        }
-
-        @keyframes mvbdAurora3 {
-          0% {
-            transform: translate3d(-100px,30px,0) scale(.9);
-          }
-          100% {
-            transform: translate3d(180px,-80px,0) scale(1.3);
-          }
-        }
-
-        /* =========================
-           MOVING GRID (GPU ACCELERATED)
-           ========================= */
-
-        .mvbd-grid {
-          position: absolute;
-          inset: -50px;
-          opacity: .035;
-          background-image:
-            linear-gradient(
-              rgba(255,255,255,.7) 1px,
-              transparent 1px
-            ),
-            linear-gradient(
-              90deg,
-              rgba(255,255,255,.7) 1px,
-              transparent 1px
-            );
-          background-size: 45px 45px;
-          transform: translateZ(0);
-          will-change: background-position;
-          animation: mvbdGridMove 12s linear infinite;
-        }
-
-        @keyframes mvbdGridMove {
-          from {
-            background-position: 0 0;
-          }
-          to {
-            background-position: 0 45px;
-          }
-        }
-
-        /* =========================
-           PARTICLES
-           ========================= */
-
-        .mvbd-particle {
-          position: absolute;
-          width: 3px;
-          height: 3px;
-          border-radius: 50%;
-          background: rgba(110,255,180,.8);
-          box-shadow: 0 0 8px rgba(52,211,153,.8);
-          will-change: transform;
-          animation: mvbdParticleFloat 7s ease-in-out infinite;
-        }
-
-        .p1 { left: 8%; top: 25%; animation-delay: -1s; }
-        .p2 { left: 25%; top: 70%; animation-delay: -4s; }
-        .p3 { left: 48%; top: 18%; animation-delay: -2s; }
-        .p4 { right: 18%; top: 35%; animation-delay: -5s; }
-        .p5 { right: 8%; top: 75%; animation-delay: -3s; }
-        .p6 { left: 68%; bottom: 10%; animation-delay: -6s; }
-
-        @keyframes mvbdParticleFloat {
-          0%, 100% {
-            transform: translate3d(0,0,0);
-            opacity: .25;
-          }
-          50% {
-            transform: translate3d(0,-28px,0);
-            opacity: 1;
-          }
-        }
-
-        /* =========================
-           BOTTOM LIGHT
-           ========================= */
-
-        .mvbd-bottom-light {
-          position: absolute;
-          bottom: -100px;
-          left: 50%;
-          width: 70%;
-          height: 180px;
-          transform: translateX(-50%) translateZ(0);
-          background: rgba(16,185,129,.18);
-          filter: blur(40px);
-          will-change: transform, opacity;
-          animation: mvbdBottomGlow 5s ease-in-out infinite alternate;
-        }
-
-        @keyframes mvbdBottomGlow {
-          from {
-            opacity: .35;
-            transform: translateX(-50%) scale(.85);
-          }
-          to {
-            opacity: .8;
-            transform: translateX(-50%) scale(1.15);
-          }
-        }
-
-        /* =========================
-           BRAND
-           ========================= */
-
-        .mvbd-brand-orb {
-          position: relative;
-          width: 44px;
-          height: 44px;
+        /* ---------- HERO ---------- */
+        .mvbd-hero {
           display: flex;
-          align-items: center;
-          justify-content: center;
-          border-radius: 14px;
-          background:
-            linear-gradient(
-              135deg,
-              rgba(74,222,128,.2),
-              rgba(16,185,129,.05)
-            );
-          border: 1px solid rgba(74,222,128,.28);
-          box-shadow:
-            0 0 25px rgba(16,185,129,.12),
-            inset 0 1px 0 rgba(255,255,255,.12);
-          overflow: hidden;
+          flex-direction: column;
+          gap: 22px;
+          padding: 28px 22px;
+          margin-bottom: 36px;
         }
-
-        .mvbd-brand-orb::before {
-          content: "";
-          position: absolute;
-          width: 80px;
-          height: 20px;
-          background: rgba(255,255,255,.12);
-          transform: rotate(-35deg) translateX(-60px);
-          will-change: transform;
-          animation: mvbdBrandShine 3.5s ease-in-out infinite;
-        }
-
-        .mvbd-brand-orb span {
-          position: relative;
-          z-index: 2;
-          font-size: 21px;
-          font-weight: 900;
-          color: #4ade80;
-        }
-
-        @keyframes mvbdBrandShine {
-          0%, 65% {
-            transform: rotate(-35deg) translateX(-70px);
-          }
-          100% {
-            transform: rotate(-35deg) translateX(90px);
-          }
-        }
-
-        .mvbd-brand-title {
-          font-size: 20px;
-          line-height: 1;
-          font-weight: 800;
-          color: white;
-          letter-spacing: -.5px;
-        }
-
-        .mvbd-brand-title span {
-          color: #4ade80;
-        }
-
-        .mvbd-brand-subtitle {
-          margin-top: 4px;
-          font-size: 7px;
-          letter-spacing: 3px;
-          color: rgba(255,255,255,.35);
-        }
-
-        /* =========================
-           SECTION TITLES
-           ========================= */
-
-        .mvbd-section-title {
-          display: flex;
-          align-items: center;
-          gap: 9px;
-          color: white;
-          font-size: 15px;
-          font-weight: 700;
-          margin-bottom: 15px;
-        }
-
-        .mvbd-section-title span {
-          width: 4px;
-          height: 18px;
-          border-radius: 99px;
-          background: #34d399;
-          box-shadow: 0 0 12px rgba(52,211,153,.65);
-          will-change: transform, opacity;
-          animation: mvbdTitlePulse 2s ease-in-out infinite;
-        }
-
-        @keyframes mvbdTitlePulse {
-          0%,100% {
-            opacity: .45;
-            transform: scaleY(.75);
-          }
-          50% {
-            opacity: 1;
-            transform: scaleY(1);
-          }
-        }
-
-        /* =========================
-           STATUS
-           ========================= */
-
-        .mvbd-mini-status {
+        .mvbd-eyebrow {
           display: inline-flex;
           align-items: center;
-          gap: 7px;
-          margin-top: 16px;
-          padding: 7px 10px;
+          gap: 8px;
+          padding: 6px 12px;
           border-radius: 999px;
-          background: rgba(255,255,255,.035);
-          border: 1px solid rgba(255,255,255,.07);
-          color: rgba(255,255,255,.38);
-          font-size: 10px;
+          font-size: 11px;
+          letter-spacing: 0.3px;
+          color: rgba(255, 255, 255, 0.75);
+          background: rgba(255, 255, 255, 0.07);
+          border: 1px solid rgba(255, 255, 255, 0.12);
         }
-
         .mvbd-live-dot {
-          width: 6px;
-          height: 6px;
+          width: 7px;
+          height: 7px;
           border-radius: 50%;
           background: #4ade80;
           box-shadow: 0 0 10px #4ade80;
-          will-change: transform, opacity;
-          animation: mvbdLivePulse 1.5s ease-in-out infinite;
         }
-
-        @keyframes mvbdLivePulse {
-          0%,100% {
-            transform: scale(.7);
-            opacity: .45;
-          }
-          50% {
-            transform: scale(1.15);
-            opacity: 1;
-          }
+        .mvbd-hero-title {
+          margin: 14px 0 8px;
+          font-size: 24px;
+          line-height: 1.2;
+          font-weight: 800;
+          letter-spacing: -0.5px;
+          color: #fff;
         }
-
-        /* =========================
-           QUICK LINKS
-           ========================= */
-
-        .mvbd-quick-link {
-          position: relative;
-          padding: 8px 10px;
-          border-radius: 99px;
-          color: rgba(255,255,255,.42);
-          font-size: 12px;
-          background: rgba(255,255,255,.025);
-          border: 1px solid transparent;
-          transition:
-            color .2s ease,
-            background .2s ease,
-            border-color .2s ease,
-            transform .2s ease;
+        .mvbd-hero-sub {
+          margin: 0;
+          max-width: 520px;
+          font-size: 14px;
+          line-height: 1.6;
+          color: rgba(255, 255, 255, 0.62);
         }
-
-        .mvbd-quick-link:hover {
-          color: #6ee7b7;
-          background: rgba(52,211,153,.06);
-          border-color: rgba(52,211,153,.13);
-          transform: translateY(-2px);
-        }
-
-        /* =========================
-           SOCIAL GRID
-           ========================= */
-
-        .mvbd-social-grid {
+        .mvbd-hero-actions {
           display: flex;
           flex-wrap: wrap;
           gap: 10px;
         }
 
+        .mvbd-btn {
+          position: relative;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+          min-height: 46px;
+          padding: 0 22px;
+          border-radius: 999px;
+          font-size: 14px;
+          font-weight: 700;
+          text-decoration: none;
+          transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+        }
+        .mvbd-btn:hover {
+          transform: translateY(-2px);
+        }
+        .mvbd-btn-primary {
+          color: #04130c;
+          background: linear-gradient(135deg, #6ee7b7, #34d399 55%, #10b981);
+          box-shadow: 0 10px 28px rgba(16, 185, 129, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.55);
+        }
+        .mvbd-btn-primary:hover {
+          box-shadow: 0 14px 34px rgba(16, 185, 129, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+        }
+        .mvbd-btn-ghost {
+          color: #a7f3d0;
+          background: rgba(255, 255, 255, 0.07);
+          border: 1px solid rgba(255, 255, 255, 0.16);
+          box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15);
+        }
+        .mvbd-btn-ghost:hover {
+          background: rgba(255, 255, 255, 0.12);
+        }
+        .mvbd-mail-svg {
+          width: 16px;
+          height: 16px;
+          flex-shrink: 0;
+        }
+
+        /* ---------- COLUMNS ---------- */
+        .mvbd-cols {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 34px 20px;
+          padding: 0 6px;
+          margin-bottom: 36px;
+        }
+        .mvbd-col-brand,
+        .mvbd-col-social {
+          grid-column: 1 / -1;
+        }
+
+        .mvbd-logo-link {
+          display: inline-block;
+          margin-bottom: 14px;
+        }
+        .mvbd-logo {
+          display: block;
+          height: 52px;
+          width: auto;
+          max-width: 240px;
+          object-fit: contain;
+          filter: drop-shadow(0 6px 18px rgba(0, 0, 0, 0.5));
+        }
+        .mvbd-text {
+          margin: 0;
+          max-width: 340px;
+          font-size: 14px;
+          line-height: 1.7;
+          color: rgba(255, 255, 255, 0.6);
+        }
+        .mvbd-tagline {
+          margin-top: 16px;
+          font-size: 10px;
+          letter-spacing: 4px;
+          color: rgba(255, 255, 255, 0.4);
+        }
+
+        .mvbd-heading {
+          position: relative;
+          margin: 0 0 16px;
+          padding-bottom: 10px;
+          font-size: 15px;
+          font-weight: 700;
+          letter-spacing: 0.2px;
+          color: #fff;
+        }
+        .mvbd-heading::after {
+          content: "";
+          position: absolute;
+          left: 0;
+          bottom: 0;
+          width: 28px;
+          height: 3px;
+          border-radius: 99px;
+          background: linear-gradient(90deg, #34d399, rgba(52, 211, 153, 0));
+        }
+
+        .mvbd-list {
+          list-style: none;
+          margin: 0;
+          padding: 0;
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+        }
+        .mvbd-link {
+          display: inline-block;
+          font-size: 14px;
+          color: rgba(255, 255, 255, 0.62);
+          text-decoration: none;
+          transition: color 0.2s ease, transform 0.2s ease;
+        }
+        .mvbd-link:hover {
+          color: #6ee7b7;
+          transform: translateX(4px);
+        }
+
+        /* ---------- SOCIAL ---------- */
+        .mvbd-social-grid {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 10px;
+        }
         .mvbd-social {
           --platform: #ffffff;
-
           position: relative;
-          width: 45px;
-          height: 45px;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          padding: 8px 12px 8px 8px;
+          border-radius: 16px;
+          color: rgba(255, 255, 255, 0.78);
+          text-decoration: none;
+          background: linear-gradient(145deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.03));
+          border: 1px solid rgba(255, 255, 255, 0.11);
+          box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14), 0 6px 18px rgba(0, 0, 0, 0.25);
+          transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+        }
+        .mvbd-social:hover {
+          transform: translateY(-3px);
+          border-color: color-mix(in srgb, var(--platform) 45%, transparent);
+          background: linear-gradient(145deg, color-mix(in srgb, var(--platform) 16%, transparent), rgba(255, 255, 255, 0.04));
+          box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 10px 26px rgba(0, 0, 0, 0.35),
+            0 0 18px color-mix(in srgb, var(--platform) 22%, transparent);
+        }
+        .mvbd-social-icon {
           display: flex;
           align-items: center;
           justify-content: center;
-          border-radius: 15px;
-
-          color: rgba(255,255,255,.68);
-
-          background:
-            linear-gradient(
-              145deg,
-              rgba(255,255,255,.09),
-              rgba(255,255,255,.025)
-            );
-
-          border: 1px solid rgba(255,255,255,.10);
-
-          box-shadow:
-            inset 0 1px 0 rgba(255,255,255,.08),
-            0 8px 25px rgba(0,0,0,.22);
-
-          overflow: visible;
-
-          transition:
-            transform .25s ease,
-            color .2s ease,
-            border-color .2s ease,
-            box-shadow .2s ease;
-        }
-
-        .mvbd-social:hover {
-          transform: translateY(-5px) scale(1.05);
+          flex-shrink: 0;
+          width: 34px;
+          height: 34px;
+          border-radius: 11px;
           color: var(--platform);
-          border-color: color-mix(
-            in srgb,
-            var(--platform) 35%,
-            transparent
-          );
-
-          box-shadow:
-            0 12px 35px rgba(0,0,0,.3),
-            0 0 15px color-mix(
-              in srgb,
-              var(--platform) 20%,
-              transparent
-            ),
-            inset 0 1px 0 rgba(255,255,255,.13);
+          background: rgba(255, 255, 255, 0.08);
+          box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18);
         }
-
-        /* =========================
-           PLATFORM COLORS
-           ========================= */
+        .mvbd-social-svg {
+          width: 18px;
+          height: 18px;
+          display: block;
+        }
+        .mvbd-social-name {
+          font-size: 13px;
+          font-weight: 600;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
 
         .mvbd-social.facebook { --platform: #1877f2; }
         .mvbd-social.instagram { --platform: #f472b6; }
@@ -918,304 +697,157 @@ export default function UniversalFooter() {
         .mvbd-social.tiktok { --platform: #ffffff; }
         .mvbd-social.threads { --platform: #ffffff; }
 
-        /* =========================
-           ICON
-           ========================= */
-
-        .mvbd-social-icon {
-          position: relative;
-          z-index: 5;
+        /* ---------- BOTTOM BAR ---------- */
+        .mvbd-bottom {
           display: flex;
+          flex-direction: column;
           align-items: center;
-          justify-content: center;
-          width: 22px;
-          height: 22px;
-          transition: transform .2s ease;
-        }
-
-        .mvbd-social:hover .mvbd-social-icon {
-          transform: scale(1.1);
-        }
-
-        .mvbd-social-svg {
-          width: 100%;
-          height: 100%;
-          display: block;
-        }
-
-        /* =========================
-           LIVE RING
-           ========================= */
-
-        .mvbd-social-ring {
-          position: absolute;
-          inset: -1px;
-          border-radius: inherit;
-          border: 1px solid transparent;
-          opacity: 0;
-          pointer-events: none;
-        }
-
-        .mvbd-social:hover .mvbd-social-ring {
-          border-color: var(--platform);
-          animation: mvbdSocialRing 1.2s ease-out infinite;
-        }
-
-        @keyframes mvbdSocialRing {
-          0% {
-            inset: 0;
-            opacity: .65;
-          }
-          100% {
-            inset: -7px;
-            opacity: 0;
-          }
-        }
-
-        /* =========================
-           ORBIT DOT
-           ========================= */
-
-        .mvbd-orbit {
-          position: absolute;
-          inset: -5px;
-          border-radius: 50%;
-          pointer-events: none;
-          opacity: 0;
-        }
-
-        .mvbd-orbit span {
-          position: absolute;
-          top: -2px;
-          left: 50%;
-          width: 4px;
-          height: 4px;
-          transform: translateX(-50%);
-          border-radius: 50%;
-          background: var(--platform);
-          box-shadow: 0 0 6px var(--platform);
-        }
-
-        .mvbd-social:hover .mvbd-orbit {
-          opacity: 1;
-          will-change: transform;
-          animation: mvbdOrbit 2s linear infinite;
-        }
-
-        @keyframes mvbdOrbit {
-          to {
-            transform: rotate(360deg);
-          }
-        }
-
-        /* =========================
-           ICON SHINE
-           ========================= */
-
-        .mvbd-social-shine {
-          position: absolute;
-          z-index: 2;
-          top: -20%;
-          left: -80%;
-          width: 55%;
-          height: 140%;
-          transform: rotate(20deg);
-          background: linear-gradient(
-            90deg,
-            transparent,
-            rgba(255,255,255,.2),
-            transparent
-          );
-          pointer-events: none;
-        }
-
-        .mvbd-social:hover .mvbd-social-shine {
-          animation: mvbdSocialShine .6s ease;
-        }
-
-        @keyframes mvbdSocialShine {
-          from { left: -80%; }
-          to { left: 140%; }
-        }
-
-        /* =========================
-           SOCIAL STRIP
-           ========================= */
-
-        .mvbd-social-strip {
-          display: flex;
-          align-items: center;
-          justify-content: center;
           gap: 14px;
-          margin: 5px 0 20px;
+          padding: 16px 20px;
+          border-radius: 22px;
+          text-align: center;
         }
-
-        .mvbd-social-strip span:not(.mvbd-social-strip-line) {
-          color: rgba(255,255,255,.25);
-          font-size: 8px;
-          letter-spacing: 3px;
-          white-space: nowrap;
+        .mvbd-bottom-left {
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
         }
-
-        .mvbd-social-strip b {
-          color: #4ade80;
-          font-weight: 700;
+        .mvbd-copy,
+        .mvbd-made {
+          margin: 0;
+          font-size: 12px;
+          color: rgba(255, 255, 255, 0.5);
         }
-
-        .mvbd-social-strip-line {
-          width: 55px;
-          height: 1px;
-          background: linear-gradient(
-            90deg,
-            transparent,
-            rgba(52,211,153,.35),
-            transparent
-          );
-        }
-
-        /* =========================
-           DIVIDER
-           ========================= */
-
-        .mvbd-divider {
-          height: 1px;
-          margin-bottom: 22px;
-          background:
-            linear-gradient(
-              90deg,
-              transparent,
-              rgba(52,211,153,.22),
-              rgba(255,255,255,.08),
-              rgba(52,211,153,.22),
-              transparent
-            );
-          position: relative;
-          overflow: hidden;
-        }
-
-        .mvbd-divider::after {
-          content: "";
-          position: absolute;
-          top: 0;
-          left: -20%;
-          width: 20%;
-          height: 100%;
-          background: #6ee7b7;
-          box-shadow: 0 0 10px #34d399;
-          will-change: left;
-          animation: mvbdDividerFlow 4s linear infinite;
-        }
-
-        @keyframes mvbdDividerFlow {
-          from { left: -20%; }
-          to { left: 120%; }
-        }
-
-        /* =========================
-           MAKER
-           ========================= */
-
         .mvbd-maker {
           display: inline-block;
           margin-left: 3px;
           font-style: italic;
           font-family: cursive;
-          letter-spacing: .5px;
           font-weight: 700;
-          background:
-            linear-gradient(
-              90deg,
-              #a78bfa,
-              #f472b6,
-              #fb7185
-            );
+          letter-spacing: 0.5px;
+          text-decoration: none;
+          background: linear-gradient(90deg, #a78bfa, #f472b6, #fb7185);
           -webkit-background-clip: text;
           background-clip: text;
           color: transparent;
-          transition: opacity .2s ease;
+          transition: opacity 0.2s ease;
         }
-
         .mvbd-maker:hover {
-          opacity: .8;
+          opacity: 0.8;
+        }
+        .mvbd-bottom-right {
+          display: flex;
+          align-items: center;
+          gap: 14px;
+        }
+        .mvbd-follow {
+          font-size: 9px;
+          letter-spacing: 3px;
+          white-space: nowrap;
+          color: rgba(255, 255, 255, 0.32);
+        }
+        .mvbd-follow b {
+          color: #4ade80;
+          font-weight: 700;
+        }
+        .mvbd-top-btn {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 40px;
+          height: 40px;
+          border-radius: 14px;
+          color: #a7f3d0;
+          cursor: pointer;
+          background: linear-gradient(145deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.04));
+          border: 1px solid rgba(255, 255, 255, 0.16);
+          box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2);
+          transition: transform 0.2s ease, background 0.2s ease;
+        }
+        .mvbd-top-btn:hover {
+          transform: translateY(-3px);
+          background: rgba(52, 211, 153, 0.18);
         }
 
-        /* =========================
-           BOTTOM LINKS
-           ========================= */
-
-        .mvbd-bottom-link {
-          transition: color .2s ease;
-        }
-
-        .mvbd-bottom-link:hover {
-          color: white;
-        }
-
-        /* =========================
-           MOBILE OPTIMIZATIONS
-           ========================= */
-
-        @media (max-width: 640px) {
-
-          .mvbd-footer {
-            min-height: auto;
+        /* ---------- TABLET ---------- */
+        @media (min-width: 640px) {
+          .mvbd-wrap {
+            padding: 48px 24px 28px;
           }
-
-          .mvbd-aurora {
-            width: 220px;
-            height: 120px;
-            filter: blur(30px);
+          .mvbd-hero {
+            padding: 34px 32px;
           }
-
-          .mvbd-grid {
-            background-size: 35px 35px;
-            transform: none; /* Mobile rendering fast rakhar jonyo 3D rotate bondho */
+          .mvbd-hero-title {
+            font-size: 30px;
           }
-
-          .mvbd-social {
-            width: 43px;
-            height: 43px;
-            border-radius: 14px;
-          }
-
           .mvbd-social-grid {
-            gap: 9px;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
           }
-
-          .mvbd-social-strip-line {
-            width: 30px;
-          }
-
         }
 
-        /* =========================
-           REDUCED MOTION & LOW END DEVICES
-           ========================= */
+        /* ---------- DESKTOP (big-site layout) ---------- */
+        @media (min-width: 900px) {
+          .mvbd-hero {
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-between;
+            gap: 32px;
+            padding: 40px 44px;
+          }
+          .mvbd-hero-title {
+            font-size: 34px;
+          }
+          .mvbd-cols {
+            grid-template-columns: 1.35fr 0.8fr 0.9fr 1.6fr;
+            gap: 40px;
+            padding: 0 10px;
+          }
+          .mvbd-col-brand,
+          .mvbd-col-social {
+            grid-column: auto;
+          }
+          .mvbd-social-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+          }
+          .mvbd-bottom {
+            flex-direction: row;
+            justify-content: space-between;
+            padding: 18px 28px;
+            text-align: left;
+          }
+        }
+
+        /* ---------- MOBILE / LOW-END: lighter blur ---------- */
+        @media (max-width: 640px) {
+          .mvbd-glass {
+            -webkit-backdrop-filter: blur(10px) saturate(150%);
+            backdrop-filter: blur(10px) saturate(150%);
+            box-shadow:
+              inset 0 1px 0 rgba(255, 255, 255, 0.25),
+              inset 0 -1px 0 rgba(255, 255, 255, 0.05),
+              0 12px 30px rgba(0, 0, 0, 0.4);
+          }
+          .mvbd-logo {
+            height: 46px;
+          }
+        }
+
+        /* Browsers without backdrop-filter get a solid dark glass look */
+        @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+          .mvbd-glass {
+            background: rgba(14, 22, 20, 0.88);
+          }
+        }
 
         @media (prefers-reduced-motion: reduce) {
-
-          .mvbd-aurora,
-          .mvbd-grid,
-          .mvbd-particle,
-          .mvbd-bottom-light,
-          .mvbd-brand-orb::before,
-          .mvbd-social-ring,
-          .mvbd-orbit,
-          .mvbd-social-shine,
-          .mvbd-divider::after,
-          .mvbd-live-dot,
-          .mvbd-section-title span {
-            animation: none !important;
-          }
-
-          .mvbd-social {
+          .mvbd-btn,
+          .mvbd-link,
+          .mvbd-social,
+          .mvbd-top-btn {
             transition: none !important;
           }
-
         }
-
       `}</style>
-
     </footer>
   )
 }

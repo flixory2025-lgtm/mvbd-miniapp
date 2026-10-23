@@ -54,50 +54,59 @@ function cutoff() {
 }
 
 /* ---------------- AniList ---------------- */
+// Shudhu "puro tarikh (din + mash + bochor)" thaka anime nibe.
+// Prothom page e 20 ta na pele pore er page o dekhe (max 5 page).
 async function fromAniList(): Promise<Item[]> {
   const c = cutoff()
-  const query = `
-    query {
-      Page(page: 1, perPage: 40) {
-        media(type: ANIME, status_in: [NOT_YET_RELEASED, RELEASING], startDate_greater: ${c.int}, sort: POPULARITY_DESC, isAdult: false) {
-          id
-          format
-          title { romaji english }
-          coverImage { extraLarge large }
-          startDate { year month day }
-          seasonYear
-        }
-      }
-    }`
-  const res = await fetch("https://graphql.anilist.co", {
-    method: "POST",
-    headers: { "Content-Type": "application/json", Accept: "application/json" },
-    body: JSON.stringify({ query }),
-    cache: "no-store",
-  })
-  if (!res.ok) throw new Error("AniList " + res.status)
-  const json = await res.json()
-  const list: any[] = json?.data?.Page?.media || []
-
   const out: Item[] = []
-  for (const a of list) {
-    const poster = a?.coverImage?.extraLarge || a?.coverImage?.large || null
-    if (!a?.id || !poster) continue
-    const d = a.startDate || {}
-    const bd = buildDate(d.year || a.seasonYear, d.month, d.day)
-    if (!bd) continue
-    out.push({
-      id: a.id,
-      title: a.title?.english || a.title?.romaji || "Untitled",
-      poster,
-      year: String(d.year || a.seasonYear || ""),
-      ...bd,
-      rating: "",
-      tag: "Anime",
-      mediaType: a.format === "MOVIE" ? "movie" : "tv",
-      position: out.length + 1,
+  const seen = new Set<number>()
+
+  for (let page = 1; page <= 5 && out.length < 24; page++) {
+    const query = `
+      query {
+        Page(page: ${page}, perPage: 50) {
+          pageInfo { hasNextPage }
+          media(type: ANIME, status_in: [NOT_YET_RELEASED, RELEASING], startDate_greater: ${c.int}, sort: POPULARITY_DESC, isAdult: false) {
+            id
+            format
+            title { romaji english }
+            coverImage { extraLarge large }
+            startDate { year month day }
+          }
+        }
+      }`
+    const res = await fetch("https://graphql.anilist.co", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      body: JSON.stringify({ query }),
+      cache: "no-store",
     })
-    if (out.length === 24) break
+    if (!res.ok) throw new Error("AniList " + res.status)
+    const json = await res.json()
+    const list: any[] = json?.data?.Page?.media || []
+
+    for (const a of list) {
+      const poster = a?.coverImage?.extraLarge || a?.coverImage?.large || null
+      const d = a?.startDate || {}
+      // puro tarikh na thakle skip
+      if (!a?.id || !poster || !d.year || !d.month || !d.day || seen.has(a.id)) continue
+      const bd = buildDate(d.year, d.month, d.day)!
+      if (bd.sortKey < c.iso) continue
+      seen.add(a.id)
+      out.push({
+        id: a.id,
+        title: a.title?.english || a.title?.romaji || "Untitled",
+        poster,
+        year: String(d.year),
+        ...bd,
+        rating: "",
+        tag: "Anime",
+        mediaType: a.format === "MOVIE" ? "movie" : "tv",
+        position: out.length + 1,
+      })
+      if (out.length === 24) break
+    }
+    if (!json?.data?.Page?.pageInfo?.hasNextPage) break
   }
   return out
 }
@@ -105,7 +114,7 @@ async function fromAniList(): Promise<Item[]> {
 /* ---------------- Jikan (fallback) ---------------- */
 async function fromJikan(): Promise<Item[]> {
   const res = await fetch(
-    "https://api.jikan.moe/v4/anime?status=upcoming&order_by=members&sort=desc&sfw=true&limit=25",
+    "https://api.jikan.moe/v4/anime?status=upcoming&order_by=members&sort=desc&sfw=true&limit=25&page=1",
     { headers: { Accept: "application/json" }, cache: "no-store" }
   )
   if (!res.ok) throw new Error("Jikan " + res.status)
@@ -122,8 +131,9 @@ async function fromJikan(): Promise<Item[]> {
     if (!a?.mal_id || !poster || seen.has(a.mal_id)) continue
     seen.add(a.mal_id)
     const p = a?.aired?.prop?.from || {}
-    const bd = buildDate(p.year || a?.year, p.month, p.day)
-    if (!bd || bd.sortKey < cutoff().iso) continue
+    if (!p.year || !p.month || !p.day) continue // puro tarikh lagbe
+    const bd = buildDate(p.year, p.month, p.day)!
+    if (bd.sortKey < cutoff().iso) continue
     out.push({
       id: a.mal_id,
       title: a.title_english || a.title,
@@ -174,4 +184,4 @@ export async function GET() {
     { results: [], errors },
     { status: 502, headers: { "Cache-Control": "no-store" } }
   )
-                }
+}

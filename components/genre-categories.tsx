@@ -1181,6 +1181,34 @@ export default function GenreCategories({
         @keyframes gc-f { 50% { transform: translateY(-57%) rotate(-4deg); } }
         @keyframes gc-s { 60%, 100% { transform: translateX(100%); } }
 
+        /* ✅ Selected category: border er chardike ghurte thaka choto green light */
+        @property --gc-a {
+          syntax: "<angle>";
+          initial-value: 0deg;
+          inherits: false;
+        }
+        .gc-orbit {
+          position: absolute; inset: 0; z-index: 3; pointer-events: none;
+          border-radius: inherit; padding: 2px;
+          background: conic-gradient(
+            from var(--gc-a),
+            transparent 0deg,
+            transparent 296deg,
+            rgba(34, 197, 94, 0.15) 306deg,
+            rgba(34, 197, 94, 0.7) 336deg,
+            #bbf7d0 360deg
+          );
+          -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+          -webkit-mask-composite: xor;
+          mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+          filter: drop-shadow(0 0 4px rgba(34, 197, 94, 0.9));
+          animation: gc-orbit-spin 6s linear infinite;
+        }
+        @keyframes gc-orbit-spin { to { --gc-a: 360deg; } }
+        @media (prefers-reduced-motion: reduce) {
+          .gc-orbit { animation: none; }
+        }
+
         @keyframes filterDropdownOpenUp {
           from {
             opacity: 0;
@@ -1702,13 +1730,5 @@ export default function GenreCategories({
 }
 
 function CategoryHighlight() {
-  return (
-    <div className="absolute inset-0 pointer-events-none">
-      <div className="fire-continuous fire-continuous-1" />
-      <div className="fire-continuous fire-continuous-2" />
-      <div className="fire-continuous fire-continuous-3" />
-      <div className="fire-continuous fire-continuous-4" />
-      <div className="fire-continuous fire-continuous-5" />
-    </div>
-  )
-        }
+  return <span className="gc-orbit" aria-hidden="true" />
+    }

@@ -488,7 +488,7 @@ export default function TrendingCarousel({
         ref={topContainerRef}
         className={`relative w-full overflow-hidden select-none bg-gray-900 ${
           isMobile
-            ? "h-[420px] pt-[72px] cursor-grab active:cursor-grabbing"
+            ? "h-[470px] cursor-grab active:cursor-grabbing"
             : "h-[520px] lg:h-[620px] cursor-grab active:cursor-grabbing"
         }`}
         style={{ touchAction: "pan-y" }}
@@ -613,11 +613,11 @@ export default function TrendingCarousel({
 
             <div
               className={`absolute bottom-0 left-0 w-full pointer-events-none z-[6] ${
-                isMobile ? "h-[45%]" : "h-[32%]"
+                isMobile ? "h-[40%]" : "h-[32%]"
               }`}
               style={{
                 background: isMobile
-                  ? "linear-gradient(to top, #000 0%, rgba(0,0,0,0.6) 55%, transparent 100%)"
+                  ? "linear-gradient(to top, #000 0%, rgba(0,0,0,0.55) 40%, transparent 100%)"
                   : "linear-gradient(to top, #000 0%, rgba(0,0,0,0.45) 45%, transparent 100%)",
               }}
             />
@@ -631,41 +631,83 @@ export default function TrendingCarousel({
             />
 
             {isMobile ? (
-              <div className="absolute bottom-0 left-0 w-full p-4 z-20 pointer-events-none flex items-end gap-4">
-                <div className="w-16 h-24 rounded-lg overflow-hidden border-2 border-white/20 shadow-lg flex-shrink-0">
-                  <img
-                    src={currentTopMovie.poster || "/placeholder.svg"}
-                    alt={currentTopMovie.title}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <div className="flex-1 min-w-0 pb-1">
-                  <h2 className="text-white text-lg font-bold mb-1 truncate drop-shadow-lg">
-                    {currentTopMovie.title}
-                  </h2>
-                  <div className="flex items-center gap-3 text-xs text-gray-300">
-                    {currentTopMovie.year && (
-                      <span className="flex items-center gap-1">
-                        <Film className="w-3 h-3" />
-                        {currentTopMovie.year}
-                      </span>
-                    )}
-                    {currentTopMovie.rating &&
-                      currentTopMovie.rating !== "not available" && (
-                        <span className="flex items-center gap-1 text-yellow-400">
-                          <Star className="w-3 h-3 fill-yellow-400" />
-                          {currentTopMovie.rating}
-                        </span>
-                      )}
-                    {currentTopMovie.genre && (
-                      <span className="truncate">{currentTopMovie.genre}</span>
-                    )}
+              (() => {
+                const cardW = Math.round((containerWidth || 360) * 0.8)
+                const gap = 12
+                const padL = 16
+                const step = cardW + gap
+                const dragShift = containerWidth
+                  ? (topDragDistance / containerWidth) * step
+                  : 0
+                const stripX = padL - topIndex * step + dragShift
+                return (
+                  <div className="absolute bottom-3 left-0 w-full z-20 pt-8 overflow-hidden pointer-events-none">
+                    <div
+                      className="flex"
+                      style={{
+                        gap: `${gap}px`,
+                        transform: `translateX(${stripX}px)`,
+                        transition: topIsTransitioning
+                          ? "transform 0.5s cubic-bezier(0.25, 1, 0.5, 1)"
+                          : "none",
+                      }}
+                    >
+                      {topSeriesMovies.map((movie, i) => {
+                        const active = i === topIndex
+                        return (
+                          <div
+                            key={movie.id}
+                            className="relative flex-shrink-0 h-[68px] rounded-2xl flex items-center pr-3 pointer-events-auto cursor-pointer"
+                            style={{
+                              width: `${cardW}px`,
+                              background: "rgba(38,38,42,0.92)",
+                              backdropFilter: "blur(10px)",
+                              WebkitBackdropFilter: "blur(10px)",
+                              opacity: active ? 1 : 0.7,
+                              transition: "opacity 0.4s ease",
+                            }}
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              if (topDidDragRef.current) return
+                              if (active) onMovieClick(movie)
+                              else {
+                                setTopIsTransitioning(true)
+                                setTopIndex(i)
+                              }
+                            }}
+                          >
+                            <div className="relative w-[52px] h-[78px] -mt-8 ml-3 mr-3 rounded-lg overflow-hidden flex-shrink-0 shadow-lg shadow-black/60 bg-gray-800">
+                              <img
+                                src={movie.poster || "/placeholder.svg"}
+                                alt={movie.title}
+                                className="w-full h-full object-cover"
+                                draggable={false}
+                              />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <h3 className="text-white text-[15px] font-semibold truncate">
+                                {movie.title}
+                              </h3>
+                              <div className="flex items-center gap-1.5 text-[11px] text-gray-300 mt-0.5">
+                                <Film className="w-3 h-3 flex-shrink-0" />
+                                {movie.year && <span>| {movie.year}</span>}
+                                {movie.genre && (
+                                  <span className="truncate">| {movie.genre}</span>
+                                )}
+                              </div>
+                            </div>
+                            {active && (
+                              <div className="w-9 h-9 ml-2 rounded-full bg-emerald-400 flex items-center justify-center flex-shrink-0 shadow-lg">
+                                <Play className="w-4 h-4 text-black fill-black ml-0.5" />
+                              </div>
+                            )}
+                          </div>
+                        )
+                      })}
+                    </div>
                   </div>
-                </div>
-                <div className="w-10 h-10 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0 shadow-lg">
-                  <Play className="w-5 h-5 text-white fill-white ml-0.5" />
-                </div>
-              </div>
+                )
+              })()
             ) : (
               <div className="absolute inset-y-0 left-0 z-20 flex items-center w-full md:w-[50%] lg:w-[46%] px-8 lg:px-12 xl:px-16 pointer-events-none">
                 <div className="w-full max-w-2xl pt-6">
@@ -987,4 +1029,4 @@ export default function TrendingCarousel({
       <UpcomingSection onMovieClick={onMovieClick} />
     </section>
   )
-      }
+        }

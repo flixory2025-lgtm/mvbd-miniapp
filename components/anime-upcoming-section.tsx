@@ -50,6 +50,8 @@ function formatReleaseDate(dateStr: string | null): string {
 export default function AnimeUpcomingSection({}: AnimeUpcomingSectionProps) {
   const [items, setItems] = useState<UpcomingItem[]>([])
   const [loading, setLoading] = useState(true)
+  const [failed, setFailed] = useState(false)
+  const [retryKey, setRetryKey] = useState(0)
   const [cardsPerView, setCardsPerView] = useState(3)
   const [isPaused, setIsPaused] = useState(false)
 
@@ -72,13 +74,19 @@ export default function AnimeUpcomingSection({}: AnimeUpcomingSectionProps) {
   useEffect(() => {
     const ctrl = new AbortController()
     const fetchData = async () => {
+      setLoading(true)
+      setFailed(false)
       try {
         const res = await fetch("/api/anime-upcoming", { signal: ctrl.signal })
+        if (!res.ok) throw new Error("HTTP " + res.status)
         const data = await res.json()
-        setItems(data.results || [])
+        const list = data.results || []
+        setItems(list)
+        if (list.length === 0) setFailed(true)
       } catch (err: any) {
         if (err?.name !== "AbortError") {
           console.error("Anime upcoming fetch error:", err)
+          setFailed(true)
         }
       } finally {
         if (!ctrl.signal.aborted) setLoading(false)
@@ -86,7 +94,7 @@ export default function AnimeUpcomingSection({}: AnimeUpcomingSectionProps) {
     }
     fetchData()
     return () => ctrl.abort()
-  }, [])
+  }, [retryKey])
 
   const advanceSlide = useCallback(() => {
     const el = scrollRef.current
@@ -135,7 +143,27 @@ export default function AnimeUpcomingSection({}: AnimeUpcomingSectionProps) {
     )
   }
 
-  if (items.length === 0) return null
+  // data na ele section ghayeb na hoye ekta message + Retry dekhabe
+  if (items.length === 0) {
+    if (!failed) return null
+    return (
+      <section className="relative px-4 mt-5 mb-6">
+        <h2 className="text-white text-sm md:text-base font-bold tracking-wide flex items-center gap-2 mb-3">
+          <span className="w-1 h-4 bg-green-500 rounded-full"></span>
+          UPCOMING ANIME / RELEASE SOON
+        </h2>
+        <div className="rounded-lg border border-white/10 bg-white/5 py-8 text-center text-sm text-gray-400">
+          Upcoming anime load hoyni.{" "}
+          <button
+            onClick={() => setRetryKey((k) => k + 1)}
+            className="text-green-400 underline underline-offset-2"
+          >
+            Retry
+          </button>
+        </div>
+      </section>
+    )
+  }
 
   const gap = 8
   const cardWidth = `calc((100vw - 32px - ${

@@ -87,7 +87,7 @@ export default function AnimeUpcomingSection({}: AnimeUpcomingSectionProps) {
         const todayKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`
         const list: UpcomingItem[] = (data.results || [])
           // jeta already release hoye geche (ager tarikh) ta bad
-          .filter((it: UpcomingItem) => (it.sortKey || it.releaseDate || "9999") >= todayKey)
+          .filter((it: UpcomingItem) => !!it.releaseDate && it.releaseDate >= todayKey)
           .slice(0, 20)
           // sobcheye kachher release age: Today, Tomorrow, tarpor porer gulo
           .sort((a: UpcomingItem, b: UpcomingItem) =>

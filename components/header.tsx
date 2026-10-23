@@ -30,18 +30,6 @@ interface HeaderProps {
   }>
 }
 
-// ✅ Header এর শুরুর অবস্থা: Liquid Glass (scroll এর সাথে সাথে JS দিয়ে আস্তে আস্তে বদলায়)
-const HEADER_GLASS_STYLE: React.CSSProperties = {
-  background: "rgba(255,255,255,0.07)",
-  backdropFilter: "blur(10px) saturate(1.7)",
-  WebkitBackdropFilter: "blur(10px) saturate(1.7)",
-  borderBottom: "1px solid rgba(255,255,255,0.14)",
-  boxShadow: "0 8px 32px rgba(0,0,0,0.12)",
-}
-
-// কত px scroll করলে header পুরোপুরি আগের solid রূপে পৌঁছাবে
-const HEADER_SCROLL_RANGE = 260
-
 const TYPING_SUGGESTIONS_HOME = [
   "Search movies...",
   "Find web series...",
@@ -89,9 +77,8 @@ export default function Header({
 }: HeaderProps) {
   const [isFocused, setIsFocused] = useState(false)
 
-  // ✅ Header background scroll-progress দিয়ে চলে (state না, তাই re-render হয় না)
-  const headerRef = useRef<HTMLElement>(null)
-  const glassSheenRef = useRef<HTMLDivElement>(null)
+  // ✅ Scroll ট্র্যাক করার জন্য স্টেট
+  const [isScrolled, setIsScrolled] = useState(false)
 
   const [bubbles, setBubbles] = useState<
     Array<{ id: number; x: number; y: number }>
@@ -130,7 +117,8 @@ export default function Header({
   }, [pageType, searchData])
 
   // Smart search suggestions — word by word match, latest (highest id) upore
-  const allSearchSuggestions = useMemo(() => {
+  const allSearchSuggestions = 
+useMemo(() => {
     const query = searchQuery.trim().toLowerCase()
     if (!query) return []
 
@@ -142,7 +130,8 @@ export default function Header({
     })
 
     return [...matches].sort((a, b) => {
-      const idA = typeof a.id === "number" ? a.id : 0
+      const idA = typeof a.id === 
+"number" ? a.id : 0
       const idB = typeof b.id === "number" ? b.id : 0
       return idB - idA
     })
@@ -164,49 +153,19 @@ export default function Header({
     return () => clearInterval(interval)
   }, [historyScope])
 
-  // ✅ Scroll এর সাথে সাথে আস্তে আস্তে: Liquid Glass (একদম উপরে) ↔ আগের Solid dark (নিচে)
-  // নিচে scroll করলে ধীরে ধীরে solid হয়, আবার উপরে উঠলে ধীরে ধীরে liquid glass ফিরে আসে
+  // ✅ Scroll ট্র্যাক করার জন্য (Header Transparent ↔ Solid)
   useEffect(() => {
-    let raf = 0
-
-    const apply = () => {
-      raf = 0
-      const header = headerRef.current
-      if (!header) return
-
-      const y = Math.max(window.scrollY || window.pageYOffset || 0, 0)
-      const t = Math.min(y / HEADER_SCROLL_RANGE, 1)
-      const e = t * t * (3 - 2 * t) // smoothstep — নরম শুরু, নরম শেষ
-      const lerp = (a: number, b: number) => a + (b - a) * e
-
-      // Liquid glass (সাদাটে, স্বচ্ছ)  ->  bg-black/60
-      const c = Math.round(lerp(255, 0))
-      header.style.background = `rgba(${c},${c},${c},${lerp(0.07, 0.6).toFixed(3)})`
-
-      // blur 10px -> 24px (আগের backdrop-blur-xl)
-      const filter = `blur(${lerp(10, 24).toFixed(1)}px) saturate(${lerp(1.7, 1).toFixed(2)})`
-      header.style.backdropFilter = filter
-      header.style.setProperty("-webkit-backdrop-filter", filter)
-
-      header.style.borderBottomColor = `rgba(255,255,255,${lerp(0.14, 0.1).toFixed(3)})`
-      header.style.boxShadow = `0 ${lerp(8, 10).toFixed(1)}px ${lerp(32, 25).toFixed(1)}px rgba(0,0,0,${lerp(0.12, 0.35).toFixed(3)})`
-
-      // glass এর উজ্জ্বল ধার/sheen আস্তে আস্তে মিলিয়ে যায়
-      if (glassSheenRef.current) {
-        glassSheenRef.current.style.opacity = String(1 - e)
+    const handleScroll = () => {
+      if (window.scrollY > 10) {
+        setIsScrolled(true)
+      } else {
+        setIsScrolled(false)
       }
     }
 
-    const onScroll = () => {
-      if (!raf) raf = requestAnimationFrame(apply)
-    }
-
-    apply() // পেজ লোড / refresh এ বর্তমান scroll অনুযায়ী একবার
-    window.addEventListener("scroll", onScroll, { passive: true })
-    return () => {
-      window.removeEventListener("scroll", onScroll)
-      if (raf) cancelAnimationFrame(raf)
-    }
+    handleScroll() // পেজ লোড হওয়ার সময় একবার চেক
+    window.addEventListener("scroll", handleScroll, { passive: true })
+    return () => window.removeEventListener("scroll", handleScroll)
   }, [])
 
   // When user logs in, sync Firestore history
@@ -289,7 +248,8 @@ export default function Header({
         await saveHistoryToFirestore(
           user.uid,
           updated,
-          (user as any)?.displayName || undefined,
+          (user as any)?.displayName || 
+undefined,
           historyScope
         )
       } catch (err) {
@@ -367,7 +327,8 @@ export default function Header({
         ? TYPING_SUGGESTIONS_SERIES
         : TYPING_SUGGESTIONS_HOME
 
-  // Extract first 4 items for the cube faces
+  // Extract first 4 items for the cube 
+faces
   const cubeTexts = TYPING_SUGGESTIONS.slice(0, 4)
 
   const hasQuery = searchQuery.trim().length > 0
@@ -376,11 +337,14 @@ export default function Header({
   const showCube = !isFocused && !hasQuery
 
   return (
-    // ✅ FIXED HEADER — একদম উপরে Liquid Glass, scroll এর সাথে ধীরে ধীরে Solid
+    // ✅ FIXED HEADER — Transparent at top, Solid on scroll
     <header
-      ref={headerRef}
-      className="fixed top-0 left-0 right-0 lg:left-[220px] z-50"
-      style={HEADER_GLASS_STYLE}
+      className={`fixed top-0 
+left-0 right-0 lg:left-[220px] z-50 transition-all duration-300 ease-in-out ${
+        isScrolled
+          ? "bg-black/60 backdrop-blur-xl border-b border-white/10 shadow-lg"
+          : "bg-transparent border-b border-transparent shadow-none"
+      }`}
     >
       <style>{`
         @keyframes liquidGlassZoom {
@@ -407,7 +371,8 @@ export default function Header({
           animation: liquidGlassZoom .6s ease-out forwards, liquidGlassGlow .6s ease-out;
         }
         .search-input-liquid {
-          background: transparent !important;
+          background: transparent !
+important;
           border: none !important;
           outline: none !important;
           width: 100%;
@@ -447,7 +412,8 @@ export default function Header({
         }
         .search-suggestions::-webkit-scrollbar { width: 6px; }
         .search-suggestions::-webkit-scrollbar-track { background: transparent; }
-        .search-suggestions::-webkit-scrollbar-thumb { background: rgba(100,200,255,.5); border-radius: 3px; }
+        .search-suggestions::-webkit-scrollbar-thumb { background: 
+rgba(100,200,255,.5); border-radius: 3px; }
         .search-suggestion-item {
           padding: 10px 16px;
           cursor: pointer;
@@ -473,7 +439,8 @@ export default function Header({
           100% { opacity: 0; transform: scale(.2) translateY(-50px); filter: blur(2px); }
         }
         .liquid-bubble {
-          animation: liquidBubbleRise .8s ease-out forwards;
+          animation: liquidBubbleRise 
+.8s ease-out forwards;
           pointer-events: none;
         }
 
@@ -520,32 +487,21 @@ export default function Header({
         @keyframes rotateCubeUp {
           0%, 20% { transform: translateZ(-10px) rotateX(0deg); }
           25%, 45% { transform: translateZ(-10px) rotateX(90deg); }
-          50%, 70% { transform: translateZ(-10px) rotateX(180deg); }
+          50%, 70% { transform: 
+translateZ(-10px) rotateX(180deg); }
           75%, 95% { transform: translateZ(-10px) rotateX(270deg); }
           100% { transform: translateZ(-10px) rotateX(360deg); }
         }
       `}</style>
 
-      {/* Liquid glass sheen — উপরের উজ্জ্বল ধার, scroll করলে মিলিয়ে যায় */}
-      <div
-        ref={glassSheenRef}
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0 z-0"
-        style={{
-          background:
-            "linear-gradient(180deg, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0.07) 45%, rgba(255,255,255,0.02) 100%)",
-          boxShadow:
-            "inset 0 1px 0 rgba(255,255,255,0.45), inset 0 -1px 0 rgba(255,255,255,0.06)",
-        }}
-      />
-
-      <div className="relative z-[1] px-4 py-4 flex items-center gap-4">
+      <div className="px-4 py-4 flex items-center gap-4">
         {/* MVBD Logo */}
         <div className="flex-shrink-0 lg:hidden">
           <img
             src="https://i.postimg.cc/0yqFXMFW/photo-2025-12-11-09-45-29-removebg-preview.png"
             alt="MVBD Logo"
-            className="h-10 w-auto object-contain"
+            className="h-10 w-auto 
+object-contain"
           />
         </div>
 
@@ -568,7 +524,8 @@ export default function Header({
                     {cubeTexts.map((text, index) => (
                       <div
                         key={index}
-                        className={`cube-face face-${index + 1}`}
+                        
+className={`cube-face face-${index + 1}`}
                       >
                         {text}
                       </div>
@@ -649,7 +606,8 @@ export default function Header({
                     "radial-gradient(circle at 30% 30%, rgba(100,200,255,.8), rgba(59,130,246,.3))",
                   border: "1px solid rgba(100,200,255,.5)",
                   boxShadow:
-                    "0 0 8px rgba(100,200,255,.4), inset -2px -2px 4px rgba(0,0,0,.2)",
+                    "0 0 8px 
+rgba(100,200,255,.4), inset -2px -2px 4px rgba(0,0,0,.2)",
                 }}
               />
             ))}
@@ -675,7 +633,8 @@ export default function Header({
                   <Clock className="w-4 h-4 flex-shrink-0 text-slate-500" />
 
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm text-white truncate">{item.query}</p>
+                    <p className="text-sm 
+text-white truncate">{item.query}</p>
                     <p className="text-[10px] text-slate-500 mt-0.5">
                       {getTimeAgo(item.timestamp)}
                     </p>
@@ -684,7 +643,8 @@ export default function Header({
                   <button
                     type="button"
                     onMouseDown={(e) => handleRemoveHistory(item, e)}
-                    className="w-6 h-6 rounded-full hover:bg-white/10 text-slate-500 hover:text-white flex items-center justify-center transition opacity-0 group-hover:opacity-100"
+                    className="w-6 h-6 rounded-full hover:bg-white/10 text-slate-500 hover:text-white flex items-center justify-center transition opacity-0 
+group-hover:opacity-100"
                     aria-label="Remove"
                   >
                     <X className="w-3 h-3" />
@@ -738,4 +698,4 @@ export default function Header({
       </div>
     </header>
   )
-}
+                }

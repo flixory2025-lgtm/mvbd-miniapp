@@ -245,139 +245,173 @@ function formatTime(value: unknown) {
 }
 
 const PROFILE_CSS = String.raw`
-@import url("https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Unbounded:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap");
 
-.pf-root{position:relative;isolation:isolate;overflow:hidden;background:#030303;color:#fff;font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif}
+.pf-root{
+  --g1:#B7FF00;--g2:#20E000;--g3:#0a3d0a;--ink:#06120a;
+  --grad:linear-gradient(135deg,#d9ff5c 0%,#B7FF00 24%,#20E000 72%,#0fb300 100%);
+  position:relative;isolation:isolate;overflow:hidden;background:#040806;color:#fff;
+  font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;
+  -webkit-tap-highlight-color:transparent;-webkit-text-size-adjust:100%;text-size-adjust:100%}
+.pf-root *,.pf-root *::before,.pf-root *::after{box-sizing:border-box}
 .pf-root::before{content:"";position:absolute;inset:0;z-index:-2;pointer-events:none;
   background:
-   radial-gradient(60% 38% at 50% -4%,rgba(229,9,20,.30),transparent 70%),
-   radial-gradient(42% 30% at 100% 58%,rgba(150,0,20,.20),transparent 70%),
-   radial-gradient(40% 28% at 0% 88%,rgba(229,9,20,.15),transparent 70%)}
-.pf-root::after{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;opacity:.07;mix-blend-mode:overlay;
+   radial-gradient(60% 36% at 50% -6%,rgba(32,224,0,.26),transparent 70%),
+   radial-gradient(44% 30% at 100% 62%,rgba(183,255,0,.10),transparent 70%),
+   radial-gradient(44% 28% at 0% 92%,rgba(32,224,0,.12),transparent 70%)}
+.pf-root::after{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;opacity:.06;mix-blend-mode:overlay;
   background:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>")}
 
-.pf-display{font-family:"Bebas Neue",Impact,sans-serif;letter-spacing:.05em}
+.pf-disp{font-family:Unbounded,Inter,system-ui,sans-serif}
+.pf-tabular{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+.pf-grad-text{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 16px rgba(32,224,0,.4))}
 
-/* ---------- LIQUID GLASS ---------- */
-.pf-glass{position:relative;overflow:hidden;border-radius:1.7rem;
-  background:linear-gradient(140deg,rgba(255,255,255,.12) 0%,rgba(255,255,255,.04) 38%,rgba(255,255,255,.02) 62%,rgba(255,255,255,.08) 100%);
-  -webkit-backdrop-filter:blur(26px) saturate(175%);backdrop-filter:blur(26px) saturate(175%);
-  border:1px solid rgba(255,255,255,.16);
-  box-shadow:inset 0 1.5px 0 rgba(255,255,255,.42),inset 0 -1px 0 rgba(255,255,255,.07),inset 1px 0 0 rgba(255,255,255,.12),inset -1px 0 0 rgba(255,255,255,.05),0 26px 60px -22px rgba(0,0,0,.85),0 0 0 1px rgba(0,0,0,.45)}
-.pf-glass::before{content:"";position:absolute;inset:0;pointer-events:none;z-index:0;
-  background:radial-gradient(120% 55% at 88% -12%,rgba(255,255,255,.24),transparent 55%),radial-gradient(80% 50% at 8% 112%,rgba(229,9,20,.20),transparent 60%)}
-.pf-glass::after{content:"";position:absolute;top:-60%;left:0;width:34%;height:220%;pointer-events:none;z-index:0;
-  background:linear-gradient(100deg,transparent,rgba(255,255,255,.13),transparent);
-  transform:translateX(-260%) rotate(14deg);animation:pfSheen 10s ease-in-out infinite}
-.pf-glass>*{position:relative;z-index:1}
-@keyframes pfSheen{0%,55%{transform:translateX(-260%) rotate(14deg)}100%{transform:translateX(420%) rotate(14deg)}}
+/* =============== LIQUID GLASS =============== */
+.pf-glass{position:relative;isolation:isolate;min-width:0;border-radius:1.6rem;
+  background:
+   radial-gradient(120% 60% at 92% -14%,rgba(255,255,255,.17),transparent 55%),
+   radial-gradient(90% 60% at 0% 112%,rgba(32,224,0,.14),transparent 62%),
+   linear-gradient(145deg,rgba(255,255,255,.085),rgba(255,255,255,.025));
+  -webkit-backdrop-filter:blur(20px) saturate(160%);backdrop-filter:blur(20px) saturate(160%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.22),0 24px 50px -24px rgba(0,0,0,.9)}
+.pf-glass::before{content:"";position:absolute;inset:0;border-radius:inherit;padding:1px;pointer-events:none;z-index:2;
+  background:linear-gradient(150deg,rgba(255,255,255,.55),rgba(255,255,255,.06) 28%,rgba(183,255,0,.12) 62%,rgba(32,224,0,.55));
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;
+  mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);mask-composite:exclude}
+.pf-tint{background:
+   radial-gradient(120% 60% at 92% -14%,rgba(255,255,255,.2),transparent 55%),
+   linear-gradient(145deg,rgba(183,255,0,.17),rgba(32,224,0,.05) 50%,rgba(32,224,0,.13));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 24px 50px -24px rgba(0,0,0,.9),0 0 60px -22px rgba(32,224,0,.5)}
+.pf-sheen{overflow:hidden}
+.pf-sheen::after{content:"";position:absolute;top:-50%;left:0;width:30%;height:200%;pointer-events:none;z-index:1;
+  background:linear-gradient(100deg,transparent,rgba(255,255,255,.12),transparent);
+  transform:translateX(-300%) rotate(14deg);animation:pfSheen 9s ease-in-out infinite;will-change:transform}
+@keyframes pfSheen{0%,55%{transform:translateX(-300%) rotate(14deg)}100%{transform:translateX(480%) rotate(14deg)}}
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
+  .pf-glass{background-color:rgba(14,22,17,.94)}}
 
-.pf-red{border-color:rgba(255,70,85,.38);
-  background:linear-gradient(140deg,rgba(229,9,20,.30),rgba(229,9,20,.07) 45%,rgba(229,9,20,.15));
-  box-shadow:inset 0 1.5px 0 rgba(255,180,185,.4),inset 0 -1px 0 rgba(255,255,255,.06),0 26px 60px -22px rgba(0,0,0,.85),0 0 70px -14px rgba(229,9,20,.5)}
+/* =============== small pieces =============== */
+.pf-label{display:flex;align-items:center;gap:.65rem;font-size:10.5px;font-weight:600;letter-spacing:.26em;text-transform:uppercase;color:rgba(255,255,255,.62)}
+.pf-label::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,rgba(183,255,0,.4),transparent)}
+.pf-label.pf-c{justify-content:center}.pf-label.pf-c::after{display:none}
+.pf-num{font-family:Unbounded,Inter,sans-serif;font-size:11px;font-weight:600;letter-spacing:.1em;color:var(--g1)}
+.pf-h2{margin-top:.6rem;font-family:Unbounded,Inter,sans-serif;font-size:1.08rem;font-weight:600;letter-spacing:-.01em;line-height:1.3}
 
-/* ---------- small pieces ---------- */
-.pf-label{display:flex;align-items:center;gap:.6rem;font-size:10.5px;letter-spacing:.28em;text-transform:uppercase;color:rgba(255,255,255,.6)}
-.pf-label::before{content:"";width:3px;height:15px;border-radius:2px;background:#e50914;box-shadow:0 0 12px #e50914}
-.pf-num{font-family:"Bebas Neue",Impact,sans-serif;letter-spacing:.08em;color:#ff3342;font-size:15px}
-.pf-h2{margin-top:.55rem;font-size:1.3rem;font-weight:600;letter-spacing:-.01em}
+.pf-btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;border-radius:999px;font-weight:700;color:var(--ink);white-space:nowrap;
+  background:var(--grad);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.7),inset 0 -2px 6px rgba(0,70,0,.28),0 10px 26px -10px rgba(32,224,0,.85);
+  transition:transform .2s ease,filter .2s ease}
+.pf-btn:active{transform:scale(.97)}
+.pf-btn:disabled{opacity:.55}
+.pf-btn-glass{display:inline-flex;align-items:center;justify-content:center;gap:.45rem;border-radius:999px;color:rgba(255,255,255,.9);white-space:nowrap;
+  background:linear-gradient(145deg,rgba(255,255,255,.14),rgba(255,255,255,.04));
+  -webkit-backdrop-filter:blur(16px) saturate(160%);backdrop-filter:blur(16px) saturate(160%);
+  border:1px solid rgba(255,255,255,.18);box-shadow:inset 0 1px 0 rgba(255,255,255,.38),0 8px 20px -10px rgba(0,0,0,.85);
+  transition:background .2s ease,transform .2s ease}
+.pf-btn-glass:active{transform:scale(.95)}
+@media (hover:hover){
+  .pf-btn:hover{filter:brightness(1.07)}
+  .pf-btn-glass:hover{background:linear-gradient(145deg,rgba(255,255,255,.22),rgba(255,255,255,.07))}
+}
 
-.pf-btn-red{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;border-radius:999px;color:#fff;font-weight:600;
-  background:linear-gradient(180deg,#ff3a47,#cf0916);
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.5),inset 0 -2px 6px rgba(0,0,0,.25),0 10px 28px -8px rgba(229,9,20,.8);
-  transition:transform .2s,box-shadow .2s,filter .2s}
-.pf-btn-red:hover{transform:translateY(-1px);filter:brightness(1.08)}
-.pf-btn-red:active{transform:scale(.97)}
-.pf-btn-red:disabled{opacity:.55}
-.pf-btn-glass{display:inline-flex;align-items:center;justify-content:center;gap:.45rem;border-radius:999px;color:rgba(255,255,255,.85);
-  background:linear-gradient(140deg,rgba(255,255,255,.14),rgba(255,255,255,.04));
-  -webkit-backdrop-filter:blur(18px) saturate(170%);backdrop-filter:blur(18px) saturate(170%);
-  border:1px solid rgba(255,255,255,.18);box-shadow:inset 0 1px 0 rgba(255,255,255,.4),0 8px 22px -10px rgba(0,0,0,.8);
-  transition:background .2s,transform .2s}
-.pf-btn-glass:hover{background:linear-gradient(140deg,rgba(255,255,255,.22),rgba(255,255,255,.07))}
-.pf-btn-glass:active{transform:scale(.96)}
+.pf-icon{display:grid;place-items:center;flex:none;width:2.7rem;height:2.7rem;border-radius:50%;color:var(--ink);
+  background:radial-gradient(circle at 30% 20%,#ecff95,#B7FF00 38%,#20E000 78%,#0c8a00);
+  box-shadow:inset 0 1px 1px rgba(255,255,255,.75),inset 0 -3px 8px rgba(0,70,0,.3),0 8px 22px -6px rgba(32,224,0,.7)}
+.pf-icon-lg{width:4rem;height:4rem}
+.pf-icon-sm{width:2.25rem;height:2.25rem}
 
-.pf-icon{display:grid;place-items:center;flex-shrink:0;width:2.7rem;height:2.7rem;border-radius:50%;color:#fff;
-  background:radial-gradient(circle at 30% 22%,rgba(255,140,150,.95),#e50914 58%,#7a050c);
-  box-shadow:inset 0 1px 1px rgba(255,255,255,.65),inset 0 -3px 8px rgba(0,0,0,.3),0 8px 22px -4px rgba(229,9,20,.65)}
-
-.pf-field{position:relative;display:flex;flex-direction:column;gap:.3rem;min-width:0;border-radius:1.15rem;padding:.9rem 2.6rem .9rem 1rem;
-  background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.10);
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.14),inset 0 -1px 0 rgba(0,0,0,.3)}
-.pf-field>span{font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:rgba(255,255,255,.5)}
-.pf-field>strong{font-size:15px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.pf-field input{width:100%;min-width:0;border-radius:.65rem;padding:.5rem .65rem;color:#fff;font-size:14px;outline:none;color-scheme:dark;
+.pf-field{display:flex;align-items:center;gap:.8rem;min-width:0;min-height:4.6rem;border-radius:1.1rem;padding:.8rem .95rem;
+  background:linear-gradient(145deg,rgba(255,255,255,.06),rgba(255,255,255,.02));border:1px solid rgba(255,255,255,.08);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.1)}
+.pf-fi{flex:none;display:grid;place-items:center;width:2.25rem;height:2.25rem;border-radius:.7rem;color:var(--g1);
+  background:linear-gradient(145deg,rgba(183,255,0,.18),rgba(32,224,0,.06));border:1px solid rgba(183,255,0,.22)}
+.pf-fbody{flex:1;min-width:0;display:flex;flex-direction:column;gap:.22rem}
+.pf-fbody>span{font-size:10px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.48)}
+.pf-fbody>strong{display:block;font-size:14.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pf-fbody input{display:block;width:100%;min-width:0;max-width:100%;min-height:2.4rem;border-radius:.65rem;padding:.4rem .65rem;color:#fff;
+  font-size:16px;outline:none;color-scheme:dark;-webkit-appearance:none;appearance:none;
   background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);transition:border-color .2s,box-shadow .2s}
-.pf-field input:focus{border-color:rgba(255,60,75,.8);box-shadow:0 0 0 3px rgba(229,9,20,.22)}
-.pf-field-icon{position:absolute;right:1rem;top:50%;transform:translateY(-50%);width:1.1rem;height:1.1rem;color:rgba(255,255,255,.3)}
+.pf-fbody input:focus{border-color:rgba(183,255,0,.75);box-shadow:0 0 0 3px rgba(32,224,0,.2)}
 
-.pf-action{display:flex;align-items:center;gap:.9rem;width:100%;text-align:left;border-radius:999px;padding:.75rem 1.1rem .75rem .75rem;transition:transform .25s,border-color .25s,box-shadow .25s}
-.pf-action:hover{transform:translateY(-2px);border-color:rgba(255,70,85,.5)}
+.pf-action{display:flex;align-items:center;gap:.9rem;width:100%;min-width:0;text-align:left;border-radius:999px;padding:.72rem 1.1rem .72rem .72rem;transition:transform .25s ease}
 .pf-action:active{transform:scale(.985)}
+.pf-action .pf-atext{min-width:0;flex:1}
 .pf-action strong{display:block;font-size:15px;font-weight:600}
-.pf-action small{display:block;margin-top:1px;font-size:12px;color:rgba(255,255,255,.5)}
-.pf-dot{width:.6rem;height:.6rem;border-radius:50%;background:#ff2d3d;box-shadow:0 0 12px #ff2d3d;animation:pfPing 1.6s ease-in-out infinite}
-@keyframes pfPing{50%{transform:scale(1.5);opacity:.6}}
+.pf-action small{display:block;margin-top:1px;font-size:12px;color:rgba(255,255,255,.52);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@media (hover:hover){.pf-action:hover{transform:translateY(-2px)}}
+.pf-dot{flex:none;width:.6rem;height:.6rem;border-radius:50%;background:var(--grad);box-shadow:0 0 12px #20E000;animation:pfPing 1.8s ease-in-out infinite}
+@keyframes pfPing{50%{transform:scale(1.45);opacity:.6}}
 
-/* ---------- HERO ---------- */
-.pf-hero{position:relative;isolation:isolate;overflow:hidden;border-radius:2rem;border:1px solid rgba(255,255,255,.09);background:#040404;
-  box-shadow:0 30px 80px -30px rgba(229,9,20,.45)}
-.pf-storm{position:absolute;inset:0;z-index:-2;overflow:hidden}
-.pf-storm span{position:absolute;border-radius:50%;filter:blur(46px);mix-blend-mode:screen}
-.pf-storm span:nth-child(1){width:90%;height:55%;left:-15%;top:-12%;background:radial-gradient(circle,#ff1d1d,#7d0000 60%,transparent 72%);animation:pfDrift1 14s ease-in-out infinite alternate}
-.pf-storm span:nth-child(2){width:70%;height:48%;right:-18%;top:-6%;background:radial-gradient(circle,#ff5a1f,#9a1200 60%,transparent 72%);opacity:.8;animation:pfDrift2 17s ease-in-out infinite alternate}
-.pf-storm span:nth-child(3){width:60%;height:40%;left:20%;top:12%;background:radial-gradient(circle,#c4000f,#3b0006 62%,transparent 74%);opacity:.9;animation:pfDrift3 12s ease-in-out infinite alternate}
-.pf-flash{position:absolute;inset:0;opacity:0;background:radial-gradient(40% 30% at 55% 8%,rgba(255,200,200,.7),transparent 70%);animation:pfFlash 8s infinite}
+/* =============== HERO =============== */
+.pf-hero{position:relative;isolation:isolate;overflow:hidden;border-radius:2rem;border:1px solid rgba(183,255,0,.14);background:#050a07;
+  box-shadow:0 30px 80px -34px rgba(32,224,0,.5)}
+.pf-aurora{position:absolute;inset:0;z-index:-3;overflow:hidden}
+.pf-aurora span{position:absolute;border-radius:50%;will-change:transform}
+.pf-aurora span:nth-child(1){width:110%;height:62%;left:-25%;top:-24%;background:radial-gradient(closest-side,rgba(32,224,0,.55),rgba(32,224,0,.16) 55%,transparent);animation:pfA1 16s ease-in-out infinite alternate}
+.pf-aurora span:nth-child(2){width:80%;height:56%;right:-26%;top:-12%;background:radial-gradient(closest-side,rgba(183,255,0,.38),rgba(183,255,0,.10) 55%,transparent);animation:pfA2 19s ease-in-out infinite alternate}
+.pf-aurora span:nth-child(3){width:90%;height:50%;left:5%;bottom:-22%;background:radial-gradient(closest-side,rgba(12,130,40,.5),transparent);animation:pfA3 14s ease-in-out infinite alternate}
+@keyframes pfA1{to{transform:translate3d(10%,8%,0) scale(1.12)}}
+@keyframes pfA2{to{transform:translate3d(-12%,10%,0) scale(1.1)}}
+@keyframes pfA3{to{transform:translate3d(8%,-8%,0) scale(1.15)}}
+.pf-dots{position:absolute;inset:0;z-index:-2;pointer-events:none;opacity:.32;
+  background-image:radial-gradient(rgba(183,255,0,.4) 1px,transparent 1.3px);background-size:22px 22px;
+  -webkit-mask:radial-gradient(70% 55% at 50% 28%,#000,transparent);mask:radial-gradient(70% 55% at 50% 28%,#000,transparent)}
 .pf-hero-fade{position:absolute;inset:0;z-index:-1;pointer-events:none;
-  background:linear-gradient(180deg,rgba(0,0,0,.15) 0%,rgba(0,0,0,.35) 38%,rgba(3,3,3,.92) 78%,#030303 100%)}
-@keyframes pfDrift1{to{transform:translate(12%,10%) scale(1.15)}}
-@keyframes pfDrift2{to{transform:translate(-14%,12%) scale(1.1)}}
-@keyframes pfDrift3{to{transform:translate(8%,-8%) scale(1.2)}}
-@keyframes pfFlash{0%,90%,100%{opacity:0}91%{opacity:.85}92%{opacity:.1}93.5%{opacity:.6}95%{opacity:0}}
+  background:linear-gradient(180deg,rgba(0,0,0,.1) 0%,rgba(0,0,0,.3) 40%,rgba(4,8,6,.9) 82%,#040806 100%)}
 
-.pf-avatar{position:relative;display:grid;place-items:center;width:9rem;height:9rem;border-radius:50%;margin:0 auto}
-.pf-avatar::before{content:"";position:absolute;inset:-6px;border-radius:50%;
-  background:conic-gradient(from 0deg,#ff2d3d,rgba(255,255,255,.0) 25%,#ff7a1f 50%,rgba(255,255,255,0) 75%,#ff2d3d);
-  filter:blur(1px);animation:pfSpin 9s linear infinite;
-  -webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 3px),#000 calc(100% - 2px));mask:radial-gradient(farthest-side,transparent calc(100% - 3px),#000 calc(100% - 2px))}
-.pf-avatar::after{content:"";position:absolute;inset:-14px;border-radius:50%;pointer-events:none;box-shadow:0 0 80px 6px rgba(229,9,20,.42)}
+.pf-avatar-wrap{position:relative;width:9.5rem;height:9.5rem;margin:2.2rem auto 0;flex:none}
+.pf-ring{position:absolute;border-radius:50%;pointer-events:none;border:1px solid rgba(183,255,0,.16)}
+.pf-ring.r1{inset:-14px}.pf-ring.r2{inset:-30px;border-color:rgba(183,255,0,.08)}
+.pf-orbit{position:absolute;inset:-14px;border-radius:50%;pointer-events:none;animation:pfSpin 14s linear infinite;will-change:transform}
+.pf-orbit::after{content:"";position:absolute;top:-4px;left:50%;width:8px;height:8px;margin-left:-4px;border-radius:50%;background:var(--g1);box-shadow:0 0 14px 2px #B7FF00}
+.pf-avatar{position:absolute;inset:0;border-radius:50%;padding:3px;
+  background:conic-gradient(from 0deg,#B7FF00,#20E000,#0a3d0a,#B7FF00);box-shadow:0 0 70px -6px rgba(32,224,0,.55)}
+.pf-avatar-in{display:grid;place-items:center;width:100%;height:100%;border-radius:50%;overflow:hidden;background:#0a120d;
+  box-shadow:inset 0 0 0 2px rgba(4,8,6,.9),inset 0 -12px 28px rgba(32,224,0,.22)}
+.pf-crown{position:absolute;z-index:3;right:-.3rem;top:-.4rem;display:grid;place-items:center;width:2.4rem;height:2.4rem;border-radius:.85rem;transform:rotate(12deg);color:var(--ink);
+  background:var(--grad);box-shadow:inset 0 1px 0 rgba(255,255,255,.7),0 8px 22px rgba(32,224,0,.6)}
 @keyframes pfSpin{to{transform:rotate(360deg)}}
-.pf-avatar-in{position:relative;z-index:1;display:grid;place-items:center;width:100%;height:100%;border-radius:50%;overflow:hidden;
-  background:linear-gradient(140deg,rgba(255,255,255,.18),rgba(255,255,255,.04));border:1px solid rgba(255,255,255,.3);
-  -webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);
-  box-shadow:inset 0 2px 0 rgba(255,255,255,.5),inset 0 -8px 22px rgba(229,9,20,.25)}
-.pf-crown{position:absolute;z-index:2;right:-.35rem;top:-.55rem;display:grid;place-items:center;width:2.4rem;height:2.4rem;border-radius:.85rem;transform:rotate(12deg);color:#fff;
-  background:linear-gradient(160deg,#ff4452,#b80812);box-shadow:inset 0 1px 0 rgba(255,255,255,.6),0 8px 22px rgba(229,9,20,.7)}
 
-.pf-title{font-family:"Bebas Neue",Impact,sans-serif;text-transform:uppercase;font-size:clamp(34px,9vw,68px);line-height:.98;letter-spacing:.07em;
-  color:transparent;-webkit-text-stroke:1.4px #ff3342;overflow-wrap:anywhere;
-  text-shadow:0 0 22px rgba(229,9,20,.8),0 0 64px rgba(229,9,20,.5)}
-.pf-rule{height:1px;width:min(15rem,60%);margin:0 auto;background:linear-gradient(90deg,transparent,#ff3342,transparent);box-shadow:0 0 12px #e50914}
+.pf-name{margin-top:2.2rem;font-family:Unbounded,Inter,sans-serif;font-weight:600;font-size:clamp(21px,6vw,38px);line-height:1.18;letter-spacing:-.01em;overflow-wrap:anywhere;
+  background:linear-gradient(180deg,#fff 0%,#eaffc4 55%,#B7FF00 140%);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent;
+  filter:drop-shadow(0 0 18px rgba(183,255,0,.22))}
+.pf-pill{display:inline-flex;align-items:center;gap:.55rem;padding:.55rem 1.1rem;border-radius:999px;font-size:13.5px;font-weight:500;max-width:100%}
 
-.pf-member-pill{display:inline-flex;align-items:center;gap:.55rem;border-radius:999px;padding:.55rem 1.1rem;font-size:13.5px;font-weight:500;border-radius:999px}
+/* membership pass */
+.pf-pass{width:100%;max-width:27rem;margin:2rem auto 0;padding:1.2rem 1.2rem 1.3rem;text-align:left;border-radius:1.7rem}
+.pf-logo{display:grid;place-items:center;flex:none;width:2.1rem;height:2.1rem;border-radius:.65rem;background:var(--grad);color:var(--ink);font-family:Unbounded,sans-serif;font-weight:700;font-size:15px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.7),0 6px 18px -4px rgba(32,224,0,.7)}
+.pf-mini{font-size:9.5px;font-weight:600;letter-spacing:.24em;text-transform:uppercase;color:rgba(255,255,255,.5)}
+.pf-chipgfx{flex:none;width:2.4rem;height:1.8rem;border-radius:.45rem;background:linear-gradient(135deg,rgba(255,255,255,.35),rgba(183,255,0,.35),rgba(32,224,0,.3));
+  border:1px solid rgba(255,255,255,.3);box-shadow:inset 0 1px 0 rgba(255,255,255,.5);
+  background-image:linear-gradient(90deg,transparent 48%,rgba(0,0,0,.25) 49% 51%,transparent 52%),linear-gradient(0deg,transparent 48%,rgba(0,0,0,.25) 49% 51%,transparent 52%),linear-gradient(135deg,rgba(255,255,255,.35),rgba(183,255,0,.35),rgba(32,224,0,.3))}
+.pf-mono{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:clamp(14px,4.2vw,18px);letter-spacing:.2em;overflow-wrap:anywhere;color:#f3ffd6}
+.pf-days{font-family:Unbounded,Inter,sans-serif;font-weight:700;font-size:clamp(2.4rem,11vw,3.4rem);line-height:1.05;letter-spacing:-.02em}
+.pf-days small{font-family:Inter,sans-serif;font-size:.8rem;font-weight:600;letter-spacing:.24em;color:rgba(255,255,255,.55);margin-left:.4rem}
+.pf-tc{min-width:0;border-radius:.95rem;padding:.6rem .25rem .5rem;text-align:center;background:rgba(0,0,0,.3);border:1px solid rgba(183,255,0,.16);box-shadow:inset 0 1px 0 rgba(255,255,255,.1)}
+.pf-tc b{display:block;font-family:Unbounded,Inter,sans-serif;font-weight:600;font-size:1.15rem;line-height:1.1}
+.pf-tc small{display:block;margin-top:3px;font-size:9px;font-weight:600;letter-spacing:.22em;text-transform:uppercase;color:rgba(255,255,255,.48)}
 
-.pf-days{font-family:"Bebas Neue",Impact,sans-serif;font-size:4.6rem;line-height:1;letter-spacing:.03em;text-shadow:0 0 34px currentColor}
-.pf-timechip{border-radius:1.1rem;padding:.55rem .3rem;text-align:center}
-.pf-timechip b{display:block;font-family:"Bebas Neue",Impact,sans-serif;font-size:1.85rem;line-height:1;font-weight:400;letter-spacing:.04em}
-.pf-timechip small{display:block;margin-top:2px;font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:rgba(255,255,255,.5)}
+/* referral */
+.pf-code{display:flex;align-items:center;justify-content:space-between;gap:.75rem;min-width:0;border-radius:1.1rem;padding:.65rem .65rem .65rem 1rem;
+  background:rgba(0,0,0,.34);border:1px dashed rgba(183,255,0,.42);box-shadow:inset 0 1px 0 rgba(255,255,255,.08)}
+.pf-code code{min-width:0;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;letter-spacing:.16em;color:#f1ffd0}
+.pf-bignum{font-family:Unbounded,Inter,sans-serif;font-weight:700;font-size:2.8rem;line-height:1;letter-spacing:-.02em}
 
-/* ---------- referral ---------- */
-.pf-code{display:flex;align-items:center;justify-content:space-between;gap:.75rem;border-radius:1.1rem;padding:.7rem .75rem .7rem 1rem;
-  background:rgba(0,0,0,.35);border:1px solid rgba(255,90,100,.32);box-shadow:inset 0 1px 0 rgba(255,255,255,.1)}
-.pf-bignum{font-family:"Bebas Neue",Impact,sans-serif;font-size:3rem;line-height:1;letter-spacing:.04em;text-shadow:0 0 28px rgba(229,9,20,.8)}
-
-/* ---------- modal ---------- */
-.pf-modal-backdrop{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;padding:1rem;
-  background:radial-gradient(60% 50% at 50% 28%,rgba(229,9,20,.28),rgba(0,0,0,.82)),rgba(0,0,0,.7);
-  -webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
-.pf-glass.pf-modal-card{width:100%;max-width:34rem;max-height:90vh;overflow-y:auto;color:#fff;
-  background:linear-gradient(140deg,rgba(52,52,58,.70),rgba(12,12,14,.86))}
-.pf-bubble-me{background:linear-gradient(160deg,#ff3a47,#c40914);color:#fff;box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 8px 20px -8px rgba(229,9,20,.7)}
-.pf-bubble-them{background:linear-gradient(140deg,rgba(255,255,255,.14),rgba(255,255,255,.05));border:1px solid rgba(255,255,255,.14);
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.25);color:#e5e5e8}
+/* =============== MODAL =============== */
+.pf-modal-backdrop{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;
+  padding:max(1rem,env(safe-area-inset-top)) 1rem max(1rem,env(safe-area-inset-bottom));
+  background:radial-gradient(60% 46% at 50% 26%,rgba(32,224,0,.22),rgba(0,0,0,.84)),rgba(0,0,0,.72);
+  -webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)}
+.pf-glass.pf-modal-card{width:100%;max-width:34rem;max-height:90vh;max-height:90dvh;overflow-y:auto;overscroll-behavior:contain;color:#fff;
+  background:radial-gradient(100% 50% at 90% -10%,rgba(183,255,0,.13),transparent 60%),linear-gradient(145deg,rgba(26,40,31,.94),rgba(6,12,8,.97))}
+.pf-bubble-me{background:var(--grad);color:var(--ink);font-weight:500;box-shadow:inset 0 1px 0 rgba(255,255,255,.6),0 8px 20px -8px rgba(32,224,0,.7)}
+.pf-bubble-them{background:linear-gradient(145deg,rgba(255,255,255,.14),rgba(255,255,255,.05));border:1px solid rgba(255,255,255,.12);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.22);color:#e8efe9}
+.pf-bubble-me,.pf-bubble-them{overflow-wrap:anywhere;word-break:break-word}
 
 @media (prefers-reduced-motion:reduce){
-  .pf-glass::after,.pf-storm span,.pf-flash,.pf-avatar::before,.pf-dot{animation:none!important}
+  .pf-sheen::after,.pf-aurora span,.pf-orbit,.pf-dot{animation:none!important}
 }
 `
 
@@ -634,7 +668,7 @@ export default function ProfilePage(
         ? "text-red-300"
         : days === 3
           ? "text-amber-300"
-          : "text-emerald-300"
+          : "text-lime-300"
 
   const countdownText =
     remaining.expired
@@ -840,15 +874,15 @@ export default function ProfilePage(
 
   if (!user) {
     return (
-      <main className="pf-root flex min-h-[60vh] items-center justify-center px-4">
+      <main className="pf-root flex min-h-[60vh] items-center justify-center px-4 py-10">
         <ProfileStyles />
 
-        <section className="pf-glass pf-red w-full max-w-md p-8 text-center">
-          <div className="pf-icon mx-auto mb-5 !size-16">
+        <section className="pf-glass pf-tint pf-sheen w-full max-w-md p-8 text-center">
+          <div className="pf-icon pf-icon-lg mx-auto mb-5">
             <UserRound className="size-7" />
           </div>
 
-          <h1 className="pf-title !text-[40px]">
+          <h1 className="pf-disp text-2xl font-semibold tracking-tight">
             Your MVBD account
           </h1>
 
@@ -859,7 +893,7 @@ export default function ProfilePage(
 
           <button
             onClick={() => setShowAuthModal(true)}
-            className="pf-btn-red mt-7 px-6 py-3 text-sm"
+            className="pf-btn mt-7 px-6 py-3 text-sm"
           >
             <LogIn className="size-4" />
             Sign in
@@ -878,38 +912,40 @@ export default function ProfilePage(
     <main className="pf-root min-h-0 px-4 pb-24 pt-5 text-white sm:px-6 lg:px-8">
       <ProfileStyles />
 
-      <div className="mx-auto max-w-6xl">
+      <div className="mx-auto w-full max-w-6xl">
 
         {/* PROFILE HERO */}
-        <section className="pf-hero px-5 pb-10 pt-5 text-center sm:px-10">
-          <div className="pf-storm" aria-hidden="true">
+        <section className="pf-hero px-4 pb-8 pt-5 text-center sm:px-10">
+          <div className="pf-aurora" aria-hidden="true">
             <span />
             <span />
             <span />
-            <i className="pf-flash" />
           </div>
+          <div className="pf-dots" aria-hidden="true" />
           <div className="pf-hero-fade" aria-hidden="true" />
 
-          <div className="relative z-10 flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
-              <span className="grid size-8 place-items-center rounded-md bg-[#e50914] text-lg leading-none text-white shadow-[0_0_20px_rgba(229,9,20,.7)] pf-display">
-                M
-              </span>
-              <span className="text-[10px] uppercase tracking-[.3em] text-white/60">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex min-w-0 items-center gap-2.5">
+              <span className="pf-logo">M</span>
+              <span className="truncate text-[10px] font-semibold uppercase tracking-[.3em] text-white/60">
                 MVBD • Member
               </span>
             </div>
 
             <button
               onClick={() => void signOut()}
-              className="pf-btn-glass px-3.5 py-2 text-xs"
+              className="pf-btn-glass shrink-0 px-3.5 py-2 text-xs"
             >
               <LogOut className="size-3.5" />
               Sign out
             </button>
           </div>
 
-          <div className="relative z-10 mt-8">
+          <div className="pf-avatar-wrap">
+            <span className="pf-ring r2" aria-hidden="true" />
+            <span className="pf-ring r1" aria-hidden="true" />
+            <span className="pf-orbit" aria-hidden="true" />
+
             <div className="pf-avatar">
               <div className="pf-avatar-in">
                 {photo ? (
@@ -919,45 +955,43 @@ export default function ProfilePage(
                     className="size-full object-cover"
                   />
                 ) : (
-                  <span className="pf-display text-5xl text-white">
+                  <span className="pf-disp pf-grad-text text-4xl font-bold">
                     {initials}
                   </span>
                 )}
               </div>
-
-              {isPremium && (
-                <span className="pf-crown">
-                  <Crown className="size-5" />
-                </span>
-              )}
             </div>
+
+            {isPremium && (
+              <span className="pf-crown">
+                <Crown className="size-5" />
+              </span>
+            )}
           </div>
 
-          <p className="pf-title relative z-10 mt-7">
+          <p className="pf-name">
             {profile?.name ||
               user.displayName ||
               "MVBD member"}
           </p>
 
-          <div className="pf-rule relative z-10 mt-4" />
-
-          <p className="relative z-10 mt-4 break-all text-sm text-zinc-300">
+          <p className="mt-3 break-words px-2 text-sm text-zinc-300 [overflow-wrap:anywhere]">
             {user.email}
           </p>
 
-          <div className="relative z-10 mt-5">
-            <div className="pf-glass pf-member-pill">
+          <div className="mt-5">
+            <div className="pf-glass pf-pill">
               <span
-                className={`size-2 rounded-full ${
+                className={`size-2 shrink-0 rounded-full ${
                   isPremium
-                    ? "bg-[#ff3342] shadow-[0_0_12px_#ff3342]"
+                    ? "bg-[#B7FF00] shadow-[0_0_12px_#20E000]"
                     : "bg-zinc-400"
                 }`}
               />
 
               {isPremium ? (
                 <>
-                  <Crown className="size-4 text-[#ff5560]" />
+                  <Crown className="size-4 shrink-0 text-[#B7FF00]" />
                   Premium Membership
                 </>
               ) : (
@@ -966,63 +1000,86 @@ export default function ProfilePage(
             </div>
           </div>
 
-          {expiry && (
-            <div className="relative z-10 mx-auto mt-9 max-w-sm">
-              <p className="pf-label justify-center">
-                Valid time
-              </p>
-
-              {remaining.expired ? (
-                <>
-                  <p className="pf-days mt-3 text-red-300">
-                    Expired
+          {/* MEMBERSHIP PASS */}
+          <div className="pf-glass pf-tint pf-sheen pf-pass">
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex min-w-0 items-center gap-2.5">
+                <span className="pf-logo">M</span>
+                <div className="min-w-0">
+                  <p className="pf-mini">Plan</p>
+                  <p className="pf-disp truncate text-sm font-semibold">
+                    {accountType}
                   </p>
+                </div>
+              </div>
 
-                  <p className="mt-2 text-[11px] text-red-300/70">
-                    Your access validity has ended
-                  </p>
-                </>
-              ) : (
-                <>
-                  <p className={`pf-days mt-3 ${daysTone}`}>
-                    {days}{" "}
-                    <span className="text-lg font-normal tracking-[.2em] text-zinc-400">
-                      DAYS
-                    </span>
-                  </p>
-
-                  <div
-                    className="mx-auto mt-4 grid max-w-[18rem] grid-cols-3 gap-2.5"
-                    aria-label={countdownText}
-                  >
-                    {[
-                      [remaining.hours, "Hours"],
-                      [remaining.minutes, "Mins"],
-                      [remaining.seconds, "Secs"],
-                    ].map(([value, unit]) => (
-                      <div
-                        key={unit as string}
-                        className="pf-glass pf-timechip"
-                      >
-                        <b className={daysTone}>
-                          {String(value).padStart(2, "0")}
-                        </b>
-                        <small>{unit}</small>
-                      </div>
-                    ))}
-                  </div>
-                </>
-              )}
+              <span className="pf-chipgfx" aria-hidden="true" />
             </div>
-          )}
+
+            <div className="mt-5">
+              <p className="pf-mini">Member ID</p>
+              <p className="pf-mono mt-1">
+                {profile?.mvbdId || "Pending"}
+              </p>
+            </div>
+
+            {expiry && (
+              <div className="mt-5 border-t border-white/10 pt-4">
+                <p className="pf-mini">Valid time</p>
+
+                {remaining.expired ? (
+                  <>
+                    <p className="pf-days mt-1.5 text-red-300">
+                      Expired
+                    </p>
+
+                    <p className="mt-1 text-[11px] text-red-300/70">
+                      Your access validity has ended
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <p className="pf-days pf-tabular mt-1.5">
+                      <span
+                        className={
+                          days > 3 ? "pf-grad-text" : daysTone
+                        }
+                      >
+                        {days}
+                      </span>
+                      <small>DAYS</small>
+                    </p>
+
+                    <div
+                      className="mt-3 grid grid-cols-3 gap-2"
+                      aria-label={countdownText}
+                    >
+                      {[
+                        [remaining.hours, "Hours"],
+                        [remaining.minutes, "Mins"],
+                        [remaining.seconds, "Secs"],
+                      ].map(([value, unit]) => (
+                        <div key={unit as string} className="pf-tc">
+                          <b className={`pf-tabular ${daysTone}`}>
+                            {String(value).padStart(2, "0")}
+                          </b>
+                          <small>{unit}</small>
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
+          </div>
         </section>
 
         {/* ACCOUNT DETAILS + ACCESS */}
-        <div className="mt-6 grid gap-5 lg:grid-cols-[1.4fr_.8fr]">
+        <div className="mt-6 grid gap-5 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,.8fr)]">
 
           <section className="pf-glass p-5 sm:p-7">
-            <div className="flex items-start justify-between">
-              <div>
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0 flex-1">
                 <p className="pf-label">
                   <span className="pf-num">01</span>
                   Account details
@@ -1037,70 +1094,88 @@ export default function ProfilePage(
                 onClick={() =>
                   setIsEditing((value) => !value)
                 }
-                className="pf-btn-glass size-10"
+                className="pf-btn-glass size-10 shrink-0"
                 aria-label="Edit profile"
               >
                 <Edit3 className="size-4" />
               </button>
             </div>
 
-            <div className="mt-6 grid gap-3.5 sm:grid-cols-2">
+            <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
 
               <label className="pf-field">
-                <span>Full name</span>
+                <span className="pf-fi">
+                  <UserRound className="size-[18px]" />
+                </span>
 
-                {isEditing ? (
-                  <input
-                    value={name}
-                    onChange={(event) =>
-                      setName(event.target.value)
-                    }
-                  />
-                ) : (
-                  <strong>
-                    {profile?.name || "Not set"}
-                  </strong>
-                )}
+                <div className="pf-fbody">
+                  <span>Full name</span>
+
+                  {isEditing ? (
+                    <input
+                      value={name}
+                      onChange={(event) =>
+                        setName(event.target.value)
+                      }
+                    />
+                  ) : (
+                    <strong>
+                      {profile?.name || "Not set"}
+                    </strong>
+                  )}
+                </div>
               </label>
 
               <label className="pf-field">
-                <span>Email</span>
+                <span className="pf-fi">
+                  <Mail className="size-[18px]" />
+                </span>
 
-                <strong>
-                  {user.email || "Not set"}
-                </strong>
+                <div className="pf-fbody">
+                  <span>Email</span>
 
-                <Mail className="pf-field-icon" />
+                  <strong>
+                    {user.email || "Not set"}
+                  </strong>
+                </div>
               </label>
 
               <label className="pf-field">
-                <span>Date of birth</span>
+                <span className="pf-fi">
+                  <CalendarDays className="size-[18px]" />
+                </span>
 
-                {isEditing ? (
-                  <input
-                    type="date"
-                    value={dateOfBirth}
-                    onChange={(event) =>
-                      setDateOfBirth(event.target.value)
-                    }
-                  />
-                ) : (
-                  <strong>
-                    {profile?.dateOfBirth || "Not set"}
-                  </strong>
-                )}
+                <div className="pf-fbody">
+                  <span>Date of birth</span>
 
-                <CalendarDays className="pf-field-icon" />
+                  {isEditing ? (
+                    <input
+                      type="date"
+                      value={dateOfBirth}
+                      onChange={(event) =>
+                        setDateOfBirth(event.target.value)
+                      }
+                    />
+                  ) : (
+                    <strong>
+                      {profile?.dateOfBirth || "Not set"}
+                    </strong>
+                  )}
+                </div>
               </label>
 
               <div className="pf-field">
-                <span>Member ID</span>
+                <span className="pf-fi">
+                  <ShieldCheck className="size-[18px]" />
+                </span>
 
-                <strong>
-                  {profile?.mvbdId || "Pending"}
-                </strong>
+                <div className="pf-fbody">
+                  <span>Member ID</span>
 
-                <ShieldCheck className="pf-field-icon" />
+                  <strong>
+                    {profile?.mvbdId || "Pending"}
+                  </strong>
+                </div>
               </div>
             </div>
 
@@ -1108,7 +1183,7 @@ export default function ProfilePage(
               <button
                 disabled={saving}
                 onClick={() => void saveProfile()}
-                className="pf-btn-red mt-5 px-6 py-2.5 text-sm"
+                className="pf-btn mt-5 px-6 py-2.5 text-sm"
               >
                 {saving && (
                   <Loader2 className="size-4 animate-spin" />
@@ -1131,19 +1206,19 @@ export default function ProfilePage(
 
             <div className="mt-6 space-y-4">
 
-              <div className="flex items-center justify-between border-b border-white/10 pb-4">
+              <div className="flex items-center justify-between gap-3 border-b border-white/10 pb-4">
                 <span className="text-zinc-400">
                   Status
                 </span>
 
-                <span className="pf-glass !rounded-full px-3.5 py-1 text-xs font-medium text-white">
+                <span className="pf-glass pf-pill !rounded-full !px-3.5 !py-1 text-xs font-semibold">
                   <span
-                    className={`mr-1.5 inline-block size-1.5 rounded-full align-middle ${
+                    className={`size-1.5 shrink-0 rounded-full ${
                       status === "Active"
-                        ? "bg-emerald-400 shadow-[0_0_8px_#34d399]"
+                        ? "bg-[#B7FF00] shadow-[0_0_8px_#20E000]"
                         : status === "Pending"
                           ? "bg-amber-300"
-                          : "bg-[#ff3342]"
+                          : "bg-rose-400"
                     }`}
                   />
                   {status}
@@ -1156,7 +1231,7 @@ export default function ProfilePage(
                 </p>
               )}
 
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between gap-3">
                 <span className="text-zinc-400">
                   Type
                 </span>
@@ -1168,7 +1243,7 @@ export default function ProfilePage(
 
               <button
                 onClick={() => setShowSubscriptions(true)}
-                className="pf-btn-red mt-2 w-full px-4 py-3 text-sm"
+                className="pf-btn mt-2 w-full px-4 py-3 text-sm"
               >
                 <Crown className="size-4" />
                 Manage premium access
@@ -1180,7 +1255,7 @@ export default function ProfilePage(
         {/* REFERRAL + ACTIONS */}
         <section className="mt-5 grid gap-5 md:grid-cols-2">
 
-          <div className="pf-glass pf-red p-5 sm:p-7">
+          <div className="pf-glass pf-tint p-5 sm:p-7">
 
             <p className="pf-label">
               <span className="pf-num">03</span>
@@ -1196,13 +1271,11 @@ export default function ProfilePage(
             </p>
 
             <div className="pf-code mt-5">
-              <code className="min-w-0 truncate text-sm tracking-[.16em] text-white">
-                {referralCode}
-              </code>
+              <code>{referralCode}</code>
 
               <button
                 onClick={() => void copyCode()}
-                className="pf-btn-red shrink-0 px-3.5 py-2 text-xs"
+                className="pf-btn shrink-0 px-3.5 py-2 text-xs"
               >
                 {copied ? (
                   <Check className="size-3.5" />
@@ -1215,22 +1288,17 @@ export default function ProfilePage(
             </div>
 
             <p className="mt-6 flex items-end gap-3 text-sm text-zinc-300">
-              <strong className="pf-bignum text-white">
+              <strong className="pf-bignum pf-tabular pf-grad-text">
                 {successfulReferrals}
               </strong>
-              <span className="pb-1.5">
+              <span className="pb-1">
                 successful referrals
               </span>
             </p>
           </div>
 
           {/* ACTIONS */}
-          <div className="flex flex-col gap-3.5">
-
-            <p className="pf-label md:hidden">
-              <span className="pf-num">04</span>
-              Quick actions
-            </p>
+          <div className="flex min-w-0 flex-col gap-3.5">
 
             <button
               onClick={() => void openNotifications()}
@@ -1240,7 +1308,7 @@ export default function ProfilePage(
                 <Bell className="size-5" />
               </span>
 
-              <span>
+              <span className="pf-atext">
                 <strong>Notifications</strong>
 
                 <small>
@@ -1256,7 +1324,7 @@ export default function ProfilePage(
                 <i className="pf-dot" />
               )}
 
-              <ChevronRight className="ml-auto size-4 text-white/40" />
+              <ChevronRight className="size-4 shrink-0 text-white/40" />
             </button>
 
             <button
@@ -1267,13 +1335,13 @@ export default function ProfilePage(
                 <MessageCircle className="size-5" />
               </span>
 
-              <span>
+              <span className="pf-atext">
                 <strong>Support team</strong>
 
                 <small>Chat with MVBD support</small>
               </span>
 
-              <ChevronRight className="ml-auto size-4 text-white/40" />
+              <ChevronRight className="size-4 shrink-0 text-white/40" />
             </button>
 
             {onNavigate && (
@@ -1285,13 +1353,13 @@ export default function ProfilePage(
                   <CircleHelp className="size-5" />
                 </span>
 
-                <span>
+                <span className="pf-atext">
                   <strong>More settings</strong>
 
                   <small>Manage your experience</small>
                 </span>
 
-                <ChevronRight className="ml-auto size-4 text-white/40" />
+                <ChevronRight className="size-4 shrink-0 text-white/40" />
               </button>
             )}
           </div>
@@ -1308,24 +1376,22 @@ export default function ProfilePage(
       {mounted && modal
         ? createPortal(
             <div
-              className="pf-modal-backdrop"
+              className="pf-root pf-modal-backdrop"
               onMouseDown={(event) => {
                 if (event.currentTarget === event.target) {
                   setModal(null)
                 }
               }}
             >
-              <ProfileStyles />
+              <section className="pf-glass pf-modal-card">
 
-              <section className="pf-glass pf-red pf-modal-card">
-
-                <div className="flex items-center justify-between border-b border-white/10 p-5">
-                  <div>
+                <div className="flex items-center justify-between gap-3 border-b border-white/10 p-5">
+                  <div className="min-w-0">
                     <p className="pf-label">
                       MVBD
                     </p>
 
-                    <h2 className="mt-1.5 text-xl font-semibold">
+                    <h2 className="pf-disp mt-2 text-lg font-semibold">
                       {modal === "notifications"
                         ? "Notifications"
                         : "Support team"}
@@ -1334,7 +1400,7 @@ export default function ProfilePage(
 
                   <button
                     onClick={() => setModal(null)}
-                    className="pf-btn-glass size-9"
+                    className="pf-btn-glass size-9 shrink-0"
                     aria-label="Close"
                   >
                     <X className="size-4" />
@@ -1356,12 +1422,12 @@ export default function ProfilePage(
                         >
                           <div className="flex gap-3">
 
-                            <span className="pf-icon !size-9">
+                            <span className="pf-icon pf-icon-sm">
                               <Bell className="size-4" />
                             </span>
 
-                            <div>
-                              <p className="text-sm text-zinc-100">
+                            <div className="min-w-0">
+                              <p className="text-sm text-zinc-100 [overflow-wrap:anywhere]">
                                 {item.message}
                               </p>
 
@@ -1397,7 +1463,7 @@ export default function ProfilePage(
                             <p
                               className={`mt-1 text-[10px] ${
                                 item.senderUid === user.uid
-                                  ? "text-white/70"
+                                  ? "text-[#2c4a12]"
                                   : "text-zinc-400"
                               }`}
                             >
@@ -1425,13 +1491,13 @@ export default function ProfilePage(
                           }
                         }}
                         placeholder="Write a message..."
-                        className="min-w-0 flex-1 rounded-full border border-white/15 bg-white/[.07] px-5 text-sm text-white shadow-[inset_0_1px_0_rgba(255,255,255,.15)] outline-none placeholder:text-zinc-500 focus:border-[#ff3342]/70 focus:shadow-[0_0_0_3px_rgba(229,9,20,.22)]"
+                        className="min-w-0 flex-1 rounded-full border border-white/15 bg-white/[.07] px-5 text-base text-white shadow-[inset_0_1px_0_rgba(255,255,255,.15)] outline-none placeholder:text-zinc-500 focus:border-[#B7FF00]/70 focus:shadow-[0_0_0_3px_rgba(32,224,0,.2)]"
                       />
 
                       <button
                         onClick={() => void submitMessage()}
                         disabled={sending || !message.trim()}
-                        className="pf-btn-red size-11 shrink-0 !rounded-full"
+                        className="pf-btn size-11 shrink-0"
                         aria-label="Send message"
                       >
                         {sending ? (
@@ -1450,4 +1516,4 @@ export default function ProfilePage(
         : null}
     </main>
   )
-                    }
+              }

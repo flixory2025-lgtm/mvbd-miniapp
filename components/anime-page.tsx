@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect } from "react"
 import Header from "./header"
-import GenreCategories from "./genre-categories"
+import GenreCategories, { normalizeLanguage, isSeries } from "./genre-categories"
 import MovieGrid from "./movie-grid"
 import Footer from "./footer"
 import AnimeTrendingCarousel from "./anime-trending-carousel"
@@ -16,6 +16,10 @@ interface AnimePageProps {
 export default function AnimePage({ onAnimeClick }: AnimePageProps) {
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedGenre, setSelectedGenre] = useState<string | null>(null)
+  const [selectedYear, setSelectedYear] = useState("All")
+  const [selectedRating, setSelectedRating] = useState("All")
+  const [selectedLanguage, setSelectedLanguage] = useState("All")
+  const [selectedType, setSelectedType] = useState("All")
   const [currentPage, setCurrentPage] = useState(1)
   const [isSearching, setIsSearching] = useState(false)
   const trendingAnimes = animes.slice(0, 5)
@@ -40,10 +44,37 @@ export default function AnimePage({ onAnimeClick }: AnimePageProps) {
       )
     }
 
-    filtered = filtered.sort((a, b) => b.id - a.id)
+    if (selectedYear !== "All") {
+      filtered = filtered.filter(
+        (anime: any) => String(anime.year ?? "").trim() === selectedYear
+      )
+    }
 
-    return filtered
-  }, [searchQuery, selectedGenre])
+    if (selectedRating !== "All") {
+      const min = parseFloat(selectedRating)
+      filtered = filtered.filter((anime: any) => {
+        const r = parseFloat(String(anime.rating ?? ""))
+        return !isNaN(r) && r >= min
+      })
+    }
+
+    if (selectedLanguage !== "All") {
+      filtered = filtered.filter(
+        (anime: any) =>
+          anime.language &&
+          normalizeLanguage(String(anime.language)) === selectedLanguage
+      )
+    }
+
+    if (selectedType !== "All") {
+      filtered = filtered.filter((anime) =>
+        selectedType === "Series" ? isSeries(anime.title) : !isSeries(anime.title)
+      )
+    }
+
+    // sort() original array mutate kore, tai copy kore sort kora holo
+    return [...filtered].sort((a, b) => b.id - a.id)
+  }, [searchQuery, selectedGenre, selectedYear, selectedRating, selectedLanguage, selectedType])
 
   const itemsPerPage = 30
   const totalPages = Math.ceil(filteredAnimes.length / itemsPerPage)
@@ -60,6 +91,20 @@ export default function AnimePage({ onAnimeClick }: AnimePageProps) {
 
   const handleGenreSelect = (genre: string | null) => {
     setSelectedGenre(genre)
+    setCurrentPage(1)
+    setSearchQuery("")
+  }
+
+  const handleFilterChange = (filters: {
+    year?: string
+    rating?: string
+    language?: string
+    type?: string
+  }) => {
+    if (filters.year !== undefined) setSelectedYear(filters.year)
+    if (filters.rating !== undefined) setSelectedRating(filters.rating)
+    if (filters.language !== undefined) setSelectedLanguage(filters.language)
+    if (filters.type !== undefined) setSelectedType(filters.type)
     setCurrentPage(1)
     setSearchQuery("")
   }
@@ -90,6 +135,12 @@ export default function AnimePage({ onAnimeClick }: AnimePageProps) {
           selectedGenre={selectedGenre}
           onGenreSelect={handleGenreSelect}
           showAdultContent={false}
+          items={animes}
+          selectedYear={selectedYear}
+          selectedRating={selectedRating}
+          selectedLanguage={selectedLanguage}
+          selectedType={selectedType}
+          onFilterChange={handleFilterChange}
         />
       )}
 

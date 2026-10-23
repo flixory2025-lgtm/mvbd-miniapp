@@ -117,8 +117,7 @@ export default function Header({
   }, [pageType, searchData])
 
   // Smart search suggestions — word by word match, latest (highest id) upore
-  const allSearchSuggestions = 
-useMemo(() => {
+  const allSearchSuggestions = useMemo(() => {
     const query = searchQuery.trim().toLowerCase()
     if (!query) return []
 
@@ -130,8 +129,7 @@ useMemo(() => {
     })
 
     return [...matches].sort((a, b) => {
-      const idA = typeof a.id === 
-"number" ? a.id : 0
+      const idA = typeof a.id === "number" ? a.id : 0
       const idB = typeof b.id === "number" ? b.id : 0
       return idB - idA
     })
@@ -248,8 +246,7 @@ useMemo(() => {
         await saveHistoryToFirestore(
           user.uid,
           updated,
-          (user as any)?.displayName || 
-undefined,
+          (user as any)?.displayName || undefined,
           historyScope
         )
       } catch (err) {
@@ -327,8 +324,7 @@ undefined,
         ? TYPING_SUGGESTIONS_SERIES
         : TYPING_SUGGESTIONS_HOME
 
-  // Extract first 4 items for the cube 
-faces
+  // Extract first 4 items for the cube faces
   const cubeTexts = TYPING_SUGGESTIONS.slice(0, 4)
 
   const hasQuery = searchQuery.trim().length > 0
@@ -339,8 +335,7 @@ faces
   return (
     // ✅ FIXED HEADER — Transparent at top, Solid on scroll
     <header
-      className={`fixed top-0 
-left-0 right-0 lg:left-[220px] z-50 transition-all duration-300 ease-in-out ${
+      className={`fixed top-0 left-0 right-0 lg:left-[220px] z-50 transition-all duration-300 ease-in-out ${
         isScrolled
           ? "bg-black/60 backdrop-blur-xl border-b border-white/10 shadow-lg"
           : "bg-transparent border-b border-transparent shadow-none"
@@ -371,8 +366,7 @@ left-0 right-0 lg:left-[220px] z-50 transition-all duration-300 ease-in-out ${
           animation: liquidGlassZoom .6s ease-out forwards, liquidGlassGlow .6s ease-out;
         }
         .search-input-liquid {
-          background: transparent !
-important;
+          background: transparent !important;
           border: none !important;
           outline: none !important;
           width: 100%;
@@ -412,8 +406,7 @@ important;
         }
         .search-suggestions::-webkit-scrollbar { width: 6px; }
         .search-suggestions::-webkit-scrollbar-track { background: transparent; }
-        .search-suggestions::-webkit-scrollbar-thumb { background: 
-rgba(100,200,255,.5); border-radius: 3px; }
+        .search-suggestions::-webkit-scrollbar-thumb { background: rgba(100,200,255,.5); border-radius: 3px; }
         .search-suggestion-item {
           padding: 10px 16px;
           cursor: pointer;
@@ -439,8 +432,7 @@ rgba(100,200,255,.5); border-radius: 3px; }
           100% { opacity: 0; transform: scale(.2) translateY(-50px); filter: blur(2px); }
         }
         .liquid-bubble {
-          animation: liquidBubbleRise 
-.8s ease-out forwards;
+          animation: liquidBubbleRise .8s ease-out forwards;
           pointer-events: none;
         }
 
@@ -487,8 +479,7 @@ rgba(100,200,255,.5); border-radius: 3px; }
         @keyframes rotateCubeUp {
           0%, 20% { transform: translateZ(-10px) rotateX(0deg); }
           25%, 45% { transform: translateZ(-10px) rotateX(90deg); }
-          50%, 70% { transform: 
-translateZ(-10px) rotateX(180deg); }
+          50%, 70% { transform: translateZ(-10px) rotateX(180deg); }
           75%, 95% { transform: translateZ(-10px) rotateX(270deg); }
           100% { transform: translateZ(-10px) rotateX(360deg); }
         }
@@ -500,8 +491,7 @@ translateZ(-10px) rotateX(180deg); }
           <img
             src="https://i.postimg.cc/0yqFXMFW/photo-2025-12-11-09-45-29-removebg-preview.png"
             alt="MVBD Logo"
-            className="h-10 w-auto 
-object-contain"
+            className="h-10 w-auto object-contain"
           />
         </div>
 
@@ -524,8 +514,7 @@ object-contain"
                     {cubeTexts.map((text, index) => (
                       <div
                         key={index}
-                        
-className={`cube-face face-${index + 1}`}
+                        className={`cube-face face-${index + 1}`}
                       >
                         {text}
                       </div>
@@ -606,8 +595,7 @@ className={`cube-face face-${index + 1}`}
                     "radial-gradient(circle at 30% 30%, rgba(100,200,255,.8), rgba(59,130,246,.3))",
                   border: "1px solid rgba(100,200,255,.5)",
                   boxShadow:
-                    "0 0 8px 
-rgba(100,200,255,.4), inset -2px -2px 4px rgba(0,0,0,.2)",
+                    "0 0 8px rgba(100,200,255,.4), inset -2px -2px 4px rgba(0,0,0,.2)",
                 }}
               />
             ))}
@@ -633,8 +621,7 @@ rgba(100,200,255,.4), inset -2px -2px 4px rgba(0,0,0,.2)",
                   <Clock className="w-4 h-4 flex-shrink-0 text-slate-500" />
 
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm 
-text-white truncate">{item.query}</p>
+                    <p className="text-sm text-white truncate">{item.query}</p>
                     <p className="text-[10px] text-slate-500 mt-0.5">
                       {getTimeAgo(item.timestamp)}
                     </p>
@@ -643,8 +630,7 @@ text-white truncate">{item.query}</p>
                   <button
                     type="button"
                     onMouseDown={(e) => handleRemoveHistory(item, e)}
-                    className="w-6 h-6 rounded-full hover:bg-white/10 text-slate-500 hover:text-white flex items-center justify-center transition opacity-0 
-group-hover:opacity-100"
+                    className="w-6 h-6 rounded-full hover:bg-white/10 text-slate-500 hover:text-white flex items-center justify-center transition opacity-0 group-hover:opacity-100"
                     aria-label="Remove"
                   >
                     <X className="w-3 h-3" />
@@ -698,4 +684,4 @@ group-hover:opacity-100"
       </div>
     </header>
   )
-                }
+}

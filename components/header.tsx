@@ -1,6 +1,7 @@
 "use client"
 
 import type React from "react"
+
 import { useState, useRef, useMemo, useEffect } from "react"
 import { Search, X, Clock, TrendingUp } from "lucide-react"
 import { movies } from "@/lib/movie-data"
@@ -29,22 +30,55 @@ interface HeaderProps {
   }>
 }
 
+// ✅ Header এর শুরুর অবস্থা: Liquid Glass (scroll এর সাথে সাথে JS দিয়ে আস্তে আস্তে বদলায়)
+const HEADER_GLASS_STYLE: React.CSSProperties = {
+  background: "rgba(255,255,255,0.07)",
+  backdropFilter: "blur(10px) saturate(1.7)",
+  WebkitBackdropFilter: "blur(10px) saturate(1.7)",
+  borderBottom: "1px solid rgba(255,255,255,0.14)",
+  boxShadow: "0 8px 32px rgba(0,0,0,0.12)",
+}
+
+// কত px scroll করলে header পুরোপুরি আগের solid রূপে পৌঁছাবে
+const HEADER_SCROLL_RANGE = 260
+
 const TYPING_SUGGESTIONS_HOME = [
-  "Search movies...", "Find web series...", "Trending now...", "Action movies...",
-  "Drama series...", "Comedy shows...", "Sci-fi films...", "Horror movies...",
-  "Romance dramas...", "Thriller series...",
+  "Search movies...",
+  "Find web series...",
+  "Trending now...",
+  "Action movies...",
+  "Drama series...",
+  "Comedy shows...",
+  "Sci-fi films...",
+  "Horror movies...",
+  "Romance dramas...",
+  "Thriller series...",
 ]
 
 const TYPING_SUGGESTIONS_ANIME = [
-  "Search anime...", "Find manga...", "Action anime...", "Romance anime...",
-  "Thriller anime...", "Comedy anime...", "School anime...", "Supernatural anime...",
-  "Adventure anime...", "Fantasy anime...",
+  "Search anime...",
+  "Find manga...",
+  "Action anime...",
+  "Romance anime...",
+  "Thriller anime...",
+  "Comedy anime...",
+  "School anime...",
+  "Supernatural anime...",
+  "Adventure anime...",
+  "Fantasy anime...",
 ]
 
 const TYPING_SUGGESTIONS_SERIES = [
-  "Search series...", "Find seasons...", "Crime series...", "Drama series...",
-  "Thriller series...", "Comedy series...", "Action series...", "Mystery series...",
-  "Horror series...", "Romance series...",
+  "Search series...",
+  "Find seasons...",
+  "Crime series...",
+  "Drama series...",
+  "Thriller series...",
+  "Comedy series...",
+  "Action series...",
+  "Mystery series...",
+  "Horror series...",
+  "Romance series...",
 ]
 
 export default function Header({
@@ -54,11 +88,16 @@ export default function Header({
   searchData,
 }: HeaderProps) {
   const [isFocused, setIsFocused] = useState(false)
-  
-  // ✅ Smooth Scroll State (0 = Top, 1 = Scrolled)
-  const [scrollProgress, setScrollProgress] = useState(0)
 
-  const [bubbles, setBubbles] = useState<Array<{ id: number; x: number; y: number }>>([])
+  // ✅ Header background scroll-progress দিয়ে চলে (state না, তাই re-render হয় না)
+  const headerRef = useRef<HTMLElement>(null)
+  const glassSheenRef = useRef<HTMLDivElement>(null)
+
+  const [bubbles, setBubbles] = useState<
+    Array<{ id: number; x: number; y: number }>
+  >([])
+
+  // Search history state
   const [history, setHistory] = useState<SearchHistoryItem[]>([])
 
   const bubbleIdRef = useRef(0)
@@ -66,30 +105,42 @@ export default function Header({
   const inputRef = useRef<HTMLInputElement>(null)
 
   const { user } = useAuth()
+
+  // History scope based on pageType (separate history for anime/home)
   const historyScope: HistoryScope = pageType === "anime" ? "anime" : "home"
 
+  // Search data - anime page e shudhu anime, home page e movies + series
   const dataSource = useMemo(() => {
     if (searchData) return searchData
     if (pageType === "anime") return animes
     if (pageType === "series") {
       return movies.filter((m) => m.title.toLowerCase().includes("season"))
     }
-    const seriesMovies = movies.filter((m) => m.title.toLowerCase().includes("season"))
+    // Home page: movies + series একসাথে
+    const seriesMovies = movies.filter((m) =>
+      m.title.toLowerCase().includes("season")
+    )
     const combined = [...movies]
     seriesMovies.forEach((s) => {
-      if (!combined.find((m) => m.title === s.title)) combined.push(s)
+      if (!combined.find((m) => m.title === s.title)) {
+        combined.push(s)
+      }
     })
     return combined
   }, [pageType, searchData])
 
+  // Smart search suggestions — word by word match, latest (highest id) upore
   const allSearchSuggestions = useMemo(() => {
     const query = searchQuery.trim().toLowerCase()
     if (!query) return []
+
     const queryWords = query.split(/\s+/).filter(Boolean)
+
     const matches = dataSource.filter((item) => {
       const title = String(item.title || "").toLowerCase()
       return queryWords.every((word) => title.includes(word))
     })
+
     return [...matches].sort((a, b) => {
       const idA = typeof a.id === "number" ? a.id : 0
       const idB = typeof b.id === "number" ? b.id : 0
@@ -97,45 +148,87 @@ export default function Header({
     })
   }, [searchQuery, dataSource])
 
+  // Load history on mount (scope onujayi separate)
   useEffect(() => {
     cleanupExpiredHistory(historyScope)
     setHistory(getLocalHistory(historyScope))
   }, [historyScope])
 
+  // Auto cleanup — every 1 hour
   useEffect(() => {
     const interval = setInterval(() => {
       cleanupExpiredHistory(historyScope)
       setHistory(getLocalHistory(historyScope))
     }, 60 * 60 * 1000)
+
     return () => clearInterval(interval)
   }, [historyScope])
 
-  // ✅ Scroll Progress Calculation (Liquid Glass Effect)
+  // ✅ Scroll এর সাথে সাথে আস্তে আস্তে: Liquid Glass (একদম উপরে) ↔ আগের Solid dark (নিচে)
+  // নিচে scroll করলে ধীরে ধীরে solid হয়, আবার উপরে উঠলে ধীরে ধীরে liquid glass ফিরে আসে
   useEffect(() => {
-    const handleScroll = () => {
-      // 0px to 100px scroll er moddhe background change hobe smoothly
-      const scrollY = window.scrollY
-      const maxScroll = 100 
-      const progress = Math.min(scrollY / maxScroll, 1)
-      setScrollProgress(progress)
+    let raf = 0
+
+    const apply = () => {
+      raf = 0
+      const header = headerRef.current
+      if (!header) return
+
+      const y = Math.max(window.scrollY || window.pageYOffset || 0, 0)
+      const t = Math.min(y / HEADER_SCROLL_RANGE, 1)
+      const e = t * t * (3 - 2 * t) // smoothstep — নরম শুরু, নরম শেষ
+      const lerp = (a: number, b: number) => a + (b - a) * e
+
+      // Liquid glass (সাদাটে, স্বচ্ছ)  ->  bg-black/60
+      const c = Math.round(lerp(255, 0))
+      header.style.background = `rgba(${c},${c},${c},${lerp(0.07, 0.6).toFixed(3)})`
+
+      // blur 10px -> 24px (আগের backdrop-blur-xl)
+      const filter = `blur(${lerp(10, 24).toFixed(1)}px) saturate(${lerp(1.7, 1).toFixed(2)})`
+      header.style.backdropFilter = filter
+      header.style.setProperty("-webkit-backdrop-filter", filter)
+
+      header.style.borderBottomColor = `rgba(255,255,255,${lerp(0.14, 0.1).toFixed(3)})`
+      header.style.boxShadow = `0 ${lerp(8, 10).toFixed(1)}px ${lerp(32, 25).toFixed(1)}px rgba(0,0,0,${lerp(0.12, 0.35).toFixed(3)})`
+
+      // glass এর উজ্জ্বল ধার/sheen আস্তে আস্তে মিলিয়ে যায়
+      if (glassSheenRef.current) {
+        glassSheenRef.current.style.opacity = String(1 - e)
+      }
     }
 
-    handleScroll()
-    window.addEventListener("scroll", handleScroll, { passive: true })
-    return () => window.removeEventListener("scroll", handleScroll)
+    const onScroll = () => {
+      if (!raf) raf = requestAnimationFrame(apply)
+    }
+
+    apply() // পেজ লোড / refresh এ বর্তমান scroll অনুযায়ী একবার
+    window.addEventListener("scroll", onScroll, { passive: true })
+    return () => {
+      window.removeEventListener("scroll", onScroll)
+      if (raf) cancelAnimationFrame(raf)
+    }
   }, [])
 
+  // When user logs in, sync Firestore history
   useEffect(() => {
     if (!user?.uid) return
+
     let cancelled = false
+
     async function syncFirestore() {
       try {
-        const remoteHistory = await loadHistoryFromFirestore(user!.uid, historyScope)
+        const remoteHistory = await loadHistoryFromFirestore(
+          user!.uid,
+          historyScope
+        )
         if (cancelled) return
+
         const local = getLocalHistory(historyScope)
         const combined = [...remoteHistory, ...local]
+
         const seen = new Set<string>()
         const merged: SearchHistoryItem[] = []
+
         for (const item of combined) {
           const key = item.query.toLowerCase()
           if (seen.has(key)) continue
@@ -143,36 +236,65 @@ export default function Header({
           merged.push(item)
           if (merged.length >= 8) break
         }
+
         merged.sort((a, b) => b.timestamp - a.timestamp)
+
         setHistory(merged)
-        await saveHistoryToFirestore(user!.uid, merged, (user as any)?.displayName || undefined, historyScope)
+
+        await saveHistoryToFirestore(
+          user!.uid,
+          merged,
+          (user as any)?.displayName || undefined,
+          historyScope
+        )
       } catch (err) {
         console.error("Firestore sync failed:", err)
       }
     }
+
     syncFirestore()
-    return () => { cancelled = true }
+
+    return () => {
+      cancelled = true
+    }
   }, [user?.uid, historyScope])
 
+  // Click outside → close dropdown
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
+      if (
+        wrapperRef.current &&
+        !wrapperRef.current.contains(event.target as Node)
+      ) {
         setIsFocused(false)
       }
     }
+
     document.addEventListener("mousedown", handleClickOutside)
-    return () => document.removeEventListener("mousedown", handleClickOutside)
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside)
+    }
   }, [])
 
+  // Save history (scope onujayi separate)
   const saveSearchToHistory = async (query: string) => {
     const trimmed = query.trim()
     if (!trimmed) return
+
     const updated = addToLocalHistory(trimmed, historyScope)
     setHistory(updated)
+
     if (user?.uid) {
       try {
-        await saveHistoryToFirestore(user.uid, updated, (user as any)?.displayName || undefined, historyScope)
-      } catch (err) {}
+        await saveHistoryToFirestore(
+          user.uid,
+          updated,
+          (user as any)?.displayName || undefined,
+          historyScope
+        )
+      } catch (err) {
+        console.error("Firestore save failed:", err)
+      }
     }
   }
 
@@ -189,58 +311,76 @@ export default function Header({
   const handleSubmitSearch = (query: string) => {
     const trimmed = query.trim()
     if (!trimmed) return
+
     saveSearchToHistory(trimmed)
     onSearch(trimmed)
     setIsFocused(false)
   }
 
-  const handleRemoveHistory = async (item: SearchHistoryItem, e: React.MouseEvent) => {
+  const handleRemoveHistory = async (
+    item: SearchHistoryItem,
+    e: React.MouseEvent
+  ) => {
     e.stopPropagation()
     e.preventDefault()
+
     const updated = removeFromLocalHistory(item.query, historyScope)
     setHistory(updated)
+
     if (user?.uid) {
       try {
-        await saveHistoryToFirestore(user.uid, updated, (user as any)?.displayName || undefined, historyScope)
+        await saveHistoryToFirestore(
+          user.uid,
+          updated,
+          (user as any)?.displayName || undefined,
+          historyScope
+        )
       } catch {}
     }
   }
 
   const createBubbles = () => {
     if (!isFocused) return
+
     const newBubbles = []
+
     for (let i = 0; i < 3; i++) {
       const id = bubbleIdRef.current++
       const x = Math.random() * 20 - 10
       const y = Math.random() * 10
+
       newBubbles.push({ id, x, y })
+
       setTimeout(() => {
         setBubbles((prev) => prev.filter((b) => b.id !== id))
       }, 800)
     }
+
     setBubbles((prev) => [...prev, ...newBubbles])
   }
 
+  // Determine current suggestions array based on pageType
   const TYPING_SUGGESTIONS =
-    pageType === "anime" ? TYPING_SUGGESTIONS_ANIME : pageType === "series" ? TYPING_SUGGESTIONS_SERIES : TYPING_SUGGESTIONS_HOME
+    pageType === "anime"
+      ? TYPING_SUGGESTIONS_ANIME
+      : pageType === "series"
+        ? TYPING_SUGGESTIONS_SERIES
+        : TYPING_SUGGESTIONS_HOME
 
+  // Extract first 4 items for the cube faces
   const cubeTexts = TYPING_SUGGESTIONS.slice(0, 4)
+
   const hasQuery = searchQuery.trim().length > 0
   const showHistoryDropdown = isFocused && !hasQuery && history.length > 0
   const showSuggestionsDropdown = isFocused && hasQuery
   const showCube = !isFocused && !hasQuery
 
   return (
+    // ✅ FIXED HEADER — একদম উপরে Liquid Glass, scroll এর সাথে ধীরে ধীরে Solid
     <header
-      className="fixed top-0 left-0 right-0 lg:left-[220px] z-50 transition-all duration-300 ease-in-out"
-      style={{
-        // ✅ Liquid Glass Scrolling Effect
-        backgroundColor: `rgba(0, 0, 0, ${scrollProgress * 0.8})`, // Black with opacity
-        backdropFilter: `blur(${scrollProgress * 20}px)`, // Blur increases on scroll
-        WebkitBackdropFilter: `blur(${scrollProgress * 20}px)`,
-        borderBottom: `1px solid rgba(255, 255, 255, ${scrollProgress * 0.1})`,
-        boxShadow: scrollProgress > 0.1 ? `0 4px 30px rgba(0, 0, 0, ${scrollProgress * 0.3})` : 'none',
-      }}
+      ref={headerRef}
+      className="fixed top-0 left-0 right-0 lg:left-[220px] z-50"
+      style={HEADER_GLASS_STYLE}
     >
       <style>{`
         @keyframes liquidGlassZoom {
@@ -336,6 +476,8 @@ export default function Header({
           animation: liquidBubbleRise .8s ease-out forwards;
           pointer-events: none;
         }
+
+        /* ---- 3D CUBE ANIMATION CSS ---- */
         .cube-container {
           position: relative;
           flex: 1;
@@ -344,7 +486,10 @@ export default function Header({
         }
         .cube-wrapper {
           position: absolute;
-          top: 0; left: 0; right: 0; bottom: 0;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
           perspective: 800px;
           pointer-events: none;
         }
@@ -371,6 +516,7 @@ export default function Header({
         .face-2 { transform: rotateX(90deg) translateZ(10px); }
         .face-3 { transform: rotateX(180deg) translateZ(10px); }
         .face-4 { transform: rotateX(270deg) translateZ(10px); }
+
         @keyframes rotateCubeUp {
           0%, 20% { transform: translateZ(-10px) rotateX(0deg); }
           25%, 45% { transform: translateZ(-10px) rotateX(90deg); }
@@ -380,7 +526,21 @@ export default function Header({
         }
       `}</style>
 
-      <div className="px-4 py-4 flex items-center gap-4">
+      {/* Liquid glass sheen — উপরের উজ্জ্বল ধার, scroll করলে মিলিয়ে যায় */}
+      <div
+        ref={glassSheenRef}
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 z-0"
+        style={{
+          background:
+            "linear-gradient(180deg, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0.07) 45%, rgba(255,255,255,0.02) 100%)",
+          boxShadow:
+            "inset 0 1px 0 rgba(255,255,255,0.45), inset 0 -1px 0 rgba(255,255,255,0.06)",
+        }}
+      />
+
+      <div className="relative z-[1] px-4 py-4 flex items-center gap-4">
+        {/* MVBD Logo */}
         <div className="flex-shrink-0 lg:hidden">
           <img
             src="https://i.postimg.cc/0yqFXMFW/photo-2025-12-11-09-45-29-removebg-preview.png"
@@ -389,6 +549,7 @@ export default function Header({
           />
         </div>
 
+        {/* Search */}
         <div ref={wrapperRef} className="flex-1 relative">
           <div
             onClick={() => inputRef.current?.focus()}
@@ -397,25 +558,36 @@ export default function Header({
             } ${hasQuery ? "search-has-query" : ""}`}
           >
             <Search className="w-5 h-5 text-slate-300 flex-shrink-0 pointer-events-none" />
+
+            {/* Input + Cube container */}
             <div className="cube-container">
+              {/* Cube (only visible when not focused and no query) */}
               {showCube && (
                 <div className="cube-wrapper">
                   <div className="cube">
                     {cubeTexts.map((text, index) => (
-                      <div key={index} className={`cube-face face-${index + 1}`}>
+                      <div
+                        key={index}
+                        className={`cube-face face-${index + 1}`}
+                      >
                         {text}
                       </div>
                     ))}
                   </div>
                 </div>
               )}
+
+              {/* Input field — always visible, fully clickable */}
               <input
                 ref={inputRef}
                 type="text"
                 placeholder=""
                 value={searchQuery}
                 onChange={handleSearch}
-                onFocus={() => { setIsFocused(true); createBubbles(); }}
+                onFocus={() => {
+                  setIsFocused(true)
+                  createBubbles()
+                }}
                 onKeyDown={(e) => {
                   if (e.key === "Enter") handleSubmitSearch(searchQuery)
                   if (e.key === "Escape") setIsFocused(false)
@@ -426,11 +598,24 @@ export default function Header({
                 spellCheck={false}
                 className="search-input-liquid"
                 style={{
-                  position: "absolute", top: 0, left: 0, right: 0, bottom: 0,
-                  width: "100%", height: "100%", background: "transparent",
-                  border: "none", outline: "none", color: "#ffffff",
-                  caretColor: "#64c8ff", fontSize: "14px", lineHeight: "20px",
-                  padding: 0, margin: 0, zIndex: 30, pointerEvents: "auto",
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  width: "100%",
+                  height: "100%",
+                  background: "transparent",
+                  border: "none",
+                  outline: "none",
+                  color: "#ffffff",
+                  caretColor: "#64c8ff",
+                  fontSize: "14px",
+                  lineHeight: "20px",
+                  padding: 0,
+                  margin: 0,
+                  zIndex: 30,
+                  pointerEvents: "auto",
                 }}
               />
             </div>
@@ -438,7 +623,10 @@ export default function Header({
             {searchQuery && (
               <button
                 type="button"
-                onClick={(e) => { e.stopPropagation(); handleClearSearch(); }}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  handleClearSearch()
+                }}
                 className="text-slate-400 hover:text-white transition relative z-40"
                 aria-label="Clear search"
               >
@@ -451,34 +639,48 @@ export default function Header({
                 key={bubble.id}
                 className="liquid-bubble"
                 style={{
-                  width: "8px", height: "8px",
-                  left: `calc(50% + ${bubble.x}px)`, top: `${bubble.y}px`,
-                  position: "absolute", borderRadius: "50%",
-                  background: "radial-gradient(circle at 30% 30%, rgba(100,200,255,.8), rgba(59,130,246,.3))",
+                  width: "8px",
+                  height: "8px",
+                  left: `calc(50% + ${bubble.x}px)`,
+                  top: `${bubble.y}px`,
+                  position: "absolute",
+                  borderRadius: "50%",
+                  background:
+                    "radial-gradient(circle at 30% 30%, rgba(100,200,255,.8), rgba(59,130,246,.3))",
                   border: "1px solid rgba(100,200,255,.5)",
-                  boxShadow: "0 0 8px rgba(100,200,255,.4), inset -2px -2px 4px rgba(0,0,0,.2)",
+                  boxShadow:
+                    "0 0 8px rgba(100,200,255,.4), inset -2px -2px 4px rgba(0,0,0,.2)",
                 }}
               />
             ))}
           </div>
 
+          {/* HISTORY DROPDOWN */}
           {showHistoryDropdown && (
             <div className="search-suggestions">
               <div className="dropdown-header">
                 <Clock className="w-3 h-3" />
                 <span>সাম্প্রতিক সার্চ</span>
               </div>
+
               {history.map((item, idx) => (
                 <div
                   key={`${item.query}-${item.timestamp}-${idx}`}
                   className="search-suggestion-item flex items-center gap-3 text-slate-200 group"
-                  onMouseDown={(e) => { e.preventDefault(); handleSubmitSearch(item.query); }}
+                  onMouseDown={(e) => {
+                    e.preventDefault()
+                    handleSubmitSearch(item.query)
+                  }}
                 >
                   <Clock className="w-4 h-4 flex-shrink-0 text-slate-500" />
+
                   <div className="flex-1 min-w-0">
                     <p className="text-sm text-white truncate">{item.query}</p>
-                    <p className="text-[10px] text-slate-500 mt-0.5">{getTimeAgo(item.timestamp)}</p>
+                    <p className="text-[10px] text-slate-500 mt-0.5">
+                      {getTimeAgo(item.timestamp)}
+                    </p>
                   </div>
+
                   <button
                     type="button"
                     onMouseDown={(e) => handleRemoveHistory(item, e)}
@@ -492,6 +694,7 @@ export default function Header({
             </div>
           )}
 
+          {/* SUGGESTIONS DROPDOWN */}
           {showSuggestionsDropdown && (
             <div className="search-suggestions">
               {allSearchSuggestions.length > 0 ? (
@@ -500,23 +703,34 @@ export default function Header({
                     <TrendingUp className="w-3 h-3" />
                     <span>সাজেশন</span>
                   </div>
+
                   {allSearchSuggestions.map((suggestion, idx) => (
                     <div
                       key={`${suggestion.title}-${suggestion.id ?? idx}`}
                       className="search-suggestion-item flex items-center gap-3 text-slate-200"
-                      onMouseDown={(e) => { e.preventDefault(); handleSubmitSearch(suggestion.title); }}
+                      onMouseDown={(e) => {
+                        e.preventDefault()
+                        handleSubmitSearch(suggestion.title)
+                      }}
                     >
                       {suggestion.poster ? (
-                        <img src={suggestion.poster} alt="" className="h-12 w-8 flex-shrink-0 rounded object-cover" />
+                        <img
+                          src={suggestion.poster}
+                          alt=""
+                          className="h-12 w-8 flex-shrink-0 rounded object-cover"
+                        />
                       ) : (
                         <Search className="h-4 w-4 flex-shrink-0 text-slate-500" />
                       )}
+
                       <span className="text-sm">{suggestion.title}</span>
                     </div>
                   ))}
                 </>
               ) : (
-                <div className="search-suggestion-item text-slate-500 text-sm">কোনো ফলাফল নেই</div>
+                <div className="search-suggestion-item text-slate-500 text-sm">
+                  কোনো ফলাফল নেই
+                </div>
               )}
             </div>
           )}

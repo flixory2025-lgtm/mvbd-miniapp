@@ -17,7 +17,9 @@ interface Item {
   title: string
   poster: string | null
   year: string
-  releaseDate: string | null
+  releaseDate: string | null // full date: YYYY-MM-DD
+  dateLabel: string | null // full date na thakle: "Oct 2026" / "2027"
+  sortKey: string // sorting er jonno
   rating: string
   tag: string
   mediaType: "movie" | "tv"
@@ -25,13 +27,39 @@ interface Item {
 }
 
 const pad = (n: number) => String(n).padStart(2, "0")
+const MON = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+
+// y/m/d theke full date, label ar sortKey banay
+function buildDate(y?: number | null, m?: number | null, d?: number | null) {
+  if (y && m && d) {
+    const full = `${y}-${pad(m)}-${pad(d)}`
+    return { releaseDate: full, dateLabel: null as string | null, sortKey: full }
+  }
+  if (y && m) {
+    return { releaseDate: null, dateLabel: `${MON[m - 1]} ${y}`, sortKey: `${y}-${pad(m)}-28` }
+  }
+  if (y) {
+    return { releaseDate: null, dateLabel: String(y), sortKey: `${y}-12-31` }
+  }
+  return null
+}
+
+// aj theke 2 din age (timezone difference er jonno) — client ta purono gulo bad dey
+function cutoff() {
+  const t = new Date(Date.now() - 2 * 86400000)
+  return {
+    int: t.getUTCFullYear() * 10000 + (t.getUTCMonth() + 1) * 100 + t.getUTCDate(),
+    iso: `${t.getUTCFullYear()}-${pad(t.getUTCMonth() + 1)}-${pad(t.getUTCDate())}`,
+  }
+}
 
 /* ---------------- AniList ---------------- */
 async function fromAniList(): Promise<Item[]> {
+  const c = cutoff()
   const query = `
     query {
-      Page(page: 1, perPage: 30) {
-        media(type: ANIME, status: NOT_YET_RELEASED, sort: POPULARITY_DESC, isAdult: false) {
+      Page(page: 1, perPage: 40) {
+        media(type: ANIME, status_in: [NOT_YET_RELEASED, RELEASING], startDate_greater: ${c.int}, sort: POPULARITY_DESC, isAdult: false) {
           id
           format
           title { romaji english }
@@ -56,20 +84,20 @@ async function fromAniList(): Promise<Item[]> {
     const poster = a?.coverImage?.extraLarge || a?.coverImage?.large || null
     if (!a?.id || !poster) continue
     const d = a.startDate || {}
-    const year = d.year || a.seasonYear || ""
+    const bd = buildDate(d.year || a.seasonYear, d.month, d.day)
+    if (!bd) continue
     out.push({
       id: a.id,
       title: a.title?.english || a.title?.romaji || "Untitled",
       poster,
-      year: year ? String(year) : "",
-      releaseDate:
-        d.year && d.month && d.day ? `${d.year}-${pad(d.month)}-${pad(d.day)}` : null,
+      year: String(d.year || a.seasonYear || ""),
+      ...bd,
       rating: "",
       tag: "Anime",
       mediaType: a.format === "MOVIE" ? "movie" : "tv",
       position: out.length + 1,
     })
-    if (out.length === 20) break
+    if (out.length === 24) break
   }
   return out
 }
@@ -93,22 +121,21 @@ async function fromJikan(): Promise<Item[]> {
       null
     if (!a?.mal_id || !poster || seen.has(a.mal_id)) continue
     seen.add(a.mal_id)
-    const from: string | null = a?.aired?.from || null
+    const p = a?.aired?.prop?.from || {}
+    const bd = buildDate(p.year || a?.year, p.month, p.day)
+    if (!bd || bd.sortKey < cutoff().iso) continue
     out.push({
       id: a.mal_id,
       title: a.title_english || a.title,
       poster,
-      year:
-        (a?.aired?.prop?.from?.year && String(a.aired.prop.from.year)) ||
-        (a?.year && String(a.year)) ||
-        "",
-      releaseDate: from ? from.slice(0, 10) : null,
+      year: String(p.year || a?.year || ""),
+      ...bd,
       rating: "",
       tag: "Anime",
       mediaType: "tv",
       position: out.length + 1,
     })
-    if (out.length === 20) break
+    if (out.length === 24) break
   }
   return out
 }
@@ -147,4 +174,4 @@ export async function GET() {
     { results: [], errors },
     { status: 502, headers: { "Cache-Control": "no-store" } }
   )
-}
+                }

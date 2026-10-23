@@ -663,7 +663,6 @@ export default function GenreCategories({
   const wordRef = useRef<HTMLDivElement>(null)
   const subRef = useRef<HTMLDivElement>(null)
   const layerId = useRef(0)
-  const touchX = useRef(0)
   const eng = useRef<{
     cfg: Particles | null
     P: any[]
@@ -996,13 +995,6 @@ export default function GenreCategories({
       q.top + q.height / 2 - sr.top,
       getTheme(genre).a
     )
-  }
-
-  // নিচের animation এ left/right swipe করলে পরের/আগের category
-  const swipeGenre = (dir: 1 | -1) => {
-    const list: (string | null)[] = [null, ...genres.filter((g) => g !== "All")]
-    const cur = selectedGenre === null ? 0 : Math.max(0, list.indexOf(selectedGenre))
-    onGenreSelect(list[(cur + dir + list.length) % list.length])
   }
 
   const handleFilterSelect = (type: SelectorType, value: string) => {
@@ -1595,13 +1587,6 @@ export default function GenreCategories({
         <div
           ref={stageRef}
           className={`gc-stage ${theme.lb ? "cine" : ""}`}
-          onTouchStart={(e) => {
-            touchX.current = e.touches[0].clientX
-          }}
-          onTouchEnd={(e) => {
-            const d = e.changedTouches[0].clientX - touchX.current
-            if (Math.abs(d) > 50) swipeGenre(d < 0 ? 1 : -1)
-          }}
         >
           <div className="gc-bgs">
             {layers.map((l) => (
@@ -1726,4 +1711,4 @@ function CategoryHighlight() {
       <div className="fire-continuous fire-continuous-5" />
     </div>
   )
-                                     }
+        }

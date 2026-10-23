@@ -1193,6 +1193,11 @@ export default function GenreCategories({
           background: conic-gradient(
             from var(--gc-a),
             transparent 0deg,
+            transparent 116deg,
+            rgba(34, 197, 94, 0.15) 126deg,
+            rgba(34, 197, 94, 0.7) 156deg,
+            #bbf7d0 180deg,
+            transparent 180deg,
             transparent 296deg,
             rgba(34, 197, 94, 0.15) 306deg,
             rgba(34, 197, 94, 0.7) 336deg,
@@ -1731,4 +1736,4 @@ export default function GenreCategories({
 
 function CategoryHighlight() {
   return <span className="gc-orbit" aria-hidden="true" />
-    }
+              }

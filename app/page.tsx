@@ -21,6 +21,7 @@ import ProfilePage from "@/components/profile-page"
 import ContactUsPage from "@/components/contact-us-page"
 import AboutUsPage from "@/components/about-us-page"
 import SettingsPage from "@/components/settings-page"
+import ModexPage from "@/components/modex-page"
 import MeBookPage from "@/components/mebook-page"
 import { MvbdAiAssistant } from "@/components/mvbd-ai/mvbd-ai-assistant"
 
@@ -106,10 +107,20 @@ export default function Page() {
   const [landingReady, setLandingReady] = useState(false)
 
   /* =========================================================
+     MODEX PAGE (header menu theke new tab e /?page=modex)
+  ========================================================= */
+
+  const [showModex, setShowModex] = useState(false)
+
+  /* =========================================================
      LANDING PAGE READY CHECK
   ========================================================= */
 
   useEffect(() => {
+    try {
+      const params = new URLSearchParams(window.location.search)
+      if (params.get("page") === "modex") setShowModex(true)
+    } catch {}
     setLandingReady(true)
   }, [])
 
@@ -951,6 +962,14 @@ export default function Page() {
   }
 
   /* =========================================================
+     MODEX PAGE
+  ========================================================= */
+
+  if (showModex) {
+    return <ModexPage />
+  }
+
+  /* =========================================================
      ANIME DETAIL PAGE
   ========================================================= */
 
@@ -1112,4 +1131,4 @@ export default function Page() {
       )}
     </div>
   )
-}
+      }

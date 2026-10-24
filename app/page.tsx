@@ -22,6 +22,7 @@ import ContactUsPage from "@/components/contact-us-page"
 import AboutUsPage from "@/components/about-us-page"
 import SettingsPage from "@/components/settings-page"
 import ModexPage from "@/components/modex-page"
+import SideNavigation, { FloatingMenuButton } from "@/components/side-navigation"
 import MeBookPage from "@/components/mebook-page"
 import { MvbdAiAssistant } from "@/components/mvbd-ai/mvbd-ai-assistant"
 
@@ -202,6 +203,26 @@ export default function Page() {
     >("main")
 
   /* =========================================================
+     SIDE NAVIGATION PAGES (Settings / About Us)
+     Bottom navigation visible thake, back icon + mobile back button kaj kore
+  ========================================================= */
+
+  const [sidePage, setSidePage] = useState<"settings" | "about" | null>(null)
+  const sidePageRef = useRef<"settings" | "about" | null>(null)
+  const sideScrollRef = useRef(0)
+  const restoreSideScrollRef = useRef(false)
+
+  const updateSidePage = (page: "settings" | "about" | null) => {
+    sidePageRef.current = page
+    setSidePage(page)
+  }
+
+  // Back icon → browser history back (popstate handler page ta bondho kore)
+  const closeSidePage = () => {
+    if (sidePageRef.current) window.history.back()
+  }
+
+  /* =========================================================
      SCROLL POSITION
   ========================================================= */
 
@@ -346,6 +367,9 @@ export default function Page() {
     tabs.indexOf(activeTab)
   )
 
+  // Mebook e bottom nav thake na (shudhu side page khola thakle dekhabe)
+  const hideChrome = activeTab === "mebook" && !sidePage
+
   /* =========================================================
      OPEN SUBSCRIPTIONS EVENT
   ========================================================= */
@@ -372,11 +396,61 @@ export default function Page() {
   }, [])
 
   /* =========================================================
+     OPEN SIDE PAGE EVENT (side navigation theke)
+  ========================================================= */
+
+  useEffect(() => {
+    const onOpenPage = (e: Event) => {
+      const page = (e as CustomEvent<string>).detail
+      if (page !== "settings" && page !== "about") return
+
+      // Modex tab theke elle main site e niye jao
+      const fromModex = showModex
+      if (fromModex) {
+        setShowModex(false)
+        setShowLanding(false)
+        window.history.replaceState(null, "", "/")
+      }
+
+      if (sidePageRef.current === page) return
+
+      if (!sidePageRef.current) {
+        if (!fromModex) {
+          sideScrollRef.current = window.scrollY
+          restoreSideScrollRef.current = true
+        }
+        window.history.pushState(null, "", "")
+      }
+      updateSidePage(page)
+    }
+
+    window.addEventListener("mvbd:open-page", onOpenPage)
+    return () => window.removeEventListener("mvbd:open-page", onOpenPage)
+  }, [showModex])
+
+  useEffect(() => {
+    if (sidePage) {
+      window.scrollTo({ top: 0, behavior: "instant" })
+    } else if (restoreSideScrollRef.current) {
+      restoreSideScrollRef.current = false
+      requestAnimationFrame(() => {
+        window.scrollTo({ top: sideScrollRef.current, behavior: "instant" })
+      })
+    }
+  }, [sidePage])
+
+  /* =========================================================
      BROWSER BACK BUTTON
   ========================================================= */
 
   useEffect(() => {
     const handlePopState = () => {
+      // Settings / About Us khola thakle back dile shudhu oita bondho hobe
+      if (sidePageRef.current) {
+        updateSidePage(null)
+        return
+      }
+
       setTabHistory((history) => {
         if (history.length <= 1) {
           return history
@@ -646,43 +720,38 @@ export default function Page() {
     newTab: string,
     addHistory = true
   ) => {
-    if (
-      !tabs.includes(
-        newTab as TabId
-      )
-    ) {
+    if (!tabs.includes(newTab as TabId)) {
       return
     }
 
-    const targetTab =
-      newTab as TabId
+    const targetTab = newTab as TabId
+    const hadSidePage = sidePageRef.current !== null
 
-    if (
-      targetTab === activeTab
-    ) {
+    if (targetTab === activeTab) {
+      // Settings / About khola thakle same tab e click korle ota bondho hobe
+      if (hadSidePage) window.history.back()
       return
+    }
+
+    if (hadSidePage) {
+      restoreSideScrollRef.current = false
+      updateSidePage(null)
     }
 
     setActiveTab(targetTab)
 
     if (addHistory) {
-      setTabHistory(
-        (previous) => [
-          ...previous,
-          targetTab,
-        ]
-      )
+      setTabHistory((previous) => [...previous, targetTab])
 
-      window.history.pushState(
-        null,
-        "",
-        ""
-      )
+      // Side page er history entry ta replace hobe, notun entry na
+      if (hadSidePage) {
+        window.history.replaceState(null, "", "")
+      } else {
+        window.history.pushState(null, "", "")
+      }
     }
 
-    if (
-      targetTab !== "profile"
-    ) {
+    if (targetTab !== "profile") {
       setProfileSubPage("main")
     }
   }
@@ -934,6 +1003,17 @@ export default function Page() {
   )
 
   /* =========================================================
+     SIDE PAGES (Settings / About Us)
+  ========================================================= */
+
+  const renderSidePage = () => (
+    <div className="bg-black">
+      {sidePage === "settings" && <SettingsPage onBack={closeSidePage} />}
+      {sidePage === "about" && <AboutUsPage onBack={closeSidePage} />}
+    </div>
+  )
+
+  /* =========================================================
      RENDER PAGE
   ========================================================= */
 
@@ -1035,7 +1115,7 @@ export default function Page() {
   return (
     <div
       className={`w-full bg-black ${
-        !showLanding && activeTab !== "mebook" ? "lg:pl-[220px]" : ""
+        !showLanding && !hideChrome ? "lg:pl-[220px]" : ""
       }`}
       onTouchStart={
         handleTouchStart
@@ -1080,7 +1160,7 @@ export default function Page() {
           ) : showLanding ? (
             <LandingPage onEnterSite={handleEnterSite} />
           ) : (
-            renderPage(activeTab)
+            sidePage ? renderSidePage() : renderPage(activeTab)
           )}
         </div>
 
@@ -1088,7 +1168,7 @@ export default function Page() {
             BOTTOM NAVIGATION
         ===================================================== */}
 
-        {!showLanding && activeTab !== "mebook" && (
+        {!showLanding && !hideChrome && (
           <div
             className="relative z-[50]"
             style={{
@@ -1123,6 +1203,13 @@ export default function Page() {
       )}
 
       {/* =====================================================
+          SIDE NAVIGATION + FLOATING 3-DOTS (Header nei emon page e)
+      ===================================================== */}
+
+      {!showLanding && <SideNavigation />}
+      {!showLanding && !hideChrome && <FloatingMenuButton />}
+
+      {/* =====================================================
           MVBD AI ASSISTANT
       ===================================================== */}
 
@@ -1131,4 +1218,4 @@ export default function Page() {
       )}
     </div>
   )
-      }
+}

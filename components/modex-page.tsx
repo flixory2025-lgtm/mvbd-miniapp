@@ -21,6 +21,7 @@ import {
   Mic,
 } from "lucide-react"
 import SideNavigation, { openSideMenu } from "@/components/side-navigation"
+import BottomNavigation from "@/components/bottom-navigation"
 
 const LOGO = "https://i.postimg.cc/YqKw8FTB/24592-removebg-preview.png"
 
@@ -123,7 +124,12 @@ function SectionTitle({ children }: { children: ReactNode }) {
   return <h2 className="mb-3 px-4 text-lg font-bold text-white">{children}</h2>
 }
 
-export default function ModexPage() {
+interface ModexPageProps {
+  // Bottom nav er tab e click korle main site er oi tab e niye jabe
+  onNavigate?: (tab: string) => void
+}
+
+export default function ModexPage({ onNavigate }: ModexPageProps = {}) {
   const [isScrolled, setIsScrolled] = useState(false)
   const [focused, setFocused] = useState(false)
   const [query, setQuery] = useState("")
@@ -159,7 +165,7 @@ export default function ModexPage() {
   const topApps = [...APPS].sort((a, b) => b.rating - a.rating).slice(0, 8)
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0a0a12] via-[#050508] to-[#020206] text-white">
+    <div className="min-h-screen bg-gradient-to-br from-[#0a0a12] via-[#050508] to-[#020206] text-white lg:pl-[220px]">
       <style>{`
         .modex-glass {
           background: rgba(255,255,255,.05);
@@ -191,7 +197,7 @@ export default function ModexPage() {
 
       {/* ================= HEADER ================= */}
       <header
-        className={`fixed inset-x-0 top-0 z-50 transition-all duration-300 ease-in-out ${
+        className={`fixed inset-x-0 top-0 lg:left-[220px] z-50 transition-all duration-300 ease-in-out ${
           isScrolled
             ? "border-b border-white/10 bg-black/60 shadow-lg backdrop-blur-xl"
             : "border-b border-transparent bg-transparent"
@@ -375,7 +381,7 @@ export default function ModexPage() {
       </main>
 
       {/* ================= FOOTER ================= */}
-      <footer className="border-t border-white/10 bg-black/40 px-4 py-8">
+      <footer className="border-t border-white/10 bg-black/40 px-4 pb-28 pt-8 lg:pb-8">
         <div className="mx-auto flex max-w-6xl flex-col items-center gap-4 text-center">
           <div className="flex items-center gap-2">
             <img src={LOGO} alt="Modex" className="h-9 w-9 object-contain" />
@@ -397,6 +403,15 @@ export default function ModexPage() {
       </footer>
 
       <SideNavigation current="modex" />
+
+      {/* Bottom navigation — Modex theke main site e back korar jonno */}
+      <BottomNavigation
+        activeTab="modex"
+        onTabChange={(tab) => {
+          if (onNavigate) onNavigate(tab)
+          else window.location.href = "/"
+        }}
+      />
     </div>
   )
-            }
+}

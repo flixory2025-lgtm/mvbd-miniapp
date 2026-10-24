@@ -1045,8 +1045,27 @@ export default function Page() {
      MODEX PAGE
   ========================================================= */
 
+  // Modex theke bottom nav e click korle main site er oi tab e jabe
+  const handleModexNavigate = (tab: string) => {
+    const target: TabId = tabs.includes(tab as TabId) ? (tab as TabId) : "home"
+
+    window.history.replaceState(null, "", "/")
+    setShowModex(false)
+    setShowLanding(false)
+    setActiveTab(target)
+
+    if (target === "home") {
+      setTabHistory(["home"])
+    } else {
+      setTabHistory(["home", target])
+      window.history.pushState(null, "", "")
+    }
+
+    if (target !== "profile") setProfileSubPage("main")
+  }
+
   if (showModex) {
-    return <ModexPage />
+    return <ModexPage onNavigate={handleModexNavigate} />
   }
 
   /* =========================================================
@@ -1218,4 +1237,4 @@ export default function Page() {
       )}
     </div>
   )
-}
+          }

@@ -3,20 +3,8 @@
 import type React from "react"
 
 import { useState, useRef, useMemo, useEffect } from "react"
-import { createPortal } from "react-dom"
-import {
-  Search,
-  X,
-  Clock,
-  TrendingUp,
-  MoreHorizontal,
-  Settings as SettingsIcon,
-  Info,
-  ChevronRight,
-  ExternalLink,
-} from "lucide-react"
-import SettingsPage from "@/components/settings-page"
-import AboutUsPage from "@/components/about-us-page"
+import { Search, X, Clock, TrendingUp, MoreHorizontal } from "lucide-react"
+import { openSideMenu } from "@/components/side-navigation"
 import { movies } from "@/lib/movie-data"
 import { animes } from "@/lib/anime-data"
 import { useAuth } from "@/components/auth-provider"
@@ -100,13 +88,6 @@ export default function Header({
   // Search history state
   const [history, setHistory] = useState<SearchHistoryItem[]>([])
 
-  // Side navigation + settings overlay state
-  const [mounted, setMounted] = useState(false)
-  const [menuOpen, setMenuOpen] = useState(false)
-  // Settings / About Us overlay (page change chhara, smooth animation er sathe)
-  const [overlayPage, setOverlayPage] = useState<"settings" | "about" | null>(null)
-  const [overlayOpen, setOverlayOpen] = useState(false)
-
   const bubbleIdRef = useRef(0)
   const wrapperRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -154,6 +135,17 @@ export default function Header({
       return idB - idA
     })
   }, [searchQuery, dataSource])
+
+  // Header ache — floating 3-dots button lukiye felbe (page.tsx / side-navigation e use hoy)
+  useEffect(() => {
+    const b = document.body
+    b.dataset.mvbdHeader = String(Number(b.dataset.mvbdHeader || 0) + 1)
+    return () => {
+      const n = Number(b.dataset.mvbdHeader || 1) - 1
+      if (n <= 0) delete b.dataset.mvbdHeader
+      else b.dataset.mvbdHeader = String(n)
+    }
+  }, [])
 
   // Load history on mount (scope onujayi separate)
   useEffect(() => {
@@ -252,40 +244,6 @@ export default function Header({
       document.removeEventListener("mousedown", handleClickOutside)
     }
   }, [])
-
-  // Portal er jonno client mount check
-  useEffect(() => setMounted(true), [])
-
-  // Menu / settings open thakle body scroll lock + Esc diye close
-  useEffect(() => {
-    if (!menuOpen && !overlayOpen) return
-    const prev = document.body.style.overflow
-    document.body.style.overflow = "hidden"
-
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key !== "Escape") return
-      if (overlayOpen) closeOverlay()
-      else setMenuOpen(false)
-    }
-    window.addEventListener("keydown", onKey)
-
-    return () => {
-      document.body.style.overflow = prev
-      window.removeEventListener("keydown", onKey)
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [menuOpen, overlayOpen])
-
-  const openOverlay = (page: "settings" | "about") => {
-    setMenuOpen(false)
-    setOverlayPage(page)
-    requestAnimationFrame(() => requestAnimationFrame(() => setOverlayOpen(true)))
-  }
-
-  const closeOverlay = () => {
-    setOverlayOpen(false)
-    setTimeout(() => setOverlayPage(null), 400)
-  }
 
   // Save history (scope onujayi separate)
   const saveSearchToHistory = async (query: string) => {
@@ -748,16 +706,13 @@ export default function Header({
         {/* 3 DOTS MENU BUTTON — search focus hole smoothly collapse hoy */}
         <div
           className={`flex-shrink-0 overflow-hidden transition-all duration-300 ease-in-out ${
-            isFocused
-              ? "w-0 -ml-4 opacity-0 pointer-events-none"
-              : "w-11 opacity-100"
+            isFocused ? "w-0 -ml-4 opacity-0 pointer-events-none" : "w-11 opacity-100"
           }`}
         >
           <button
             type="button"
-            onClick={() => setMenuOpen(true)}
+            onClick={openSideMenu}
             aria-label="Open menu"
-            aria-expanded={menuOpen}
             tabIndex={isFocused ? -1 : 0}
             className="h-11 w-11 rounded-2xl liquid-glass-btn flex items-center justify-center text-slate-200 hover:text-white active:scale-90 transition-all duration-200"
           >
@@ -765,150 +720,6 @@ export default function Header({
           </button>
         </div>
       </div>
-
-      {/* ================= SIDE NAVIGATION (portal) ================= */}
-      {mounted &&
-        createPortal(
-          <>
-            {/* Backdrop */}
-            <div
-              onClick={() => setMenuOpen(false)}
-              aria-hidden="true"
-              className={`fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm transition-opacity duration-500 ease-out ${
-                menuOpen ? "opacity-100" : "opacity-0 pointer-events-none"
-              }`}
-            />
-
-            {/* Panel */}
-            <aside
-              role="dialog"
-              aria-modal="true"
-              aria-label="Navigation menu"
-              aria-hidden={!menuOpen}
-              className={`fixed top-0 right-0 bottom-0 z-[110] w-[84%] max-w-[340px] flex flex-col bg-[#0b0b12]/95 backdrop-blur-2xl border-l border-white/10 transition-[transform,box-shadow] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
-                menuOpen
-                  ? "translate-x-0 shadow-[-20px_0_60px_rgba(0,0,0,0.6)]"
-                  : "translate-x-full shadow-none pointer-events-none"
-              }`}
-            >
-              <div className="absolute inset-0 pointer-events-none bg-gradient-to-br from-cyan-500/10 via-transparent to-emerald-500/10" />
-
-              {/* Panel header */}
-              <div className="relative flex items-center justify-between px-5 py-5 border-b border-white/10">
-                <div className="flex items-center gap-3">
-                  <img
-                    src="https://i.postimg.cc/0yqFXMFW/photo-2025-12-11-09-45-29-removebg-preview.png"
-                    alt="MVBD Logo"
-                    className="h-9 w-auto object-contain"
-                  />
-                  <span className="text-white font-bold text-lg">Menu</span>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setMenuOpen(false)}
-                  aria-label="Close menu"
-                  className="h-10 w-10 rounded-full bg-white/5 hover:bg-white/15 border border-white/10 flex items-center justify-center text-slate-300 hover:text-white hover:rotate-90 transition-all duration-300"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-
-              {/* Panel items (staggered) */}
-              <nav className="relative flex-1 overflow-y-auto px-4 py-5 space-y-3">
-                {/* 1. Modex — new tab */}
-                <a
-                  href="/?page=modex"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={() => setMenuOpen(false)}
-                  style={{ transitionDelay: menuOpen ? "120ms" : "0ms" }}
-                  className={`group flex items-center gap-4 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-cyan-400/40 p-3 transition-all duration-500 ease-out ${
-                    menuOpen
-                      ? "opacity-100 translate-x-0"
-                      : "opacity-0 translate-x-8"
-                  }`}
-                >
-                  <div className="h-14 w-14 flex-shrink-0 rounded-xl bg-black/40 border border-white/10 flex items-center justify-center overflow-hidden group-hover:scale-105 transition-transform duration-300">
-                    <img
-                      src="https://i.postimg.cc/YqKw8FTB/24592-removebg-preview.png"
-                      alt="Modex"
-                      className="h-11 w-11 object-contain"
-                    />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-white font-semibold">Modex</p>
-                    <p className="text-slate-400 text-xs">নতুন ট্যাবে খুলবে</p>
-                  </div>
-                  <ExternalLink className="w-4 h-4 text-slate-500 group-hover:text-cyan-300 transition-colors" />
-                </a>
-
-                {/* 2. Settings — overlay */}
-                <button
-                  type="button"
-                  onClick={() => openOverlay("settings")}
-                  style={{ transitionDelay: menuOpen ? "200ms" : "0ms" }}
-                  className={`group w-full flex items-center gap-4 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-emerald-400/40 p-3 text-left transition-all duration-500 ease-out ${
-                    menuOpen
-                      ? "opacity-100 translate-x-0"
-                      : "opacity-0 translate-x-8"
-                  }`}
-                >
-                  <div className="h-14 w-14 flex-shrink-0 rounded-xl bg-gradient-to-br from-emerald-500 to-cyan-500 flex items-center justify-center group-hover:scale-105 group-hover:rotate-45 transition-transform duration-500">
-                    <SettingsIcon className="w-6 h-6 text-white" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-white font-semibold">Settings</p>
-                    <p className="text-slate-400 text-xs">সাইটের সেটিংস</p>
-                  </div>
-                  <ChevronRight className="w-4 h-4 text-slate-500 group-hover:text-emerald-300 group-hover:translate-x-1 transition-all" />
-                </button>
-
-                {/* 3. About Us — overlay */}
-                <button
-                  type="button"
-                  onClick={() => openOverlay("about")}
-                  style={{ transitionDelay: menuOpen ? "280ms" : "0ms" }}
-                  className={`group w-full flex items-center gap-4 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-purple-400/40 p-3 text-left transition-all duration-500 ease-out ${
-                    menuOpen
-                      ? "opacity-100 translate-x-0"
-                      : "opacity-0 translate-x-8"
-                  }`}
-                >
-                  <div className="h-14 w-14 flex-shrink-0 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
-                    <Info className="w-6 h-6 text-white" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-white font-semibold">About Us</p>
-                    <p className="text-slate-400 text-xs">আমাদের সম্পর্কে জানুন</p>
-                  </div>
-                  <ChevronRight className="w-4 h-4 text-slate-500 group-hover:text-purple-300 group-hover:translate-x-1 transition-all" />
-                </button>
-              </nav>
-
-              <div className="relative px-5 py-4 border-t border-white/10 text-center">
-                <p className="text-slate-400 text-xs">Movies Verse Bangladesh</p>
-              </div>
-            </aside>
-
-            {/* Settings / About Us overlay */}
-            {overlayPage && (
-              <div
-                className={`fixed inset-0 z-[120] overflow-y-auto bg-[#050508] transition-all duration-[400ms] ease-[cubic-bezier(0.22,1,0.36,1)] ${
-                  overlayOpen
-                    ? "opacity-100 translate-y-0"
-                    : "opacity-0 translate-y-6 pointer-events-none"
-                }`}
-              >
-                {overlayPage === "settings" ? (
-                  <SettingsPage onBack={closeOverlay} />
-                ) : (
-                  <AboutUsPage onBack={closeOverlay} />
-                )}
-              </div>
-            )}
-          </>,
-          document.body
-        )}
     </header>
   )
 }

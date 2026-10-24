@@ -136,6 +136,11 @@ export default function BottomNavigation({
       indicator.style.left = `${left}px`
       indicator.style.width = `${indicatorWidth}px`
 
+      // Kono tab active na hole (jemon Modex page) indicator lukiye jabe
+      indicator.style.opacity = tabs.some((t) => t.id === activeTab)
+        ? "1"
+        : "0"
+
       const scaleX =
         isSwiping
           ? 1 + fractional * 0.10
@@ -205,6 +210,9 @@ export default function BottomNavigation({
 
       indicator.style.left = `${left}px`
       indicator.style.width = `${itemWidth}px`
+      indicator.style.opacity = tabs.some((t) => t.id === activeTab)
+        ? "1"
+        : "0"
 
       indicator.classList.remove(
         "mvbd-indicator-settle"

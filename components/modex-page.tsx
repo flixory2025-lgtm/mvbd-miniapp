@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react"
+import { createContext, useCallback, useContext, useEffect, useId, useMemo, useRef, useState } from "react"
 import type { CSSProperties, ReactNode } from "react"
 import {
   ArrowLeft,
@@ -11,20 +11,23 @@ import {
   HardDrive,
   Home,
   LayoutGrid,
+  Megaphone,
   MoreHorizontal,
   Package,
   Search,
   Share2,
   Star,
   Tag,
+  Wrench,
   X,
 } from "lucide-react"
 import SideNavigation, { openSideMenu } from "@/components/side-navigation"
 import { db } from "@/lib/firebase"
-import { collection, doc, onSnapshot } from "firebase/firestore"
+import { collection, doc, increment, onSnapshot, updateDoc } from "firebase/firestore"
 
 /* =========================================================
    LOGO — "Mod" white, "e" + Terabox-style X green gradient
+   (admin panel e logo link dile oita dekhabe)
 ========================================================= */
 
 function ModexMark({ className, style }: { className?: string; style?: CSSProperties }) {
@@ -50,12 +53,24 @@ function ModexMark({ className, style }: { className?: string; style?: CSSProper
   )
 }
 
-function ModexLogo({ size = 28, className = "" }: { size?: number; className?: string }) {
+function ModexLogo({ size = 28, logoUrl = "" }: { size?: number; logoUrl?: string }) {
+  const [bad, setBad] = useState(false)
+  useEffect(() => setBad(false), [logoUrl])
+
+  if (logoUrl && !bad) {
+    return (
+      <img
+        src={logoUrl}
+        alt="Modex"
+        onError={() => setBad(true)}
+        style={{ height: size * 1.2 }}
+        className="inline-block w-auto object-contain"
+      />
+    )
+  }
+
   return (
-    <span
-      className={`inline-flex items-center font-extrabold leading-none tracking-tight ${className}`}
-      style={{ fontSize: size }}
-    >
+    <span className="inline-flex items-center font-extrabold leading-none tracking-tight" style={{ fontSize: size }}>
       <span className="text-white">Mod</span>
       <span className="bg-gradient-to-r from-emerald-300 via-green-400 to-emerald-500 bg-clip-text text-transparent">e</span>
       <ModexMark style={{ height: "0.8em", width: "0.8em", marginLeft: "0.03em" }} />
@@ -64,8 +79,8 @@ function ModexLogo({ size = 28, className = "" }: { size?: number; className?: s
 }
 
 /* =========================================================
-   FIREBASE DATA (real-time) — main site er lib/firebase er `db` e ekoi project (mvbdminiapp)
-   Collections: modex_apps, modex_config/main
+   TYPES + CONFIG (admin panel theke control hoy)
+   Firestore: modex_apps (collection), modex_config/main (doc)
 ========================================================= */
 
 interface ModexApp {
@@ -89,18 +104,110 @@ interface ModexApp {
   published: boolean
   createdAt: number
   updatedAt: number
+  getClicks: number
+  views: number
+}
+
+interface Banner {
+  title: string
+  subtitle: string
+  imageUrl: string
+  target: "app" | "link"
+  appId: string
+  link: string
 }
 
 interface ModexConfig {
-  welcomeText: string
+  brand: { logoUrl: string }
+  theme: { accent: string; accent2: string; bg: string; chip: string }
+  texts: {
+    welcome: string
+    categoriesTitle: string
+    trendingTitle: string
+    newTitle: string
+    getLabel: string
+    seeAll: string
+    emptyText: string
+    searchHint: string
+  }
+  sections: {
+    showBanners: boolean
+    showCategories: boolean
+    showTrending: boolean
+    showNew: boolean
+    trendingCount: number
+    newCount: number
+  }
+  nav: { showCategories: boolean; showSaved: boolean; showSite: boolean }
+  detail: {
+    showScreenshots: boolean
+    showWhatsNew: boolean
+    showInfo: boolean
+    showMoreFromDev: boolean
+    showSimilar: boolean
+  }
+  announcement: { enabled: boolean; text: string; link: string; style: "info" | "success" | "warning" }
+  maintenance: { enabled: boolean; message: string }
+  banners: Banner[]
   categories: string[]
   placeholders: string[]
 }
 
 const DEFAULT_CONFIG: ModexConfig = {
-  welcomeText: "Welcome to",
+  brand: { logoUrl: "" },
+  theme: { accent: "#7b6cff", accent2: "#5b4bf0", bg: "#0e0d27", chip: "#3b34a0" },
+  texts: {
+    welcome: "Welcome to",
+    categoriesTitle: "Categories",
+    trendingTitle: "Trending Apps",
+    newTitle: "New Apps",
+    getLabel: "Get",
+    seeAll: "See all",
+    emptyText: "এখনো কোনো app যোগ করা হয়নি।",
+    searchHint: "App er naam, developer ba category likhe khujun",
+  },
+  sections: { showBanners: true, showCategories: true, showTrending: true, showNew: true, trendingCount: 10, newCount: 8 },
+  nav: { showCategories: true, showSaved: true, showSite: true },
+  detail: { showScreenshots: true, showWhatsNew: true, showInfo: true, showMoreFromDev: true, showSimilar: true },
+  announcement: { enabled: false, text: "", link: "", style: "info" },
+  maintenance: { enabled: false, message: "Modex ekhon maintenance e ache. Kichukkhon pore abar ashun." },
+  banners: [],
   categories: ["Editing", "Entertainment", "Tools", "Games", "Music", "Social", "Education"],
   placeholders: ["Search premium apps...", "Find editing apps...", "Find games & tools...", "Search music apps..."],
+}
+
+const obj = (v: any) => (v && typeof v === "object" && !Array.isArray(v) ? v : {})
+
+function mergeConfig(raw: any): ModexConfig {
+  const d = obj(raw)
+  const D = DEFAULT_CONFIG
+  const cfg: ModexConfig = {
+    brand: { ...D.brand, ...obj(d.brand) },
+    theme: { ...D.theme, ...obj(d.theme) },
+    texts: { ...D.texts, ...(d.welcomeText ? { welcome: String(d.welcomeText) } : {}), ...obj(d.texts) },
+    sections: { ...D.sections, ...obj(d.sections) },
+    nav: { ...D.nav, ...obj(d.nav) },
+    detail: { ...D.detail, ...obj(d.detail) },
+    announcement: { ...D.announcement, ...obj(d.announcement) },
+    maintenance: { ...D.maintenance, ...obj(d.maintenance) },
+    banners: Array.isArray(d.banners)
+      ? d.banners
+          .filter((b: any) => b && b.imageUrl)
+          .map((b: any) => ({
+            title: String(b.title || ""),
+            subtitle: String(b.subtitle || ""),
+            imageUrl: String(b.imageUrl || ""),
+            target: b.target === "link" ? "link" : "app",
+            appId: String(b.appId || ""),
+            link: String(b.link || ""),
+          }))
+      : [],
+    categories: Array.isArray(d.categories) && d.categories.length ? d.categories.map(String) : D.categories,
+    placeholders: Array.isArray(d.placeholders) && d.placeholders.length ? d.placeholders.map(String) : D.placeholders,
+  }
+  cfg.sections.trendingCount = Number(cfg.sections.trendingCount) || 10
+  cfg.sections.newCount = Number(cfg.sections.newCount) || 8
+  return cfg
 }
 
 function toMs(v: any): number {
@@ -132,12 +239,15 @@ function normalizeApp(id: string, d: any): ModexApp {
     published: d.published !== false,
     createdAt: toMs(d.createdAt),
     updatedAt: toMs(d.updatedAt) || toMs(d.createdAt),
+    getClicks: Number(d.getClicks) || 0,
+    views: Number(d.views) || 0,
   }
 }
 
+/* Real-time: admin panel e kichu change korle ekhane sathe sathe update hoy */
 function useModexData() {
   const [apps, setApps] = useState<ModexApp[]>([])
-  const [config, setConfig] = useState<ModexConfig>(DEFAULT_CONFIG)
+  const [cfg, setCfg] = useState<ModexConfig>(DEFAULT_CONFIG)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -162,15 +272,7 @@ function useModexData() {
 
     const unsubCfg = onSnapshot(
       doc(db, "modex_config", "main"),
-      (snap) => {
-        const d: any = snap.exists() ? snap.data() : {}
-        setConfig({
-          welcomeText: d.welcomeText || DEFAULT_CONFIG.welcomeText,
-          categories: Array.isArray(d.categories) && d.categories.length ? d.categories : DEFAULT_CONFIG.categories,
-          placeholders:
-            Array.isArray(d.placeholders) && d.placeholders.length ? d.placeholders : DEFAULT_CONFIG.placeholders,
-        })
-      },
+      (snap) => setCfg(mergeConfig(snap.exists() ? snap.data() : {})),
       () => {}
     )
 
@@ -180,8 +282,18 @@ function useModexData() {
     }
   }, [])
 
-  return { apps, config, loading, error }
+  return { apps, cfg, loading, error }
 }
+
+/* =========================================================
+   CONTEXT (config + tracking shob component e pouchaye dey)
+========================================================= */
+
+type TrackKind = "views" | "clicks"
+const Ctx = createContext<{ cfg: ModexConfig; track: (id: string, kind: TrackKind) => void }>({
+  cfg: DEFAULT_CONFIG,
+  track: () => {},
+})
 
 /* =========================================================
    TYPES / HELPERS
@@ -197,7 +309,8 @@ type View =
   | { t: "dev"; name: string }
 
 const SAVED_KEY = "modex_saved_apps"
-const GLASS = "border border-white/10 bg-white/[0.06] backdrop-blur-xl"
+const ANN_KEY = "modex_ann_dismissed"
+const GLASS = "mx-glass"
 
 function hueOf(s: string) {
   let h = 0
@@ -286,7 +399,7 @@ function IconBtn({
       type="button"
       onClick={onClick}
       aria-label={label}
-      className={`flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full text-slate-100 transition hover:bg-white/10 active:scale-90 ${GLASS} ${className}`}
+      className={`flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full text-slate-100 transition active:scale-90 ${GLASS} ${className}`}
     >
       {children}
     </button>
@@ -294,6 +407,7 @@ function IconBtn({
 }
 
 function GetButton({ app, big }: { app: ModexApp; big?: boolean }) {
+  const { cfg, track } = useContext(Ctx)
   const ok = !!app.downloadUrl
   return (
     <button
@@ -301,13 +415,15 @@ function GetButton({ app, big }: { app: ModexApp; big?: boolean }) {
       disabled={!ok}
       onClick={(e) => {
         e.stopPropagation()
-        if (ok) window.open(app.downloadUrl, "_blank", "noopener,noreferrer")
+        if (!ok) return
+        track(app.id, "clicks")
+        window.open(app.downloadUrl, "_blank", "noopener,noreferrer")
       }}
-      className={`flex-shrink-0 rounded-full bg-gradient-to-r from-[#7b6cff] to-[#5b4bf0] font-bold text-white shadow-[0_6px_20px_rgba(111,93,245,.45)] transition active:scale-95 disabled:opacity-40 ${
+      className={`mx-grad mx-glow flex-shrink-0 rounded-full font-bold text-white transition active:scale-95 disabled:opacity-40 ${
         big ? "px-10 py-3 text-base" : "px-5 py-1.5 text-sm"
       }`}
     >
-      {ok ? "Get" : "Soon"}
+      {ok ? cfg.texts.getLabel : "Soon"}
     </button>
   )
 }
@@ -337,26 +453,26 @@ function AppRow({ app, onOpen }: { app: ModexApp; onOpen: () => void }) {
 }
 
 function SectionHead({ title, onSeeAll }: { title: string; onSeeAll?: () => void }) {
+  const { cfg } = useContext(Ctx)
   return (
     <div className="mb-3 flex items-center justify-between px-5">
       <h2 className="text-lg font-bold text-white">{title}</h2>
       {onSeeAll && (
         <button type="button" onClick={onSeeAll} className="text-xs text-slate-400 transition hover:text-white">
-          See all
+          {cfg.texts.seeAll}
         </button>
       )}
     </div>
   )
 }
 
-function TopBar({ title, onBack, right }: { title: string; onBack: () => void; right?: ReactNode }) {
+function TopBar({ title, onBack }: { title: string; onBack: () => void }) {
   return (
-    <div className="sticky top-0 z-30 flex items-center gap-3 bg-[#0e0d27]/70 px-4 py-3 backdrop-blur-xl">
+    <div className="mx-bar sticky top-0 z-30 flex items-center gap-3 px-4 py-3">
       <IconBtn onClick={onBack} label="Back">
         <ArrowLeft className="h-5 w-5" />
       </IconBtn>
       <h1 className="min-w-0 flex-1 truncate text-lg font-bold">{title}</h1>
-      {right}
     </div>
   )
 }
@@ -371,24 +487,93 @@ function Empty({ text }: { text: string }) {
 }
 
 /* =========================================================
+   HERO BANNER SLIDER (admin panel theke banner add/remove)
+========================================================= */
+
+function BannerSlider({ banners, onPick }: { banners: Banner[]; onPick: (b: Banner) => void }) {
+  const ref = useRef<HTMLDivElement>(null)
+  const hold = useRef(false)
+  const [idx, setIdx] = useState(0)
+
+  useEffect(() => {
+    if (banners.length < 2) return
+    const t = setInterval(() => {
+      const el = ref.current
+      if (!el || hold.current) return
+      const next = (Math.round(el.scrollLeft / el.clientWidth) + 1) % banners.length
+      el.scrollTo({ left: next * el.clientWidth, behavior: "smooth" })
+    }, 4500)
+    return () => clearInterval(t)
+  }, [banners.length])
+
+  return (
+    <div className="mb-6 px-5">
+      <div
+        ref={ref}
+        onScroll={(e) => {
+          const el = e.currentTarget
+          setIdx(Math.round(el.scrollLeft / (el.clientWidth || 1)))
+        }}
+        onTouchStart={() => (hold.current = true)}
+        onTouchEnd={() => window.setTimeout(() => (hold.current = false), 3000)}
+        className="modex-noscroll flex snap-x snap-mandatory overflow-x-auto rounded-3xl shadow-xl"
+      >
+        {banners.map((b, i) => (
+          <button
+            key={i}
+            type="button"
+            onClick={() => onPick(b)}
+            className="relative h-44 w-full flex-shrink-0 snap-center overflow-hidden text-left"
+            style={{ background: fallbackBg(b.title || String(i)) }}
+          >
+            <img
+              src={b.imageUrl}
+              alt=""
+              loading="lazy"
+              onError={(e) => (e.currentTarget.style.display = "none")}
+              className="absolute inset-0 h-full w-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+            <div className="absolute inset-x-5 bottom-4">
+              {b.title && <p className="text-xl font-extrabold leading-tight drop-shadow">{b.title}</p>}
+              {b.subtitle && <p className="mt-0.5 line-clamp-1 text-sm text-white/80">{b.subtitle}</p>}
+            </div>
+          </button>
+        ))}
+      </div>
+      {banners.length > 1 && (
+        <div className="mt-3 flex justify-center gap-1.5">
+          {banners.map((_, i) => (
+            <span
+              key={i}
+              className={`h-1.5 rounded-full transition-all duration-300 ${i === idx ? "mx-grad w-6" : "w-1.5 bg-white/25"}`}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+/* =========================================================
    SEARCH VIEW
 ========================================================= */
 
 function SearchView({
   apps,
-  placeholders,
   query,
   setQuery,
   onBack,
   onOpen,
 }: {
   apps: ModexApp[]
-  placeholders: string[]
   query: string
   setQuery: (q: string) => void
   onBack: () => void
   onOpen: (a: ModexApp) => void
 }) {
+  const { cfg } = useContext(Ctx)
+  const placeholders = cfg.placeholders
   const [ph, setPh] = useState(0)
   const [focused, setFocused] = useState(false)
 
@@ -410,11 +595,11 @@ function SearchView({
 
   return (
     <div>
-      <div className="sticky top-0 z-30 flex items-center gap-3 bg-[#0e0d27]/70 px-4 py-3 backdrop-blur-xl">
+      <div className="mx-bar sticky top-0 z-30 flex items-center gap-3 px-4 py-3">
         <IconBtn onClick={onBack} label="Back">
           <ArrowLeft className="h-5 w-5" />
         </IconBtn>
-        <div className={`relative flex min-w-0 flex-1 items-center gap-3 rounded-2xl px-4 py-3 focus-within:border-[#7b6cff]/60 ${GLASS}`}>
+        <div className={`mx-focus relative flex min-w-0 flex-1 items-center gap-3 rounded-2xl px-4 py-3 ${GLASS}`}>
           <Search className="h-5 w-5 flex-shrink-0 text-slate-300" />
           <div className="relative h-5 min-w-0 flex-1">
             {!query && !focused && (
@@ -422,7 +607,7 @@ function SearchView({
                 key={ph}
                 className="modex-ph pointer-events-none absolute inset-0 flex items-center truncate text-[14px] text-white/50"
               >
-                {placeholders[ph]}
+                {placeholders[ph % placeholders.length]}
               </span>
             )}
             <input
@@ -433,7 +618,8 @@ function SearchView({
               onBlur={() => setFocused(false)}
               autoComplete="off"
               spellCheck={false}
-              className="absolute inset-0 h-full w-full bg-transparent text-[14px] text-white caret-[#8b7bff] outline-none"
+              style={{ caretColor: "var(--mx-soft)" }}
+              className="absolute inset-0 h-full w-full bg-transparent text-[14px] text-white outline-none"
             />
           </div>
           {query && (
@@ -446,7 +632,7 @@ function SearchView({
 
       <div className="px-4 pt-2">
         {!q ? (
-          <p className="px-1 pt-6 text-center text-sm text-slate-500">App er naam, developer ba category likhe khujun</p>
+          <p className="px-1 pt-6 text-center text-sm text-slate-500">{cfg.texts.searchHint}</p>
         ) : results.length ? (
           <>
             <p className="mb-2 px-1 text-sm text-slate-400">
@@ -468,7 +654,7 @@ function SearchView({
 }
 
 /* =========================================================
-   DETAIL VIEW (image er middle screen er moto)
+   DETAIL VIEW
 ========================================================= */
 
 function DetailView({
@@ -490,6 +676,8 @@ function DetailView({
   onDev: (name: string) => void
   onShot: (list: string[], i: number) => void
 }) {
+  const { cfg } = useContext(Ctx)
+  const D = cfg.detail
   const [more, setMore] = useState(false)
   const sameDev = apps.filter((a) => a.developer === app.developer && a.id !== app.id)
   const similar = apps.filter((a) => a.category === app.category && a.id !== app.id).slice(0, 10)
@@ -512,7 +700,7 @@ function DetailView({
       {/* Hero */}
       <div className="relative h-[340px]">
         <Cover app={app} className="absolute inset-0 rounded-b-[40px]" />
-        <div className="absolute inset-0 rounded-b-[40px] bg-gradient-to-t from-[#0e0d27] via-[#0e0d27]/30 to-black/30" />
+        <div className="mx-fade absolute inset-0 rounded-b-[40px]" />
         <div className="absolute inset-x-4 top-4 flex items-center justify-between">
           <IconBtn onClick={onBack} label="Back" className="!bg-black/40">
             <ArrowLeft className="h-5 w-5" />
@@ -542,7 +730,7 @@ function DetailView({
           aria-label="Save"
           className={`flex h-10 w-10 items-center justify-center rounded-full transition active:scale-90 ${GLASS}`}
         >
-          <Bookmark className={`h-5 w-5 ${saved ? "fill-[#8b7bff] text-[#8b7bff]" : "text-slate-300"}`} />
+          <Bookmark className={`h-5 w-5 ${saved ? "mx-soft-fill" : "text-slate-300"}`} />
         </button>
         <GetButton app={app} big />
       </div>
@@ -551,7 +739,7 @@ function DetailView({
       <div className={`mx-4 mt-5 grid grid-cols-3 gap-2 rounded-3xl p-4 ${GLASS}`}>
         {stats.map((s) => (
           <div key={s.label} className="flex flex-col items-center gap-1 text-center">
-            <s.icon className="h-5 w-5 text-[#9d90ff]" />
+            <s.icon className="mx-soft h-5 w-5" />
             <p className="text-sm font-bold text-white">{s.value}</p>
             <p className="text-[11px] text-slate-400">{s.label}</p>
           </div>
@@ -572,7 +760,7 @@ function DetailView({
             {app.description}
           </p>
           {app.description.length > 120 && (
-            <button type="button" onClick={() => setMore((m) => !m)} className="mt-1 text-sm font-semibold text-[#9d90ff]">
+            <button type="button" onClick={() => setMore((m) => !m)} className="mx-soft mt-1 text-sm font-semibold">
               {more ? "Show less" : "Read more"}
             </button>
           )}
@@ -580,7 +768,7 @@ function DetailView({
       )}
 
       {/* Screenshots */}
-      {app.screenshots.length > 0 && (
+      {D.showScreenshots && app.screenshots.length > 0 && (
         <section className="mt-6">
           <SectionHead title="Screenshots" onSeeAll={() => onShot(app.screenshots, 0)} />
           <div className="modex-noscroll flex snap-x gap-3 overflow-x-auto px-5">
@@ -594,7 +782,7 @@ function DetailView({
       )}
 
       {/* What's new */}
-      {app.whatsNew && (
+      {D.showWhatsNew && app.whatsNew && (
         <section className="mt-6 px-4">
           <h2 className="mb-3 px-1 text-lg font-bold">What&apos;s new</h2>
           <div className={`whitespace-pre-line rounded-3xl p-4 text-sm leading-relaxed text-slate-300 ${GLASS}`}>{app.whatsNew}</div>
@@ -602,31 +790,33 @@ function DetailView({
       )}
 
       {/* Info */}
-      <section className="mt-6 px-4">
-        <h2 className="mb-3 px-1 text-lg font-bold">Information</h2>
-        <div className={`divide-y divide-white/10 rounded-3xl px-4 ${GLASS}`}>
-          {[
-            ["Developer", app.developer],
-            ["Category", app.category],
-            ["Requires", app.requires || "—"],
-            ["Updated", fmtDate(app.updatedAt)],
-          ].map(([k, v]) => (
-            <div key={k} className="flex items-center justify-between py-3 text-sm">
-              <span className="text-slate-400">{k}</span>
-              <span className="font-medium text-white">{v}</span>
-            </div>
-          ))}
-        </div>
-      </section>
+      {D.showInfo && (
+        <section className="mt-6 px-4">
+          <h2 className="mb-3 px-1 text-lg font-bold">Information</h2>
+          <div className={`divide-y divide-white/10 rounded-3xl px-4 ${GLASS}`}>
+            {[
+              ["Developer", app.developer],
+              ["Category", app.category],
+              ["Requires", app.requires || "—"],
+              ["Updated", fmtDate(app.updatedAt)],
+            ].map(([k, v]) => (
+              <div key={k} className="flex items-center justify-between py-3 text-sm">
+                <span className="text-slate-400">{k}</span>
+                <span className="font-medium text-white">{v}</span>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
-      {sameDev.length > 0 && (
+      {D.showMoreFromDev && sameDev.length > 0 && (
         <section className="mt-6">
           <SectionHead title={`More from ${app.developer}`} onSeeAll={() => onDev(app.developer)} />
           <HRow items={sameDev} onOpen={onOpen} />
         </section>
       )}
 
-      {similar.length > 0 && (
+      {D.showSimilar && similar.length > 0 && (
         <section className="mt-6">
           <SectionHead title="Similar apps" />
           <HRow items={similar} onOpen={onOpen} />
@@ -651,7 +841,7 @@ function HRow({ items, onOpen }: { items: ModexApp[]; onOpen: (a: ModexApp) => v
 }
 
 /* =========================================================
-   DEVELOPER VIEW (image er right screen — profile er moto)
+   DEVELOPER VIEW
 ========================================================= */
 
 function DevView({
@@ -680,7 +870,7 @@ function DevView({
         ) : (
           <div className="absolute inset-0 bg-gradient-to-br from-fuchsia-600 to-indigo-800" />
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0e0d27] via-[#0e0d27]/30 to-black/30" />
+        <div className="mx-fade absolute inset-0" />
         <div className="absolute left-4 top-4">
           <IconBtn onClick={onBack} label="Back" className="!bg-black/40">
             <ArrowLeft className="h-5 w-5" />
@@ -689,8 +879,8 @@ function DevView({
       </div>
 
       <div className="-mt-14 flex flex-col items-center px-4">
-        <div className="rounded-full bg-gradient-to-br from-[#7b6cff] to-cyan-400 p-1 shadow-[0_0_30px_rgba(111,93,245,.5)]">
-          <div className="rounded-full bg-[#0e0d27] p-1">
+        <div className="mx-ring rounded-full p-1">
+          <div className="mx-bgc rounded-full p-1">
             {first ? <AppIcon app={first} size={92} /> : <div className="h-[92px] w-[92px] rounded-full bg-white/10" />}
           </div>
         </div>
@@ -727,7 +917,7 @@ function DevView({
               type="button"
               onClick={() => setTab(t)}
               className={`border-b-2 px-4 pb-2 font-semibold capitalize transition ${
-                tab === t ? "border-[#8b7bff] text-white" : "border-transparent text-slate-500"
+                tab === t ? "mx-tab-on text-white" : "border-transparent text-slate-500"
               }`}
             >
               {t}
@@ -759,22 +949,45 @@ interface ModexPageProps {
 }
 
 export default function ModexPage({ onNavigate }: ModexPageProps = {}) {
-  const { apps, config, loading, error } = useModexData()
+  const { apps, cfg, loading, error } = useModexData()
 
   const [stack, setStack] = useState<View[]>([{ t: "home" }])
   const stackRef = useRef(stack)
   stackRef.current = stack
   const scrolls = useRef<number[]>([])
   const exitingRef = useRef(false)
+  const viewedRef = useRef<Set<string>>(new Set())
 
   const [cat, setCat] = useState("All")
   const [query, setQuery] = useState("")
   const [saved, setSaved] = useState<string[]>([])
   const [viewer, setViewer] = useState<{ list: string[]; i: number } | null>(null)
   const [isScrolled, setIsScrolled] = useState(false)
+  const [annHidden, setAnnHidden] = useState(true)
 
-  const categories = useMemo(() => ["All", ...config.categories], [config.categories])
+  const T = cfg.texts
+  const S = cfg.sections
+  const categories = useMemo(() => ["All", ...cfg.categories], [cfg.categories])
   const top = stack[stack.length - 1]
+
+  /* theme (admin panel theke) */
+  const themeVars = {
+    "--mx-a": cfg.theme.accent,
+    "--mx-b": cfg.theme.accent2,
+    "--mx-bg": cfg.theme.bg,
+    "--mx-chip": cfg.theme.chip,
+    "--mx-soft": `color-mix(in srgb, ${cfg.theme.accent} 62%, white)`,
+    background: cfg.theme.bg,
+  } as CSSProperties
+
+  /* tracking (views / Get clicks) */
+  const track = useCallback((id: string, kind: TrackKind) => {
+    if (kind === "views") {
+      if (viewedRef.current.has(id)) return
+      viewedRef.current.add(id)
+    }
+    updateDoc(doc(db, "modex_apps", id), { [kind === "clicks" ? "getClicks" : "views"]: increment(1) }).catch(() => {})
+  }, [])
 
   /* saved apps */
   useEffect(() => {
@@ -792,6 +1005,22 @@ export default function ModexPage({ onNavigate }: ModexPageProps = {}) {
       } catch {}
       return next
     })
+  }
+
+  /* announcement dismiss */
+  useEffect(() => {
+    try {
+      setAnnHidden(localStorage.getItem(ANN_KEY) === cfg.announcement.text)
+    } catch {
+      setAnnHidden(false)
+    }
+  }, [cfg.announcement.text])
+
+  const dismissAnn = () => {
+    setAnnHidden(true)
+    try {
+      localStorage.setItem(ANN_KEY, cfg.announcement.text)
+    } catch {}
   }
 
   /* header scroll */
@@ -852,8 +1081,20 @@ export default function ModexPage({ onNavigate }: ModexPageProps = {}) {
     push({ t } as View)
   }
 
-  const openApp = (a: ModexApp) => push({ t: "detail", id: a.id })
+  const openApp = (a: ModexApp) => {
+    track(a.id, "views")
+    push({ t: "detail", id: a.id })
+  }
   const openDev = (name: string) => push({ t: "dev", name })
+
+  const pickBanner = (b: Banner) => {
+    if (b.target === "app") {
+      const a = apps.find((x) => x.id === b.appId)
+      if (a) openApp(a)
+    } else if (b.link) {
+      window.open(b.link, "_blank", "noopener,noreferrer")
+    }
+  }
 
   const activeTab =
     top.t === "search" ? "search" : top.t === "categories" ? "categories" : top.t === "saved" ? "saved" : "home"
@@ -866,31 +1107,55 @@ export default function ModexPage({ onNavigate }: ModexPageProps = {}) {
   }, [apps])
 
   const pool = cat === "All" ? apps : apps.filter((a) => a.category === cat)
-  const homeTrending = (cat === "All" ? trendingAll : trendingAll.filter((a) => a.category === cat)).slice(0, 10)
-  const homeNew = (cat === "All" ? sortedNew : sortedNew.filter((a) => a.category === cat)).slice(0, 8)
+  const homeTrending = (cat === "All" ? trendingAll : trendingAll.filter((a) => a.category === cat)).slice(0, S.trendingCount)
+  const homeNew = (cat === "All" ? sortedNew : sortedNew.filter((a) => a.category === cat)).slice(0, S.newCount)
 
   /* ---------- screens ---------- */
 
+  const annClass = `mx-ann-${cfg.announcement.style}`
+
   const renderHome = () => (
     <div className="pt-[76px]">
-      {/* Categories */}
-      <h2 className="mb-3 px-5 text-lg font-bold">Categories</h2>
-      <div className="modex-noscroll flex gap-2 overflow-x-auto px-5 pb-5">
-        {categories.map((c) => (
-          <button
-            key={c}
-            type="button"
-            onClick={() => setCat(c)}
-            className={`flex-shrink-0 rounded-full px-5 py-1.5 text-sm font-semibold transition-all duration-300 ${
-              cat === c
-                ? "bg-gradient-to-r from-[#7b6cff] to-[#5b4bf0] text-white shadow-[0_6px_18px_rgba(111,93,245,.45)]"
-                : "bg-[#3b34a0]/60 text-slate-200 hover:bg-[#3b34a0]"
-            }`}
-          >
-            {c}
+      {/* Announcement */}
+      {cfg.announcement.enabled && cfg.announcement.text && !annHidden && (
+        <div className={`mx-4 mb-4 flex items-center gap-3 rounded-2xl border px-4 py-3 text-sm ${annClass}`}>
+          <Megaphone className="h-4 w-4 flex-shrink-0" />
+          {cfg.announcement.link ? (
+            <a href={cfg.announcement.link} target="_blank" rel="noopener noreferrer" className="min-w-0 flex-1 underline-offset-2 hover:underline">
+              {cfg.announcement.text}
+            </a>
+          ) : (
+            <span className="min-w-0 flex-1">{cfg.announcement.text}</span>
+          )}
+          <button type="button" onClick={dismissAnn} aria-label="Dismiss" className="flex-shrink-0 opacity-70 hover:opacity-100">
+            <X className="h-4 w-4" />
           </button>
-        ))}
-      </div>
+        </div>
+      )}
+
+      {/* Hero banners */}
+      {S.showBanners && cfg.banners.length > 0 && <BannerSlider banners={cfg.banners} onPick={pickBanner} />}
+
+      {/* Categories */}
+      {S.showCategories && (
+        <>
+          <h2 className="mb-3 px-5 text-lg font-bold">{T.categoriesTitle}</h2>
+          <div className="modex-noscroll flex gap-2 overflow-x-auto px-5 pb-5">
+            {categories.map((c) => (
+              <button
+                key={c}
+                type="button"
+                onClick={() => setCat(c)}
+                className={`flex-shrink-0 rounded-full px-5 py-1.5 text-sm font-semibold transition-all duration-300 ${
+                  cat === c ? "mx-grad mx-glow text-white" : "mx-chip text-slate-200"
+                }`}
+              >
+                {c}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
 
       {error && (
         <div className="mx-5 mb-4 rounded-2xl border border-red-400/30 bg-red-500/10 p-3 text-xs text-red-200">
@@ -912,43 +1177,47 @@ export default function ModexPage({ onNavigate }: ModexPageProps = {}) {
           </div>
         </div>
       ) : pool.length === 0 ? (
-        <Empty text={apps.length === 0 ? "এখনো কোনো app যোগ করা হয়নি।" : "এই category তে কোনো app নেই।"} />
+        <Empty text={apps.length === 0 ? T.emptyText : "এই category তে কোনো app নেই।"} />
       ) : (
         <>
           {/* Trending */}
-          <section className="mb-7">
-            <SectionHead title="Trending Apps" onSeeAll={() => push({ t: "list", title: "Trending Apps", kind: "trending" })} />
-            <div className="modex-noscroll flex snap-x snap-mandatory gap-4 overflow-x-auto px-5">
-              {homeTrending.map((a) => (
-                <button
-                  key={a.id}
-                  type="button"
-                  onClick={() => openApp(a)}
-                  className="relative h-[200px] w-[150px] flex-shrink-0 snap-start overflow-hidden rounded-3xl text-left shadow-xl transition active:scale-[.97]"
-                >
-                  <Cover app={a} className="absolute inset-0" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/10 to-transparent" />
-                  <div className="absolute inset-x-3 bottom-3">
-                    <p className="truncate text-[15px] font-extrabold leading-tight">{a.name}</p>
-                    <Rating value={a.rating} />
-                  </div>
-                </button>
-              ))}
-            </div>
-          </section>
+          {S.showTrending && homeTrending.length > 0 && (
+            <section className="mb-7">
+              <SectionHead title={T.trendingTitle} onSeeAll={() => push({ t: "list", title: T.trendingTitle, kind: "trending" })} />
+              <div className="modex-noscroll flex snap-x snap-mandatory gap-4 overflow-x-auto px-5">
+                {homeTrending.map((a) => (
+                  <button
+                    key={a.id}
+                    type="button"
+                    onClick={() => openApp(a)}
+                    className="relative h-[200px] w-[150px] flex-shrink-0 snap-start overflow-hidden rounded-3xl text-left shadow-xl transition active:scale-[.97]"
+                  >
+                    <Cover app={a} className="absolute inset-0" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/10 to-transparent" />
+                    <div className="absolute inset-x-3 bottom-3">
+                      <p className="truncate text-[15px] font-extrabold leading-tight">{a.name}</p>
+                      <Rating value={a.rating} />
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </section>
+          )}
 
           {/* New apps */}
-          <section className="px-5">
-            <div className="mb-3 flex items-center justify-between">
-              <h2 className="text-lg font-bold">New Apps</h2>
-              <button type="button" onClick={() => push({ t: "list", title: "New Apps", kind: "new" })} className="text-xs text-slate-400 hover:text-white">
-                See all
-              </button>
-            </div>
-            {homeNew.map((a) => (
-              <AppRow key={a.id} app={a} onOpen={() => openApp(a)} />
-            ))}
-          </section>
+          {S.showNew && (
+            <section className="px-5">
+              <div className="mb-3 flex items-center justify-between">
+                <h2 className="text-lg font-bold">{T.newTitle}</h2>
+                <button type="button" onClick={() => push({ t: "list", title: T.newTitle, kind: "new" })} className="text-xs text-slate-400 hover:text-white">
+                  {T.seeAll}
+                </button>
+              </div>
+              {homeNew.map((a) => (
+                <AppRow key={a.id} app={a} onOpen={() => openApp(a)} />
+              ))}
+            </section>
+          )}
         </>
       )}
     </div>
@@ -968,9 +1237,9 @@ export default function ModexPage({ onNavigate }: ModexPageProps = {}) {
 
   const renderCategories = () => (
     <div>
-      <TopBar title="Categories" onBack={back} />
+      <TopBar title={T.categoriesTitle} onBack={back} />
       <div className="grid grid-cols-2 gap-3 px-4">
-        {config.categories.map((c) => {
+        {cfg.categories.map((c) => {
           const n = apps.filter((a) => a.category === c).length
           const h = hueOf(c)
           return (
@@ -1012,16 +1281,7 @@ export default function ModexPage({ onNavigate }: ModexPageProps = {}) {
       case "home":
         return renderHome()
       case "search":
-        return (
-          <SearchView
-            apps={apps}
-            placeholders={config.placeholders}
-            query={query}
-            setQuery={setQuery}
-            onBack={back}
-            onOpen={openApp}
-          />
-        )
+        return <SearchView apps={apps} query={query} setQuery={setQuery} onBack={back} onOpen={openApp} />
       case "categories":
         return renderCategories()
       case "saved":
@@ -1057,124 +1317,181 @@ export default function ModexPage({ onNavigate }: ModexPageProps = {}) {
   }
 
   const navItems = [
-    { id: "home", icon: Home, onClick: () => goTab("home") },
-    { id: "search", icon: Search, onClick: () => goTab("search") },
-    { id: "categories", icon: LayoutGrid, onClick: () => goTab("categories") },
-    { id: "saved", icon: Bookmark, onClick: () => goTab("saved") },
-    { id: "site", icon: Film, onClick: exitToSite },
-  ]
+    { id: "home", icon: Home, show: true, onClick: () => goTab("home") },
+    { id: "search", icon: Search, show: true, onClick: () => goTab("search") },
+    { id: "categories", icon: LayoutGrid, show: cfg.nav.showCategories, onClick: () => goTab("categories") },
+    { id: "saved", icon: Bookmark, show: cfg.nav.showSaved, onClick: () => goTab("saved") },
+    { id: "site", icon: Film, show: cfg.nav.showSite, onClick: exitToSite },
+  ].filter((n) => n.show)
+
+  const styleTag = (
+    <style>{`
+      .mx-glass {
+        background: linear-gradient(135deg, rgba(255,255,255,.12), rgba(255,255,255,.04) 55%, rgba(255,255,255,.08));
+        border: 1px solid rgba(255,255,255,.14);
+        backdrop-filter: blur(22px) saturate(170%);
+        -webkit-backdrop-filter: blur(22px) saturate(170%);
+        box-shadow: inset 0 1px 0 rgba(255,255,255,.28), inset 0 -1px 0 rgba(255,255,255,.04), 0 10px 30px rgba(0,0,0,.25);
+      }
+      .mx-focus:focus-within { border-color: color-mix(in srgb, var(--mx-a) 65%, transparent); }
+      .mx-grad { background-image: linear-gradient(90deg, var(--mx-a), var(--mx-b)); }
+      .mx-glow { box-shadow: 0 6px 20px color-mix(in srgb, var(--mx-a) 45%, transparent); }
+      .mx-soft { color: var(--mx-soft); }
+      .mx-soft-fill { color: var(--mx-soft); fill: var(--mx-soft); }
+      .mx-bgc { background: var(--mx-bg); }
+      .mx-ring { background-image: linear-gradient(135deg, var(--mx-a), #22d3ee); box-shadow: 0 0 30px color-mix(in srgb, var(--mx-a) 50%, transparent); }
+      .mx-tab-on { border-color: var(--mx-soft); }
+      .mx-chip { background: color-mix(in srgb, var(--mx-chip) 65%, transparent); }
+      .mx-chip:hover { background: var(--mx-chip); }
+      .mx-bar { background: color-mix(in srgb, var(--mx-bg) 72%, transparent); backdrop-filter: blur(20px) saturate(160%); -webkit-backdrop-filter: blur(20px) saturate(160%); }
+      .mx-navbar {
+        background: linear-gradient(135deg, rgba(255,255,255,.14), rgba(255,255,255,.05));
+        background-color: color-mix(in srgb, var(--mx-bg) 60%, transparent);
+        border: 1px solid rgba(255,255,255,.14);
+        backdrop-filter: blur(26px) saturate(180%);
+        -webkit-backdrop-filter: blur(26px) saturate(180%);
+        box-shadow: inset 0 1px 0 rgba(255,255,255,.3), 0 14px 40px rgba(0,0,0,.5);
+      }
+      .mx-navact { background: color-mix(in srgb, var(--mx-a) 28%, transparent); color: var(--mx-soft); box-shadow: inset 0 1px 0 rgba(255,255,255,.2); }
+      .mx-fade { background: linear-gradient(to top, var(--mx-bg) 0%, color-mix(in srgb, var(--mx-bg) 30%, transparent) 55%, rgba(0,0,0,.3) 100%); }
+      .mx-ann-info { background: color-mix(in srgb, var(--mx-a) 20%, transparent); border-color: color-mix(in srgb, var(--mx-a) 45%, transparent); color: #fff; }
+      .mx-ann-success { background: rgba(34,197,94,.16); border-color: rgba(34,197,94,.45); color: #bbf7d0; }
+      .mx-ann-warning { background: rgba(245,158,11,.16); border-color: rgba(245,158,11,.5); color: #fde68a; }
+      .modex-noscroll { scrollbar-width: none; }
+      .modex-noscroll::-webkit-scrollbar { display: none; }
+      @keyframes modexIn { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+      .modex-in { animation: modexIn .38s cubic-bezier(.22,1,.36,1); }
+      @keyframes modexPh { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+      .modex-ph { animation: modexPh .45s ease-out; }
+      @keyframes modexShimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+      .modex-shimmer { background: linear-gradient(90deg, rgba(255,255,255,.04) 25%, rgba(255,255,255,.1) 50%, rgba(255,255,255,.04) 75%); background-size: 200% 100%; animation: modexShimmer 1.4s linear infinite; }
+      @media (prefers-reduced-motion: reduce) { .modex-in, .modex-ph, .modex-shimmer { animation: none; } }
+    `}</style>
+  )
+
+  /* ---------- maintenance mode (admin panel theke on/off) ---------- */
+  if (cfg.maintenance.enabled) {
+    return (
+      <div className="relative flex min-h-screen items-center justify-center px-6 text-white" style={themeVars}>
+        {styleTag}
+        <div className={`modex-in relative w-full max-w-sm rounded-[32px] p-8 text-center ${GLASS}`}>
+          <div className="mx-grad mx-glow mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-3xl">
+            <Wrench className="h-8 w-8 text-white" />
+          </div>
+          <ModexLogo size={30} logoUrl={cfg.brand.logoUrl} />
+          <p className="mt-4 text-sm leading-relaxed text-slate-300">{cfg.maintenance.message}</p>
+          <button type="button" onClick={exitToSite} className="mx-grad mx-glow mt-6 rounded-full px-8 py-2.5 text-sm font-bold text-white active:scale-95">
+            Back to site
+          </button>
+        </div>
+        <SideNavigation current="modex" />
+      </div>
+    )
+  }
 
   return (
-    <div className="relative min-h-screen overflow-x-clip text-white" style={{ background: "#0e0d27" }}>
-      <style>{`
-        .modex-noscroll { scrollbar-width: none; }
-        .modex-noscroll::-webkit-scrollbar { display: none; }
-        @keyframes modexIn { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
-        .modex-in { animation: modexIn .38s cubic-bezier(.22,1,.36,1); }
-        @keyframes modexPh { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-        .modex-ph { animation: modexPh .45s ease-out; }
-        @keyframes modexShimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
-        .modex-shimmer { background: linear-gradient(90deg, rgba(255,255,255,.04) 25%, rgba(255,255,255,.1) 50%, rgba(255,255,255,.04) 75%); background-size: 200% 100%; animation: modexShimmer 1.4s linear infinite; }
-        @media (prefers-reduced-motion: reduce) { .modex-in, .modex-ph, .modex-shimmer { animation: none; } }
-      `}</style>
+    <Ctx.Provider value={{ cfg, track }}>
+      <div className="relative min-h-screen overflow-x-clip text-white" style={themeVars}>
+        {styleTag}
 
-      {/* background glow */}
-      <div className="pointer-events-none fixed inset-0">
-        <div className="absolute -left-24 -top-24 h-80 w-80 rounded-full bg-[#5b4bf0]/25 blur-[100px]" />
-        <div className="absolute -right-24 top-1/3 h-72 w-72 rounded-full bg-fuchsia-600/15 blur-[100px]" />
-        <div className="absolute -bottom-24 left-1/4 h-72 w-72 rounded-full bg-cyan-500/10 blur-[100px]" />
-      </div>
+        {/* background glow */}
+        <div className="pointer-events-none fixed inset-0">
+          <div className="absolute -left-24 -top-24 h-80 w-80 rounded-full opacity-25 blur-[100px]" style={{ background: "var(--mx-a)" }} />
+          <div className="absolute -right-24 top-1/3 h-72 w-72 rounded-full bg-fuchsia-600/15 blur-[100px]" />
+          <div className="absolute -bottom-24 left-1/4 h-72 w-72 rounded-full bg-cyan-500/10 blur-[100px]" />
+        </div>
 
-      {/* HOME HEADER (shudhu home e) */}
-      {top.t === "home" && (
-        <header
-          className={`fixed inset-x-0 top-0 z-40 transition-all duration-300 ${
-            isScrolled ? "border-b border-white/10 bg-[#0e0d27]/70 backdrop-blur-xl" : "border-b border-transparent"
-          }`}
-        >
-          <div className="mx-auto flex max-w-xl items-center gap-3 px-4 py-3">
-            <IconBtn onClick={() => push({ t: "search" })} label="Search">
-              <Search className="h-5 w-5" />
-            </IconBtn>
-            <div className="min-w-0 flex-1 text-center leading-tight">
-              <p className="text-[11px] text-slate-400">{config.welcomeText}</p>
-              <ModexLogo size={24} />
+        {/* HOME HEADER (shudhu home e) */}
+        {top.t === "home" && (
+          <header
+            className={`fixed inset-x-0 top-0 z-40 transition-all duration-300 ${
+              isScrolled ? "mx-bar border-b border-white/10" : "border-b border-transparent"
+            }`}
+          >
+            <div className="mx-auto flex max-w-xl items-center gap-3 px-4 py-3">
+              <IconBtn onClick={() => push({ t: "search" })} label="Search">
+                <Search className="h-5 w-5" />
+              </IconBtn>
+              <div className="min-w-0 flex-1 text-center leading-tight">
+                <p className="text-[11px] text-slate-400">{T.welcome}</p>
+                <ModexLogo size={24} logoUrl={cfg.brand.logoUrl} />
+              </div>
+              <IconBtn onClick={openSideMenu} label="Open menu">
+                <MoreHorizontal className="h-5 w-5" />
+              </IconBtn>
             </div>
-            <IconBtn onClick={openSideMenu} label="Open menu">
-              <MoreHorizontal className="h-5 w-5" />
-            </IconBtn>
+          </header>
+        )}
+
+        <main className="relative mx-auto max-w-xl pb-32">
+          <div key={`${stack.length}-${top.t}`} className="modex-in">
+            {renderView()}
           </div>
-        </header>
-      )}
+        </main>
 
-      <main className="relative mx-auto max-w-xl pb-32">
-        <div key={`${stack.length}-${top.t}`} className="modex-in">
-          {renderView()}
-        </div>
-      </main>
+        {/* BOTTOM NAV (liquid glass floating bar) */}
+        <nav className="fixed inset-x-4 bottom-4 z-50 mx-auto max-w-md">
+          <div className="mx-navbar flex items-center justify-around rounded-[28px] px-3 py-3">
+            {navItems.map((n) => {
+              const active = n.id === activeTab
+              return (
+                <button
+                  key={n.id}
+                  type="button"
+                  onClick={n.onClick}
+                  aria-label={n.id}
+                  className={`flex h-11 w-11 items-center justify-center rounded-2xl transition-all active:scale-90 ${
+                    active ? "mx-navact" : "text-slate-400 hover:text-white"
+                  }`}
+                >
+                  <n.icon className="h-[22px] w-[22px]" />
+                </button>
+              )
+            })}
+          </div>
+        </nav>
 
-      {/* BOTTOM NAV (image er moto floating glass bar) */}
-      <nav className="fixed inset-x-4 bottom-4 z-50 mx-auto max-w-md">
-        <div className={`flex items-center justify-around rounded-[28px] px-3 py-3 shadow-[0_10px_40px_rgba(0,0,0,.5)] ${GLASS} !bg-[#1a1840]/80`}>
-          {navItems.map((n) => {
-            const active = n.id === activeTab
-            return (
+        {/* SCREENSHOT VIEWER */}
+        {viewer && (
+          <div className="fixed inset-0 z-[120] flex items-center justify-center bg-black/90 p-4" onClick={() => setViewer(null)}>
+            <button type="button" onClick={() => setViewer(null)} aria-label="Close" className="absolute right-4 top-4 flex h-11 w-11 items-center justify-center rounded-full bg-white/10">
+              <X className="h-5 w-5" />
+            </button>
+            {viewer.i > 0 && (
               <button
-                key={n.id}
                 type="button"
-                onClick={n.onClick}
-                aria-label={n.id}
-                className={`flex h-11 w-11 items-center justify-center rounded-2xl transition-all active:scale-90 ${
-                  active ? "bg-[#6f5df5]/25 text-[#9d90ff]" : "text-slate-400 hover:text-white"
-                }`}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setViewer({ ...viewer, i: viewer.i - 1 })
+                }}
+                className="absolute left-3 flex h-11 w-11 rotate-180 items-center justify-center rounded-full bg-white/10"
+                aria-label="Previous"
               >
-                <n.icon className="h-[22px] w-[22px]" />
+                <ChevronRight className="h-5 w-5" />
               </button>
-            )
-          })}
-        </div>
-      </nav>
+            )}
+            <img src={viewer.list[viewer.i]} alt="" className="modex-in max-h-[85vh] max-w-full rounded-2xl object-contain" onClick={(e) => e.stopPropagation()} />
+            {viewer.i < viewer.list.length - 1 && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setViewer({ ...viewer, i: viewer.i + 1 })
+                }}
+                className="absolute right-3 flex h-11 w-11 items-center justify-center rounded-full bg-white/10"
+                aria-label="Next"
+              >
+                <ChevronRight className="h-5 w-5" />
+              </button>
+            )}
+            <p className="absolute bottom-6 text-xs text-slate-400">
+              {viewer.i + 1} / {viewer.list.length}
+            </p>
+          </div>
+        )}
 
-      {/* SCREENSHOT VIEWER */}
-      {viewer && (
-        <div className="fixed inset-0 z-[120] flex items-center justify-center bg-black/90 p-4" onClick={() => setViewer(null)}>
-          <button type="button" onClick={() => setViewer(null)} aria-label="Close" className="absolute right-4 top-4 flex h-11 w-11 items-center justify-center rounded-full bg-white/10">
-            <X className="h-5 w-5" />
-          </button>
-          {viewer.i > 0 && (
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation()
-                setViewer({ ...viewer, i: viewer.i - 1 })
-              }}
-              className="absolute left-3 flex h-11 w-11 rotate-180 items-center justify-center rounded-full bg-white/10"
-              aria-label="Previous"
-            >
-              <ChevronRight className="h-5 w-5" />
-            </button>
-          )}
-          <img src={viewer.list[viewer.i]} alt="" className="modex-in max-h-[85vh] max-w-full rounded-2xl object-contain" onClick={(e) => e.stopPropagation()} />
-          {viewer.i < viewer.list.length - 1 && (
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation()
-                setViewer({ ...viewer, i: viewer.i + 1 })
-              }}
-              className="absolute right-3 flex h-11 w-11 items-center justify-center rounded-full bg-white/10"
-              aria-label="Next"
-            >
-              <ChevronRight className="h-5 w-5" />
-            </button>
-          )}
-          <p className="absolute bottom-6 text-xs text-slate-400">
-            {viewer.i + 1} / {viewer.list.length}
-          </p>
-        </div>
-      )}
-
-      <SideNavigation current="modex" />
-    </div>
+        <SideNavigation current="modex" />
+      </div>
+    </Ctx.Provider>
   )
-}
+                                }

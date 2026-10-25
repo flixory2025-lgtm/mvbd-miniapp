@@ -790,7 +790,7 @@ export default function GenreCategories({
      ✅ PARTICLE ENGINE (canvas)
      Canvas এর আসল CSS size থেকে মাপ নেওয়া হয়:
      - Mobile: শুধু নিচের stage এর ভেতরে
-     - Desktop: পুরো Categories section জুড়ে
+     - Desktop: stage hidden (display:none) তাই কিছুই আঁকা হয় না
   ========================================================= */
   useEffect(() => {
     const cv = cvRef.current
@@ -1303,7 +1303,7 @@ export default function GenreCategories({
 
         /* =========================================================
            ✅ নিচের animated stage (background image + title animation)
-           Mobile: আগের মতোই শুধু stage এর ভেতরে
+           শুধু MOBILE এ দেখাবে (767px পর্যন্ত)
            ========================================================= */
         .gc-stage {
           position: relative; overflow: hidden; isolation: isolate;
@@ -1389,59 +1389,12 @@ export default function GenreCategories({
         }
 
         /* =========================================================
-           ✅ DESKTOP ONLY (768px+)
-           Background + animation পুরো section জুড়ে ছড়িয়ে যায়:
-           "Categories" লেখা থেকে শুরু করে একদম নিচের stage পর্যন্ত।
-           Image desktop এর মাপে cover/crop হয়ে fit করে, আর theme dark।
-           Title লেখাটা আগের জায়গাতেই (নিচে) থাকে।
+           ✅ DESKTOP (768px+): background + animation একদমই থাকবে না
+           পুরো animated stage hide — শুধু mobile এ দেখাবে।
+           বাকি সব (buttons, selectors, modal) আগের মতোই।
            ========================================================= */
         @media (min-width: 768px) {
-          .gc-root {
-            position: relative;
-            overflow: hidden;
-            isolation: isolate;
-            padding-top: 32px;
-            padding-bottom: 8px;
-          }
-
-          /* stage নিজে আর background ধরে না — শুধু title এর জায়গা */
-          .gc-stage {
-            position: static;
-            isolation: auto;
-            overflow: visible;
-            aspect-ratio: auto;
-            height: clamp(230px, 26vw, 360px);
-            min-height: 0;
-            max-height: none;
-            margin-top: 16px;
-            -webkit-mask-image: none;
-            mask-image: none;
-          }
-
-          /* background layer গুলো এখন .gc-root এর সাথে মাপে (সব absolute inset:0) */
-          .gc-bgs { z-index: 0; }
-
-          /* dark theme: পুরো area জুড়ে সমান গাঢ় overlay, নিচে আরও dark */
-          .gc-shade {
-            background: linear-gradient(
-              180deg,
-              rgba(0, 0, 0, .86) 0%,
-              rgba(0, 0, 0, .66) 28%,
-              rgba(0, 0, 0, .5) 55%,
-              rgba(0, 0, 0, .72) 82%,
-              rgba(0, 0, 0, .94) 100%
-            );
-          }
-          .gc-vig { background: radial-gradient(ellipse at 50% 45%, transparent 35%, #000a); }
-          .gc-tint { opacity: .4; }
-
-          /* canvas/particles পুরো section জুড়ে */
-          .gc-cv { z-index: 2; }
-
-          /* heading, button, selector — সব background এর উপরে */
-          .gc-h2 { position: relative; z-index: 3; }
-          .category-btn { z-index: 3; }
-          .filter-grid { position: relative; z-index: 4; }
+          .gc-stage { display: none !important; }
         }
       `}</style>
 
@@ -1615,7 +1568,7 @@ export default function GenreCategories({
         {/* ========================================================= */}
         {/* ✅ Animated stage: "Recently Uploaded" এর জায়গা।           */}
         {/*    All = Recently Uploaded, বাকি category = তার নিজের animation */}
-        {/*    Desktop এ background/particles পুরো section জুড়ে ছড়ায়    */}
+        {/*    ✅ শুধু mobile এ দেখায়, desktop এ display:none            */}
         {/* ========================================================= */}
         <div
           ref={stageRef}
@@ -1736,4 +1689,4 @@ export default function GenreCategories({
 
 function CategoryHighlight() {
   return <span className="gc-orbit" aria-hidden="true" />
-              }
+}

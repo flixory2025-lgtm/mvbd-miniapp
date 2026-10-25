@@ -1,6 +1,7 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useId, useState } from "react"
+import type { CSSProperties, ReactNode } from "react"
 import { createPortal } from "react-dom"
 import {
   X,
@@ -8,19 +9,80 @@ import {
   Settings as SettingsIcon,
   Info,
   ChevronRight,
-  ExternalLink,
 } from "lucide-react"
 
 /* Global events — header, floating button ba onno jekono jayga theke menu khola jay */
 export const OPEN_MENU_EVENT = "mvbd:open-menu"
 export const OPEN_PAGE_EVENT = "mvbd:open-page"
 
+export type SidePageId = "settings" | "about" | "modex"
+
 export function openSideMenu() {
   window.dispatchEvent(new Event(OPEN_MENU_EVENT))
 }
 
-function openPage(page: "settings" | "about") {
+function openPage(page: SidePageId) {
   window.dispatchEvent(new CustomEvent(OPEN_PAGE_EVENT, { detail: page }))
+}
+
+/* =========================================================
+   MODEX X MARK
+   Apnar dewa X image er shape ta mask hishebe use kore green gradient
+   dewa hoy. Image CORS e load na hole same shape er SVG fallback dekhabe.
+========================================================= */
+export const MODEX_X_URL = "https://i.postimg.cc/YqKw8FTB/24592-removebg-preview.png"
+const GREEN_GRAD = "linear-gradient(135deg, #bbf7d0 0%, #22c55e 50%, #059669 100%)"
+
+export function ModexXMark({ className, style }: { className?: string; style?: CSSProperties }) {
+  const id = useId().replace(/:/g, "")
+  const [ok, setOk] = useState(false)
+
+  useEffect(() => {
+    let alive = true
+    const im = new Image()
+    im.crossOrigin = "anonymous"
+    im.onload = () => alive && setOk(true)
+    im.onerror = () => alive && setOk(false)
+    im.src = MODEX_X_URL
+    return () => {
+      alive = false
+    }
+  }, [])
+
+  if (ok) {
+    return (
+      <span
+        aria-hidden="true"
+        className={className}
+        style={{
+          display: "inline-block",
+          backgroundImage: GREEN_GRAD,
+          WebkitMaskImage: `url(${MODEX_X_URL})`,
+          maskImage: `url(${MODEX_X_URL})`,
+          WebkitMaskRepeat: "no-repeat",
+          maskRepeat: "no-repeat",
+          WebkitMaskSize: "contain",
+          maskSize: "contain",
+          WebkitMaskPosition: "center",
+          maskPosition: "center",
+          ...style,
+        }}
+      />
+    )
+  }
+
+  return (
+    <svg viewBox="0 0 24 24" className={className} style={style} aria-hidden="true">
+      <defs>
+        <linearGradient id={id} x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stopColor="#bbf7d0" />
+          <stop offset="0.5" stopColor="#22c55e" />
+          <stop offset="1" stopColor="#059669" />
+        </linearGradient>
+      </defs>
+      <path d="M4 4 L10.2 4 L12 8.2 L13.8 4 L20 4 L14.6 12 L20 20 L13.8 20 L12 15.8 L10.2 20 L4 20 L9.4 12 Z" fill={`url(#${id})`} />
+    </svg>
+  )
 }
 
 /* =========================================================
@@ -45,9 +107,9 @@ export function FloatingMenuButton() {
 }
 
 /* =========================================================
-   SIDE NAVIGATION PANEL
+   SIDE NAVIGATION PANEL — liquid glass + calligraphy watermark
 ========================================================= */
-export default function SideNavigation({ current }: { current?: "modex" }) {
+export default function SideNavigation({ current }: { current?: SidePageId }) {
   const [mounted, setMounted] = useState(false)
   const [open, setOpen] = useState(false)
 
@@ -71,27 +133,118 @@ export default function SideNavigation({ current }: { current?: "modex" }) {
     }
   }, [open])
 
-  const go = (page: "settings" | "about") => {
+  const go = (page: SidePageId) => {
     setOpen(false)
     openPage(page)
   }
 
-  const itemBase =
-    "group w-full flex items-center gap-4 rounded-2xl bg-white/5 hover:bg-white/10 border p-3 text-left transition-all duration-500 ease-out"
   const anim = (delay: number) => ({
-    style: { transitionDelay: open ? `${delay}ms` : "0ms" },
+    style: { transitionDelay: open ? `${delay}ms` : "0ms" } as CSSProperties,
     cls: open ? "opacity-100 translate-x-0" : "opacity-0 translate-x-8",
   })
+
+  const items: {
+    id: SidePageId
+    title: string
+    sub: string
+    hover: string
+    chev: string
+    tile: ReactNode
+  }[] = [
+    {
+      id: "modex",
+      title: "Modex",
+      sub: "প্রিমিয়াম APK স্টোর",
+      hover: "hover:border-emerald-300/50",
+      chev: "group-hover:text-emerald-300",
+      tile: <ModexTile />,
+    },
+    {
+      id: "settings",
+      title: "Settings",
+      sub: "সাইটের সেটিংস",
+      hover: "hover:border-cyan-300/50",
+      chev: "group-hover:text-cyan-300",
+      tile: (
+        <div className="sn-tile bg-gradient-to-br from-emerald-400/90 to-cyan-500/90 group-hover:rotate-45">
+          <SettingsIcon className="h-6 w-6 text-white" />
+        </div>
+      ),
+    },
+    {
+      id: "about",
+      title: "About Us",
+      sub: "আমাদের সম্পর্কে জানুন",
+      hover: "hover:border-purple-300/50",
+      chev: "group-hover:text-purple-300",
+      tile: (
+        <div className="sn-tile bg-gradient-to-br from-purple-400/90 to-pink-500/90">
+          <Info className="h-6 w-6 text-white" />
+        </div>
+      ),
+    },
+  ]
 
   if (!mounted) return null
 
   return createPortal(
     <>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Great+Vibes&family=Pinyon+Script&display=swap');
+
+        .sn-panel {
+          background:
+            linear-gradient(160deg, rgba(255,255,255,.20) 0%, rgba(255,255,255,.06) 38%, rgba(255,255,255,.10) 100%),
+            rgba(14,16,26,.42);
+          backdrop-filter: blur(38px) saturate(190%);
+          -webkit-backdrop-filter: blur(38px) saturate(190%);
+          border-left: 1px solid rgba(255,255,255,.28);
+          box-shadow:
+            inset 1px 0 0 rgba(255,255,255,.35),
+            inset 0 1px 0 rgba(255,255,255,.25),
+            inset 0 -1px 0 rgba(255,255,255,.06);
+        }
+        .sn-shine {
+          background: linear-gradient(115deg, transparent 30%, rgba(255,255,255,.10) 46%, transparent 60%);
+          background-size: 260% 100%;
+          animation: snShine 7s ease-in-out infinite;
+        }
+        @keyframes snShine { 0%,100% { background-position: 140% 0; } 50% { background-position: -40% 0; } }
+
+        .sn-item {
+          background: linear-gradient(135deg, rgba(255,255,255,.16), rgba(255,255,255,.05) 55%, rgba(255,255,255,.10));
+          border: 1px solid rgba(255,255,255,.18);
+          backdrop-filter: blur(18px) saturate(170%);
+          -webkit-backdrop-filter: blur(18px) saturate(170%);
+          box-shadow: inset 0 1px 0 rgba(255,255,255,.35), inset 0 -1px 0 rgba(255,255,255,.04), 0 10px 26px rgba(0,0,0,.22);
+        }
+        .sn-item:hover { background: linear-gradient(135deg, rgba(255,255,255,.24), rgba(255,255,255,.08) 55%, rgba(255,255,255,.14)); }
+        .sn-item:active { transform: scale(.97); }
+        .sn-tile {
+          display: flex; height: 56px; width: 56px; flex-shrink: 0; align-items: center; justify-content: center;
+          border-radius: 16px; transition: transform .5s ease;
+          box-shadow: inset 0 1px 0 rgba(255,255,255,.45), 0 8px 18px rgba(0,0,0,.3);
+        }
+        .group:hover .sn-tile { transform: scale(1.06); }
+        .group:hover .sn-tile.group-hover\\:rotate-45 { transform: rotate(45deg) scale(1.06); }
+
+        /* English calligraphy watermark */
+        .sn-wm {
+          position: absolute; pointer-events: none; user-select: none; white-space: nowrap;
+          font-family: 'Great Vibes', 'Pinyon Script', cursive;
+          color: rgba(255,255,255,.085);
+          text-shadow: 0 0 22px rgba(255,255,255,.05);
+        }
+        .sn-wm-1 { font-size: 92px; line-height: 1; top: 26%; left: -26px; transform: rotate(-16deg); }
+        .sn-wm-2 { font-size: 64px; line-height: 1; top: 52%; left: 30px; transform: rotate(-16deg); font-family: 'Pinyon Script','Great Vibes',cursive; color: rgba(255,255,255,.07); }
+        .sn-wm-3 { font-size: 56px; line-height: 1; bottom: 11%; left: 10px; transform: rotate(-16deg); color: rgba(110,231,183,.10); }
+      `}</style>
+
       {/* Backdrop */}
       <div
         onClick={() => setOpen(false)}
         aria-hidden="true"
-        className={`fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm transition-opacity duration-500 ease-out ${
+        className={`fixed inset-0 z-[100] bg-black/55 backdrop-blur-[3px] transition-opacity duration-500 ease-out ${
           open ? "opacity-100" : "pointer-events-none opacity-0"
         }`}
       />
@@ -102,15 +255,22 @@ export default function SideNavigation({ current }: { current?: "modex" }) {
         aria-modal="true"
         aria-label="Navigation menu"
         aria-hidden={!open}
-        className={`fixed bottom-0 right-0 top-0 z-[110] flex w-[84%] max-w-[340px] flex-col border-l border-white/10 bg-[#0b0b12]/95 backdrop-blur-2xl transition-[transform,box-shadow] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+        className={`sn-panel fixed bottom-0 right-0 top-0 z-[110] flex w-[84%] max-w-[340px] flex-col overflow-hidden transition-[transform,box-shadow] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
           open
-            ? "translate-x-0 shadow-[-20px_0_60px_rgba(0,0,0,0.6)]"
+            ? "translate-x-0 shadow-[-24px_0_70px_rgba(0,0,0,0.55)]"
             : "pointer-events-none translate-x-full shadow-none"
         }`}
       >
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-cyan-500/10 via-transparent to-emerald-500/10" />
+        <div className="sn-shine pointer-events-none absolute inset-0" />
+        <div className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-cyan-400/20 blur-[70px]" />
+        <div className="pointer-events-none absolute -bottom-24 -left-16 h-64 w-64 rounded-full bg-emerald-400/20 blur-[70px]" />
 
-        <div className="relative flex items-center justify-between border-b border-white/10 px-5 py-5">
+        {/* Calligraphy watermark */}
+        <span className="sn-wm sn-wm-1" aria-hidden="true">Movies Verse</span>
+        <span className="sn-wm sn-wm-2" aria-hidden="true">Bangladesh</span>
+        <span className="sn-wm sn-wm-3" aria-hidden="true">Modex</span>
+
+        <div className="relative flex items-center justify-between border-b border-white/15 px-5 py-5">
           <div className="flex items-center gap-3">
             <img
               src="https://i.postimg.cc/0yqFXMFW/photo-2025-12-11-09-45-29-removebg-preview.png"
@@ -123,82 +283,45 @@ export default function SideNavigation({ current }: { current?: "modex" }) {
             type="button"
             onClick={() => setOpen(false)}
             aria-label="Close menu"
-            className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/5 text-slate-300 transition-all duration-300 hover:rotate-90 hover:bg-white/15 hover:text-white"
+            className="sn-item flex h-10 w-10 items-center justify-center rounded-full text-slate-200 transition-all duration-300 hover:rotate-90 hover:text-white"
           >
             <X className="h-5 w-5" />
           </button>
         </div>
 
         <nav className="relative flex-1 space-y-3 overflow-y-auto px-4 py-5">
-          {/* 1. Modex */}
-          {current === "modex" ? (
-            <button
-              type="button"
-              onClick={() => setOpen(false)}
-              style={anim(120).style}
-              className={`${itemBase} border-cyan-400/50 ${anim(120).cls}`}
-            >
-              <ModexTile />
-              <div className="min-w-0 flex-1">
-                <p className="font-semibold text-white">Modex</p>
-                <p className="text-xs text-cyan-300">আপনি এখন এই পেজে আছেন</p>
-              </div>
-            </button>
-          ) : (
-            <a
-              href="/?page=modex"
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={() => setOpen(false)}
-              style={anim(120).style}
-              className={`${itemBase} border-white/10 hover:border-cyan-400/40 ${anim(120).cls}`}
-            >
-              <ModexTile />
-              <div className="min-w-0 flex-1">
-                <p className="font-semibold text-white">Modex</p>
-                <p className="text-xs text-slate-400">নতুন ট্যাবে খুলবে</p>
-              </div>
-              <ExternalLink className="h-4 w-4 text-slate-500 transition-colors group-hover:text-cyan-300" />
-            </a>
-          )}
-
-          {/* 2. Settings */}
-          <button
-            type="button"
-            onClick={() => go("settings")}
-            style={anim(200).style}
-            className={`${itemBase} border-white/10 hover:border-emerald-400/40 ${anim(200).cls}`}
-          >
-            <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-500 to-cyan-500 transition-transform duration-500 group-hover:rotate-45 group-hover:scale-105">
-              <SettingsIcon className="h-6 w-6 text-white" />
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="font-semibold text-white">Settings</p>
-              <p className="text-xs text-slate-400">সাইটের সেটিংস</p>
-            </div>
-            <ChevronRight className="h-4 w-4 text-slate-500 transition-all group-hover:translate-x-1 group-hover:text-emerald-300" />
-          </button>
-
-          {/* 3. About Us */}
-          <button
-            type="button"
-            onClick={() => go("about")}
-            style={anim(280).style}
-            className={`${itemBase} border-white/10 hover:border-purple-400/40 ${anim(280).cls}`}
-          >
-            <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 transition-transform duration-300 group-hover:scale-105">
-              <Info className="h-6 w-6 text-white" />
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="font-semibold text-white">About Us</p>
-              <p className="text-xs text-slate-400">আমাদের সম্পর্কে জানুন</p>
-            </div>
-            <ChevronRight className="h-4 w-4 text-slate-500 transition-all group-hover:translate-x-1 group-hover:text-purple-300" />
-          </button>
+          {items.map((it, i) => {
+            const a = anim(120 + i * 80)
+            const here = current === it.id
+            return (
+              <button
+                key={it.id}
+                type="button"
+                onClick={() => (here ? setOpen(false) : go(it.id))}
+                style={a.style}
+                className={`sn-item group flex w-full items-center gap-4 rounded-2xl p-3 text-left transition-all duration-500 ease-out ${
+                  here ? "border-emerald-300/60" : it.hover
+                } ${a.cls}`}
+              >
+                {it.tile}
+                <div className="min-w-0 flex-1">
+                  <p className="font-semibold text-white">{it.title}</p>
+                  <p className={`text-xs ${here ? "text-emerald-300" : "text-slate-300/80"}`}>
+                    {here ? "আপনি এখন এই পেজে আছেন" : it.sub}
+                  </p>
+                </div>
+                {!here && (
+                  <ChevronRight
+                    className={`h-4 w-4 text-slate-400 transition-all group-hover:translate-x-1 ${it.chev}`}
+                  />
+                )}
+              </button>
+            )
+          })}
         </nav>
 
-        <div className="relative border-t border-white/10 px-5 py-4 text-center">
-          <p className="text-xs text-slate-400">Movies Verse Bangladesh</p>
+        <div className="relative border-t border-white/15 px-5 py-4 text-center">
+          <p className="text-xs text-slate-300/80">Movies Verse Bangladesh</p>
         </div>
       </aside>
     </>,
@@ -208,12 +331,10 @@ export default function SideNavigation({ current }: { current?: "modex" }) {
 
 function ModexTile() {
   return (
-    <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center overflow-hidden rounded-xl border border-white/10 bg-black/40 transition-transform duration-300 group-hover:scale-105">
-      <img
-        src="https://i.postimg.cc/YqKw8FTB/24592-removebg-preview.png"
-        alt="Modex"
-        className="h-11 w-11 object-contain"
-      />
+    <div className="sn-tile border border-white/15 bg-black/35">
+      <span className="inline-flex items-center font-extrabold leading-none tracking-tight" style={{ fontSize: 15 }}>
+        <ModexXMark style={{ height: 34, width: 34 }} />
+      </span>
     </div>
   )
 }

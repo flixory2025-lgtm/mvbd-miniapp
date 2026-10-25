@@ -27,60 +27,29 @@ function openPage(page: SidePageId) {
 
 /* =========================================================
    MODEX X MARK
-   Apnar dewa X image er shape ta mask hishebe use kore green gradient
-   dewa hoy. Image CORS e load na hole same shape er SVG fallback dekhabe.
+   Notun X: ekta bold diagonal solid, onno diagonal majhkhane kata (notch),
+   flat cut end, green gradient. Modex page er logo r side menu — duto jaygay-i ekoi X.
+   (MODEX_X_URL export ta rakha hoyeche jeno onno file import korle na bhange)
 ========================================================= */
 export const MODEX_X_URL = "https://i.postimg.cc/YqKw8FTB/24592-removebg-preview.png"
-const GREEN_GRAD = "linear-gradient(135deg, #bbf7d0 0%, #22c55e 50%, #059669 100%)"
 
 export function ModexXMark({ className, style }: { className?: string; style?: CSSProperties }) {
   const id = useId().replace(/:/g, "")
-  const [ok, setOk] = useState(false)
-
-  useEffect(() => {
-    let alive = true
-    const im = new Image()
-    im.crossOrigin = "anonymous"
-    im.onload = () => alive && setOk(true)
-    im.onerror = () => alive && setOk(false)
-    im.src = MODEX_X_URL
-    return () => {
-      alive = false
-    }
-  }, [])
-
-  if (ok) {
-    return (
-      <span
-        aria-hidden="true"
-        className={className}
-        style={{
-          display: "inline-block",
-          backgroundImage: GREEN_GRAD,
-          WebkitMaskImage: `url(${MODEX_X_URL})`,
-          maskImage: `url(${MODEX_X_URL})`,
-          WebkitMaskRepeat: "no-repeat",
-          maskRepeat: "no-repeat",
-          WebkitMaskSize: "contain",
-          maskSize: "contain",
-          WebkitMaskPosition: "center",
-          maskPosition: "center",
-          ...style,
-        }}
-      />
-    )
-  }
-
   return (
     <svg viewBox="0 0 24 24" className={className} style={style} aria-hidden="true">
       <defs>
-        <linearGradient id={id} x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stopColor="#bbf7d0" />
+        <linearGradient id={`${id}g`} gradientUnits="userSpaceOnUse" x1="2" y1="2" x2="22" y2="22">
+          <stop offset="0" stopColor="#86efac" />
           <stop offset="0.5" stopColor="#22c55e" />
           <stop offset="1" stopColor="#059669" />
         </linearGradient>
+        <mask id={`${id}m`} maskUnits="userSpaceOnUse" x="0" y="0" width="24" height="24">
+          <rect width="24" height="24" fill="#fff" />
+          <polygon points="2,2 8.6,2 22,22 15.4,22" fill="#000" stroke="#000" strokeWidth="2.6" />
+        </mask>
       </defs>
-      <path d="M4 4 L10.2 4 L12 8.2 L13.8 4 L20 4 L14.6 12 L20 20 L13.8 20 L12 15.8 L10.2 20 L4 20 L9.4 12 Z" fill={`url(#${id})`} />
+      <polygon points="2,2 8.6,2 22,22 15.4,22" fill={`url(#${id}g)`} />
+      <polygon points="15.4,2 22,2 8.6,22 2,22" fill={`url(#${id}g)`} mask={`url(#${id}m)`} />
     </svg>
   )
 }
@@ -167,7 +136,7 @@ export default function SideNavigation({ current }: { current?: SidePageId }) {
       chev: "group-hover:text-cyan-300",
       tile: (
         <div className="sn-tile bg-gradient-to-br from-emerald-400/90 to-cyan-500/90 group-hover:rotate-45">
-          <SettingsIcon className="h-6 w-6 text-white" />
+          <SettingsIcon className="h-[18px] w-[18px] text-white" />
         </div>
       ),
     },
@@ -179,7 +148,7 @@ export default function SideNavigation({ current }: { current?: SidePageId }) {
       chev: "group-hover:text-purple-300",
       tile: (
         <div className="sn-tile bg-gradient-to-br from-purple-400/90 to-pink-500/90">
-          <Info className="h-6 w-6 text-white" />
+          <Info className="h-[18px] w-[18px] text-white" />
         </div>
       ),
     },
@@ -216,14 +185,15 @@ export default function SideNavigation({ current }: { current?: SidePageId }) {
           border: 1px solid rgba(255,255,255,.18);
           backdrop-filter: blur(18px) saturate(170%);
           -webkit-backdrop-filter: blur(18px) saturate(170%);
-          box-shadow: inset 0 1px 0 rgba(255,255,255,.35), inset 0 -1px 0 rgba(255,255,255,.04), 0 10px 26px rgba(0,0,0,.22);
+          box-shadow: inset 0 1px 0 rgba(255,255,255,.35), inset 0 -1px 0 rgba(255,255,255,.04), 0 8px 20px rgba(0,0,0,.22);
         }
         .sn-item:hover { background: linear-gradient(135deg, rgba(255,255,255,.24), rgba(255,255,255,.08) 55%, rgba(255,255,255,.14)); }
         .sn-item:active { transform: scale(.97); }
+        /* choto tile: 56px → 40px */
         .sn-tile {
-          display: flex; height: 56px; width: 56px; flex-shrink: 0; align-items: center; justify-content: center;
-          border-radius: 16px; transition: transform .5s ease;
-          box-shadow: inset 0 1px 0 rgba(255,255,255,.45), 0 8px 18px rgba(0,0,0,.3);
+          display: flex; height: 40px; width: 40px; flex-shrink: 0; align-items: center; justify-content: center;
+          border-radius: 12px; transition: transform .5s ease;
+          box-shadow: inset 0 1px 0 rgba(255,255,255,.45), 0 6px 14px rgba(0,0,0,.3);
         }
         .group:hover .sn-tile { transform: scale(1.06); }
         .group:hover .sn-tile.group-hover\\:rotate-45 { transform: rotate(45deg) scale(1.06); }
@@ -289,7 +259,7 @@ export default function SideNavigation({ current }: { current?: SidePageId }) {
           </button>
         </div>
 
-        <nav className="relative flex-1 space-y-3 overflow-y-auto px-4 py-5">
+        <nav className="relative flex-1 space-y-2 overflow-y-auto px-4 py-5">
           {items.map((it, i) => {
             const a = anim(120 + i * 80)
             const here = current === it.id
@@ -299,20 +269,20 @@ export default function SideNavigation({ current }: { current?: SidePageId }) {
                 type="button"
                 onClick={() => (here ? setOpen(false) : go(it.id))}
                 style={a.style}
-                className={`sn-item group flex w-full items-center gap-4 rounded-2xl p-3 text-left transition-all duration-500 ease-out ${
+                className={`sn-item group flex w-full items-center gap-3 rounded-xl px-2.5 py-2 text-left transition-all duration-500 ease-out ${
                   here ? "border-emerald-300/60" : it.hover
                 } ${a.cls}`}
               >
                 {it.tile}
                 <div className="min-w-0 flex-1">
-                  <p className="font-semibold text-white">{it.title}</p>
-                  <p className={`text-xs ${here ? "text-emerald-300" : "text-slate-300/80"}`}>
+                  <p className="text-sm font-semibold leading-tight text-white">{it.title}</p>
+                  <p className={`mt-0.5 text-[11px] leading-tight ${here ? "text-emerald-300" : "text-slate-300/80"}`}>
                     {here ? "আপনি এখন এই পেজে আছেন" : it.sub}
                   </p>
                 </div>
                 {!here && (
                   <ChevronRight
-                    className={`h-4 w-4 text-slate-400 transition-all group-hover:translate-x-1 ${it.chev}`}
+                    className={`h-3.5 w-3.5 text-slate-400 transition-all group-hover:translate-x-1 ${it.chev}`}
                   />
                 )}
               </button>
@@ -332,9 +302,7 @@ export default function SideNavigation({ current }: { current?: SidePageId }) {
 function ModexTile() {
   return (
     <div className="sn-tile border border-white/15 bg-black/35">
-      <span className="inline-flex items-center font-extrabold leading-none tracking-tight" style={{ fontSize: 15 }}>
-        <ModexXMark style={{ height: 34, width: 34 }} />
-      </span>
+      <ModexXMark style={{ height: 24, width: 24 }} />
     </div>
   )
 }

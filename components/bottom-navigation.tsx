@@ -251,11 +251,17 @@ export default function BottomNavigation({
       className="hidden lg:flex fixed top-0 left-0 bottom-0 z-[100] w-[220px] flex-col gap-6 bg-[#0b0b0f] border-r border-white/10 px-3 pt-5 pb-4"
       aria-label="Sidebar navigation"
     >
-      <img
-        src="https://i.postimg.cc/0yqFXMFW/photo-2025-12-11-09-45-29-removebg-preview.png"
-        alt="MVBD Logo"
-        className="h-10 w-auto object-contain self-start px-2"
-      />
+      <div className="flex items-center gap-2 px-2" aria-label="MoviesVerseBD">
+        <img
+          src="https://i.postimg.cc/0yqFXMFW/photo-2025-12-11-09-45-29-removebg-preview.png"
+          alt="MVBD Logo"
+          className="h-10 w-auto object-contain"
+        />
+        <span className="whitespace-nowrap text-lg font-bold tracking-tight">
+          <span className="text-white">MoviesVerse</span>
+          <span className="bg-gradient-to-r from-emerald-400 via-green-400 to-lime-300 bg-clip-text text-transparent">BD</span>
+        </span>
+      </div>
 
       <div className="flex flex-col gap-1">
         {tabs.map((tab) => {

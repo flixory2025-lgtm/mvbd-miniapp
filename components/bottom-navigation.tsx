@@ -10,7 +10,10 @@ import {
   Star,
   User,
   BookOpen, // ← নতুন MeBook পেজের আইকন
+  Settings,
+  Info,
 } from "lucide-react"
+import { openSidePage, type SidePageId, ModexXMark } from "@/components/side-navigation"
 
 interface BottomNavigationProps {
   activeTab: string
@@ -297,6 +300,33 @@ export default function BottomNavigation({
             </button>
           )
         })}
+      </div>
+
+      <div className="mt-2 border-t border-white/10 pt-3">
+        <p className="px-3 pb-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+          More
+        </p>
+        {(
+          [
+            { id: "modex" as SidePageId, label: "Modex", icon: "modex" },
+            { id: "settings" as SidePageId, label: "Settings", icon: Settings },
+            { id: "about" as SidePageId, label: "About Us", icon: Info },
+          ] as const
+        ).map((page) => (
+          <button
+            key={page.id}
+            type="button"
+            onClick={() => openSidePage(page.id)}
+            className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-400 transition hover:bg-white/5 hover:text-white"
+          >
+            {page.icon === "modex" ? (
+              <ModexXMark className="h-5 w-5" />
+            ) : (
+              React.createElement(page.icon, { size: 20, strokeWidth: 2.1 })
+            )}
+            <span>{page.label}</span>
+          </button>
+        ))}
       </div>
     </aside>
 

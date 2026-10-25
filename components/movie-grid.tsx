@@ -1,7 +1,7 @@
 "use client"
 
 import type { movies as allMovies } from "@/lib/movie-data"
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { getMovieUploadTime, getTimeAgo, setMovieUploadTime } from "@/lib/firebase"
 
 interface MovieGridProps {
@@ -31,34 +31,50 @@ export default function MovieGrid({
   const [uploadDates, setUploadDates] = useState<Record<number, string>>({})
 
   useEffect(() => {
+    let cancelled = false
+
     const fetchUploadTimes = async () => {
-      const times: Record<number, string> = {}
+      const results = await Promise.all(
+        movies.map(async (movie) => {
+          let uploadTime = await getMovieUploadTime(movie.id)
+          if (!uploadTime) {
+            await setMovieUploadTime(movie.id)
+            uploadTime = new Date().toISOString()
+          }
+          return [movie.id, uploadTime] as const
+        }),
+      )
+
+      if (cancelled) return
+
       const dates: Record<number, string> = {}
-      for (const movie of movies) {
-        let uploadTime = await getMovieUploadTime(movie.id)
-        if (!uploadTime) {
-          await setMovieUploadTime(movie.id)
-          uploadTime = new Date().toISOString()
-        }
-        dates[movie.id] = uploadTime
-        times[movie.id] = getTimeAgo(uploadTime)
+      const times: Record<number, string> = {}
+      for (const [movieId, uploadTime] of results) {
+        dates[movieId] = uploadTime
+        times[movieId] = getTimeAgo(uploadTime)
       }
       setUploadDates(dates)
       setUploadTimes(times)
     }
-    fetchUploadTimes()
+
+    void fetchUploadTimes()
+    return () => {
+      cancelled = true
+    }
   }, [movies])
 
   useEffect(() => {
     const interval = setInterval(() => {
       setUploadTimes((prev) => {
+        let changed = false
         const updated: Record<number, string> = {}
         for (const movieId in uploadDates) {
           updated[movieId] = getTimeAgo(uploadDates[movieId])
+          changed ||= updated[movieId] !== prev[movieId]
         }
-        return updated
+        return changed ? updated : prev
       })
-    }, 1000)
+    }, 60_000)
 
     return () => clearInterval(interval)
   }, [uploadDates])
@@ -75,7 +91,7 @@ export default function MovieGrid({
     return Array.from({ length: endPage - startPage + 1 }, (_, i) => startPage + i)
   }
 
-  const visiblePages = getVisiblePages()
+  const visiblePages = useMemo(getVisiblePages, [currentPage, totalPages])
 
   return (
     <section className="px-4 py-4">
@@ -96,6 +112,9 @@ export default function MovieGrid({
                       src={movie.poster || "/placeholder.svg"}
                       alt={movie.title}
                       className={`w-full h-full object-cover ${shouldBlur ? "blur-lg" : ""}`}
+                      loading="lazy"
+                      decoding="async"
+                      fetchPriority="low"
                     />
 
                     {isAdult && (

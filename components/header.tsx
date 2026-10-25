@@ -516,6 +516,19 @@ export default function Header({
           />
         </div>
 
+        {/* Desktop brand — mobile layout remains unchanged */}
+        <div className="hidden lg:flex flex-shrink-0 items-center gap-2 pr-1" aria-label="MoviesVerseBD">
+          <img
+            src="https://i.postimg.cc/0yqFXMFW/photo-2025-12-11-09-45-29-removebg-preview.png"
+            alt="MVBD Logo"
+            className="h-10 w-auto object-contain"
+          />
+          <span className="whitespace-nowrap text-lg font-bold tracking-tight">
+            <span className="text-white">MoviesVerse</span>
+            <span className="bg-gradient-to-r from-emerald-400 via-green-400 to-lime-300 bg-clip-text text-transparent">BD</span>
+          </span>
+        </div>
+
         {/* Search — click korle dots button sore giye ekdum boro hoye jay */}
         <div ref={wrapperRef} className="flex-1 min-w-0 relative">
           <div

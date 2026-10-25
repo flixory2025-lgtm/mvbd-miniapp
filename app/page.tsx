@@ -48,6 +48,10 @@ type TabId = (typeof tabs)[number]
 
 type SidePage = "settings" | "about" | "modex"
 
+type ProfileSub = "main" | "contact" | "about" | "settings"
+
+type MovieItem = (typeof movies)[0]
+
 /* =========================================================
    WELCOME POPUP LOCAL STORAGE KEY
 ========================================================= */
@@ -170,7 +174,7 @@ export default function Page() {
   const [selectedType, setSelectedType] = useState<string>("All")
 
   const [selectedMovie, setSelectedMovie] = useState<
-    (typeof movies)[0] | null
+    MovieItem | null
   >(null)
 
   const [currentPage, setCurrentPage] = useState(1)
@@ -187,7 +191,7 @@ export default function Page() {
   const [showAdultContent, setShowAdultContent] =
     useState(false)
 
-  const [tabHistory, setTabHistory] =
+  const [, setTabHistory] =
     useState<TabId[]>(["home"])
 
   const [showDetailPage, setShowDetailPage] =
@@ -200,12 +204,79 @@ export default function Page() {
     useState(false)
 
   const [profileSubPage, setProfileSubPage] =
-    useState<
-      "main" | "contact" | "about" | "settings"
-    >("main")
+    useState<ProfileSub>("main")
 
   /* =========================================================
-     SIDE NAVIGATION PAGES (Settings / About Us)
+     BACK BUTTON — HISTORY MODEL
+     ---------------------------------------------------------
+     Niyom: jei jinish "notun page" er moto khole (movie detail, anime detail,
+     profile sub page, side page, notun tab) shetai browser history te 1 ta entry
+     push kore. Phone er back button = popstate = shobar upore ja khola ache seta bondho.
+     Home e pouchhe gele ar kono extra entry thake na, tai back dile site/app theke ber.
+
+     Tai kono page UI er back icon theke bondho korte hole shorashori state change
+     na kore window.history.back() dite hobe — jeno history ar screen shobshomoy mile thake.
+  ========================================================= */
+
+  // Latest state gulo ref e rakha — popstate handler (jeta ekbar-i bind hoy) ei ref theke porhe
+  const movieOpenRef = useRef(false)
+  const animeOpenRef = useRef(false)
+  const profileSubRef = useRef<ProfileSub>("main")
+  const tabHistoryRef = useRef<TabId[]>(["home"])
+  // Detail page er vitore related movie/anime e gele ager gulo ei trail e thake
+  const movieTrailRef = useRef<MovieItem[]>([])
+  const animeTrailRef = useRef<Anime[]>([])
+  const unwindingRef = useRef(false)
+  const handleTabChangeRef = useRef<
+    (t: string, addHistory?: boolean, skipUnwind?: boolean) => void
+  >(() => {})
+
+  movieOpenRef.current = showDetailPage && !!selectedMovie
+  animeOpenRef.current = showAnimeDetailPage && !!selectedAnime
+  profileSubRef.current = profileSubPage
+
+  const setTabHistoryBoth = (next: TabId[]) => {
+    tabHistoryRef.current = next
+    setTabHistory(next)
+  }
+
+  // Detail / sub page er jonno koyta extra history entry ache
+  const layerDepth = () => {
+    let d = 0
+    if (movieOpenRef.current) d += 1 + movieTrailRef.current.length
+    if (animeOpenRef.current) d += 1 + animeTrailRef.current.length
+    if (profileSubRef.current !== "main") d += 1
+    return d
+  }
+
+  // Shob extra layer er history entry unwind kore, state clear kore, tarpor fn() chalay
+  const unwindLayers = (fn: () => void) => {
+    const depth = layerDepth()
+
+    const finish = () => {
+      unwindingRef.current = false
+      movieTrailRef.current = []
+      animeTrailRef.current = []
+      setShowDetailPage(false)
+      setSelectedMovie(null)
+      setShowAnimeDetailPage(false)
+      setSelectedAnime(null)
+      setProfileSubPage("main")
+      fn()
+    }
+
+    if (depth <= 0) {
+      finish()
+      return
+    }
+
+    unwindingRef.current = true
+    window.history.go(-depth)
+    window.setTimeout(finish, 150)
+  }
+
+  /* =========================================================
+     SIDE NAVIGATION PAGES (Settings / About Us / Modex)
      Bottom navigation visible thake, back icon + mobile back button kaj kore
   ========================================================= */
 
@@ -236,6 +307,32 @@ export default function Page() {
   // Back icon → browser history back (popstate handler page ta bondho kore)
   const closeSidePage = () => {
     if (sidePageRef.current) window.history.back()
+  }
+
+  /* =========================================================
+     PROFILE SUB PAGE (Contact / About / Settings)
+     Khulle history entry push hoy, back icon + phone back dutoi ekta step pichhone ney
+  ========================================================= */
+
+  const openProfileSub = (page: ProfileSub) => {
+    if (page === "main") {
+      if (profileSubRef.current !== "main") window.history.back()
+      return
+    }
+    if (profileSubRef.current === page) return
+
+    // Ekta sub page theke onno sub page e gele entry replace hoy, notun entry na
+    if (profileSubRef.current !== "main") {
+      setProfileSubPage(page)
+      return
+    }
+
+    window.history.pushState(null, "", "")
+    setProfileSubPage(page)
+  }
+
+  const closeProfileSub = () => {
+    if (profileSubRef.current !== "main") window.history.back()
   }
 
   /* =========================================================
@@ -326,6 +423,8 @@ export default function Page() {
 
       const target = movies.find((m) => m.id === movieId)
       if (target) {
+        // History entry push — back dile movie bondho hoye home e jabe
+        window.history.pushState(null, "", "")
         setSelectedMovie(target)
         setShowDetailPage(true)
       }
@@ -388,14 +487,14 @@ export default function Page() {
 
   /* =========================================================
      OPEN SUBSCRIPTIONS EVENT
+     Detail page khola thakle age history unwind, tarpor Exclusive tab e
   ========================================================= */
 
   useEffect(() => {
     const openSubscriptions = () => {
-      setSelectedMovie(null)
-      setShowDetailPage(false)
-      setActiveTab("exclusive")
-      setProfileSubPage("main")
+      unwindLayers(() => {
+        handleTabChangeRef.current("exclusive")
+      })
     }
 
     window.addEventListener(
@@ -449,46 +548,77 @@ export default function Page() {
   }, [sidePage])
 
   /* =========================================================
-     BROWSER BACK BUTTON
+     BROWSER / PHONE BACK BUTTON
+     Priority (shobar upor theke): anime detail → movie detail → side page (Modex ager
+     vitorer back) → profile sub page → ager tab → (kichu na thakle) site theke ber
   ========================================================= */
 
   useEffect(() => {
     const handlePopState = () => {
-      // Modex nijei vitorer back handle kore (app detail → Modex home)
+      // Layer unwind cholche (history.go(-n)) — ei popstate ta amader nijeder, ignore
+      if (unwindingRef.current) {
+        unwindingRef.current = false
+        return
+      }
+
+      // 1) Anime detail
+      if (animeOpenRef.current) {
+        const prev = animeTrailRef.current.pop()
+        if (prev) {
+          setSelectedAnime(prev) // related anime theke ager anime e
+        } else {
+          setShowAnimeDetailPage(false)
+          setSelectedAnime(null)
+        }
+        return
+      }
+
+      // 2) Movie detail
+      if (movieOpenRef.current) {
+        const prev = movieTrailRef.current.pop()
+        if (prev) {
+          setSelectedMovie(prev) // related movie theke ager movie te
+        } else {
+          setShowDetailPage(false)
+          setSelectedMovie(null)
+        }
+        return
+      }
+
+      // 3) Modex nijei vitorer back handle kore (app detail → Modex home)
       if (sidePageRef.current === "modex") {
         const handled = (window as any).__modexBack?.()
         if (handled) return
       }
 
-      // Settings / About Us / Modex khola thakle back dile shudhu oita bondho hobe
+      // 4) Settings / About Us / Modex khola thakle back dile shudhu oita bondho hobe
       if (sidePageRef.current) {
         updateSidePage(null)
         return
       }
 
-      setTabHistory((history) => {
-        if (history.length <= 1) {
-          return history
+      // 5) Profile sub page (Contact / About / Settings)
+      if (profileSubRef.current !== "main") {
+        setProfileSubPage("main")
+        return
+      }
+
+      // 6) Ager tab e fire jao. Home e achi mane ar entry nei — browser nijei site/app theke ber kore dey
+      const history = tabHistoryRef.current
+      if (history.length <= 1) return
+
+      const newHistory = history.slice(0, -1)
+      const previousTab = newHistory[newHistory.length - 1]
+
+      setTabHistoryBoth(newHistory)
+
+      if (previousTab) {
+        setActiveTab(previousTab)
+
+        if (previousTab !== "profile") {
+          setProfileSubPage("main")
         }
-
-        const newHistory =
-          history.slice(0, -1)
-
-        const previousTab =
-          newHistory[newHistory.length - 1]
-
-        if (previousTab) {
-          setActiveTab(previousTab)
-
-          if (
-            previousTab !== "profile"
-          ) {
-            setProfileSubPage("main")
-          }
-        }
-
-        return newHistory
-      })
+      }
     }
 
     window.addEventListener(
@@ -697,16 +827,26 @@ export default function Page() {
 
   /* =========================================================
      HOME MOVIE OPEN
+     Detail page er vitor theke related movie click korle ager movie trail e jomay,
+     jeno back dile ager movie te fire jay.
   ========================================================= */
 
   const handleHomeMovieClick = (
-    movie: (typeof movies)[0]
+    movie: MovieItem
   ) => {
+    if (movieOpenRef.current && selectedMovie) {
+      movieTrailRef.current.push(selectedMovie)
+      window.history.pushState(null, "", "")
+      setSelectedMovie(movie)
+      return
+    }
+
     homeScrollPositionRef.current =
       window.scrollY
 
     restoreHomeScrollRef.current = true
 
+    window.history.pushState(null, "", "")
     setSelectedMovie(movie)
     setShowDetailPage(true)
   }
@@ -718,11 +858,19 @@ export default function Page() {
   const handleAnimeClick = (
     anime: Anime
   ) => {
+    if (animeOpenRef.current && selectedAnime) {
+      animeTrailRef.current.push(selectedAnime)
+      window.history.pushState(null, "", "")
+      setSelectedAnime(anime)
+      return
+    }
+
     animeScrollPositionRef.current =
       window.scrollY
 
     restoreAnimeScrollRef.current = true
 
+    window.history.pushState(null, "", "")
     setSelectedAnime(anime)
     setShowAnimeDetailPage(true)
   }
@@ -753,6 +901,16 @@ export default function Page() {
       return
     }
 
+    // Profile sub page (Contact/About/Settings) khola thakle age oita bondho (history unwind)
+    if (
+      !skipUnwind &&
+      !hadSidePage &&
+      profileSubRef.current !== "main"
+    ) {
+      unwindLayers(() => handleTabChange(newTab, addHistory, true))
+      return
+    }
+
     if (targetTab === activeTab) {
       // Settings / About khola thakle same tab e click korle ota bondho hobe
       if (hadSidePage) window.history.back()
@@ -767,7 +925,7 @@ export default function Page() {
     setActiveTab(targetTab)
 
     if (addHistory) {
-      setTabHistory((previous) => [...previous, targetTab])
+      setTabHistoryBoth([...tabHistoryRef.current, targetTab])
 
       // Side page er history entry ta replace hobe, notun entry na
       if (hadSidePage) {
@@ -781,6 +939,9 @@ export default function Page() {
       setProfileSubPage("main")
     }
   }
+
+  // Event listener gulo (ekbar bind hoy) jeno shobshomoy latest handleTabChange pay
+  handleTabChangeRef.current = handleTabChange
 
   /* =========================================================
      HOME PAGE
@@ -976,6 +1137,8 @@ export default function Page() {
 
   /* =========================================================
      PROFILE PAGE
+     Contact / About / Settings khulle history entry push hoy (openProfileSub),
+     back icon e window.history.back() (closeProfileSub).
   ========================================================= */
 
   const renderProfilePage = () => (
@@ -984,8 +1147,8 @@ export default function Page() {
         "main" && (
         <ProfilePage
           onNavigate={(page) =>
-            setProfileSubPage(
-              page
+            openProfileSub(
+              page as ProfileSub
             )
           }
         />
@@ -994,33 +1157,21 @@ export default function Page() {
       {profileSubPage ===
         "contact" && (
         <ContactUsPage
-          onBack={() =>
-            setProfileSubPage(
-              "main"
-            )
-          }
+          onBack={closeProfileSub}
         />
       )}
 
       {profileSubPage ===
         "about" && (
         <AboutUsPage
-          onBack={() =>
-            setProfileSubPage(
-              "main"
-            )
-          }
+          onBack={closeProfileSub}
         />
       )}
 
       {profileSubPage ===
         "settings" && (
         <SettingsPage
-          onBack={() =>
-            setProfileSubPage(
-              "main"
-            )
-          }
+          onBack={closeProfileSub}
         />
       )}
 
@@ -1029,7 +1180,7 @@ export default function Page() {
   )
 
   /* =========================================================
-     SIDE PAGES (Settings / About Us)
+     SIDE PAGES (Settings / About Us / Modex)
   ========================================================= */
 
   const renderSidePage = () => (
@@ -1070,6 +1221,7 @@ export default function Page() {
 
   /* =========================================================
      ANIME DETAIL PAGE
+     onBack = history.back() — popstate handler page ta bondho kore
   ========================================================= */
 
   if (
@@ -1082,13 +1234,10 @@ export default function Page() {
           selectedAnime as any
         }
         onBack={() => {
-          setShowAnimeDetailPage(
-            false
-          )
-          setSelectedAnime(null)
+          window.history.back()
         }}
         onMovieClick={(anime) => {
-          setSelectedAnime(
+          handleAnimeClick(
             anime as Anime
           )
         }}
@@ -1102,6 +1251,7 @@ export default function Page() {
 
   /* =========================================================
      MOVIE DETAIL PAGE
+     onBack = history.back() — popstate handler page ta bondho kore
   ========================================================= */
 
   if (
@@ -1112,10 +1262,7 @@ export default function Page() {
       <MovieDetailPage
         movie={selectedMovie}
         onBack={() => {
-          setShowDetailPage(
-            false
-          )
-          setSelectedMovie(null)
+          window.history.back()
         }}
         onMovieClick={
           handleHomeMovieClick
@@ -1237,4 +1384,4 @@ export default function Page() {
       )}
     </div>
   )
-              }
+      }

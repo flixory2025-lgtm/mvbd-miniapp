@@ -8,6 +8,7 @@ import {
   Settings as SettingsIcon,
   Info,
   ChevronRight,
+  ExternalLink,
 } from "lucide-react"
 
 /* Global events — header, floating button ba onno jekono jayga theke menu khola jay */
@@ -18,7 +19,7 @@ export function openSideMenu() {
   window.dispatchEvent(new Event(OPEN_MENU_EVENT))
 }
 
-function openPage(page: "settings" | "about" | "modex") {
+function openPage(page: "settings" | "about") {
   window.dispatchEvent(new CustomEvent(OPEN_PAGE_EVENT, { detail: page }))
 }
 
@@ -70,7 +71,7 @@ export default function SideNavigation({ current }: { current?: "modex" }) {
     }
   }, [open])
 
-  const go = (page: "settings" | "about" | "modex") => {
+  const go = (page: "settings" | "about") => {
     setOpen(false)
     openPage(page)
   }
@@ -129,7 +130,7 @@ export default function SideNavigation({ current }: { current?: "modex" }) {
         </div>
 
         <nav className="relative flex-1 space-y-3 overflow-y-auto px-4 py-5">
-          {/* 1. Modex — ekhon site er bhitorei page hishebe khole (new tab na) */}
+          {/* 1. Modex */}
           {current === "modex" ? (
             <button
               type="button"
@@ -144,19 +145,21 @@ export default function SideNavigation({ current }: { current?: "modex" }) {
               </div>
             </button>
           ) : (
-            <button
-              type="button"
-              onClick={() => go("modex")}
+            <a
+              href="/?page=modex"
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => setOpen(false)}
               style={anim(120).style}
               className={`${itemBase} border-white/10 hover:border-cyan-400/40 ${anim(120).cls}`}
             >
               <ModexTile />
               <div className="min-w-0 flex-1">
                 <p className="font-semibold text-white">Modex</p>
-                <p className="text-xs text-slate-400">প্রিমিয়াম অ্যাপ স্টোর</p>
+                <p className="text-xs text-slate-400">নতুন ট্যাবে খুলবে</p>
               </div>
-              <ChevronRight className="h-4 w-4 text-slate-500 transition-all group-hover:translate-x-1 group-hover:text-cyan-300" />
-            </button>
+              <ExternalLink className="h-4 w-4 text-slate-500 transition-colors group-hover:text-cyan-300" />
+            </a>
           )}
 
           {/* 2. Settings */}
@@ -203,33 +206,14 @@ export default function SideNavigation({ current }: { current?: "modex" }) {
   )
 }
 
-/* Modex X mark (Terabox-style, green gradient) */
-function ModexMark({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" className={className} aria-hidden="true">
-      <defs>
-        <linearGradient id="mxSideGrad" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stopColor="#86efac" />
-          <stop offset="0.5" stopColor="#22c55e" />
-          <stop offset="1" stopColor="#059669" />
-        </linearGradient>
-      </defs>
-      <path d="M4.2 4.2 L19.8 19.8" stroke="url(#mxSideGrad)" strokeWidth="5.4" strokeLinecap="round" fill="none" />
-      <path
-        d="M19.8 4.2 L13.9 10.1 M10.1 13.9 L4.2 19.8"
-        stroke="url(#mxSideGrad)"
-        strokeWidth="4.6"
-        strokeLinecap="round"
-        fill="none"
-      />
-    </svg>
-  )
-}
-
 function ModexTile() {
   return (
     <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center overflow-hidden rounded-xl border border-white/10 bg-black/40 transition-transform duration-300 group-hover:scale-105">
-      <ModexMark className="h-8 w-8" />
+      <img
+        src="https://i.postimg.cc/YqKw8FTB/24592-removebg-preview.png"
+        alt="Modex"
+        className="h-11 w-11 object-contain"
+      />
     </div>
   )
 }

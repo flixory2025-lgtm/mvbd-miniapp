@@ -46,6 +46,8 @@ const tabs = [
 
 type TabId = (typeof tabs)[number]
 
+type SidePage = "settings" | "about" | "modex"
+
 /* =========================================================
    WELCOME POPUP LOCAL STORAGE KEY
 ========================================================= */
@@ -108,19 +110,19 @@ export default function Page() {
   const [landingReady, setLandingReady] = useState(false)
 
   /* =========================================================
-     MODEX PAGE (header menu theke new tab e /?page=modex)
-  ========================================================= */
-
-  const [showModex, setShowModex] = useState(false)
-
-  /* =========================================================
      LANDING PAGE READY CHECK
   ========================================================= */
 
   useEffect(() => {
     try {
+      // /?page=modex link e (jemon admin panel theke) direct Modex khulbe — native side page hishebe
       const params = new URLSearchParams(window.location.search)
-      if (params.get("page") === "modex") setShowModex(true)
+      if (params.get("page") === "modex") {
+        setShowLanding(false)
+        window.history.replaceState(null, "", "/")
+        window.history.pushState(null, "", "")
+        updateSidePage("modex")
+      }
     } catch {}
     setLandingReady(true)
   }, [])
@@ -207,14 +209,28 @@ export default function Page() {
      Bottom navigation visible thake, back icon + mobile back button kaj kore
   ========================================================= */
 
-  const [sidePage, setSidePage] = useState<"settings" | "about" | null>(null)
-  const sidePageRef = useRef<"settings" | "about" | null>(null)
+  const [sidePage, setSidePage] = useState<SidePage | null>(null)
+  const sidePageRef = useRef<SidePage | null>(null)
   const sideScrollRef = useRef(0)
   const restoreSideScrollRef = useRef(false)
 
-  const updateSidePage = (page: "settings" | "about" | null) => {
+  const updateSidePage = (page: SidePage | null) => {
     sidePageRef.current = page
     setSidePage(page)
+  }
+
+  // Modex er vitore deep page (app detail etc.) khola thakle, onno jayga e jawar age
+  // Modex er extra history entry gulo unwind kore tarpor kaj kore
+  const withModexUnwind = (fn: () => void) => {
+    const w = window as any
+    const depth = sidePageRef.current === "modex" ? Number(w.__modexDepth?.() ?? 0) : 0
+    if (depth <= 0) {
+      fn()
+      return
+    }
+    w.__modexUnwind?.()
+    window.history.go(-depth)
+    window.setTimeout(fn, 150)
   }
 
   // Back icon → browser history back (popstate handler page ta bondho kore)
@@ -402,31 +418,24 @@ export default function Page() {
   useEffect(() => {
     const onOpenPage = (e: Event) => {
       const page = (e as CustomEvent<string>).detail
-      if (page !== "settings" && page !== "about") return
-
-      // Modex tab theke elle main site e niye jao
-      const fromModex = showModex
-      if (fromModex) {
-        setShowModex(false)
-        setShowLanding(false)
-        window.history.replaceState(null, "", "/")
-      }
-
+      if (page !== "settings" && page !== "about" && page !== "modex") return
       if (sidePageRef.current === page) return
 
-      if (!sidePageRef.current) {
-        if (!fromModex) {
-          sideScrollRef.current = window.scrollY
-          restoreSideScrollRef.current = true
-        }
-        window.history.pushState(null, "", "")
+      // Ekta side page theke onno side page e (jemon Modex → Settings) — entry replace hoy
+      if (sidePageRef.current) {
+        withModexUnwind(() => updateSidePage(page))
+        return
       }
+
+      sideScrollRef.current = window.scrollY
+      restoreSideScrollRef.current = true
+      window.history.pushState(null, "", "")
       updateSidePage(page)
     }
 
     window.addEventListener("mvbd:open-page", onOpenPage)
     return () => window.removeEventListener("mvbd:open-page", onOpenPage)
-  }, [showModex])
+  }, [])
 
   useEffect(() => {
     if (sidePage) {
@@ -445,7 +454,13 @@ export default function Page() {
 
   useEffect(() => {
     const handlePopState = () => {
-      // Settings / About Us khola thakle back dile shudhu oita bondho hobe
+      // Modex nijei vitorer back handle kore (app detail → Modex home)
+      if (sidePageRef.current === "modex") {
+        const handled = (window as any).__modexBack?.()
+        if (handled) return
+      }
+
+      // Settings / About Us / Modex khola thakle back dile shudhu oita bondho hobe
       if (sidePageRef.current) {
         updateSidePage(null)
         return
@@ -718,7 +733,8 @@ export default function Page() {
 
   const handleTabChange = (
     newTab: string,
-    addHistory = true
+    addHistory = true,
+    skipUnwind = false
   ) => {
     if (!tabs.includes(newTab as TabId)) {
       return
@@ -726,6 +742,16 @@ export default function Page() {
 
     const targetTab = newTab as TabId
     const hadSidePage = sidePageRef.current !== null
+
+    // Modex er deep page theke bottom nav chaple age Modex er history unwind hobe
+    if (
+      !skipUnwind &&
+      sidePageRef.current === "modex" &&
+      Number((window as any).__modexDepth?.() ?? 0) > 0
+    ) {
+      withModexUnwind(() => handleTabChange(newTab, addHistory, true))
+      return
+    }
 
     if (targetTab === activeTab) {
       // Settings / About khola thakle same tab e click korle ota bondho hobe
@@ -1010,6 +1036,7 @@ export default function Page() {
     <div className="bg-black">
       {sidePage === "settings" && <SettingsPage onBack={closeSidePage} />}
       {sidePage === "about" && <AboutUsPage onBack={closeSidePage} />}
+      {sidePage === "modex" && <ModexPage />}
     </div>
   )
 
@@ -1039,33 +1066,6 @@ export default function Page() {
       default:
         return renderHomePage()
     }
-  }
-
-  /* =========================================================
-     MODEX PAGE
-  ========================================================= */
-
-  // Modex theke bottom nav e click korle main site er oi tab e jabe
-  const handleModexNavigate = (tab: string) => {
-    const target: TabId = tabs.includes(tab as TabId) ? (tab as TabId) : "home"
-
-    window.history.replaceState(null, "", "/")
-    setShowModex(false)
-    setShowLanding(false)
-    setActiveTab(target)
-
-    if (target === "home") {
-      setTabHistory(["home"])
-    } else {
-      setTabHistory(["home", target])
-      window.history.pushState(null, "", "")
-    }
-
-    if (target !== "profile") setProfileSubPage("main")
-  }
-
-  if (showModex) {
-    return <ModexPage onNavigate={handleModexNavigate} />
   }
 
   /* =========================================================
@@ -1199,7 +1199,7 @@ export default function Page() {
           >
             <BottomNavigation
               activeTab={
-                activeTab
+                sidePage === "modex" ? "modex" : activeTab
               }
               onTabChange={
                 handleTabChange
@@ -1225,16 +1225,16 @@ export default function Page() {
           SIDE NAVIGATION + FLOATING 3-DOTS (Header nei emon page e)
       ===================================================== */}
 
-      {!showLanding && <SideNavigation />}
+      {!showLanding && <SideNavigation current={sidePage ?? undefined} />}
       {!showLanding && !hideChrome && <FloatingMenuButton />}
 
       {/* =====================================================
           MVBD AI ASSISTANT
       ===================================================== */}
 
-      {!showLanding && activeTab === "home" && (
+      {!showLanding && !sidePage && activeTab === "home" && (
         <MvbdAiAssistant />
       )}
     </div>
   )
-          }
+              }

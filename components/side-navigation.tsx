@@ -21,7 +21,7 @@ export function openSideMenu() {
   window.dispatchEvent(new Event(OPEN_MENU_EVENT))
 }
 
-function openPage(page: SidePageId) {
+export function openSidePage(page: SidePageId) {
   window.dispatchEvent(new CustomEvent(OPEN_PAGE_EVENT, { detail: page }))
 }
 
@@ -104,7 +104,7 @@ export default function SideNavigation({ current }: { current?: SidePageId }) {
 
   const go = (page: SidePageId) => {
     setOpen(false)
-    openPage(page)
+    openSidePage(page)
   }
 
   const anim = (delay: number) => ({

@@ -1,10 +1,11 @@
 "use client"
 
-import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react"
+import { createContext, useCallback, useContext, useEffect, useId, useMemo, useRef, useState } from "react"
 import type { CSSProperties, ReactNode } from "react"
 import {
   ArrowLeft,
   Bookmark,
+  ChevronLeft,
   ChevronRight,
   LayoutGrid,
   Megaphone,
@@ -17,18 +18,42 @@ import {
   Wrench,
   X,
 } from "lucide-react"
-import { openSideMenu, ModexXMark } from "@/components/side-navigation"
+import { openSideMenu } from "@/components/side-navigation"
 import { db } from "@/lib/firebase"
 import { collection, doc, increment, onSnapshot, updateDoc } from "firebase/firestore"
 
 /* =========================================================
-   LOGO — "Mod" white + "e" green gradient + X (apnar dewa image er shape, green gradient)
+   LOGO — "Mod" white + "e" green gradient + notun X (green gradient)
+   X: ekta bold diagonal solid, onno diagonal majhkhane kata (notch), flat cut end.
    (admin panel e custom logo link dile oita dekhabe)
 ========================================================= */
 
+function ModexX({ size = "0.85em", className = "", style }: { size?: number | string; className?: string; style?: CSSProperties }) {
+  const uid = useId().replace(/:/g, "")
+  return (
+    <svg viewBox="0 0 24 24" width={size} height={size} className={className} style={style} aria-hidden="true">
+      <defs>
+        <linearGradient id={`${uid}g`} gradientUnits="userSpaceOnUse" x1="2" y1="2" x2="22" y2="22">
+          <stop offset="0" stopColor="#86efac" />
+          <stop offset=".5" stopColor="#22c55e" />
+          <stop offset="1" stopColor="#059669" />
+        </linearGradient>
+        <mask id={`${uid}m`} maskUnits="userSpaceOnUse" x="0" y="0" width="24" height="24">
+          <rect width="24" height="24" fill="#fff" />
+          <polygon points="2,2 8.6,2 22,22 15.4,22" fill="#000" stroke="#000" strokeWidth="2.6" />
+        </mask>
+      </defs>
+      <polygon points="2,2 8.6,2 22,22 15.4,22" fill={`url(#${uid}g)`} />
+      <polygon points="15.4,2 22,2 8.6,22 2,22" fill={`url(#${uid}g)`} mask={`url(#${uid}m)`} />
+    </svg>
+  )
+}
+
 function ModexLogo({ size = 28, logoUrl = "" }: { size?: number; logoUrl?: string }) {
   const [bad, setBad] = useState(false)
-  useEffect(() => setBad(false), [logoUrl])
+  useEffect(() => {
+    setBad(false)
+  }, [logoUrl])
 
   if (logoUrl && !bad) {
     return (
@@ -46,7 +71,7 @@ function ModexLogo({ size = 28, logoUrl = "" }: { size?: number; logoUrl?: strin
     <span className="inline-flex items-center font-extrabold leading-none tracking-tight" style={{ fontSize: size }}>
       <span className="text-white">Mod</span>
       <span className="bg-gradient-to-r from-emerald-200 via-green-400 to-emerald-600 bg-clip-text text-transparent">e</span>
-      <ModexXMark style={{ height: "0.85em", width: "0.85em", marginLeft: "0.04em" }} />
+      <ModexX size="0.82em" style={{ marginLeft: "0.05em", flexShrink: 0 }} />
     </span>
   )
 }
@@ -289,6 +314,19 @@ function useModexData() {
   return { apps, cfg, loading, error }
 }
 
+/* Mobile vs desktop — mobile e mobile er moto, desktop e desktop er moto */
+function useDesktop() {
+  const [d, setD] = useState(false)
+  useEffect(() => {
+    const m = window.matchMedia("(min-width: 1024px)")
+    const f = () => setD(m.matches)
+    f()
+    m.addEventListener("change", f)
+    return () => m.removeEventListener("change", f)
+  }, [])
+  return d
+}
+
 /* =========================================================
    CONTEXT (config + tracking shob component e pouchaye dey)
 ========================================================= */
@@ -345,13 +383,16 @@ function matchApps(apps: ModexApp[], query: string) {
    SMALL UI PARTS
 ========================================================= */
 
+/* iOS squircle-er kachakachi radius (22.4%) */
 function AppIcon({ app, size }: { app: ModexApp; size: number }) {
   const [bad, setBad] = useState(false)
-  useEffect(() => setBad(false), [app.iconUrl])
+  useEffect(() => {
+    setBad(false)
+  }, [app.iconUrl])
   return (
     <div
-      className="flex flex-shrink-0 items-center justify-center overflow-hidden font-extrabold text-white shadow-md ring-1 ring-white/10"
-      style={{ width: size, height: size, borderRadius: size * 0.22, background: fallbackBg(app.name) }}
+      className="flex flex-shrink-0 items-center justify-center overflow-hidden font-extrabold text-white shadow-lg ring-1 ring-white/15"
+      style={{ width: size, height: size, borderRadius: size * 0.2237, background: fallbackBg(app.name) }}
     >
       {app.iconUrl && !bad ? (
         <img
@@ -393,7 +434,7 @@ function IconBtn({
       type="button"
       onClick={onClick}
       aria-label={label}
-      className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full text-slate-100 transition hover:bg-white/10 active:scale-90 ${className}`}
+      className={`mx-circle flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full text-slate-100 transition hover:bg-white/15 active:scale-90 ${className}`}
     >
       {children}
     </button>
@@ -415,8 +456,8 @@ function InstallBtn({ app, big }: { app: ModexApp; big?: boolean }) {
       }}
       className={
         big
-          ? "mx-grad w-full rounded-full py-3 text-[15px] font-bold text-white shadow-lg transition active:scale-[.98] disabled:opacity-40"
-          : "mx-outline flex-shrink-0 rounded-full px-5 py-1.5 text-sm font-semibold transition active:scale-95 disabled:opacity-40"
+          ? "mx-grad w-full rounded-full py-3.5 text-[15px] font-bold text-white transition active:scale-[.97] disabled:opacity-40 lg:w-auto lg:px-14"
+          : "mx-outline flex-shrink-0 rounded-full px-5 py-1.5 text-sm font-bold transition active:scale-90 disabled:opacity-40"
       }
     >
       {ok ? cfg.texts.getLabel : "Soon"}
@@ -431,14 +472,14 @@ function AppRow({ app, onOpen, rank }: { app: ModexApp; onOpen: () => void; rank
       tabIndex={0}
       onClick={onOpen}
       onKeyDown={(e) => e.key === "Enter" && onOpen()}
-      className="flex cursor-pointer items-center gap-3 rounded-2xl px-1 py-2.5 transition-colors hover:bg-white/5 active:bg-white/10"
+      className="flex cursor-pointer items-center gap-3 rounded-3xl px-2 py-2.5 transition duration-200 hover:bg-white/[0.06] active:scale-[.985] active:bg-white/10"
     >
       {rank !== undefined && (
         <span className="w-6 flex-shrink-0 text-center text-sm font-semibold text-slate-400">{rank}</span>
       )}
-      <AppIcon app={app} size={58} />
+      <AppIcon app={app} size={60} />
       <div className="min-w-0 flex-1">
-        <p className="truncate text-[15px] font-medium text-white">{app.name}</p>
+        <p className="truncate text-[15px] font-semibold text-white">{app.name}</p>
         <p className="truncate text-xs text-slate-400">
           {app.category}
           {app.size ? ` • ${app.size}` : ""}
@@ -456,16 +497,16 @@ function AppRow({ app, onOpen, rank }: { app: ModexApp; onOpen: () => void; rank
 function SectionHead({ title, onSeeAll }: { title: string; onSeeAll?: () => void }) {
   const { cfg } = useContext(Ctx)
   return (
-    <div className="mb-3 flex items-center justify-between px-5">
-      <h2 className="text-[17px] font-semibold text-white">{title}</h2>
+    <div className="mb-3 flex items-end justify-between px-5">
+      <h2 className="text-[22px] font-bold tracking-tight text-white">{title}</h2>
       {onSeeAll && (
         <button
           type="button"
           onClick={onSeeAll}
-          aria-label={cfg.texts.seeAll}
-          className="flex h-8 w-8 items-center justify-center rounded-full text-slate-300 transition hover:bg-white/10 hover:text-white"
+          className="mx-soft flex items-center gap-0.5 rounded-full px-2 py-1 text-[15px] font-medium transition hover:bg-white/10 active:scale-95"
         >
-          <ChevronRight className="h-5 w-5" />
+          {cfg.texts.seeAll}
+          <ChevronRight className="h-4 w-4" />
         </button>
       )}
     </div>
@@ -486,9 +527,52 @@ function TopBar({ title, onBack, children }: { title: string; onBack: () => void
 
 function Empty({ text }: { text: string }) {
   return (
-    <div className="mx-4 rounded-3xl border border-white/10 bg-white/[0.03] p-8 text-center">
-      <Package className="mx-auto mb-3 h-8 w-8 text-slate-500" />
+    <div className="mx-glass mx-4 rounded-[28px] p-8 text-center">
+      <Package className="mx-auto mb-3 h-8 w-8 text-slate-400" />
       <p className="text-sm text-slate-400">{text}</p>
+    </div>
+  )
+}
+
+/* Horizontal row — mobile e swipe, desktop e left/right arrow button */
+function ScrollRow({ children, className = "" }: { children: ReactNode; className?: string }) {
+  const ref = useRef<HTMLDivElement>(null)
+  const [can, setCan] = useState({ l: false, r: false })
+
+  const upd = useCallback(() => {
+    const el = ref.current
+    if (!el) return
+    const l = el.scrollLeft > 8
+    const r = el.scrollLeft + el.clientWidth < el.scrollWidth - 8
+    setCan((p) => (p.l === l && p.r === r ? p : { l, r }))
+  }, [])
+
+  useEffect(() => {
+    upd()
+    window.addEventListener("resize", upd)
+    return () => window.removeEventListener("resize", upd)
+  })
+
+  const scroll = (dir: number) => {
+    const el = ref.current
+    if (el) el.scrollBy({ left: dir * el.clientWidth * 0.8, behavior: "smooth" })
+  }
+
+  return (
+    <div className="relative">
+      <div ref={ref} onScroll={upd} className={`modex-noscroll flex snap-x gap-4 overflow-x-auto px-5 ${className}`}>
+        {children}
+      </div>
+      {can.l && (
+        <button type="button" aria-label="Previous" onClick={() => scroll(-1)} className="mx-arrow left-2 hidden lg:flex">
+          <ChevronLeft className="h-5 w-5" />
+        </button>
+      )}
+      {can.r && (
+        <button type="button" aria-label="Next" onClick={() => scroll(1)} className="mx-arrow right-2 hidden lg:flex">
+          <ChevronRight className="h-5 w-5" />
+        </button>
+      )}
     </div>
   )
 }
@@ -520,6 +604,11 @@ function BannerSlider({ items }: { items: HeroItem[] }) {
     return () => clearInterval(t)
   }, [items.length])
 
+  const goTo = (i: number) => {
+    const el = ref.current
+    if (el) el.scrollTo({ left: i * el.clientWidth, behavior: "smooth" })
+  }
+
   return (
     <div className="mb-6 px-4">
       <div
@@ -530,14 +619,16 @@ function BannerSlider({ items }: { items: HeroItem[] }) {
         }}
         onTouchStart={() => (hold.current = true)}
         onTouchEnd={() => window.setTimeout(() => (hold.current = false), 3000)}
-        className="modex-noscroll flex snap-x snap-mandatory overflow-x-auto rounded-2xl shadow-xl"
+        onMouseEnter={() => (hold.current = true)}
+        onMouseLeave={() => (hold.current = false)}
+        className="modex-noscroll mx-banner flex snap-x snap-mandatory overflow-x-auto rounded-[28px] shadow-2xl"
       >
         {items.map((b, i) => (
           <button
             key={i}
             type="button"
             onClick={b.onClick}
-            className="relative aspect-[16/8] w-full flex-shrink-0 snap-center overflow-hidden text-left"
+            className="relative aspect-[16/8] w-full flex-shrink-0 snap-center overflow-hidden text-left lg:aspect-[16/6]"
             style={{ background: fallbackBg(b.title || String(i)) }}
           >
             <img
@@ -548,9 +639,9 @@ function BannerSlider({ items }: { items: HeroItem[] }) {
               className="absolute inset-0 h-full w-full object-cover"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/15 to-transparent" />
-            <div className="absolute inset-x-4 bottom-3">
-              {b.title && <p className="text-lg font-bold leading-tight drop-shadow">{b.title}</p>}
-              {b.subtitle && <p className="mt-0.5 line-clamp-1 text-xs text-white/80">{b.subtitle}</p>}
+            <div className="absolute inset-x-5 bottom-4">
+              {b.title && <p className="text-xl font-bold leading-tight drop-shadow lg:text-3xl">{b.title}</p>}
+              {b.subtitle && <p className="mt-0.5 line-clamp-1 text-xs text-white/80 lg:text-sm">{b.subtitle}</p>}
             </div>
           </button>
         ))}
@@ -558,8 +649,11 @@ function BannerSlider({ items }: { items: HeroItem[] }) {
       {items.length > 1 && (
         <div className="mt-3 flex justify-center gap-1.5">
           {items.map((_, i) => (
-            <span
+            <button
               key={i}
+              type="button"
+              aria-label={`Banner ${i + 1}`}
+              onClick={() => goTo(i)}
               className={`h-1.5 rounded-full transition-all duration-300 ${i === idx ? "mx-grad w-5" : "w-1.5 bg-white/25"}`}
             />
           ))}
@@ -570,8 +664,7 @@ function BannerSlider({ items }: { items: HeroItem[] }) {
 }
 
 /* =========================================================
-   SEARCH BAR — home page er search bar er hubahu copy
-   (liquid glass + 3D cube te app er naam slideshow + suggestions dropdown)
+   SEARCH BAR — liquid glass + 3D cube te app er naam slideshow + suggestions dropdown
 ========================================================= */
 
 function SearchBar({
@@ -582,6 +675,7 @@ function SearchBar({
   onSubmit,
   onPick,
   onFocusChange,
+  className = "",
 }: {
   apps: ModexApp[]
   popular: ModexApp[]
@@ -590,6 +684,7 @@ function SearchBar({
   onSubmit: (v: string) => void
   onPick: (a: ModexApp) => void
   onFocusChange?: (f: boolean) => void
+  className?: string
 }) {
   const { cfg } = useContext(Ctx)
   const [focused, setFocused] = useState(false)
@@ -618,12 +713,17 @@ function SearchBar({
 
   const faces = [0, 1, 2, 3].map((i) => pool[(offset + i) % pool.length])
 
+  /* bahire click/touch korle dropdown bondho (mouse + touch dutoi) */
   useEffect(() => {
-    const onDown = (e: MouseEvent) => {
+    const onDown = (e: Event) => {
       if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) setFocus(false)
     }
     document.addEventListener("mousedown", onDown)
-    return () => document.removeEventListener("mousedown", onDown)
+    document.addEventListener("touchstart", onDown, { passive: true })
+    return () => {
+      document.removeEventListener("mousedown", onDown)
+      document.removeEventListener("touchstart", onDown)
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -646,10 +746,10 @@ function SearchBar({
   }
 
   return (
-    <div ref={wrapRef} className="relative min-w-0 flex-1">
+    <div ref={wrapRef} className={`relative min-w-0 flex-1 ${className}`}>
       <div
         onClick={() => inputRef.current?.focus()}
-        className="mxs-glass relative flex items-center gap-3 rounded-2xl px-4 py-3"
+        className="mxs-glass relative flex items-center gap-3 rounded-full px-4 py-3"
       >
         <Search className="pointer-events-none h-5 w-5 flex-shrink-0 text-slate-300" />
 
@@ -708,11 +808,7 @@ function SearchBar({
         )}
 
         {bubbles.map((b) => (
-          <div
-            key={b.id}
-            className="mxs-bubble"
-            style={{ left: `calc(50% + ${b.x}px)`, top: `${b.y}px` }}
-          />
+          <div key={b.id} className="mxs-bubble" style={{ left: `calc(50% + ${b.x}px)`, top: `${b.y}px` }} />
         ))}
       </div>
 
@@ -794,12 +890,14 @@ function SearchView({
             <p className="mb-2 px-1 text-sm text-slate-400">
               &ldquo;{query.trim()}&rdquo; er jonno {results.length}টি app
             </p>
-            {results.map((a) => (
-              <AppRow key={a.id} app={a} onOpen={() => onOpen(a)} />
-            ))}
+            <div className="modex-stagger grid lg:grid-cols-2 lg:gap-x-6">
+              {results.map((a) => (
+                <AppRow key={a.id} app={a} onOpen={() => onOpen(a)} />
+              ))}
+            </div>
           </>
         ) : (
-          <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-8 text-center">
+          <div className="mx-glass rounded-[28px] p-8 text-center">
             <p className="font-semibold">কোনো app পাওয়া যায়নি</p>
             <p className="mt-1 text-sm text-slate-400">অন্য নাম লিখে আবার খুঁজুন।</p>
           </div>
@@ -810,7 +908,7 @@ function SearchView({
 }
 
 /* =========================================================
-   DETAIL VIEW (Play Store style)
+   DETAIL VIEW (App Store style)
 ========================================================= */
 
 function DetailView({
@@ -833,6 +931,7 @@ function DetailView({
   onShot: (list: string[], i: number) => void
 }) {
   const { cfg } = useContext(Ctx)
+  const desktop = useDesktop()
   const D = cfg.detail
   const T = cfg.texts
   const [more, setMore] = useState(false)
@@ -874,23 +973,27 @@ function DetailView({
       </TopBar>
 
       {/* Header */}
-      <div className="flex items-start gap-4 px-5 pt-2">
-        <AppIcon app={app} size={88} />
+      <div className="flex items-start gap-4 px-5 pt-2 lg:items-center lg:gap-6">
+        <AppIcon app={app} size={desktop ? 132 : 92} />
         <div className="min-w-0 flex-1">
-          <h1 className="text-[22px] font-bold leading-tight">{app.name}</h1>
+          <h1 className="text-[24px] font-bold leading-tight tracking-tight lg:text-[34px]">{app.name}</h1>
           <button
             type="button"
             onClick={() => onDev(app.developer)}
-            className="mx-soft mt-0.5 block max-w-full truncate text-sm font-semibold"
+            className="mx-soft mt-0.5 block max-w-full truncate text-sm font-semibold lg:text-base"
           >
             {app.developer}
           </button>
-          <p className="mt-1 truncate text-xs text-slate-400">{app.tagline || app.category}</p>
+          <p className="mt-1 truncate text-xs text-slate-400 lg:text-sm">{app.tagline || app.category}</p>
+          {/* desktop e install button header er pashe */}
+          <div className="mt-4 hidden lg:block">
+            <InstallBtn app={app} big />
+          </div>
         </div>
       </div>
 
       {/* Stats */}
-      <div className="mt-5 grid grid-cols-4 px-2">
+      <div className="mx-glass mx-4 mt-5 grid grid-cols-4 rounded-[26px] py-3.5">
         {stats.map((s, i) => (
           <div key={i} className={`px-1 text-center ${i > 0 ? "border-l border-white/10" : ""}`}>
             <p className="truncate text-[15px] font-semibold text-white">{s.top}</p>
@@ -899,32 +1002,32 @@ function DetailView({
         ))}
       </div>
 
-      {/* Install */}
-      <div className="mt-5 px-5">
+      {/* Install (mobile) */}
+      <div className="mt-5 px-5 lg:hidden">
         <InstallBtn app={app} big />
       </div>
 
       {/* Media */}
       {D.showScreenshots && media.length > 0 && (
         <section className="mt-6">
-          <div className="modex-noscroll flex snap-x gap-3 overflow-x-auto px-5">
+          <ScrollRow className="gap-3">
             {media.map((s, i) => (
               <button
                 key={i}
                 type="button"
                 onClick={() => onShot(media, i)}
-                className="flex-shrink-0 snap-start overflow-hidden rounded-2xl border border-white/10 bg-white/5"
+                className="flex-shrink-0 snap-start overflow-hidden rounded-[24px] border border-white/10 bg-white/5 transition active:scale-[.97]"
               >
                 <img
                   src={s}
                   alt=""
                   loading="lazy"
-                  className="h-[260px] w-auto object-cover"
+                  className="h-[260px] w-auto object-cover lg:h-[360px]"
                   onError={(e) => ((e.currentTarget.parentElement as HTMLElement).style.display = "none")}
                 />
               </button>
             ))}
-          </div>
+          </ScrollRow>
         </section>
       )}
 
@@ -932,7 +1035,7 @@ function DetailView({
       {app.description && (
         <section className="mt-6">
           <button type="button" onClick={() => setMore((m) => !m)} className="mb-2 flex w-full items-center justify-between px-5 text-left">
-            <h2 className="text-[17px] font-semibold">{T.aboutTitle}</h2>
+            <h2 className="text-[22px] font-bold tracking-tight">{T.aboutTitle}</h2>
             <ChevronRight className={`h-5 w-5 text-slate-300 transition-transform ${more ? "rotate-90" : ""}`} />
           </button>
           <p
@@ -946,7 +1049,7 @@ function DetailView({
             {app.description}
           </p>
           <div className="mt-3 flex flex-wrap gap-2 px-5">
-            <span className="mx-outline-soft rounded-full px-4 py-1.5 text-xs font-medium text-slate-200">{app.category}</span>
+            <span className="mx-glass rounded-full px-4 py-1.5 text-xs font-medium text-slate-200">{app.category}</span>
           </div>
         </section>
       )}
@@ -954,7 +1057,7 @@ function DetailView({
       {/* What's new */}
       {D.showWhatsNew && app.whatsNew && (
         <section className="mt-7 px-5">
-          <h2 className="mb-1 text-[17px] font-semibold">{T.whatsNewTitle}</h2>
+          <h2 className="mb-1 text-[22px] font-bold tracking-tight">{T.whatsNewTitle}</h2>
           <p className="mb-2 text-xs text-slate-500">{fmtDate(app.updatedAt)}</p>
           <p className="whitespace-pre-line text-sm leading-relaxed text-slate-300">{app.whatsNew}</p>
         </section>
@@ -963,8 +1066,8 @@ function DetailView({
       {/* Info */}
       {D.showInfo && (
         <section className="mt-7 px-5">
-          <h2 className="mb-2 text-[17px] font-semibold">App info</h2>
-          <div className="divide-y divide-white/10 rounded-2xl border border-white/10 bg-white/[0.03] px-4">
+          <h2 className="mb-2 text-[22px] font-bold tracking-tight">App info</h2>
+          <div className="mx-glass divide-y divide-white/10 rounded-[26px] px-4">
             {[
               ["Version", app.version || "—"],
               ["Requires", app.requires || "—"],
@@ -1001,15 +1104,15 @@ function DetailView({
 
 function HRow({ items, onOpen }: { items: ModexApp[]; onOpen: (a: ModexApp) => void }) {
   return (
-    <div className="modex-noscroll flex gap-4 overflow-x-auto px-5">
+    <ScrollRow>
       {items.map((a) => (
-        <button key={a.id} type="button" onClick={() => onOpen(a)} className="w-[100px] flex-shrink-0 text-left">
+        <button key={a.id} type="button" onClick={() => onOpen(a)} className="w-[100px] flex-shrink-0 snap-start text-left transition active:scale-95">
           <AppIcon app={a} size={100} />
           <p className="mt-2 line-clamp-2 text-[13px] font-medium leading-snug">{a.name}</p>
           <Rating value={a.rating} />
         </button>
       ))}
-    </div>
+    </ScrollRow>
   )
 }
 
@@ -1036,15 +1139,15 @@ function DevView({
     <div>
       <TopBar title="" onBack={onBack} />
       <div className="flex items-center gap-4 px-5 pb-4 pt-1">
-        {first ? <AppIcon app={first} size={72} /> : <div className="h-[72px] w-[72px] rounded-2xl bg-white/10" />}
+        {first ? <AppIcon app={first} size={76} /> : <div className="h-[76px] w-[76px] rounded-[22%] bg-white/10" />}
         <div className="min-w-0">
-          <h1 className="truncate text-xl font-bold">{name}</h1>
+          <h1 className="truncate text-xl font-bold lg:text-2xl">{name}</h1>
           <p className="text-xs text-slate-400">
             {list.length} apps • {avg.toFixed(1)} avg rating
           </p>
         </div>
       </div>
-      <div className="px-4">
+      <div className="modex-stagger grid px-4 lg:grid-cols-2 lg:gap-x-6">
         {list.map((a) => (
           <AppRow key={a.id} app={a} onOpen={() => onOpen(a)} />
         ))}
@@ -1154,6 +1257,23 @@ export default function ModexPage() {
     window.addEventListener("scroll", onScroll, { passive: true })
     return () => window.removeEventListener("scroll", onScroll)
   }, [])
+
+  /* screenshot viewer: keyboard (desktop) + background scroll lock */
+  useEffect(() => {
+    if (!viewer) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setViewer(null)
+      else if (e.key === "ArrowRight") setViewer((v) => (v && v.i < v.list.length - 1 ? { ...v, i: v.i + 1 } : v))
+      else if (e.key === "ArrowLeft") setViewer((v) => (v && v.i > 0 ? { ...v, i: v.i - 1 } : v))
+    }
+    const prev = document.body.style.overflow
+    document.body.style.overflow = "hidden"
+    window.addEventListener("keydown", onKey)
+    return () => {
+      document.body.style.overflow = prev
+      window.removeEventListener("keydown", onKey)
+    }
+  }, [viewer])
 
   /* navigation: push = browser history entry, tai mobile back button kaj kore */
   const push = useCallback((v: View) => {
@@ -1274,7 +1394,7 @@ export default function ModexPage() {
     <>
       {/* Announcement */}
       {cfg.announcement.enabled && cfg.announcement.text && !annHidden && (
-        <div className={`mx-4 mb-4 flex items-center gap-3 rounded-2xl border px-4 py-3 text-sm ${annClass}`}>
+        <div className={`mx-4 mb-4 flex items-center gap-3 rounded-3xl border px-4 py-3 text-sm backdrop-blur-xl ${annClass}`}>
           <Megaphone className="h-4 w-4 flex-shrink-0" />
           {cfg.announcement.link ? (
             <a href={cfg.announcement.link} target="_blank" rel="noopener noreferrer" className="min-w-0 flex-1 underline-offset-2 hover:underline">
@@ -1300,7 +1420,7 @@ export default function ModexPage() {
               key={c}
               type="button"
               onClick={() => setCat(c)}
-              className={`flex-shrink-0 rounded-full px-4 py-1.5 text-sm font-medium transition-all duration-300 ${
+              className={`flex-shrink-0 rounded-full px-4 py-1.5 text-sm font-medium transition-all duration-300 active:scale-95 ${
                 cat === c ? "mx-chip-on" : "mx-chip text-slate-200"
               }`}
             >
@@ -1319,13 +1439,13 @@ export default function ModexPage() {
       {loading && apps.length === 0 ? (
         <div className="px-5">
           <div className="modex-noscroll flex gap-4 overflow-hidden">
-            {[0, 1, 2, 3].map((i) => (
-              <div key={i} className="modex-shimmer h-[130px] w-[100px] flex-shrink-0 rounded-2xl" />
+            {[0, 1, 2, 3, 4, 5].map((i) => (
+              <div key={i} className="modex-shimmer h-[130px] w-[100px] flex-shrink-0 rounded-[24px]" />
             ))}
           </div>
           <div className="mt-8 space-y-4">
             {[0, 1, 2, 3].map((i) => (
-              <div key={i} className="modex-shimmer h-16 rounded-2xl" />
+              <div key={i} className="modex-shimmer h-16 rounded-3xl" />
             ))}
           </div>
         </div>
@@ -1340,13 +1460,13 @@ export default function ModexPage() {
                 title={T.suggestedTitle || T.trendingTitle}
                 onSeeAll={() => push({ t: "list", title: T.trendingTitle, kind: "trending" })}
               />
-              <div className="modex-noscroll flex snap-x gap-4 overflow-x-auto px-5">
+              <ScrollRow>
                 {homeTrending.map((a) => (
                   <button
                     key={a.id}
                     type="button"
                     onClick={() => openApp(a)}
-                    className="w-[104px] flex-shrink-0 snap-start text-left transition active:scale-95"
+                    className="w-[104px] flex-shrink-0 snap-start text-left transition active:scale-95 lg:w-[120px]"
                   >
                     <AppIcon app={a} size={104} />
                     <p className="mt-2 line-clamp-2 text-[13px] font-medium leading-snug">{a.name}</p>
@@ -1356,7 +1476,7 @@ export default function ModexPage() {
                     </div>
                   </button>
                 ))}
-              </div>
+              </ScrollRow>
             </section>
           )}
 
@@ -1364,7 +1484,7 @@ export default function ModexPage() {
           {S.showNew && homeNew.length > 0 && (
             <section>
               <SectionHead title={T.newTitle} onSeeAll={() => push({ t: "list", title: T.newTitle, kind: "new" })} />
-              <div className="px-4">
+              <div className="modex-stagger grid px-4 lg:grid-cols-2 lg:gap-x-6">
                 {homeNew.map((a) => (
                   <AppRow key={a.id} app={a} onOpen={() => openApp(a)} />
                 ))}
@@ -1377,17 +1497,19 @@ export default function ModexPage() {
   )
 
   const renderTop = () => (
-    <div className="px-4">
+    <div className="modex-stagger grid px-4 lg:grid-cols-2 lg:gap-x-6">
       {topAll.length ? (
         topAll.slice(0, S.topCount).map((a, i) => <AppRow key={a.id} app={a} rank={i + 1} onOpen={() => openApp(a)} />)
       ) : (
-        <Empty text={T.emptyText} />
+        <div className="lg:col-span-2">
+          <Empty text={T.emptyText} />
+        </div>
       )}
     </div>
   )
 
   const renderCategories = () => (
-    <div className="grid grid-cols-2 gap-3 px-4">
+    <div className="modex-stagger grid grid-cols-2 gap-3 px-4 sm:grid-cols-3 lg:grid-cols-4">
       {cfg.categories.map((c) => {
         const n = apps.filter((a) => a.category === c).length
         const h = hueOf(c)
@@ -1396,7 +1518,7 @@ export default function ModexPage() {
             key={c}
             type="button"
             onClick={() => push({ t: "list", title: c, kind: "cat", cat: c })}
-            className="relative h-24 overflow-hidden rounded-2xl p-4 text-left transition active:scale-95"
+            className="relative h-24 overflow-hidden rounded-[26px] p-4 text-left shadow-lg ring-1 ring-white/10 transition duration-300 hover:-translate-y-0.5 active:scale-95 lg:h-28"
             style={{ background: `linear-gradient(135deg, hsl(${h} 60% 38%), hsl(${(h + 60) % 360} 60% 22%))` }}
           >
             <LayoutGrid className="absolute -bottom-3 -right-3 h-16 w-16 text-white/15" />
@@ -1411,11 +1533,13 @@ export default function ModexPage() {
   const renderSaved = () => {
     const list = apps.filter((a) => saved.includes(a.id))
     return (
-      <div className="px-4">
+      <div className="modex-stagger grid px-4 lg:grid-cols-2 lg:gap-x-6">
         {list.length ? (
           list.map((a) => <AppRow key={a.id} app={a} onOpen={() => openApp(a)} />)
         ) : (
-          <Empty text="কোনো app save করা নেই। Detail page এর bookmark icon চাপুন।" />
+          <div className="lg:col-span-2">
+            <Empty text="কোনো app save করা নেই। Detail page এর bookmark icon চাপুন।" />
+          </div>
         )}
       </div>
     )
@@ -1426,29 +1550,33 @@ export default function ModexPage() {
       {/* Welcome + logo */}
       <div className="px-5 pb-3 pt-2">
         <p className="text-xs text-slate-400">{T.welcome}</p>
-        <ModexLogo size={30} logoUrl={cfg.brand.logoUrl} />
+        <ModexLogo size={32} logoUrl={cfg.brand.logoUrl} />
       </div>
 
-      {/* Play-style tabs */}
-      <div className="modex-noscroll mb-4 flex gap-1 overflow-x-auto border-b border-white/10 px-3">
-        {visibleTabs.map((t) => (
-          <button
-            key={t.id}
-            type="button"
-            onClick={() => changeHomeTab(t.id)}
-            className={`flex-shrink-0 border-b-[3px] px-3 pb-2.5 pt-1 text-sm font-semibold transition ${
-              activeHomeTab === t.id ? "mx-tab-on text-white" : "border-transparent text-slate-400 hover:text-slate-200"
-            }`}
-          >
-            {t.label}
-          </button>
-        ))}
+      {/* App Store style segmented tabs (liquid glass) */}
+      <div className="px-4 pb-4">
+        <div className="mx-seg modex-noscroll flex gap-1 overflow-x-auto rounded-full p-1">
+          {visibleTabs.map((t) => (
+            <button
+              key={t.id}
+              type="button"
+              onClick={() => changeHomeTab(t.id)}
+              className={`flex-1 flex-shrink-0 whitespace-nowrap rounded-full px-4 py-2 text-sm font-semibold transition-all duration-300 active:scale-95 ${
+                activeHomeTab === t.id ? "mx-seg-on text-white" : "text-slate-400 hover:text-slate-200"
+              }`}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
       </div>
 
-      {activeHomeTab === "foryou" && renderForYou()}
-      {activeHomeTab === "top" && renderTop()}
-      {activeHomeTab === "categories" && renderCategories()}
-      {activeHomeTab === "saved" && renderSaved()}
+      <div key={activeHomeTab} className="modex-in">
+        {activeHomeTab === "foryou" && renderForYou()}
+        {activeHomeTab === "top" && renderTop()}
+        {activeHomeTab === "categories" && renderCategories()}
+        {activeHomeTab === "saved" && renderSaved()}
+      </div>
     </div>
   )
 
@@ -1457,8 +1585,14 @@ export default function ModexPage() {
     return (
       <div>
         <TopBar title={v.title} onBack={back} />
-        <div className="px-4">
-          {list.length ? list.map((a) => <AppRow key={a.id} app={a} onOpen={() => openApp(a)} />) : <Empty text="কোনো app নেই।" />}
+        <div className="modex-stagger grid px-4 lg:grid-cols-2 lg:gap-x-6">
+          {list.length ? (
+            list.map((a) => <AppRow key={a.id} app={a} onOpen={() => openApp(a)} />)
+          ) : (
+            <div className="lg:col-span-2">
+              <Empty text="কোনো app নেই।" />
+            </div>
+          )}
         </div>
       </div>
     )
@@ -1502,39 +1636,88 @@ export default function ModexPage() {
 
   const styleTag = (
     <style>{`
+      /* ===== iOS liquid glass ===== */
       .mx-glass {
-        background: linear-gradient(135deg, rgba(255,255,255,.12), rgba(255,255,255,.04) 55%, rgba(255,255,255,.08));
+        position: relative;
+        background: linear-gradient(135deg, rgba(255,255,255,.14), rgba(255,255,255,.04) 55%, rgba(255,255,255,.09));
         border: 1px solid rgba(255,255,255,.14);
-        backdrop-filter: blur(22px) saturate(170%);
-        -webkit-backdrop-filter: blur(22px) saturate(170%);
-        box-shadow: inset 0 1px 0 rgba(255,255,255,.28), inset 0 -1px 0 rgba(255,255,255,.04), 0 10px 30px rgba(0,0,0,.25);
+        backdrop-filter: blur(26px) saturate(190%);
+        -webkit-backdrop-filter: blur(26px) saturate(190%);
+        box-shadow: inset 0 1px 0 rgba(255,255,255,.32), inset 0 -1px 0 rgba(255,255,255,.05), 0 12px 34px rgba(0,0,0,.28);
       }
-      .mx-grad { background-image: linear-gradient(90deg, var(--mx-a), var(--mx-b)); }
+      .mx-circle {
+        background: rgba(255,255,255,.08);
+        border: 1px solid rgba(255,255,255,.12);
+        backdrop-filter: blur(16px) saturate(180%);
+        -webkit-backdrop-filter: blur(16px) saturate(180%);
+        box-shadow: inset 0 1px 0 rgba(255,255,255,.25);
+      }
+      .mx-arrow {
+        position: absolute; top: 38%; z-index: 5; width: 40px; height: 40px; align-items: center; justify-content: center;
+        border-radius: 999px; color: #fff; cursor: pointer;
+        background: rgba(30,30,40,.55); border: 1px solid rgba(255,255,255,.2);
+        backdrop-filter: blur(18px) saturate(180%); -webkit-backdrop-filter: blur(18px) saturate(180%);
+        box-shadow: inset 0 1px 0 rgba(255,255,255,.3), 0 8px 24px rgba(0,0,0,.4);
+        transition: transform .25s cubic-bezier(.34,1.56,.64,1), background .2s;
+      }
+      .mx-arrow:hover { background: rgba(60,60,80,.7); transform: scale(1.1); }
+      .mx-arrow:active { transform: scale(.9); }
+      .mx-grad {
+        background-image: linear-gradient(90deg, var(--mx-a), var(--mx-b));
+        box-shadow: inset 0 1px 0 rgba(255,255,255,.4), 0 10px 26px color-mix(in srgb, var(--mx-a) 40%, transparent);
+      }
       .mx-soft { color: var(--mx-soft); }
       .mx-soft-fill { color: var(--mx-soft); fill: var(--mx-soft); }
-      .mx-tab-on { border-color: var(--mx-a); }
-      .mx-outline { color: var(--mx-soft); border: 1px solid color-mix(in srgb, var(--mx-a) 55%, transparent); background: color-mix(in srgb, var(--mx-a) 10%, transparent); }
-      .mx-outline:hover { background: color-mix(in srgb, var(--mx-a) 22%, transparent); }
-      .mx-outline-soft { border: 1px solid rgba(255,255,255,.2); }
-      .mx-chip { background: color-mix(in srgb, var(--mx-chip) 70%, transparent); border: 1px solid rgba(255,255,255,.06); }
+      /* App Store "GET" pill */
+      .mx-outline {
+        color: var(--mx-soft);
+        background: color-mix(in srgb, var(--mx-a) 20%, rgba(255,255,255,.08));
+        border: 1px solid color-mix(in srgb, var(--mx-a) 45%, transparent);
+        box-shadow: inset 0 1px 0 rgba(255,255,255,.25);
+        backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+        letter-spacing: .01em;
+      }
+      .mx-outline:hover { background: color-mix(in srgb, var(--mx-a) 34%, rgba(255,255,255,.08)); }
+      .mx-chip { background: color-mix(in srgb, var(--mx-chip) 65%, transparent); border: 1px solid rgba(255,255,255,.08); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); box-shadow: inset 0 1px 0 rgba(255,255,255,.12); }
       .mx-chip:hover { background: var(--mx-chip); }
-      .mx-chip-on { background: color-mix(in srgb, var(--mx-a) 30%, transparent); border: 1px solid color-mix(in srgb, var(--mx-a) 70%, transparent); color: #fff; }
-      .mx-bar { background: color-mix(in srgb, var(--mx-bg) 80%, transparent); backdrop-filter: blur(20px) saturate(160%); -webkit-backdrop-filter: blur(20px) saturate(160%); }
+      .mx-chip-on { background: color-mix(in srgb, var(--mx-a) 32%, transparent); border: 1px solid color-mix(in srgb, var(--mx-a) 70%, transparent); color: #fff; box-shadow: inset 0 1px 0 rgba(255,255,255,.3), 0 6px 18px color-mix(in srgb, var(--mx-a) 25%, transparent); }
+      .mx-seg {
+        background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.12);
+        backdrop-filter: blur(24px) saturate(190%); -webkit-backdrop-filter: blur(24px) saturate(190%);
+        box-shadow: inset 0 1px 0 rgba(255,255,255,.2);
+      }
+      .mx-seg-on { background: linear-gradient(135deg, rgba(255,255,255,.28), rgba(255,255,255,.12)); box-shadow: inset 0 1px 0 rgba(255,255,255,.45), 0 4px 14px rgba(0,0,0,.3); }
+      .mx-bar {
+        background: color-mix(in srgb, var(--mx-bg) 55%, transparent);
+        backdrop-filter: blur(30px) saturate(200%); -webkit-backdrop-filter: blur(30px) saturate(200%);
+        border-bottom: 1px solid rgba(255,255,255,.08);
+      }
+      .mx-banner { box-shadow: inset 0 1px 0 rgba(255,255,255,.2), 0 24px 50px rgba(0,0,0,.45); }
       .mx-ann-info { background: color-mix(in srgb, var(--mx-a) 20%, transparent); border-color: color-mix(in srgb, var(--mx-a) 45%, transparent); color: #fff; }
       .mx-ann-success { background: rgba(34,197,94,.16); border-color: rgba(34,197,94,.45); color: #bbf7d0; }
       .mx-ann-warning { background: rgba(245,158,11,.16); border-color: rgba(245,158,11,.5); color: #fde68a; }
       .modex-noscroll { scrollbar-width: none; }
       .modex-noscroll::-webkit-scrollbar { display: none; }
-      @keyframes modexIn { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
-      .modex-in { animation: modexIn .38s cubic-bezier(.22,1,.36,1); }
+
+      /* ===== animations ===== */
+      @keyframes modexIn { from { opacity: 0; transform: translateY(16px) scale(.985); } to { opacity: 1; transform: none; } }
+      .modex-in { animation: modexIn .45s cubic-bezier(.22,1,.36,1); }
+      .modex-stagger > * { animation: modexIn .5s cubic-bezier(.22,1,.36,1) both; }
+      .modex-stagger > *:nth-child(2) { animation-delay: .04s; }
+      .modex-stagger > *:nth-child(3) { animation-delay: .08s; }
+      .modex-stagger > *:nth-child(4) { animation-delay: .12s; }
+      .modex-stagger > *:nth-child(5) { animation-delay: .16s; }
+      .modex-stagger > *:nth-child(6) { animation-delay: .2s; }
+      .modex-stagger > *:nth-child(7) { animation-delay: .24s; }
+      .modex-stagger > *:nth-child(n+8) { animation-delay: .28s; }
       @keyframes modexShimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
       .modex-shimmer { background: linear-gradient(90deg, rgba(255,255,255,.04) 25%, rgba(255,255,255,.1) 50%, rgba(255,255,255,.04) 75%); background-size: 200% 100%; animation: modexShimmer 1.4s linear infinite; }
 
-      /* ===== SEARCH BAR (home page er search bar er moto liquid glass) ===== */
+      /* ===== SEARCH BAR (liquid glass) ===== */
       @keyframes mxsZoom {
         0% { transform: scale(1); background: rgba(255,255,255,.05); }
         50% { transform: scale(1.03); background: rgba(255,255,255,.08); }
-        100% { transform: scale(1.06); background: rgba(255,255,255,.1); }
+        100% { transform: scale(1.05); background: rgba(255,255,255,.1); }
       }
       @keyframes mxsGlow {
         0% { box-shadow: 0 0 0 0 rgba(100,200,255,.3), inset 0 0 20px rgba(255,255,255,.1); }
@@ -1542,10 +1725,11 @@ export default function ModexPage() {
         100% { box-shadow: 0 0 25px 10px rgba(100,200,255,.1), inset 0 0 40px rgba(255,255,255,.2); }
       }
       .mxs-glass {
-        background: rgba(255,255,255,.05);
-        backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
+        background: rgba(255,255,255,.06);
+        backdrop-filter: blur(22px) saturate(180%);
+        -webkit-backdrop-filter: blur(22px) saturate(180%);
         border: 1px solid rgba(255,255,255,.2);
+        box-shadow: inset 0 1px 0 rgba(255,255,255,.28);
         transition: all .3s ease;
         cursor: text;
       }
@@ -1555,25 +1739,29 @@ export default function ModexPage() {
         animation: mxsZoom .6s ease-out forwards, mxsGlow .6s ease-out;
       }
       .mxs-btn {
-        background: rgba(255,255,255,.05);
-        backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
+        background: rgba(255,255,255,.06);
+        backdrop-filter: blur(22px) saturate(180%);
+        -webkit-backdrop-filter: blur(22px) saturate(180%);
         border: 1px solid rgba(255,255,255,.2);
+        box-shadow: inset 0 1px 0 rgba(255,255,255,.28);
       }
-      .mxs-btn:hover { background: rgba(255,255,255,.1); border-color: rgba(100,200,255,.4); }
+      .mxs-btn:hover { background: rgba(255,255,255,.12); border-color: rgba(100,200,255,.4); }
       .mxs-input {
         position: absolute; inset: 0; width: 100%; height: 100%;
         background: transparent !important; border: none !important; outline: none !important;
-        color: #fff !important; caret-color: #64c8ff; font-size: 14px; line-height: 20px;
+        color: #fff !important; caret-color: #64c8ff; font-size: 16px; line-height: 20px;
         padding: 0; margin: 0; z-index: 30;
       }
       .mxs-drop {
         position: absolute; top: 100%; left: 0; right: 0; margin-top: 8px; max-height: 400px; overflow-y: auto; z-index: 50;
-        background: rgba(20,20,30,.98); backdrop-filter: blur(20px); border: 1px solid rgba(100,200,255,.3); border-radius: 12px;
+        background: rgba(20,20,30,.92); backdrop-filter: blur(30px) saturate(180%); -webkit-backdrop-filter: blur(30px) saturate(180%);
+        border: 1px solid rgba(100,200,255,.3); border-radius: 24px;
+        box-shadow: inset 0 1px 0 rgba(255,255,255,.2), 0 20px 50px rgba(0,0,0,.5);
         scrollbar-width: thin; scrollbar-color: rgba(100,200,255,.5) transparent;
+        animation: modexIn .3s cubic-bezier(.22,1,.36,1);
       }
       .mxs-drop-head {
-        display: flex; align-items: center; gap: 6px; padding: 8px 16px; border-bottom: 1px solid rgba(255,255,255,.08);
+        display: flex; align-items: center; gap: 6px; padding: 10px 16px 8px; border-bottom: 1px solid rgba(255,255,255,.08);
         font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: rgba(148,163,184,.9); font-weight: 600;
       }
       .mxs-drop-item { padding: 10px 16px; cursor: pointer; transition: all .2s ease; border-bottom: 1px solid rgba(255,255,255,.05); }
@@ -1609,7 +1797,7 @@ export default function ModexPage() {
         75%, 95% { transform: translateZ(-10px) rotateX(270deg); }
         100% { transform: translateZ(-10px) rotateX(360deg); }
       }
-      @media (prefers-reduced-motion: reduce) { .modex-in, .modex-shimmer, .mxs-cube { animation: none; } }
+      @media (prefers-reduced-motion: reduce) { .modex-in, .modex-stagger > *, .modex-shimmer, .mxs-cube { animation: none; } }
     `}</style>
   )
 
@@ -1618,8 +1806,8 @@ export default function ModexPage() {
     return (
       <div className="relative flex min-h-[80vh] items-center justify-center px-6 pb-24 text-white" style={themeVars}>
         {styleTag}
-        <div className="mx-glass modex-in relative w-full max-w-sm rounded-[32px] p-8 text-center">
-          <div className="mx-grad mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-3xl">
+        <div className="mx-glass modex-in relative w-full max-w-sm rounded-[34px] p-8 text-center">
+          <div className="mx-grad mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-[22%]">
             <Wrench className="h-8 w-8 text-white" />
           </div>
           <ModexLogo size={30} logoUrl={cfg.brand.logoUrl} />
@@ -1639,19 +1827,20 @@ export default function ModexPage() {
 
         {/* soft background glow */}
         <div className="pointer-events-none fixed inset-0">
-          <div className="absolute -left-24 -top-24 h-72 w-72 rounded-full opacity-20 blur-[100px]" style={{ background: "var(--mx-a)" }} />
+          <div className="absolute -left-24 -top-24 h-72 w-72 rounded-full opacity-25 blur-[100px]" style={{ background: "var(--mx-a)" }} />
+          <div className="absolute -right-24 top-1/3 h-72 w-72 rounded-full opacity-10 blur-[110px]" style={{ background: "var(--mx-b)" }} />
         </div>
 
-        {/* HOME HEADER (shudhu home e) — site er header er moto: search bar + 3 dots */}
+        {/* HOME HEADER (shudhu home e) — search bar + 3 dots */}
         {top.t === "home" && (
           <header
             className={`fixed left-0 right-0 top-0 z-50 transition-all duration-300 ease-in-out lg:left-[220px] ${
-              isScrolled ? "mx-bar border-b border-white/10 shadow-lg" : "border-b border-transparent"
+              isScrolled ? "mx-bar shadow-lg" : "border-b border-transparent"
             }`}
           >
-            <div className="mx-auto flex max-w-2xl items-center gap-4 px-4 py-4">
+            <div className="mx-auto flex max-w-2xl items-center gap-4 px-4 py-4 lg:max-w-5xl">
               <div className="flex-shrink-0 lg:hidden">
-                <ModexXMark style={{ height: 36, width: 36 }} />
+                <ModexX size={36} />
               </div>
 
               <SearchBar
@@ -1662,6 +1851,7 @@ export default function ModexPage() {
                 onSubmit={submitSearch}
                 onPick={openApp}
                 onFocusChange={setSearchFocused}
+                className="lg:mx-auto lg:max-w-xl"
               />
 
               <div
@@ -1674,7 +1864,7 @@ export default function ModexPage() {
                   onClick={openSideMenu}
                   aria-label="Open menu"
                   tabIndex={searchFocused ? -1 : 0}
-                  className="mxs-btn flex h-11 w-11 items-center justify-center rounded-2xl text-slate-200 transition-all duration-200 hover:text-white active:scale-90"
+                  className="mxs-btn flex h-11 w-11 items-center justify-center rounded-full text-slate-200 transition-all duration-200 hover:text-white active:scale-90"
                 >
                   <MoreHorizontal className="h-5 w-5" />
                 </button>
@@ -1683,7 +1873,7 @@ export default function ModexPage() {
           </header>
         )}
 
-        <main className="relative mx-auto max-w-2xl pb-28 lg:pb-12">
+        <main className="relative mx-auto max-w-2xl pb-28 lg:max-w-5xl lg:pb-12">
           <div key={`${stack.length}-${top.t}`} className="modex-in">
             {renderView()}
           </div>
@@ -1691,8 +1881,8 @@ export default function ModexPage() {
 
         {/* SCREENSHOT VIEWER */}
         {viewer && (
-          <div className="fixed inset-0 z-[120] flex items-center justify-center bg-black/90 p-4" onClick={() => setViewer(null)}>
-            <button type="button" onClick={() => setViewer(null)} aria-label="Close" className="absolute right-4 top-4 flex h-11 w-11 items-center justify-center rounded-full bg-white/10">
+          <div className="fixed inset-0 z-[120] flex items-center justify-center bg-black/85 p-4 backdrop-blur-xl" onClick={() => setViewer(null)}>
+            <button type="button" onClick={() => setViewer(null)} aria-label="Close" className="mx-circle absolute right-4 top-4 flex h-11 w-11 items-center justify-center rounded-full">
               <X className="h-5 w-5" />
             </button>
             {viewer.i > 0 && (
@@ -1702,13 +1892,13 @@ export default function ModexPage() {
                   e.stopPropagation()
                   setViewer({ ...viewer, i: viewer.i - 1 })
                 }}
-                className="absolute left-3 flex h-11 w-11 rotate-180 items-center justify-center rounded-full bg-white/10"
+                className="mx-circle absolute left-3 flex h-11 w-11 items-center justify-center rounded-full"
                 aria-label="Previous"
               >
-                <ChevronRight className="h-5 w-5" />
+                <ChevronLeft className="h-5 w-5" />
               </button>
             )}
-            <img src={viewer.list[viewer.i]} alt="" className="modex-in max-h-[85vh] max-w-full rounded-2xl object-contain" onClick={(e) => e.stopPropagation()} />
+            <img src={viewer.list[viewer.i]} alt="" className="modex-in max-h-[85vh] max-w-full rounded-[24px] object-contain" onClick={(e) => e.stopPropagation()} />
             {viewer.i < viewer.list.length - 1 && (
               <button
                 type="button"
@@ -1716,7 +1906,7 @@ export default function ModexPage() {
                   e.stopPropagation()
                   setViewer({ ...viewer, i: viewer.i + 1 })
                 }}
-                className="absolute right-3 flex h-11 w-11 items-center justify-center rounded-full bg-white/10"
+                className="mx-circle absolute right-3 flex h-11 w-11 items-center justify-center rounded-full"
                 aria-label="Next"
               >
                 <ChevronRight className="h-5 w-5" />
@@ -1730,4 +1920,4 @@ export default function ModexPage() {
       </div>
     </Ctx.Provider>
   )
-                                                                }
+      }

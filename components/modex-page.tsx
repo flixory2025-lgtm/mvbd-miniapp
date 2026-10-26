@@ -973,37 +973,17 @@ function DetailView({
     } catch {}
   }
 
-  const stats = [
-    {
-      top: (
-        <span className="inline-flex items-center gap-1">
-          {app.rating.toFixed(1)}
-          <Star className="h-3 w-3 fill-white text-white" />
-        </span>
-      ),
-      label: app.reviews || "Rating",
-    },
-    { top: app.size || "—", label: "Size" },
-    { top: app.downloads || "—", label: "Downloads" },
-    { top: app.version || "—", label: "Version" },
-  ]
-
   return (
     <div className="relative">
       {/* COVER PHOTO (background hero) */}
       {hasHero && (
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-[300px] overflow-hidden lg:h-[380px]">
-          <img
-            src={app.bannerUrl}
-            alt=""
-            className="h-full w-full object-cover"
-            onError={() => setHeroBad(true)}
-          />
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-[250px] overflow-hidden lg:h-[340px]">
+          <img src={app.bannerUrl} alt="" className="h-full w-full object-cover" onError={() => setHeroBad(true)} />
           <div
             className="absolute inset-0"
             style={{
               background:
-                "linear-gradient(to bottom, rgba(0,0,0,.35) 0%, rgba(0,0,0,.05) 35%, color-mix(in srgb, var(--mx-bg) 70%, transparent) 75%, var(--mx-bg) 100%)",
+                "linear-gradient(to bottom, rgba(0,0,0,.30) 0%, rgba(0,0,0,0) 28%, color-mix(in srgb, var(--mx-bg) 25%, transparent) 50%, color-mix(in srgb, var(--mx-bg) 65%, transparent) 72%, color-mix(in srgb, var(--mx-bg) 92%, transparent) 90%, var(--mx-bg) 100%)",
             }}
           />
         </div>
@@ -1021,7 +1001,7 @@ function DetailView({
       {/* Header */}
       <div
         className={`relative flex items-start gap-4 px-5 lg:items-center lg:gap-6 ${
-          hasHero ? "pt-[120px] lg:pt-[170px]" : "pt-2"
+          hasHero ? "pt-[100px] lg:pt-[150px]" : "pt-2"
         }`}
       >
         <AppIcon app={app} size={desktop ? 132 : 92} />
@@ -1042,24 +1022,56 @@ function DetailView({
         </div>
       </div>
 
-      {/* Stats */}
-      <div className="mx-glass mx-4 mt-5 grid grid-cols-4 rounded-[26px] py-3.5">
-        {stats.map((s, i) => (
+      {/* Category + rating + Get (mobile) */}
+      <div className="mt-5 flex items-center gap-3 px-5 lg:hidden">
+        <span className="mx-glass max-w-[45%] truncate rounded-full px-4 py-2.5 text-sm font-semibold text-slate-100">{app.category}</span>
+        <span className="inline-flex items-center gap-1 text-sm font-medium text-slate-200">
+          {app.rating.toFixed(1)}
+          <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
+        </span>
+        <div className="ml-auto [&>button]:px-10 [&>button]:py-2.5">
+          <InstallBtn app={app} big />
+        </div>
+      </div>
+
+      {/* Stats: Downloads / Size / Version */}
+      <div className="mx-glass mx-4 mt-5 grid grid-cols-3 rounded-[26px] py-4">
+        {[
+          { top: app.downloads || "—", label: "Downloads" },
+          { top: app.size || "—", label: "Size" },
+          { top: app.version || "—", label: "Version" },
+        ].map((s, i) => (
           <div key={i} className={`px-1 text-center ${i > 0 ? "border-l border-white/10" : ""}`}>
-            <p className="truncate text-[15px] font-semibold text-white">{s.top}</p>
-            <p className="mt-0.5 truncate text-[11px] text-slate-400">{s.label}</p>
+            <p className="truncate text-[17px] font-bold text-white">{s.top}</p>
+            <p className="mt-0.5 truncate text-[13px] text-slate-400">{s.label}</p>
           </div>
         ))}
       </div>
 
-      {/* Install (mobile) */}
-      <div className="mt-5 px-5 lg:hidden">
-        <InstallBtn app={app} big />
-      </div>
+      {/* Description (screenshot er upore) */}
+      {app.description && (
+        <section className="mt-5 px-5">
+          <p
+            onClick={() => setMore((m) => !m)}
+            className="cursor-pointer whitespace-pre-line text-[15px] leading-relaxed text-slate-300"
+            style={
+              more
+                ? undefined
+                : { display: "-webkit-box", WebkitLineClamp: 4, WebkitBoxOrient: "vertical", overflow: "hidden" }
+            }
+          >
+            {app.description}
+          </p>
+          <button type="button" onClick={() => setMore((m) => !m)} className="mx-soft mt-1 text-sm font-semibold">
+            {more ? "Less" : "More"}
+          </button>
+        </section>
+      )}
 
-      {/* Media */}
+      {/* Screenshots */}
       {D.showScreenshots && media.length > 0 && (
         <section className="mt-6">
+          <h2 className="mb-3 px-5 text-[22px] font-bold tracking-tight">Screenshots</h2>
           <ScrollRow className="gap-3">
             {media.map((s, i) => (
               <button
@@ -1078,29 +1090,6 @@ function DetailView({
               </button>
             ))}
           </ScrollRow>
-        </section>
-      )}
-
-      {/* About */}
-      {app.description && (
-        <section className="mt-6">
-          <button type="button" onClick={() => setMore((m) => !m)} className="mb-2 flex w-full items-center justify-between px-5 text-left">
-            <h2 className="text-[22px] font-bold tracking-tight">{T.aboutTitle}</h2>
-            <ChevronRight className={`h-5 w-5 text-slate-300 transition-transform ${more ? "rotate-90" : ""}`} />
-          </button>
-          <p
-            className="whitespace-pre-line px-5 text-sm leading-relaxed text-slate-300"
-            style={
-              more
-                ? undefined
-                : { display: "-webkit-box", WebkitLineClamp: 4, WebkitBoxOrient: "vertical", overflow: "hidden" }
-            }
-          >
-            {app.description}
-          </p>
-          <div className="mt-3 flex flex-wrap gap-2 px-5">
-            <span className="mx-glass rounded-full px-4 py-1.5 text-xs font-medium text-slate-200">{app.category}</span>
-          </div>
         </section>
       )}
 
@@ -1970,4 +1959,4 @@ export default function ModexPage() {
       </div>
     </Ctx.Provider>
   )
-      }
+                  }

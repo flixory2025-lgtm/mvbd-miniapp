@@ -513,9 +513,23 @@ function SectionHead({ title, onSeeAll }: { title: string; onSeeAll?: () => void
   )
 }
 
-function TopBar({ title, onBack, children }: { title: string; onBack: () => void; children?: ReactNode }) {
+function TopBar({
+  title,
+  onBack,
+  children,
+  transparent = false,
+}: {
+  title: string
+  onBack: () => void
+  children?: ReactNode
+  transparent?: boolean
+}) {
   return (
-    <div className="mx-bar sticky top-0 z-30 flex items-center gap-2 px-3 py-3">
+    <div
+      className={`sticky top-0 z-30 flex items-center gap-2 px-3 py-3 transition-colors duration-300 ${
+        transparent ? "border-b border-transparent" : "mx-bar"
+      }`}
+    >
       <IconBtn onClick={onBack} label="Back">
         <ArrowLeft className="h-5 w-5" />
       </IconBtn>
@@ -935,9 +949,22 @@ function DetailView({
   const D = cfg.detail
   const T = cfg.texts
   const [more, setMore] = useState(false)
+  const [heroBad, setHeroBad] = useState(false)
+  const [heroScrolled, setHeroScrolled] = useState(false)
+  useEffect(() => {
+    setHeroBad(false)
+  }, [app.bannerUrl])
+  const hasHero = !!app.bannerUrl && !heroBad
+  useEffect(() => {
+    if (!hasHero) return
+    const onScroll = () => setHeroScrolled(window.scrollY > 170)
+    onScroll()
+    window.addEventListener("scroll", onScroll, { passive: true })
+    return () => window.removeEventListener("scroll", onScroll)
+  }, [hasHero])
   const sameDev = apps.filter((a) => a.developer === app.developer && a.id !== app.id)
   const similar = apps.filter((a) => a.category === app.category && a.id !== app.id).slice(0, 10)
-  const media = [app.bannerUrl, ...app.screenshots].filter(Boolean)
+  const media = (hasHero ? app.screenshots : [app.bannerUrl, ...app.screenshots]).filter(Boolean)
 
   const share = async () => {
     try {
@@ -962,8 +989,27 @@ function DetailView({
   ]
 
   return (
-    <div>
-      <TopBar title="" onBack={onBack}>
+    <div className="relative">
+      {/* COVER PHOTO (background hero) */}
+      {hasHero && (
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-[300px] overflow-hidden lg:h-[380px]">
+          <img
+            src={app.bannerUrl}
+            alt=""
+            className="h-full w-full object-cover"
+            onError={() => setHeroBad(true)}
+          />
+          <div
+            className="absolute inset-0"
+            style={{
+              background:
+                "linear-gradient(to bottom, rgba(0,0,0,.35) 0%, rgba(0,0,0,.05) 35%, color-mix(in srgb, var(--mx-bg) 70%, transparent) 75%, var(--mx-bg) 100%)",
+            }}
+          />
+        </div>
+      )}
+
+      <TopBar title="" onBack={onBack} transparent={hasHero && !heroScrolled}>
         <IconBtn onClick={onToggleSave} label="Save">
           <Bookmark className={`h-5 w-5 ${saved ? "mx-soft-fill" : ""}`} />
         </IconBtn>
@@ -973,7 +1019,11 @@ function DetailView({
       </TopBar>
 
       {/* Header */}
-      <div className="flex items-start gap-4 px-5 pt-2 lg:items-center lg:gap-6">
+      <div
+        className={`relative flex items-start gap-4 px-5 lg:items-center lg:gap-6 ${
+          hasHero ? "pt-[120px] lg:pt-[170px]" : "pt-2"
+        }`}
+      >
         <AppIcon app={app} size={desktop ? 132 : 92} />
         <div className="min-w-0 flex-1">
           <h1 className="text-[24px] font-bold leading-tight tracking-tight lg:text-[34px]">{app.name}</h1>

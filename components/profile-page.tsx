@@ -638,8 +638,8 @@ export default function ProfilePage(
 
   useEffect(() => {
     setName(
-      profile?.name ??
-        user?.displayName ??
+      profile?.name ||
+        user?.displayName ||
         "",
     )
 
@@ -1771,4 +1771,4 @@ export default function ProfilePage(
         : null}
     </main>
   )
-      }
+                      }

@@ -86,7 +86,7 @@ PUSH NOTIFICATIONS  (OneSignal + Cloudflare Worker)
 2) PUSH_WORKER_URL   -> তোমার Cloudflare Worker এর URL
 ============================================================ */
 
-const ONESIGNAL_APP_ID = "PASTE_YOUR_ONESIGNAL_APP_ID"
+const ONESIGNAL_APP_ID = "535f3f99-e550-4fa3-98c6-38e440d51d07"
 const PUSH_WORKER_URL = "PASTE_YOUR_CLOUDFLARE_WORKER_URL"
 
 const PUSH_ENABLED = !ONESIGNAL_APP_ID.startsWith("PASTE")
@@ -7465,4 +7465,4 @@ function SideItem({
       {badge && badge > 0 ? <span className="mb-side-badge">{badge}</span> : null}
     </button>
   )
-      }
+  }

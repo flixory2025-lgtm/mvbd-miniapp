@@ -361,18 +361,19 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
         </div>
 
         {/* === CLOSE BUTTON === */}
+        <div className="absolute right-4 top-4" style={{ zIndex: 9999 }}>
         <button
           type="button"
           onClick={() => onOpenChange(false)}
           aria-label="Close"
-          style={{ zIndex: 9999 }}
-          className="auth-close-btn group/close absolute right-4 top-4 flex size-10 items-center justify-center rounded-full border border-white/25 bg-black/60 text-white shadow-lg backdrop-blur-md transition-all duration-300 hover:scale-110 hover:border-white/50 hover:bg-white/15 active:scale-90"
+          className="auth-close-btn group/close flex size-10 items-center justify-center rounded-full border border-white/25 bg-black/60 text-white shadow-lg backdrop-blur-md transition-all duration-300 hover:scale-110 hover:border-white/50 hover:bg-white/15 active:scale-90"
         >
           <X
             className="size-[18px] transition-transform duration-500 ease-[cubic-bezier(0.22,1.4,0.36,1)] group-hover/close:rotate-180"
             strokeWidth={2.5}
           />
         </button>
+        </div>
 
         {/* === SHIMMER ORB LOADING OVERLAY === */}
         {isSubmitting && (
@@ -617,4 +618,4 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
       </DialogContent>
     </Dialog>
   )
-        }
+}

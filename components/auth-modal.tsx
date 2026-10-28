@@ -340,7 +340,7 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
         onPointerDownOutside={(e) => {
           e.preventDefault()
         }}
-        className="fixed left-1/2 top-1/2 max-h-[92vh] w-[calc(100vw-2rem)] max-w-[400px] -translate-x-1/2 -translate-y-1/2 gap-0 overflow-hidden rounded-[36px] border border-white/10 bg-black/60 p-0 text-white shadow-[0_30px_80px_-20px_rgba(0,0,0,0.9)] backdrop-blur-2xl [&>button]:hidden"
+        className="fixed left-1/2 top-1/2 max-h-[92vh] w-[calc(100vw-2rem)] max-w-[400px] -translate-x-1/2 -translate-y-1/2 gap-0 overflow-hidden rounded-[36px] border border-white/10 bg-black/60 p-0 text-white shadow-[0_30px_80px_-20px_rgba(0,0,0,0.9)] backdrop-blur-2xl [&>button]:hidden data-[state=open]:animate-[authModalIn_0.5s_cubic-bezier(0.22,1.2,0.36,1)_both] data-[state=closed]:animate-[authModalOut_0.3s_cubic-bezier(0.4,0,1,1)_both]"
         style={{
           zIndex: 2147483647,
         }}
@@ -366,9 +366,12 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
           onClick={() => onOpenChange(false)}
           aria-label="Close"
           style={{ zIndex: 9999 }}
-          className="absolute right-4 top-4 flex size-9 items-center justify-center rounded-full border border-white/15 bg-white/[0.06] text-slate-300 backdrop-blur-sm transition-all duration-200 hover:scale-105 hover:bg-white/15 hover:text-white active:scale-95"
+          className="auth-close-btn group/close absolute right-4 top-4 flex size-10 items-center justify-center rounded-full border border-white/25 bg-black/60 text-white shadow-lg backdrop-blur-md transition-all duration-300 hover:scale-110 hover:border-white/50 hover:bg-white/15 active:scale-90"
         >
-          <X className="size-4" strokeWidth={2.5} />
+          <X
+            className="size-[18px] transition-transform duration-500 ease-[cubic-bezier(0.22,1.4,0.36,1)] group-hover/close:rotate-180"
+            strokeWidth={2.5}
+          />
         </button>
 
         {/* === SHIMMER ORB LOADING OVERLAY === */}
@@ -571,7 +574,47 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
             }
           }
         `}</style>
+        {/* open / close animation keyframes */}
+        <style jsx global>{`
+          @keyframes authModalIn {
+            0% {
+              opacity: 0;
+              transform: translate(-50%, -44%) scale(0.9);
+              filter: blur(6px);
+            }
+            100% {
+              opacity: 1;
+              transform: translate(-50%, -50%) scale(1);
+              filter: blur(0);
+            }
+          }
+          @keyframes authModalOut {
+            0% {
+              opacity: 1;
+              transform: translate(-50%, -50%) scale(1);
+              filter: blur(0);
+            }
+            100% {
+              opacity: 0;
+              transform: translate(-50%, -46%) scale(0.92);
+              filter: blur(6px);
+            }
+          }
+          @keyframes authCloseIn {
+            0% {
+              opacity: 0;
+              transform: rotate(-90deg) scale(0.4);
+            }
+            100% {
+              opacity: 1;
+              transform: rotate(0) scale(1);
+            }
+          }
+          .auth-close-btn {
+            animation: authCloseIn 0.55s cubic-bezier(0.22, 1.4, 0.36, 1) 0.2s both;
+          }
+        `}</style>
       </DialogContent>
     </Dialog>
   )
-}
+        }

@@ -54,7 +54,12 @@ async function getFirebase() {
       setDoc: fsMod.setDoc,
       getDoc: fsMod.getDoc,
       getDocs: fsMod.getDocs,
-      addDoc: fsMod.addDoc,
+      // addDoc wrapper: নতুন notification / chat message তৈরি হলেই push পাঠায়
+      addDoc: async (ref: any, data: any) => {
+        const res = await fsMod.addDoc(ref, data)
+        try { void pushAfterAddDoc(ref, data, fsMod) } catch {}
+        return res
+      },
       updateDoc: fsMod.updateDoc,
       deleteDoc: fsMod.deleteDoc,
       onSnapshot: fsMod.onSnapshot,
@@ -72,6 +77,173 @@ async function getFirebase() {
   })()
 
   return _fbPromise
+}
+
+/* ============================================================
+PUSH NOTIFICATIONS  (OneSignal + Cloudflare Worker)
+------------------------------------------------------------
+1) ONESIGNAL_APP_ID  -> OneSignal dashboard > Settings > Keys & IDs
+2) PUSH_WORKER_URL   -> তোমার Cloudflare Worker এর URL
+============================================================ */
+
+const ONESIGNAL_APP_ID = "PASTE_YOUR_ONESIGNAL_APP_ID"
+const PUSH_WORKER_URL = "PASTE_YOUR_CLOUDFLARE_WORKER_URL"
+
+const PUSH_ENABLED = !ONESIGNAL_APP_ID.startsWith("PASTE")
+const PUSH_SEND_ENABLED = PUSH_ENABLED && !PUSH_WORKER_URL.startsWith("PASTE")
+
+let _pushSenderName = "Someone"
+function setPushSenderName(name: string) {
+  if (name) _pushSenderName = name
+}
+
+let _osPromise: Promise<any> | null = null
+function loadOneSignal(): Promise<any> {
+  if (typeof window === "undefined" || !PUSH_ENABLED) return Promise.resolve(null)
+  if (_osPromise) return _osPromise
+
+  _osPromise = new Promise((resolve) => {
+    const w = window as any
+    w.OneSignalDeferred = w.OneSignalDeferred || []
+    w.OneSignalDeferred.push(async (OneSignal: any) => {
+      try {
+        await OneSignal.init({
+          appId: ONESIGNAL_APP_ID,
+          serviceWorkerPath: "OneSignalSDKWorker.js",
+          allowLocalhostAsSecureOrigin: true,
+          notifyButton: { enable: false },
+        })
+        // সাইট খোলা ও দেখা অবস্থায় থাকলে system popup দেখাবে না (in-app toast আছে)
+        OneSignal.Notifications.addEventListener("foregroundWillDisplay", (e: any) => {
+          if (document.visibilityState === "visible") e.preventDefault()
+        })
+        // notification এ click করলে সঠিক জায়গায় নিয়ে যাবে
+        OneSignal.Notifications.addEventListener("click", (e: any) => {
+          try {
+            const url = e?.notification?.launchURL || e?.result?.url
+            if (url && url !== window.location.href) window.location.href = url
+          } catch {}
+        })
+        resolve(OneSignal)
+      } catch (err) {
+        console.warn("OneSignal init failed:", err)
+        resolve(null)
+      }
+    })
+
+    if (!document.getElementById("onesignal-sdk")) {
+      const s = document.createElement("script")
+      s.id = "onesignal-sdk"
+      s.src = "https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js"
+      s.defer = true
+      s.onerror = () => resolve(null)
+      document.head.appendChild(s)
+    }
+  })
+
+  return _osPromise
+}
+
+async function oneSignalLogin(uid: string) {
+  try {
+    const os = await loadOneSignal()
+    if (os) await os.login(uid)
+  } catch (e) {
+    console.warn("OneSignal login failed:", e)
+  }
+}
+
+async function oneSignalLogout() {
+  try {
+    const os = await loadOneSignal()
+    if (os) await os.logout()
+  } catch {}
+}
+
+function getPushPermission(): string {
+  if (!PUSH_ENABLED) return "disabled"
+  if (typeof window === "undefined" || !("Notification" in window)) return "unsupported"
+  return Notification.permission // "default" | "granted" | "denied"
+}
+
+async function requestPush(): Promise<string> {
+  try {
+    const os = await loadOneSignal()
+    if (!os) return getPushPermission()
+    await os.Notifications.requestPermission()
+  } catch (e) {
+    console.warn("Push permission failed:", e)
+  }
+  return getPushPermission()
+}
+
+function pushBaseUrl() {
+  return window.location.origin + window.location.pathname
+}
+
+function pushUrlFor(data: any) {
+  const base = pushBaseUrl()
+  const type = data?.type
+  if (type === "friend") return `${base}?mb=friends`
+  return `${base}?mb=notifications`
+}
+
+async function sendPush(payload: { uid: string; title: string; message: string; type?: string; url?: string }) {
+  if (!PUSH_SEND_ENABLED || !payload.uid) return
+  try {
+    const fb = await getFirebase()
+    const token = await fb.auth.currentUser?.getIdToken()
+    if (!token) return
+    await fetch(PUSH_WORKER_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(payload),
+      keepalive: true,
+    })
+  } catch (e) {
+    console.warn("Push send failed:", e)
+  }
+}
+
+async function pushAfterAddDoc(ref: any, data: any, fsMod: any) {
+  if (!PUSH_SEND_ENABLED || !data) return
+  const path: string = ref?.path || ""
+
+  // 1) নতুন notification document
+  if (path === "notifications") {
+    if (!data.uid) return
+    await sendPush({
+      uid: data.uid,
+      title: data.title || "MoviesVerseBD",
+      message: data.message || "",
+      type: data.type,
+      url: pushUrlFor(data),
+    })
+    return
+  }
+
+  // 2) নতুন chat message
+  const m = path.match(/^chats\/([^/]+)\/messages$/)
+  if (m && _fb) {
+    const chatSnap = await fsMod.getDoc(fsMod.doc(_fb.db, "chats", m[1]))
+    const members: string[] = chatSnap.exists() ? chatSnap.data()?.members || [] : []
+    const to = members.find((x) => x !== data.from)
+    if (!to) return
+    const message =
+      data.type === "image" ? "📷 Photo"
+      : data.type === "voice" ? "🎤 Voice message"
+      : data.text || "👍"
+    await sendPush({
+      uid: to,
+      title: _pushSenderName,
+      message,
+      type: "chat",
+      url: `${pushBaseUrl()}?mb=messages`,
+    })
+  }
 }
 
 /* ============================================================
@@ -2175,6 +2347,55 @@ interface MeBookPageProps {
   onExit: () => void
 }
 
+/* ============ PUSH PERMISSION BANNER ============ */
+function PushPrompt({ perm, onEnable }: { perm: string; onEnable: () => void }) {
+  if (perm !== "default" && perm !== "denied") return null
+  const denied = perm === "denied"
+  return (
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        gap: 12,
+        flexWrap: "wrap",
+        margin: "0 0 14px",
+        padding: "12px 14px",
+        borderRadius: 14,
+        background: denied ? "rgba(255,89,105,.10)" : "rgba(24,119,242,.10)",
+        border: `1px solid ${denied ? "rgba(255,89,105,.30)" : "rgba(24,119,242,.30)"}`,
+        fontSize: 13.5,
+        lineHeight: 1.45,
+      }}
+    >
+      <div style={{ flex: 1, minWidth: 200 }}>
+        <b>🔔 {denied ? "Notification বন্ধ আছে" : "Push notification চালু করুন"}</b>
+        <div style={{ opacity: 0.8, marginTop: 2 }}>
+          {denied
+            ? "Browser/site settings থেকে Notifications → Allow করুন, তারপর page reload দিন।"
+            : "নতুন like, comment, message বা update এলে সাথে সাথে জানতে পারবেন — সাইট বন্ধ থাকলেও।"}
+        </div>
+      </div>
+      {!denied && (
+        <button
+          onClick={onEnable}
+          style={{
+            border: 0,
+            borderRadius: 12,
+            padding: "9px 16px",
+            background: "#1877f2",
+            color: "#fff",
+            fontWeight: 700,
+            cursor: "pointer",
+          }}
+        >
+          Enable
+        </button>
+      )}
+    </div>
+  )
+}
+
 export default function MeBookPage({ onExit }: MeBookPageProps) {
   const rootRef = useRef<HTMLDivElement>(null)
   const [ready, setReady] = useState(false)
@@ -2238,6 +2459,18 @@ const [friends, setFriends] = useState<any[]>([])
 
   const [notifications, setNotifications] = useState<any[]>([])
   const [unreadNotifCount, setUnreadNotifCount] = useState(0)
+
+  /* push permission state */
+  const [pushPerm, setPushPerm] = useState<string>("disabled")
+  useEffect(() => {
+    setPushPerm(getPushPermission())
+  }, [user])
+  const enablePush = async () => {
+    const r = await requestPush()
+    setPushPerm(r)
+    if (r === "granted") showToast("Notifications ON 🔔", "এখন থেকে নতুন কিছু হলেই notification পাবেন", "success")
+    else if (r === "denied") showToast("Blocked", "Browser settings থেকে notification Allow করুন", "error")
+  }
 
   const [friendsTab, setFriendsTab] = useState<"requests" | "sent" | "all" | "mutual">("requests")
   const [profileTab, setProfileTab] = useState<"all" | "photos" | "reels">("all")
@@ -2793,8 +3026,19 @@ const handleChatTyping = (value: string) => {
         fb.collection(fb.db, "notifications"),
         fb.where("uid", "==", uid)
       )
+      let firstNotifSnap = true
       unsubscribersRef.current.push(
         fb.onSnapshot(notifQ, (snap: any) => {
+          // সাইট খোলা অবস্থায় নতুন notification এলে in-app toast
+          if (!firstNotifSnap) {
+            snap.docChanges().forEach((c: any) => {
+              if (c.type === "added" && !c.doc.metadata.hasPendingWrites) {
+                const d = c.doc.data()
+                if (d && !d.read) showToast(d.title || "New notification", d.message || "", "info")
+              }
+            })
+          }
+          firstNotifSnap = false
           const arr: any[] = []
           snap.forEach((d: any) => arr.push({ id: d.id, ...d.data() }))
           arr.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0))
@@ -2803,7 +3047,7 @@ const handleChatTyping = (value: string) => {
         })
       )
     },
-    [cleanupListeners]
+    [cleanupListeners, showToast]
   )
 
   useEffect(() => {
@@ -2845,13 +3089,31 @@ const handleChatTyping = (value: string) => {
             setPrivacy(p.privacy || { info: true, posts: true, requests: true })
             setAuthBusy(false)
 
+            setPushSenderName(p.name || u.displayName || "Someone")
             const profileUnsub = fb.onSnapshot(userRef, (s: any) => {
-              if (s.exists()) setProfile(s.data())
+              if (s.exists()) {
+                setProfile(s.data())
+                setPushSenderName(s.data().name)
+              }
             })
             unsubscribersRef.current.push(profileUnsub)
 
             startAppListeners(u.uid)
+
+            // push: এই user কে OneSignal এ তার uid দিয়ে connect করা
+            void oneSignalLogin(u.uid)
+
+            // notification এ click করে এলে সঠিক page খোলা (?mb=notifications ইত্যাদি)
+            try {
+              const target = new URLSearchParams(window.location.search).get("mb")
+              const allowed = ["home", "notifications", "messages", "friends", "profile"]
+              if (target && allowed.includes(target)) {
+                setPageStack([{ view: target }])
+                window.history.replaceState({}, "", window.location.pathname)
+              }
+            } catch {}
           } else {
+            void oneSignalLogout()
             setUser(null)
             setProfile(null)
             cleanupListeners()
@@ -5295,6 +5557,8 @@ const handleChatTyping = (value: string) => {
           {currentView === "home" && (
   <div className="mb-view active">
 
+    <PushPrompt perm={pushPerm} onEnable={enablePush} />
+
     {/* Exit MeBook */}
     <button
       onClick={onExit}
@@ -5370,6 +5634,7 @@ const handleChatTyping = (value: string) => {
                 </svg>
                 Notifications
               </h1>
+              <PushPrompt perm={pushPerm} onEnable={enablePush} />
               <div className="notif-page-wrap">
                 <div className="notif-page-head">
                   <span>{notifications.length} total</span>
@@ -7200,4 +7465,4 @@ function SideItem({
       {badge && badge > 0 ? <span className="mb-side-badge">{badge}</span> : null}
     </button>
   )
-          }
+      }

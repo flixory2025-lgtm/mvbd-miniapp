@@ -1,6 +1,6 @@
 "use client"
 
-import Link from "next/link"
+import { useEffect, useRef } from "react"
 
 type SocialPlatform =
   | "facebook"
@@ -19,12 +19,20 @@ interface SocialLink {
 }
 
 /* =========================================================
-   BRAND SVG ICONS
+   BRAND SVG ICONS (sizes set via attributes, no scoped CSS)
    ========================================================= */
+
+const svgProps = {
+  viewBox: "0 0 24 24",
+  width: 22,
+  height: 22,
+  "aria-hidden": true,
+  focusable: false,
+} as const
 
 function FacebookIcon() {
   return (
-    <svg viewBox="0 0 24 24" className="mvbd-social-svg" aria-hidden="true">
+    <svg {...svgProps}>
       <path
         fill="currentColor"
         d="M13.5 21v-8h2.7l.4-3h-3.1V8.08c0-.87.24-1.46 1.5-1.46h1.7V3.94c-.29-.04-1.29-.12-2.46-.12-2.44 0-4.11 1.49-4.11 4.23V10H7.5v3h2.63v8h3.37Z"
@@ -35,25 +43,9 @@ function FacebookIcon() {
 
 function InstagramIcon() {
   return (
-    <svg viewBox="0 0 24 24" className="mvbd-social-svg" aria-hidden="true">
-      <rect
-        x="3.2"
-        y="3.2"
-        width="17.6"
-        height="17.6"
-        rx="5"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-      />
-      <circle
-        cx="12"
-        cy="12"
-        r="4.1"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-      />
+    <svg {...svgProps}>
+      <rect x="3.2" y="3.2" width="17.6" height="17.6" rx="5" fill="none" stroke="currentColor" strokeWidth="2" />
+      <circle cx="12" cy="12" r="4.1" fill="none" stroke="currentColor" strokeWidth="2" />
       <circle cx="17.45" cy="6.65" r="1.2" fill="currentColor" />
     </svg>
   )
@@ -61,7 +53,7 @@ function InstagramIcon() {
 
 function YoutubeIcon() {
   return (
-    <svg viewBox="0 0 24 24" className="mvbd-social-svg" aria-hidden="true">
+    <svg {...svgProps}>
       <path
         fill="currentColor"
         d="M23.5 6.2a3 3 0 0 0-2.12-2.12C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.38.58A3 3 0 0 0 .5 6.2 31.2 31.2 0 0 0 0 12a31.2 31.2 0 0 0 .5 5.8 3 3 0 0 0 2.12 2.12C4.5 20.5 12 20.5 12 20.5s7.5 0 9.38-.58a3 3 0 0 0 2.12-2.12A31.2 31.2 0 0 0 24 12a31.2 31.2 0 0 0-.5-5.8ZM9.6 15.85v-7.7L16 12l-6.4 3.85Z"
@@ -72,7 +64,7 @@ function YoutubeIcon() {
 
 function TelegramIcon() {
   return (
-    <svg viewBox="0 0 24 24" className="mvbd-social-svg" aria-hidden="true">
+    <svg {...svgProps}>
       <path
         fill="currentColor"
         d="M21.9 4.1 18.7 19c-.24 1.05-.86 1.31-1.74.82l-4.77-3.52-2.3 2.21c-.25.25-.46.46-.94.46l.34-4.86 8.85-8c.39-.34-.09-.53-.6-.19L6.6 12.96l-4.69-1.47c-1.02-.32-1.04-1.02.21-1.51L20.45 3.3c.86-.31 1.62.2 1.45.8Z"
@@ -83,7 +75,7 @@ function TelegramIcon() {
 
 function WhatsappIcon() {
   return (
-    <svg viewBox="0 0 24 24" className="mvbd-social-svg" aria-hidden="true">
+    <svg {...svgProps}>
       <path
         fill="currentColor"
         d="M20.52 3.48A11.83 11.83 0 0 0 12.07 0C5.52 0 .19 5.32.19 11.88c0 2.09.55 4.13 1.59 5.92L.1 24l6.34-1.66a11.87 11.87 0 0 0 5.63 1.43h.01c6.55 0 11.88-5.33 11.88-11.89 0-3.17-1.23-6.15-3.44-8.4ZM12.08 21.75h-.01a9.85 9.85 0 0 1-5.02-1.37l-.36-.21-3.76.99 1-3.67-.23-.38a9.87 9.87 0 0 1-1.51-5.23C2.19 6.44 6.62 2 12.07 2c2.64 0 5.12 1.03 6.98 2.9a9.82 9.82 0 0 1 2.89 6.99c0 5.45-4.43 9.86-9.86 9.86Zm5.41-7.39c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.17-.17.2-.35.22-.65.07-.3-.15-1.26-.46-2.4-1.47-.89-.79-1.49-1.77-1.66-2.07-.17-.3-.02-.46.13-.61.13-.13.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.07-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.49s1.07 2.89 1.22 3.09c.15.2 2.1 3.2 5.08 4.49.71.31 1.26.49 1.69.63.71.23 1.35.2 1.86.12.57-.09 1.76-.72 2.01-1.42.25-.7.25-1.3.17-1.42-.07-.12-.27-.2-.57-.35Z"
@@ -94,7 +86,7 @@ function WhatsappIcon() {
 
 function TiktokIcon() {
   return (
-    <svg viewBox="0 0 24 24" className="mvbd-social-svg" aria-hidden="true">
+    <svg {...svgProps}>
       <path
         fill="currentColor"
         d="M16.55 2h-3.16v13.07a3.48 3.48 0 1 1-2.42-3.32V8.53a6.78 6.78 0 1 0 5.58 6.65V8.1a8.33 8.33 0 0 0 4.87 1.57V6.5c-2.55-.11-4.55-1.84-4.87-4.5Z"
@@ -105,7 +97,7 @@ function TiktokIcon() {
 
 function ThreadsIcon() {
   return (
-    <svg viewBox="0 0 24 24" className="mvbd-social-svg" aria-hidden="true">
+    <svg {...svgProps}>
       <path
         fill="none"
         stroke="currentColor"
@@ -120,8 +112,24 @@ function ThreadsIcon() {
 
 function MailIcon() {
   return (
-    <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 inline-block mr-1" fill="currentColor">
-      <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
+    <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true">
+      <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z" />
+    </svg>
+  )
+}
+
+function ArrowIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M5 12h14M13 6l6 6-6 6" />
+    </svg>
+  )
+}
+
+function UpIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M12 19V5M6 11l6-6 6 6" />
     </svg>
   )
 }
@@ -130,37 +138,39 @@ function MailIcon() {
    ICON SELECTOR
    ========================================================= */
 
-function SocialIcon({
-  platform,
-}: {
-  platform: SocialPlatform
-}) {
+function SocialIcon({ platform }: { platform: SocialPlatform }) {
   switch (platform) {
     case "facebook":
       return <FacebookIcon />
-
     case "telegram":
       return <TelegramIcon />
-
     case "instagram":
       return <InstagramIcon />
-
     case "whatsapp":
       return <WhatsappIcon />
-
     case "youtube":
       return <YoutubeIcon />
-
     case "tiktok":
       return <TiktokIcon />
-
     case "threads":
       return <ThreadsIcon />
-
     default:
       return null
   }
 }
+
+/* brand colors (R,G,B) used for the hover glow */
+const PLATFORM_RGB: Record<SocialPlatform, string> = {
+  facebook: "24,119,242",
+  instagram: "244,114,182",
+  telegram: "56,189,248",
+  whatsapp: "37,211,102",
+  youtube: "255,51,51",
+  tiktok: "255,255,255",
+  threads: "255,255,255",
+}
+
+const MARQUEE_WORDS = ["MOVIES", "SERIES", "ANIME", "ENTERTAINMENT", "MVBD"]
 
 /* =========================================================
    FOOTER
@@ -168,6 +178,42 @@ function SocialIcon({
 
 export default function UniversalFooter() {
   const currentYear = new Date().getFullYear()
+  const rootRef = useRef<HTMLElement>(null)
+
+  /*
+   * PERFORMANCE:
+   * - Animations run ONLY while the footer is on screen
+   *   (paused automatically when user scrolls away).
+   * - Reveal animation plays once, no re-renders (class toggling only).
+   * - Only transform/opacity are animated (GPU friendly, no layout/paint).
+   */
+  useEffect(() => {
+    const el = rootRef.current
+    if (!el) return
+
+    el.classList.add("mvf-js")
+
+    if (typeof IntersectionObserver === "undefined") {
+      el.classList.add("mvf-in", "mvf-active")
+      return
+    }
+
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            el.classList.add("mvf-in", "mvf-active")
+          } else {
+            el.classList.remove("mvf-active")
+          }
+        }
+      },
+      { threshold: 0.05 }
+    )
+
+    io.observe(el)
+    return () => io.disconnect()
+  }, [])
 
   const socialLinks: SocialLink[] = [
     {
@@ -214,146 +260,152 @@ export default function UniversalFooter() {
     },
   ]
 
+  const telegramUrl = socialLinks.find((s) => s.platform === "telegram")?.url ?? "#"
+
+  const scrollToTop = () => {
+    if (typeof window !== "undefined") {
+      window.scrollTo({ top: 0, behavior: "smooth" })
+    }
+  }
+
   return (
-    <footer className="mvbd-footer relative overflow-hidden">
-
+    <footer ref={rootRef} className="mvf">
       {/* =====================================================
-          ANIMATED BACKGROUND
+          CINEMA BACKGROUND (static gradients, very light)
           ===================================================== */}
-
-      <div className="mvbd-footer-bg">
-
-        {/* Aurora */}
-        <div className="mvbd-aurora mvbd-aurora-1" />
-        <div className="mvbd-aurora mvbd-aurora-2" />
-        <div className="mvbd-aurora mvbd-aurora-3" />
-
-        {/* Moving Grid */}
-        <div className="mvbd-grid" />
-
-        {/* Floating particles */}
-        <span className="mvbd-particle p1" />
-        <span className="mvbd-particle p2" />
-        <span className="mvbd-particle p3" />
-        <span className="mvbd-particle p4" />
-        <span className="mvbd-particle p5" />
-        <span className="mvbd-particle p6" />
-
-        {/* Bottom light */}
-        <div className="mvbd-bottom-light" />
+      <div className="mvf-bg" aria-hidden="true">
+        <div className="mvf-beam mvf-anim" />
+        <div className="mvf-glow-l" />
+        <div className="mvf-glow-r" />
+        <div className="mvf-fade" />
       </div>
 
-      <div className="relative z-10 px-4 py-10 max-w-6xl mx-auto">
+      {/* =====================================================
+          FILM STRIP TOP BORDER
+          ===================================================== */}
+      <div className="mvf-film" aria-hidden="true">
+        <div className="mvf-film-holes mvf-anim" />
+      </div>
 
-        {/* ===================================================
-            TOP BRAND
-            =================================================== */}
-
-        <div className="text-center mb-9">
-
-          <div className="inline-flex items-center justify-center gap-2 mb-3">
-
-            <div className="mvbd-brand-orb">
-              <span>M</span>
+      {/* =====================================================
+          GIANT MARQUEE TEXT
+          ===================================================== */}
+      <div className="mvf-marquee" aria-hidden="true">
+        <div className="mvf-marquee-track mvf-anim">
+          {[0, 1].map((copy) => (
+            <div className="mvf-marquee-group" key={copy}>
+              {MARQUEE_WORDS.map((word) => (
+                <span className="mvf-marquee-item" key={`${copy}-${word}`}>
+                  <span className="mvf-marquee-word">{word}</span>
+                  <span className="mvf-marquee-star">✦</span>
+                </span>
+              ))}
             </div>
+          ))}
+        </div>
+      </div>
 
-            <div className="text-left">
-              <div className="mvbd-brand-title">
-                MoviesVerse<span>BD</span>
-              </div>
-
-              <div className="mvbd-brand-subtitle">
-                YOUR MOVIE UNIVERSE
-              </div>
-            </div>
-
+      <div className="mvf-container">
+        {/* =====================================================
+            TICKET CTA
+            ===================================================== */}
+        <div className="mvf-ticket mvf-r" style={{ ["--d" as string]: "0ms" }}>
+          <div className="mvf-ticket-main">
+            <span className="mvf-ticket-tag">
+              <i /> ADMIT ONE
+            </span>
+            <h3 className="mvf-ticket-title">
+              Your next movie night <em>starts here.</em>
+            </h3>
+            <p className="mvf-ticket-text">
+              Join the MVBD community for movies, series and anime updates.
+            </p>
           </div>
 
-          <p className="text-slate-400 text-sm max-w-md mx-auto leading-relaxed">
-            Your ultimate entertainment destination for movies, series,
-            anime and more.
-          </p>
-
+          <div className="mvf-ticket-stub">
+            <a
+              href={telegramUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mvf-cta"
+            >
+              <TelegramIcon />
+              <span>Join on Telegram</span>
+              <ArrowIcon />
+            </a>
+          </div>
         </div>
 
-        {/* ===================================================
-            MAIN FOOTER CONTENT
-            =================================================== */}
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-9">
-
-          {/* About */}
-          <div className="mvbd-footer-column">
-
-            <div className="mvbd-section-title">
-              <span />
-              About MVBD
+        {/* =====================================================
+            MAIN GRID
+            ===================================================== */}
+        <div className="mvf-grid">
+          {/* Brand + About */}
+          <div className="mvf-col mvf-r" style={{ ["--d" as string]: "80ms" }}>
+            <div className="mvf-brand">
+              <img
+                src="https://i.postimg.cc/V6GHC8yG/17773-removebg-preview.png"
+                alt="MoviesVerseBD"
+                width={46}
+                height={46}
+                loading="lazy"
+                decoding="async"
+                className="mvf-logo"
+              />
+              <div>
+                <div className="mvf-brand-title">
+                  MoviesVerse<span>BD</span>
+                </div>
+                <div className="mvf-brand-sub">YOUR MOVIE UNIVERSE</div>
+              </div>
             </div>
 
-            <p className="text-slate-400 text-sm leading-6">
-              Discover your next favourite movie, series or anime
-              with MoviesVerseBD.
+            <p className="mvf-about">
+              Your ultimate entertainment destination for movies, series, anime and more.
+              Discover your next favourite movie, series or anime with MoviesVerseBD.
             </p>
 
-            <div className="mvbd-mini-status">
-              <span className="mvbd-live-dot" />
+            <div className="mvf-status">
+              <span className="mvf-dot mvf-anim" />
               MVBD is always evolving
             </div>
-
           </div>
 
           {/* Quick Links */}
-          <div className="mvbd-footer-column">
-
-            <div className="mvbd-section-title">
+          <div className="mvf-col mvf-r" style={{ ["--d" as string]: "160ms" }}>
+            <div className="mvf-title">
               <span />
               Quick Links
             </div>
 
-            <div className="grid grid-cols-2 gap-2">
-
-              <a
-                href="#profile"
-                className="mvbd-quick-link"
-              >
-                Profile
+            <nav className="mvf-links" aria-label="Footer quick links">
+              <a href="#profile" className="mvf-link">
+                <span>Profile</span>
+                <ArrowIcon />
               </a>
-
-              <a
-                href="#about"
-                className="mvbd-quick-link"
-              >
-                About Us
+              <a href="#about" className="mvf-link">
+                <span>About Us</span>
+                <ArrowIcon />
               </a>
-
-              <a
-                href="#contact"
-                className="mvbd-quick-link"
-              >
-                Contact Us
+              <a href="#contact" className="mvf-link">
+                <span>Contact Us</span>
+                <ArrowIcon />
               </a>
-
-              <a
-                href="#subscriptions"
-                className="mvbd-quick-link"
-              >
-                Subscriptions
+              <a href="#subscriptions" className="mvf-link">
+                <span>Subscriptions</span>
+                <ArrowIcon />
               </a>
-
-            </div>
-
+            </nav>
           </div>
 
           {/* Social */}
-          <div className="mvbd-footer-column">
-
-            <div className="mvbd-section-title">
+          <div className="mvf-col mvf-r" style={{ ["--d" as string]: "240ms" }}>
+            <div className="mvf-title">
               <span />
               Connect With Us
             </div>
 
-            <div className="mvbd-social-grid">
-
+            <div className="mvf-social-grid">
               {socialLinks.map((social) => (
                 <a
                   key={social.name}
@@ -362,453 +414,408 @@ export default function UniversalFooter() {
                   rel="noopener noreferrer"
                   aria-label={`Visit MVBD on ${social.label}`}
                   title={social.label}
-                  className={`mvbd-social ${social.platform}`}
+                  className="mvf-social"
+                  style={{ ["--rgb" as string]: PLATFORM_RGB[social.platform] }}
                 >
-
-                  {/* animated ring */}
-                  <span className="mvbd-social-ring" />
-
-                  {/* orbit dot */}
-                  <span className="mvbd-orbit">
-                    <span />
-                  </span>
-
-                  {/* icon */}
-                  <span className="mvbd-social-icon">
-                    <SocialIcon platform={social.platform} />
-                  </span>
-
-                  {/* shine */}
-                  <span className="mvbd-social-shine" />
-
+                  <SocialIcon platform={social.platform} />
                 </a>
               ))}
-
             </div>
 
+            <div className="mvf-follow">
+              <i />
+              <span>
+                FOLLOW <b>MVBD</b> EVERYWHERE
+              </span>
+            </div>
           </div>
-
         </div>
 
-        {/* ===================================================
-            SOCIAL LABEL STRIP
-            =================================================== */}
-
-        <div className="mvbd-social-strip">
-
-          <div className="mvbd-social-strip-line" />
-
-          <span>
-            FOLLOW <b>MVBD</b> EVERYWHERE
-          </span>
-
-          <div className="mvbd-social-strip-line" />
-
-        </div>
-
-        {/* ===================================================
+        {/* =====================================================
             DIVIDER
-            =================================================== */}
+            ===================================================== */}
+        <div className="mvf-divider" aria-hidden="true">
+          <span className="mvf-anim" />
+        </div>
 
-        <div className="mvbd-divider" />
-
-        {/* ===================================================
+        {/* =====================================================
             BOTTOM
-            =================================================== */}
-
-        <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-center md:text-left">
-
-          <div className="space-y-1.5">
-
-            <p className="text-slate-500 text-xs">
-              © {currentYear} MoviesVerseBD. All rights reserved.
-            </p>
-
-            <div className="text-slate-600 text-xs">
-
+            ===================================================== */}
+        <div className="mvf-bottom">
+          <div className="mvf-copy">
+            <p>© {currentYear} MoviesVerseBD. All rights reserved.</p>
+            <p>
               Made by{" "}
-
               <a
                 href="https://wa.me/qr/R2ZGCQAMXWRPP1"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="mvbd-maker"
+                className="mvf-maker"
               >
                 Abdul Mazid
               </a>
-
-            </div>
-
+            </p>
           </div>
 
-          <div className="flex flex-wrap items-center justify-center gap-3 text-xs text-slate-500">
-
-            <a
-              href="mailto:support@mvbds.xyz"
-              className="mvbd-bottom-link text-emerald-400 hover:text-emerald-300 font-medium flex items-center"
-            >
+          <div className="mvf-bottom-links">
+            <a href="mailto:support@mvbds.xyz" className="mvf-mail">
               <MailIcon /> support@mvbds.xyz
             </a>
-
-            <span className="text-slate-700">•</span>
-
-            <a
-              href="https://mvbds.xyz/privacy-policy.html"
-              className="mvbd-bottom-link"
-            >
+            <b>•</b>
+            <a href="https://mvbds.xyz/privacy-policy.html" className="mvf-bl">
               Privacy Policy
             </a>
-
-            <span className="text-slate-700">•</span>
-
-            <a
-              href="https://mvbds.xyz/terms.html"
-              className="mvbd-bottom-link"
-            >
-              Terms & Conditions
+            <b>•</b>
+            <a href="https://mvbds.xyz/terms.html" className="mvf-bl">
+              Terms &amp; Conditions
             </a>
-
-            <span className="text-slate-700">•</span>
-
-            <a
-              href="#contact"
-              className="mvbd-bottom-link"
-            >
+            <b>•</b>
+            <a href="#contact" className="mvf-bl">
               Contact
             </a>
-
           </div>
 
+          <button
+            type="button"
+            onClick={scrollToTop}
+            aria-label="Back to top"
+            className="mvf-top"
+          >
+            <UpIcon />
+          </button>
         </div>
-
       </div>
 
       {/* =====================================================
-          ALL FOOTER CSS (PERFORMANCE OPTIMIZED)
+          CSS (global + prefixed so child components are styled too)
           ===================================================== */}
-
-      <style jsx>{`
-
-        /* =========================
-           FOOTER BASE
-           ========================= */
-
-        .mvbd-footer {
-          min-height: 420px;
-          background:
-            radial-gradient(
-              circle at 50% 0%,
-              rgba(16,185,129,.075),
-              transparent 35%
-            ),
-            #020504;
-          border-top: 1px solid rgba(255,255,255,.08);
-          contain: content;
+      <style jsx global>{`
+        .mvf {
+          position: relative;
+          overflow: hidden;
+          isolation: isolate;
+          contain: paint;
+          background: #03060a;
+          border-top: 1px solid rgba(255, 255, 255, 0.06);
+          color: #cbd5e1;
         }
 
-        .mvbd-footer-bg {
+        /* ---------- background ---------- */
+        .mvf-bg {
           position: absolute;
           inset: 0;
-          overflow: hidden;
+          z-index: -1;
           pointer-events: none;
         }
-
-        /* =========================
-           AURORA (OPTIMIZED BLUR)
-           ========================= */
-
-        .mvbd-aurora {
+        .mvf-beam {
           position: absolute;
-          width: 320px;
-          height: 180px;
-          border-radius: 50%;
-          filter: blur(40px);
-          opacity: .13;
-          mix-blend-mode: screen;
-          will-change: transform;
-          transform: translateZ(0);
-        }
-
-        .mvbd-aurora-1 {
-          top: -110px;
-          left: 5%;
-          background: #00ff88;
-          animation: mvbdAurora1 12s ease-in-out infinite alternate;
-        }
-
-        .mvbd-aurora-2 {
-          top: 80px;
-          right: -100px;
-          background: #00b7ff;
-          animation: mvbdAurora2 15s ease-in-out infinite alternate;
-        }
-
-        .mvbd-aurora-3 {
-          bottom: -150px;
-          left: 35%;
-          background: #7c3aed;
-          animation: mvbdAurora3 18s ease-in-out infinite alternate;
-        }
-
-        @keyframes mvbdAurora1 {
-          0% {
-            transform: translate3d(-40px,0,0) scale(.8);
-          }
-          100% {
-            transform: translate3d(230px,90px,0) scale(1.25);
-          }
-        }
-
-        @keyframes mvbdAurora2 {
-          0% {
-            transform: translate3d(0,40px,0) scale(1);
-          }
-          100% {
-            transform: translate3d(-220px,-80px,0) scale(1.35);
-          }
-        }
-
-        @keyframes mvbdAurora3 {
-          0% {
-            transform: translate3d(-100px,30px,0) scale(.9);
-          }
-          100% {
-            transform: translate3d(180px,-80px,0) scale(1.3);
-          }
-        }
-
-        /* =========================
-           MOVING GRID (GPU ACCELERATED)
-           ========================= */
-
-        .mvbd-grid {
-          position: absolute;
-          inset: -50px;
-          opacity: .035;
-          background-image:
-            linear-gradient(
-              rgba(255,255,255,.7) 1px,
-              transparent 1px
-            ),
-            linear-gradient(
-              90deg,
-              rgba(255,255,255,.7) 1px,
-              transparent 1px
-            );
-          background-size: 45px 45px;
-          transform: translateZ(0);
-          will-change: background-position;
-          animation: mvbdGridMove 12s linear infinite;
-        }
-
-        @keyframes mvbdGridMove {
-          from {
-            background-position: 0 0;
-          }
-          to {
-            background-position: 0 45px;
-          }
-        }
-
-        /* =========================
-           PARTICLES
-           ========================= */
-
-        .mvbd-particle {
-          position: absolute;
-          width: 3px;
-          height: 3px;
-          border-radius: 50%;
-          background: rgba(110,255,180,.8);
-          box-shadow: 0 0 8px rgba(52,211,153,.8);
-          will-change: transform;
-          animation: mvbdParticleFloat 7s ease-in-out infinite;
-        }
-
-        .p1 { left: 8%; top: 25%; animation-delay: -1s; }
-        .p2 { left: 25%; top: 70%; animation-delay: -4s; }
-        .p3 { left: 48%; top: 18%; animation-delay: -2s; }
-        .p4 { right: 18%; top: 35%; animation-delay: -5s; }
-        .p5 { right: 8%; top: 75%; animation-delay: -3s; }
-        .p6 { left: 68%; bottom: 10%; animation-delay: -6s; }
-
-        @keyframes mvbdParticleFloat {
-          0%, 100% {
-            transform: translate3d(0,0,0);
-            opacity: .25;
-          }
-          50% {
-            transform: translate3d(0,-28px,0);
-            opacity: 1;
-          }
-        }
-
-        /* =========================
-           BOTTOM LIGHT
-           ========================= */
-
-        .mvbd-bottom-light {
-          position: absolute;
-          bottom: -100px;
+          top: 0;
           left: 50%;
-          width: 70%;
-          height: 180px;
-          transform: translateX(-50%) translateZ(0);
-          background: rgba(16,185,129,.18);
-          filter: blur(40px);
-          will-change: transform, opacity;
-          animation: mvbdBottomGlow 5s ease-in-out infinite alternate;
+          width: 1000px;
+          max-width: 150%;
+          height: 460px;
+          transform: translate3d(-50%, 0, 0);
+          background: radial-gradient(
+            ellipse 50% 100% at 50% 0%,
+            rgba(16, 185, 129, 0.22),
+            rgba(16, 185, 129, 0.06) 45%,
+            transparent 72%
+          );
+          animation: mvf-beam 6s ease-in-out infinite alternate;
+          will-change: opacity;
         }
-
-        @keyframes mvbdBottomGlow {
+        .mvf-glow-l,
+        .mvf-glow-r {
+          position: absolute;
+          width: 420px;
+          height: 420px;
+          border-radius: 50%;
+        }
+        .mvf-glow-l {
+          left: -200px;
+          bottom: -160px;
+          background: radial-gradient(circle, rgba(16, 185, 129, 0.1), transparent 68%);
+        }
+        .mvf-glow-r {
+          right: -200px;
+          top: 30%;
+          background: radial-gradient(circle, rgba(245, 158, 11, 0.07), transparent 68%);
+        }
+        .mvf-fade {
+          position: absolute;
+          inset: 0;
+          background: linear-gradient(180deg, transparent 55%, rgba(0, 0, 0, 0.55));
+        }
+        @keyframes mvf-beam {
           from {
-            opacity: .35;
-            transform: translateX(-50%) scale(.85);
+            opacity: 0.55;
           }
           to {
-            opacity: .8;
-            transform: translateX(-50%) scale(1.15);
-          }
-        }
-
-        /* =========================
-           BRAND
-           ========================= */
-
-        .mvbd-brand-orb {
-          position: relative;
-          width: 44px;
-          height: 44px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          border-radius: 14px;
-          background:
-            linear-gradient(
-              135deg,
-              rgba(74,222,128,.2),
-              rgba(16,185,129,.05)
-            );
-          border: 1px solid rgba(74,222,128,.28);
-          box-shadow:
-            0 0 25px rgba(16,185,129,.12),
-            inset 0 1px 0 rgba(255,255,255,.12);
-          overflow: hidden;
-        }
-
-        .mvbd-brand-orb::before {
-          content: "";
-          position: absolute;
-          width: 80px;
-          height: 20px;
-          background: rgba(255,255,255,.12);
-          transform: rotate(-35deg) translateX(-60px);
-          will-change: transform;
-          animation: mvbdBrandShine 3.5s ease-in-out infinite;
-        }
-
-        .mvbd-brand-orb span {
-          position: relative;
-          z-index: 2;
-          font-size: 21px;
-          font-weight: 900;
-          color: #4ade80;
-        }
-
-        @keyframes mvbdBrandShine {
-          0%, 65% {
-            transform: rotate(-35deg) translateX(-70px);
-          }
-          100% {
-            transform: rotate(-35deg) translateX(90px);
-          }
-        }
-
-        .mvbd-brand-title {
-          font-size: 20px;
-          line-height: 1;
-          font-weight: 800;
-          color: white;
-          letter-spacing: -.5px;
-        }
-
-        .mvbd-brand-title span {
-          color: #4ade80;
-        }
-
-        .mvbd-brand-subtitle {
-          margin-top: 4px;
-          font-size: 7px;
-          letter-spacing: 3px;
-          color: rgba(255,255,255,.35);
-        }
-
-        /* =========================
-           SECTION TITLES
-           ========================= */
-
-        .mvbd-section-title {
-          display: flex;
-          align-items: center;
-          gap: 9px;
-          color: white;
-          font-size: 15px;
-          font-weight: 700;
-          margin-bottom: 15px;
-        }
-
-        .mvbd-section-title span {
-          width: 4px;
-          height: 18px;
-          border-radius: 99px;
-          background: #34d399;
-          box-shadow: 0 0 12px rgba(52,211,153,.65);
-          will-change: transform, opacity;
-          animation: mvbdTitlePulse 2s ease-in-out infinite;
-        }
-
-        @keyframes mvbdTitlePulse {
-          0%,100% {
-            opacity: .45;
-            transform: scaleY(.75);
-          }
-          50% {
             opacity: 1;
-            transform: scaleY(1);
           }
         }
 
-        /* =========================
-           STATUS
-           ========================= */
+        /* ---------- film strip ---------- */
+        .mvf-film {
+          position: relative;
+          height: 16px;
+          overflow: hidden;
+          background: #000;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .mvf-film-holes {
+          position: absolute;
+          top: 4px;
+          bottom: 4px;
+          left: 0;
+          width: calc(100% + 56px);
+          border-radius: 2px;
+          background: repeating-linear-gradient(
+            90deg,
+            rgba(255, 255, 255, 0.17) 0 14px,
+            transparent 14px 28px
+          );
+          animation: mvf-film 3s linear infinite;
+          will-change: transform;
+        }
+        @keyframes mvf-film {
+          to {
+            transform: translate3d(-28px, 0, 0);
+          }
+        }
 
-        .mvbd-mini-status {
+        /* ---------- marquee ---------- */
+        .mvf-marquee {
+          position: relative;
+          overflow: hidden;
+          padding: 28px 0 6px;
+          -webkit-mask-image: linear-gradient(90deg, transparent, #000 14%, #000 86%, transparent);
+          mask-image: linear-gradient(90deg, transparent, #000 14%, #000 86%, transparent);
+        }
+        .mvf-marquee-track {
+          display: flex;
+          width: max-content;
+          animation: mvf-marquee 38s linear infinite;
+          will-change: transform;
+        }
+        .mvf-marquee-group {
+          display: flex;
+          align-items: center;
+          flex-shrink: 0;
+        }
+        .mvf-marquee-item {
+          display: inline-flex;
+          align-items: center;
+          gap: 28px;
+          padding-right: 28px;
+        }
+        .mvf-marquee-word {
+          font-size: clamp(42px, 9vw, 92px);
+          line-height: 1;
+          font-weight: 900;
+          letter-spacing: -0.02em;
+          color: transparent;
+          -webkit-text-stroke: 1px rgba(255, 255, 255, 0.13);
+          user-select: none;
+        }
+        .mvf-marquee-star {
+          font-size: clamp(14px, 2.4vw, 22px);
+          color: rgba(52, 211, 153, 0.75);
+        }
+        @keyframes mvf-marquee {
+          to {
+            transform: translate3d(-50%, 0, 0);
+          }
+        }
+
+        /* ---------- layout ---------- */
+        .mvf-container {
+          position: relative;
+          max-width: 1152px;
+          margin: 0 auto;
+          padding: 8px 16px 28px;
+        }
+
+        /* ---------- ticket CTA ---------- */
+        .mvf-ticket {
+          display: flex;
+          align-items: stretch;
+          margin-bottom: 44px;
+          border-radius: 22px;
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          background:
+            linear-gradient(135deg, rgba(16, 185, 129, 0.17), rgba(245, 158, 11, 0.07) 62%, rgba(255, 255, 255, 0.03));
+          box-shadow: 0 20px 50px -24px rgba(16, 185, 129, 0.45);
+          -webkit-mask:
+            radial-gradient(circle 13px at 0 50%, transparent 97%, #000) left / 51% 100% no-repeat,
+            radial-gradient(circle 13px at 100% 50%, transparent 97%, #000) right / 51% 100% no-repeat;
+          mask:
+            radial-gradient(circle 13px at 0 50%, transparent 97%, #000) left / 51% 100% no-repeat,
+            radial-gradient(circle 13px at 100% 50%, transparent 97%, #000) right / 51% 100% no-repeat;
+        }
+        .mvf-ticket-main {
+          flex: 1;
+          padding: 26px 28px;
+        }
+        .mvf-ticket-tag {
           display: inline-flex;
           align-items: center;
           gap: 7px;
-          margin-top: 16px;
-          padding: 7px 10px;
-          border-radius: 999px;
-          background: rgba(255,255,255,.035);
-          border: 1px solid rgba(255,255,255,.07);
-          color: rgba(255,255,255,.38);
           font-size: 10px;
+          font-weight: 700;
+          letter-spacing: 0.28em;
+          color: #fbbf24;
         }
-
-        .mvbd-live-dot {
+        .mvf-ticket-tag i {
           width: 6px;
           height: 6px;
           border-radius: 50%;
-          background: #4ade80;
-          box-shadow: 0 0 10px #4ade80;
-          will-change: transform, opacity;
-          animation: mvbdLivePulse 1.5s ease-in-out infinite;
+          background: #fbbf24;
+          box-shadow: 0 0 10px #fbbf24;
+        }
+        .mvf-ticket-title {
+          margin: 10px 0 6px;
+          font-size: clamp(22px, 3.4vw, 30px);
+          line-height: 1.15;
+          font-weight: 800;
+          letter-spacing: -0.02em;
+          color: #fff;
+        }
+        .mvf-ticket-title em {
+          font-style: normal;
+          background: linear-gradient(90deg, #6ee7b7, #34d399 55%, #fbbf24);
+          -webkit-background-clip: text;
+          background-clip: text;
+          color: transparent;
+        }
+        .mvf-ticket-text {
+          margin: 0;
+          font-size: 13px;
+          line-height: 1.6;
+          color: rgba(255, 255, 255, 0.5);
+        }
+        .mvf-ticket-stub {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 24px 30px;
+          border-left: 2px dashed rgba(255, 255, 255, 0.16);
+        }
+        .mvf-cta {
+          position: relative;
+          display: inline-flex;
+          align-items: center;
+          gap: 10px;
+          padding: 14px 20px;
+          overflow: hidden;
+          border-radius: 999px;
+          font-size: 14px;
+          font-weight: 700;
+          color: #04130c;
+          white-space: nowrap;
+          background: linear-gradient(135deg, #6ee7b7, #10b981);
+          box-shadow: 0 10px 30px -10px rgba(16, 185, 129, 0.8);
+          transition: transform 0.25s ease, box-shadow 0.25s ease;
+        }
+        .mvf-cta::after {
+          content: "";
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 40%;
+          height: 100%;
+          background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.55), transparent);
+          transform: translate3d(-160%, 0, 0) skewX(-20deg);
+        }
+        .mvf-cta:hover {
+          transform: translate3d(0, -2px, 0);
+          box-shadow: 0 16px 36px -10px rgba(16, 185, 129, 0.95);
+        }
+        .mvf-cta:hover::after {
+          transform: translate3d(380%, 0, 0) skewX(-20deg);
+          transition: transform 0.7s ease;
+        }
+        .mvf-cta svg:last-child {
+          transition: transform 0.25s ease;
+        }
+        .mvf-cta:hover svg:last-child {
+          transform: translate3d(3px, 0, 0);
         }
 
-        @keyframes mvbdLivePulse {
-          0%,100% {
-            transform: scale(.7);
-            opacity: .45;
+        /* ---------- main grid ---------- */
+        .mvf-grid {
+          display: grid;
+          grid-template-columns: 1fr;
+          gap: 36px;
+          margin-bottom: 36px;
+        }
+        @media (min-width: 768px) {
+          .mvf-grid {
+            grid-template-columns: 1.5fr 1fr 1.2fr;
+            gap: 40px;
+          }
+        }
+
+        .mvf-brand {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          margin-bottom: 16px;
+        }
+        .mvf-logo {
+          flex-shrink: 0;
+          object-fit: contain;
+          filter: drop-shadow(0 0 12px rgba(16, 185, 129, 0.45));
+        }
+        .mvf-brand-title {
+          font-size: 22px;
+          line-height: 1;
+          font-weight: 800;
+          letter-spacing: -0.03em;
+          color: #fff;
+        }
+        .mvf-brand-title span {
+          color: #34d399;
+        }
+        .mvf-brand-sub {
+          margin-top: 6px;
+          font-size: 8px;
+          letter-spacing: 0.32em;
+          color: rgba(255, 255, 255, 0.38);
+        }
+        .mvf-about {
+          margin: 0;
+          max-width: 380px;
+          font-size: 13.5px;
+          line-height: 1.75;
+          color: #94a3b8;
+        }
+        .mvf-status {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          margin-top: 18px;
+          padding: 7px 12px;
+          border-radius: 999px;
+          font-size: 11px;
+          color: rgba(255, 255, 255, 0.5);
+          background: rgba(255, 255, 255, 0.04);
+          border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .mvf-dot {
+          width: 6px;
+          height: 6px;
+          border-radius: 50%;
+          background: #34d399;
+          box-shadow: 0 0 10px #34d399;
+          animation: mvf-dot 1.8s ease-in-out infinite;
+          will-change: transform, opacity;
+        }
+        @keyframes mvf-dot {
+          0%,
+          100% {
+            transform: scale(0.7);
+            opacity: 0.5;
           }
           50% {
             transform: scale(1.15);
@@ -816,406 +823,293 @@ export default function UniversalFooter() {
           }
         }
 
-        /* =========================
-           QUICK LINKS
-           ========================= */
-
-        .mvbd-quick-link {
-          position: relative;
-          padding: 8px 10px;
+        .mvf-title {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          margin-bottom: 18px;
+          font-size: 15px;
+          font-weight: 700;
+          color: #fff;
+        }
+        .mvf-title span {
+          width: 4px;
+          height: 18px;
           border-radius: 99px;
-          color: rgba(255,255,255,.42);
-          font-size: 12px;
-          background: rgba(255,255,255,.025);
-          border: 1px solid transparent;
-          transition:
-            color .2s ease,
-            background .2s ease,
-            border-color .2s ease,
-            transform .2s ease;
+          background: linear-gradient(180deg, #6ee7b7, #10b981);
+          box-shadow: 0 0 12px rgba(52, 211, 153, 0.6);
         }
 
-        .mvbd-quick-link:hover {
+        /* ---------- quick links ---------- */
+        .mvf-links {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+        }
+        .mvf-link {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 11px 14px;
+          border-radius: 14px;
+          font-size: 13px;
+          font-weight: 500;
+          color: rgba(255, 255, 255, 0.55);
+          background: rgba(255, 255, 255, 0.025);
+          border: 1px solid rgba(255, 255, 255, 0.05);
+          transition: color 0.2s ease, background 0.2s ease, border-color 0.2s ease, transform 0.25s ease;
+        }
+        .mvf-link svg {
+          opacity: 0;
+          transform: translate3d(-6px, 0, 0);
+          transition: opacity 0.2s ease, transform 0.25s ease;
+        }
+        .mvf-link:hover {
           color: #6ee7b7;
-          background: rgba(52,211,153,.06);
-          border-color: rgba(52,211,153,.13);
-          transform: translateY(-2px);
+          background: rgba(16, 185, 129, 0.08);
+          border-color: rgba(52, 211, 153, 0.22);
+          transform: translate3d(4px, 0, 0);
+        }
+        .mvf-link:hover svg {
+          opacity: 1;
+          transform: none;
         }
 
-        /* =========================
-           SOCIAL GRID
-           ========================= */
-
-        .mvbd-social-grid {
+        /* ---------- social ---------- */
+        .mvf-social-grid {
           display: flex;
           flex-wrap: wrap;
           gap: 10px;
         }
-
-        .mvbd-social {
-          --platform: #ffffff;
-
+        .mvf-social {
+          --rgb: 255, 255, 255;
           position: relative;
-          width: 45px;
-          height: 45px;
           display: flex;
           align-items: center;
           justify-content: center;
+          width: 46px;
+          height: 46px;
           border-radius: 15px;
-
-          color: rgba(255,255,255,.68);
-
-          background:
-            linear-gradient(
-              145deg,
-              rgba(255,255,255,.09),
-              rgba(255,255,255,.025)
-            );
-
-          border: 1px solid rgba(255,255,255,.10);
-
-          box-shadow:
-            inset 0 1px 0 rgba(255,255,255,.08),
-            0 8px 25px rgba(0,0,0,.22);
-
-          overflow: visible;
-
-          transition:
-            transform .25s ease,
-            color .2s ease,
-            border-color .2s ease,
-            box-shadow .2s ease;
+          color: rgba(255, 255, 255, 0.7);
+          background: linear-gradient(145deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.025));
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+          transition: transform 0.25s cubic-bezier(0.22, 1.2, 0.36, 1), color 0.2s ease,
+            border-color 0.2s ease, box-shadow 0.25s ease, background 0.25s ease;
         }
-
-        .mvbd-social:hover {
-          transform: translateY(-5px) scale(1.05);
-          color: var(--platform);
-          border-color: color-mix(
-            in srgb,
-            var(--platform) 35%,
-            transparent
-          );
-
-          box-shadow:
-            0 12px 35px rgba(0,0,0,.3),
-            0 0 15px color-mix(
-              in srgb,
-              var(--platform) 20%,
-              transparent
-            ),
-            inset 0 1px 0 rgba(255,255,255,.13);
+        .mvf-social:hover {
+          transform: translate3d(0, -5px, 0) scale(1.06);
+          color: rgb(var(--rgb));
+          border-color: rgba(var(--rgb), 0.45);
+          background: linear-gradient(145deg, rgba(var(--rgb), 0.16), rgba(var(--rgb), 0.04));
+          box-shadow: 0 14px 28px -10px rgba(var(--rgb), 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.14);
         }
-
-        /* =========================
-           PLATFORM COLORS
-           ========================= */
-
-        .mvbd-social.facebook { --platform: #1877f2; }
-        .mvbd-social.instagram { --platform: #f472b6; }
-        .mvbd-social.telegram { --platform: #38bdf8; }
-        .mvbd-social.whatsapp { --platform: #25d366; }
-        .mvbd-social.youtube { --platform: #ff3333; }
-        .mvbd-social.tiktok { --platform: #ffffff; }
-        .mvbd-social.threads { --platform: #ffffff; }
-
-        /* =========================
-           ICON
-           ========================= */
-
-        .mvbd-social-icon {
-          position: relative;
-          z-index: 5;
+        .mvf-follow {
           display: flex;
           align-items: center;
-          justify-content: center;
-          width: 22px;
-          height: 22px;
-          transition: transform .2s ease;
+          gap: 12px;
+          margin-top: 20px;
         }
-
-        .mvbd-social:hover .mvbd-social-icon {
-          transform: scale(1.1);
+        .mvf-follow i {
+          width: 34px;
+          height: 1px;
+          background: linear-gradient(90deg, rgba(52, 211, 153, 0.7), transparent);
         }
-
-        .mvbd-social-svg {
-          width: 100%;
-          height: 100%;
-          display: block;
-        }
-
-        /* =========================
-           LIVE RING
-           ========================= */
-
-        .mvbd-social-ring {
-          position: absolute;
-          inset: -1px;
-          border-radius: inherit;
-          border: 1px solid transparent;
-          opacity: 0;
-          pointer-events: none;
-        }
-
-        .mvbd-social:hover .mvbd-social-ring {
-          border-color: var(--platform);
-          animation: mvbdSocialRing 1.2s ease-out infinite;
-        }
-
-        @keyframes mvbdSocialRing {
-          0% {
-            inset: 0;
-            opacity: .65;
-          }
-          100% {
-            inset: -7px;
-            opacity: 0;
-          }
-        }
-
-        /* =========================
-           ORBIT DOT
-           ========================= */
-
-        .mvbd-orbit {
-          position: absolute;
-          inset: -5px;
-          border-radius: 50%;
-          pointer-events: none;
-          opacity: 0;
-        }
-
-        .mvbd-orbit span {
-          position: absolute;
-          top: -2px;
-          left: 50%;
-          width: 4px;
-          height: 4px;
-          transform: translateX(-50%);
-          border-radius: 50%;
-          background: var(--platform);
-          box-shadow: 0 0 6px var(--platform);
-        }
-
-        .mvbd-social:hover .mvbd-orbit {
-          opacity: 1;
-          will-change: transform;
-          animation: mvbdOrbit 2s linear infinite;
-        }
-
-        @keyframes mvbdOrbit {
-          to {
-            transform: rotate(360deg);
-          }
-        }
-
-        /* =========================
-           ICON SHINE
-           ========================= */
-
-        .mvbd-social-shine {
-          position: absolute;
-          z-index: 2;
-          top: -20%;
-          left: -80%;
-          width: 55%;
-          height: 140%;
-          transform: rotate(20deg);
-          background: linear-gradient(
-            90deg,
-            transparent,
-            rgba(255,255,255,.2),
-            transparent
-          );
-          pointer-events: none;
-        }
-
-        .mvbd-social:hover .mvbd-social-shine {
-          animation: mvbdSocialShine .6s ease;
-        }
-
-        @keyframes mvbdSocialShine {
-          from { left: -80%; }
-          to { left: 140%; }
-        }
-
-        /* =========================
-           SOCIAL STRIP
-           ========================= */
-
-        .mvbd-social-strip {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 14px;
-          margin: 5px 0 20px;
-        }
-
-        .mvbd-social-strip span:not(.mvbd-social-strip-line) {
-          color: rgba(255,255,255,.25);
-          font-size: 8px;
-          letter-spacing: 3px;
+        .mvf-follow span {
+          font-size: 9px;
+          letter-spacing: 0.28em;
+          color: rgba(255, 255, 255, 0.3);
           white-space: nowrap;
         }
-
-        .mvbd-social-strip b {
-          color: #4ade80;
+        .mvf-follow b {
+          color: #34d399;
           font-weight: 700;
         }
 
-        .mvbd-social-strip-line {
-          width: 55px;
+        /* ---------- divider ---------- */
+        .mvf-divider {
+          position: relative;
           height: 1px;
+          margin-bottom: 22px;
+          overflow: hidden;
           background: linear-gradient(
             90deg,
             transparent,
-            rgba(52,211,153,.35),
+            rgba(52, 211, 153, 0.25),
+            rgba(255, 255, 255, 0.09),
+            rgba(52, 211, 153, 0.25),
             transparent
           );
         }
-
-        /* =========================
-           DIVIDER
-           ========================= */
-
-        .mvbd-divider {
-          height: 1px;
-          margin-bottom: 22px;
-          background:
-            linear-gradient(
-              90deg,
-              transparent,
-              rgba(52,211,153,.22),
-              rgba(255,255,255,.08),
-              rgba(52,211,153,.22),
-              transparent
-            );
-          position: relative;
-          overflow: hidden;
-        }
-
-        .mvbd-divider::after {
-          content: "";
+        .mvf-divider span {
           position: absolute;
           top: 0;
-          left: -20%;
-          width: 20%;
+          left: 0;
+          width: 22%;
           height: 100%;
-          background: #6ee7b7;
-          box-shadow: 0 0 10px #34d399;
-          will-change: left;
-          animation: mvbdDividerFlow 4s linear infinite;
+          background: linear-gradient(90deg, transparent, #6ee7b7, transparent);
+          transform: translate3d(-100%, 0, 0);
+          animation: mvf-flow 4.5s linear infinite;
+          will-change: transform;
+        }
+        @keyframes mvf-flow {
+          to {
+            transform: translate3d(460%, 0, 0);
+          }
         }
 
-        @keyframes mvbdDividerFlow {
-          from { left: -20%; }
-          to { left: 120%; }
+        /* ---------- bottom ---------- */
+        .mvf-bottom {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 16px;
+          text-align: center;
         }
-
-        /* =========================
-           MAKER
-           ========================= */
-
-        .mvbd-maker {
+        @media (min-width: 768px) {
+          .mvf-bottom {
+            flex-direction: row;
+            justify-content: space-between;
+            text-align: left;
+          }
+        }
+        .mvf-copy p {
+          margin: 0;
+          font-size: 12px;
+          color: #64748b;
+        }
+        .mvf-copy p + p {
+          margin-top: 6px;
+          color: #475569;
+        }
+        .mvf-maker {
           display: inline-block;
           margin-left: 3px;
           font-style: italic;
           font-family: cursive;
-          letter-spacing: .5px;
           font-weight: 700;
-          background:
-            linear-gradient(
-              90deg,
-              #a78bfa,
-              #f472b6,
-              #fb7185
-            );
+          letter-spacing: 0.5px;
+          background: linear-gradient(90deg, #a78bfa, #f472b6, #fb7185);
           -webkit-background-clip: text;
           background-clip: text;
           color: transparent;
-          transition: opacity .2s ease;
+          transition: opacity 0.2s ease;
+        }
+        .mvf-maker:hover {
+          opacity: 0.8;
+        }
+        .mvf-bottom-links {
+          display: flex;
+          flex-wrap: wrap;
+          align-items: center;
+          justify-content: center;
+          gap: 10px 12px;
+          font-size: 12px;
+          color: #64748b;
+        }
+        .mvf-bottom-links b {
+          font-weight: 400;
+          color: #334155;
+        }
+        .mvf-bl {
+          transition: color 0.2s ease;
+        }
+        .mvf-bl:hover {
+          color: #fff;
+        }
+        .mvf-mail {
+          display: inline-flex;
+          align-items: center;
+          gap: 5px;
+          font-weight: 500;
+          color: #34d399;
+          transition: color 0.2s ease;
+        }
+        .mvf-mail:hover {
+          color: #6ee7b7;
+        }
+        .mvf-top {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-shrink: 0;
+          width: 40px;
+          height: 40px;
+          border-radius: 50%;
+          color: #cbd5e1;
+          cursor: pointer;
+          background: rgba(255, 255, 255, 0.05);
+          border: 1px solid rgba(255, 255, 255, 0.12);
+          transition: transform 0.25s ease, color 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+        }
+        .mvf-top:hover {
+          transform: translate3d(0, -3px, 0);
+          color: #04130c;
+          background: #34d399;
+          border-color: #34d399;
         }
 
-        .mvbd-maker:hover {
-          opacity: .8;
+        /* ---------- reveal on scroll (plays once) ---------- */
+        .mvf-js .mvf-r {
+          opacity: 0;
+          transform: translate3d(0, 22px, 0);
+          transition: opacity 0.7s ease, transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+          transition-delay: var(--d, 0ms);
+        }
+        .mvf-js.mvf-in .mvf-r {
+          opacity: 1;
+          transform: none;
         }
 
-        /* =========================
-           BOTTOM LINKS
-           ========================= */
-
-        .mvbd-bottom-link {
-          transition: color .2s ease;
+        /* ---------- pause everything when off-screen ---------- */
+        .mvf:not(.mvf-active) .mvf-anim {
+          animation-play-state: paused;
         }
 
-        .mvbd-bottom-link:hover {
-          color: white;
-        }
-
-        /* =========================
-           MOBILE OPTIMIZATIONS
-           ========================= */
-
+        /* ---------- mobile ---------- */
         @media (max-width: 640px) {
-
-          .mvbd-footer {
-            min-height: auto;
+          .mvf-ticket {
+            flex-direction: column;
           }
-
-          .mvbd-aurora {
-            width: 220px;
-            height: 120px;
-            filter: blur(30px);
+          .mvf-ticket-main {
+            padding: 24px 22px 18px;
           }
-
-          .mvbd-grid {
-            background-size: 35px 35px;
-            transform: none; /* Mobile rendering fast rakhar jonyo 3D rotate bondho */
+          .mvf-ticket-stub {
+            padding: 18px 22px 24px;
+            border-left: 0;
+            border-top: 2px dashed rgba(255, 255, 255, 0.16);
           }
-
-          .mvbd-social {
-            width: 43px;
-            height: 43px;
-            border-radius: 14px;
+          .mvf-cta {
+            width: 100%;
+            justify-content: center;
           }
-
-          .mvbd-social-grid {
-            gap: 9px;
+          .mvf-social {
+            width: 44px;
+            height: 44px;
           }
-
-          .mvbd-social-strip-line {
-            width: 30px;
+          .mvf-marquee {
+            padding-top: 20px;
           }
-
         }
 
-        /* =========================
-           REDUCED MOTION & LOW END DEVICES
-           ========================= */
-
+        /* ---------- accessibility / low-end devices ---------- */
         @media (prefers-reduced-motion: reduce) {
-
-          .mvbd-aurora,
-          .mvbd-grid,
-          .mvbd-particle,
-          .mvbd-bottom-light,
-          .mvbd-brand-orb::before,
-          .mvbd-social-ring,
-          .mvbd-orbit,
-          .mvbd-social-shine,
-          .mvbd-divider::after,
-          .mvbd-live-dot,
-          .mvbd-section-title span {
+          .mvf-anim {
             animation: none !important;
           }
-
-          .mvbd-social {
+          .mvf-js .mvf-r {
+            opacity: 1;
+            transform: none;
+            transition: none;
+          }
+          .mvf-social,
+          .mvf-link,
+          .mvf-cta,
+          .mvf-top {
             transition: none !important;
           }
-
         }
-
       `}</style>
-
     </footer>
   )
 }

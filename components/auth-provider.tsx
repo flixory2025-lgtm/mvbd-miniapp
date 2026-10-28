@@ -14,6 +14,7 @@ import {
   signInWithEmailAndPassword,
   signInWithPopup,
   signOut as firebaseSignOut,
+  updateProfile as updateFirebaseAuthProfile,
   type User,
 } from "firebase/auth"
 
@@ -25,8 +26,23 @@ import {
   getLegacyProfile,
   handleExpiredSubscription,
   subscribeToUserProfile,
+  updateUserProfile,
   type UserProfile,
 } from "@/lib/user-profile"
+
+/*
+ * FIX: Sign up এর সময় Firebase user তৈরি হওয়া মাত্রই onAuthStateChanged চলে যায়,
+ * তখনো signUp() এর full name/DOB/referral ফর্ম ডাটা profile এ পৌঁছায়নি।
+ * ফলে profile নামহীন অবস্থায় তৈরি হয়ে যেত। তাই ফর্মের ডাটা আগে এখানে রেখে দেওয়া হয়।
+ */
+type PendingSignupProfile = {
+  name?: string
+  dateOfBirth?: string
+  email?: string
+  photoURL?: string
+  referralCode?: string
+}
+let pendingSignupProfile: PendingSignupProfile | null = null
 
 type AuthContextValue = {
   user: User | null
@@ -74,7 +90,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return
       }
 
-      void ensureUserProfile(nextUser, getLegacyProfile())
+      void ensureUserProfile(
+        nextUser,
+        (pendingSignupProfile
+          ? {
+              ...pendingSignupProfile,
+              email: nextUser.email || pendingSignupProfile.email,
+              photoURL: nextUser.photoURL || pendingSignupProfile.photoURL || "",
+            }
+          : getLegacyProfile()) as any,
+      )
         .then(async (nextProfile) => {
           const currentProfile = await handleExpiredSubscription(nextUser.uid)
           const resolvedProfile = currentProfile ?? nextProfile
@@ -122,15 +147,53 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       loading,
       refreshProfile,
       async signUp(email, password, profile) {
-        const credential = await createUserWithEmailAndPassword(auth, email, password)
-        await ensureUserProfile(credential.user, {
-          name: profile?.name,
+        const signupData: PendingSignupProfile = {
+          name: profile?.name?.trim(),
           dateOfBirth: profile?.dateOfBirth,
-          email: credential.user.email || email,
-          photoURL: credential.user.photoURL || "",
+          email,
+          photoURL: "",
           referralCode: profile?.referralCode,
-        })
-        return credential.user
+        }
+
+        // account তৈরির আগেই ডাটা রাখা হচ্ছে, যাতে onAuthStateChanged এও নামটা পায়
+        pendingSignupProfile = signupData
+
+        try {
+          const credential = await createUserWithEmailAndPassword(auth, email, password)
+
+          // Firebase Auth এর displayName এও নাম বসানো
+          if (signupData.name) {
+            try {
+              await updateFirebaseAuthProfile(credential.user, { displayName: signupData.name })
+            } catch (error) {
+              console.error("Unable to set display name", error)
+            }
+          }
+
+          await ensureUserProfile(credential.user, {
+            name: signupData.name,
+            dateOfBirth: signupData.dateOfBirth,
+            email: credential.user.email || email,
+            photoURL: credential.user.photoURL || "",
+            referralCode: signupData.referralCode,
+          })
+
+          // নিশ্চিত করার জন্য: profile আগে খালি নামে তৈরি হয়ে গেলেও নাম ও জন্মতারিখ জোর করে লিখে দেওয়া
+          if (signupData.name || signupData.dateOfBirth) {
+            try {
+              await updateUserProfile(credential.user.uid, {
+                ...(signupData.name ? { name: signupData.name } : {}),
+                ...(signupData.dateOfBirth ? { dateOfBirth: signupData.dateOfBirth } : {}),
+              })
+            } catch (error) {
+              console.error("Unable to save signup name", error)
+            }
+          }
+
+          return credential.user
+        } finally {
+          pendingSignupProfile = null
+        }
       },
       async signIn(email, password) {
         const credential = await signInWithEmailAndPassword(auth, email, password)

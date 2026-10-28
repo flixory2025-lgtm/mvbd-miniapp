@@ -87,7 +87,7 @@ PUSH NOTIFICATIONS  (OneSignal + Cloudflare Worker)
 ============================================================ */
 
 const ONESIGNAL_APP_ID = "535f3f99-e550-4fa3-98c6-38e440d51d07"
-const PUSH_WORKER_URL = "PASTE_YOUR_CLOUDFLARE_WORKER_URL"
+const PUSH_WORKER_URL = "https://mvbd-push.flixory2025.workers.dev/"
 
 const PUSH_ENABLED = !ONESIGNAL_APP_ID.startsWith("PASTE")
 const PUSH_SEND_ENABLED = PUSH_ENABLED && !PUSH_WORKER_URL.startsWith("PASTE")

@@ -398,7 +398,7 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
         onPointerDownOutside={(e) => {
           e.preventDefault()
         }}
-        className={`av-modal fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 gap-0 overflow-hidden border border-white/10 p-0 text-white [&>button]:hidden ${
+        className={`av-modal fixed gap-0 overflow-hidden border border-white/10 p-0 text-white [&>button]:hidden ${
           isUp ? "av-is-up" : ""
         } ${played ? "av-play" : ""}`}
         style={
@@ -719,14 +719,22 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
             border-radius: 30px !important;
             background: #07100c !important;
             display: block !important;
+            /* perfect center (translate chhara) — mobile ar desktop duitei */
+            position: fixed !important;
+            top: 0 !important;
+            bottom: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            margin: auto !important;
+            translate: none !important;
             box-shadow: 0 40px 90px -20px rgba(0, 0, 0, 0.95),
               0 0 60px -20px rgba(var(--glow), 0.5) !important;
           }
           .av-modal[data-state="open"] {
-            animation: authModalIn 0.5s cubic-bezier(0.22, 1.2, 0.36, 1) both;
+            animation: avModalIn 0.5s cubic-bezier(0.22, 1.2, 0.36, 1) both;
           }
           .av-modal[data-state="closed"] {
-            animation: authModalOut 0.3s cubic-bezier(0.4, 0, 1, 1) both;
+            animation: avModalOut 0.3s cubic-bezier(0.4, 0, 1, 1) both;
           }
           .av-modal .av-h {
             height: 54px;
@@ -1073,27 +1081,27 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
           }
 
           /* ================= OPEN / CLOSE KEYFRAMES ================= */
-          @keyframes authModalIn {
+          @keyframes avModalIn {
             0% {
               opacity: 0;
-              transform: translate(-50%, -44%) scale(0.9);
+              transform: translateY(24px) scale(0.92);
               filter: blur(6px);
             }
             100% {
               opacity: 1;
-              transform: translate(-50%, -50%) scale(1);
+              transform: none;
               filter: blur(0);
             }
           }
-          @keyframes authModalOut {
+          @keyframes avModalOut {
             0% {
               opacity: 1;
-              transform: translate(-50%, -50%) scale(1);
+              transform: none;
               filter: blur(0);
             }
             100% {
               opacity: 0;
-              transform: translate(-50%, -46%) scale(0.92);
+              transform: translateY(14px) scale(0.94);
               filter: blur(6px);
             }
           }

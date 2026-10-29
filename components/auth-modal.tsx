@@ -20,7 +20,7 @@ import {
  */
 const GLOW = "60,225,25"
 
-/* Side poster image (sign in / sign up panel) */
+/* Side poster image (still — kono animation nai) */
 const POSTER =
   "https://i.postimg.cc/7hLqB21s/Netflix-all-movies-and-series-featured-image.jpg"
 const LOGO = "https://i.postimg.cc/V6GHC8yG/17773-removebg-preview.png"
@@ -159,7 +159,7 @@ const GlowField = forwardRef<HTMLInputElement, GlowFieldProps>(function GlowFiel
 ) {
   return (
     <div
-      className="glow-field av-h group relative rounded-full border border-white/10 bg-white/[0.04] transition-all duration-300 focus-within:border-white/25 focus-within:bg-white/[0.07]"
+      className="glow-field av-h group relative rounded-full border border-white/10 bg-white/[0.04] transition-colors duration-300 focus-within:border-white/25 focus-within:bg-white/[0.07]"
       style={
         {
           "--glow": GLOW,
@@ -225,7 +225,7 @@ function PillButton({
   return (
     <button
       {...props}
-      className={`group/btn av-h relative flex w-full items-center rounded-full border border-white/10 bg-white/[0.04] pl-5 pr-2.5 text-[14.5px] font-semibold text-slate-200 transition-all duration-300 hover:border-white/25 hover:bg-white/[0.09] active:scale-[0.99] disabled:opacity-60 ${className}`}
+      className={`group/btn av-h relative flex w-full items-center rounded-full border border-white/10 bg-white/[0.04] pl-5 pr-2.5 text-[14.5px] font-semibold text-slate-200 transition-colors duration-300 hover:border-white/25 hover:bg-white/[0.09] active:scale-[0.99] disabled:opacity-60 ${className}`}
     >
       {icon ? <span className="mr-3 flex size-6 items-center justify-center">{icon}</span> : null}
       <span className="flex-1 text-left">{children}</span>
@@ -236,11 +236,23 @@ function PillButton({
   )
 }
 
-/* slide + blur animated wrapper (n = stagger index) */
+/* slide animated wrapper (n = stagger index) */
 function Anim({ n, children }: { n: number; children: React.ReactNode }) {
   return (
     <div className="av-anim" style={{ "--n": n } as React.CSSProperties}>
       {children}
+    </div>
+  )
+}
+
+/* Logo + "MoviesVerse" (white) + "BD" (green) */
+function Lockup() {
+  return (
+    <div className="av-lockup">
+      <img src={LOGO} alt="" decoding="async" />
+      <span>
+        MoviesVerse<b>BD</b>
+      </span>
     </div>
   )
 }
@@ -294,6 +306,16 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
   const paneInRef = useRef<HTMLElement | null>(null)
   const paneUpRef = useRef<HTMLElement | null>(null)
 
+  // Poster + logo age-i load kore rakho, jate popup khulle lag na kore
+  useEffect(() => {
+    if (typeof window === "undefined") return
+    ;[POSTER, LOGO].forEach((src) => {
+      const img = new Image()
+      img.decoding = "async"
+      img.src = src
+    })
+  }, [])
+
   // Reset on close (exit animation shesh howar por)
   useEffect(() => {
     if (open) return
@@ -328,6 +350,7 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
 
   const handleSignIn = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
+    if (isSubmitting) return
     setError("")
     setIsSubmitting(true)
 
@@ -346,6 +369,7 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
 
   const handleSignUp = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
+    if (isSubmitting) return
     setError("")
     setIsSubmitting(true)
 
@@ -367,6 +391,7 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
   }
 
   const handleGoogleSignIn = async () => {
+    if (isSubmitting) return
     setError("")
     setIsSubmitting(true)
     try {
@@ -418,7 +443,7 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
           </DialogDescription>
         </DialogHeader>
 
-        {/* === POSTER PANEL (slides between sides) === */}
+        {/* === POSTER PANEL (still image, shudhu panel sweep kore) === */}
         <div className="av-art-wrap">
           <div className="av-art">
             <div className="av-art-img" style={{ backgroundImage: `url('${POSTER}')` }} />
@@ -429,12 +454,7 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
         {/* === INFO on poster : sign-in === */}
         <section className="av-pane av-info av-info-login" aria-hidden={isUp}>
           <Anim n={0}>
-            <div className="av-lockup">
-              <img src={LOGO} alt="" />
-              <span>
-                Movies<b>Verse</b>BD
-              </span>
-            </div>
+            <Lockup />
           </Anim>
           <Anim n={1}>
             <h2>Welcome back</h2>
@@ -447,12 +467,7 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
         {/* === INFO on poster : sign-up === */}
         <section className="av-pane av-info av-info-register" aria-hidden={!isUp}>
           <Anim n={0}>
-            <div className="av-lockup">
-              <img src={LOGO} alt="" />
-              <span>
-                Movies<b>Verse</b>BD
-              </span>
-            </div>
+            <Lockup />
           </Anim>
           <Anim n={1}>
             <h2>Join MVBD</h2>
@@ -468,7 +483,7 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
             type="button"
             onClick={() => onOpenChange(false)}
             aria-label="Close"
-            className="auth-close-btn group/close flex size-10 items-center justify-center rounded-full border border-white/25 bg-black/60 text-white shadow-lg backdrop-blur-md transition-all duration-300 hover:scale-110 hover:border-white/50 hover:bg-white/15 active:scale-90"
+            className="auth-close-btn group/close flex size-10 items-center justify-center rounded-full border border-white/25 bg-black/70 text-white shadow-lg transition-all duration-300 hover:scale-110 hover:border-white/50 hover:bg-white/15 active:scale-90"
           >
             <X
               className="size-[18px] transition-transform duration-500 ease-[cubic-bezier(0.22,1.4,0.36,1)] group-hover/close:rotate-180"
@@ -480,7 +495,7 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
         {/* === SHIMMER ORB LOADING OVERLAY === */}
         {isSubmitting && (
           <div
-            className="absolute inset-0 flex flex-col items-center justify-center gap-6 bg-black/85 backdrop-blur-sm"
+            className="absolute inset-0 flex flex-col items-center justify-center gap-6 bg-black/90"
             style={{ zIndex: 9998 }}
           >
             <ShimmerOrbLoader />
@@ -727,26 +742,25 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
             right: 0 !important;
             margin: auto !important;
             translate: none !important;
-            box-shadow: 0 40px 90px -20px rgba(0, 0, 0, 0.95),
-              0 0 60px -20px rgba(var(--glow), 0.5) !important;
+            box-shadow: 0 30px 70px -20px rgba(0, 0, 0, 0.9),
+              0 0 50px -22px rgba(var(--glow), 0.5) !important;
           }
           .av-modal[data-state="open"] {
-            animation: avModalIn 0.5s cubic-bezier(0.22, 1.2, 0.36, 1) both;
+            animation: avModalIn 0.45s cubic-bezier(0.22, 1.1, 0.36, 1) both;
           }
           .av-modal[data-state="closed"] {
-            animation: avModalOut 0.3s cubic-bezier(0.4, 0, 1, 1) both;
+            animation: avModalOut 0.25s cubic-bezier(0.4, 0, 1, 1) both;
           }
           .av-modal .av-h {
             height: 54px;
           }
 
-          /* ================= POSTER PANEL ================= */
+          /* ================= POSTER PANEL (still) ================= */
           .av-art-wrap {
             position: absolute;
             inset: 0;
             z-index: 0;
             pointer-events: none;
-            filter: drop-shadow(0 0 7px rgba(var(--glow), 0.75));
           }
           .av-art {
             position: absolute;
@@ -757,11 +771,11 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
           }
           .av-art-img {
             position: absolute;
-            inset: -4%;
+            inset: 0;
             background-position: center;
             background-size: cover;
             background-repeat: no-repeat;
-            animation: avKenburns 22s ease-in-out infinite alternate;
+            transform: translateZ(0); /* nijer GPU layer — sweep smooth hoy */
           }
           .av-art-shade {
             position: absolute;
@@ -779,18 +793,10 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
             clip-path: polygon(0 0, 54% 0, 30% 100%, 0 100%);
           }
           .av-play:not(.av-is-up) .av-art {
-            animation: avSweepOut 1.5s ease both;
+            animation: avSweepOut 1.3s ease both;
           }
           .av-play.av-is-up .av-art {
-            animation: avSweepIn 1.5s ease both;
-          }
-          @keyframes avKenburns {
-            from {
-              transform: scale(1);
-            }
-            to {
-              transform: scale(1.09) translate(-1.2%, 0.8%);
-            }
+            animation: avSweepIn 1.3s ease both;
           }
           @keyframes avSweepIn {
             0% {
@@ -812,6 +818,12 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
             }
             100% {
               clip-path: polygon(46% 0, 100% 0, 100% 100%, 70% 100%);
+            }
+          }
+          /* edge glow shudhu desktop e (mobile e heavy) */
+          @media (min-width: 721px) {
+            .av-art-wrap {
+              filter: drop-shadow(0 0 7px rgba(var(--glow), 0.75));
             }
           }
 
@@ -845,24 +857,26 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
           .av-lockup {
             display: flex;
             align-items: center;
-            gap: 10px;
-            margin-bottom: 18px;
+            gap: 12px;
+            margin-bottom: 20px;
           }
           .av-info-login .av-lockup {
             flex-direction: row-reverse;
           }
           .av-lockup img {
-            width: 52px;
-            height: 52px;
+            width: 72px;
+            height: 72px;
             object-fit: contain;
-            filter: drop-shadow(0 0 12px rgba(255, 255, 255, 0.35));
+            filter: drop-shadow(0 0 12px rgba(255, 255, 255, 0.3));
           }
           .av-lockup span {
             font-weight: 800;
-            font-size: 18px;
+            font-size: 20px;
             letter-spacing: -0.02em;
+            color: #fff;
           }
           .av-lockup span b {
+            font-weight: 800;
             color: rgb(var(--glow));
           }
           .av-info h2 {
@@ -899,8 +913,9 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
           .av-form-register {
             right: 0;
           }
-          .av-is-up .av-form-login,
-          .av-form-register {
+          /* je form active na, take click/tap kora jabe na */
+          .av-form-register,
+          .av-is-up .av-form-login {
             pointer-events: none;
           }
           .av-form-login,
@@ -943,37 +958,33 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
             box-shadow: 0 0 0 1000px transparent inset;
           }
 
-          /* ================= SLIDE + BLUR CHOREOGRAPHY ================= */
+          /* ================= SLIDE CHOREOGRAPHY (blur chhara — smooth) ================= */
           .av-anim {
-            transition: transform 0.7s ease, opacity 0.7s ease, filter 0.7s ease;
+            transition: transform 0.6s ease, opacity 0.6s ease;
           }
           /* sign-in visible by default */
           .av-form-login .av-anim,
           .av-info-login .av-anim {
             transform: none;
             opacity: 1;
-            filter: blur(0);
-            transition-delay: calc(0.8s + 0.06s * var(--n));
+            transition-delay: calc(0.7s + 0.05s * var(--n));
           }
           .av-is-up .av-form-login .av-anim {
             transform: translateX(-120%);
             opacity: 0;
-            filter: blur(10px);
-            transition-delay: calc(0.05s * var(--n));
+            transition-delay: calc(0.04s * var(--n));
           }
           .av-is-up .av-info-login .av-anim {
             transform: translateX(120%);
             opacity: 0;
-            filter: blur(10px);
-            transition-delay: calc(0.05s * var(--n));
+            transition-delay: calc(0.04s * var(--n));
           }
           /* sign-up hidden by default */
           .av-form-register .av-anim,
           .av-info-register .av-anim {
             transform: translateX(120%);
             opacity: 0;
-            filter: blur(10px);
-            transition-delay: calc(0.05s * var(--n));
+            transition-delay: calc(0.04s * var(--n));
           }
           .av-info-register .av-anim {
             transform: translateX(-120%);
@@ -982,8 +993,7 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
           .av-is-up .av-info-register .av-anim {
             transform: none;
             opacity: 1;
-            filter: blur(0);
-            transition-delay: calc(0.8s + 0.06s * var(--n));
+            transition-delay: calc(0.7s + 0.05s * var(--n));
           }
           .av-modal:not(.av-play) .av-anim {
             transition: none;
@@ -1084,25 +1094,21 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
           @keyframes avModalIn {
             0% {
               opacity: 0;
-              transform: translateY(24px) scale(0.92);
-              filter: blur(6px);
+              transform: translateY(22px) scale(0.93);
             }
             100% {
               opacity: 1;
               transform: none;
-              filter: blur(0);
             }
           }
           @keyframes avModalOut {
             0% {
               opacity: 1;
               transform: none;
-              filter: blur(0);
             }
             100% {
               opacity: 0;
-              transform: translateY(14px) scale(0.94);
-              filter: blur(6px);
+              transform: translateY(12px) scale(0.95);
             }
           }
           @keyframes authCloseIn {
@@ -1116,7 +1122,7 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
             }
           }
           .auth-close-btn {
-            animation: authCloseIn 0.55s cubic-bezier(0.22, 1.4, 0.36, 1) 0.2s both;
+            animation: authCloseIn 0.5s cubic-bezier(0.22, 1.4, 0.36, 1) 0.15s both;
           }
 
           /* ================= MOBILE: poster band on top, form below ================= */
@@ -1171,18 +1177,19 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
               left: 0;
             }
             .av-info .av-lockup {
-              margin-bottom: 6px;
+              margin-bottom: 4px;
+              gap: 8px;
               flex-direction: row !important;
             }
             .av-lockup img {
-              width: 34px;
-              height: 34px;
+              width: 50px;
+              height: 50px;
             }
             .av-lockup span {
-              font-size: 15px;
+              font-size: 16px;
             }
             .av-info h2 {
-              font-size: 19px;
+              font-size: 18px;
             }
             .av-info p {
               display: none;
@@ -1214,8 +1221,12 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
             }
           }
           @media (prefers-reduced-motion: reduce) {
-            .av-art-img {
-              animation: none;
+            .av-anim,
+            .av-art,
+            .av-modal {
+              animation-duration: 0.01ms !important;
+              transition-duration: 0.01ms !important;
+              transition-delay: 0s !important;
             }
           }
         `}</style>

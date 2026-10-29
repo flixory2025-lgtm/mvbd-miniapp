@@ -1995,6 +1995,150 @@ background:linear-gradient(135deg,#22c55e 0%,#86efac 100%);
 color:transparent;
 text-shadow:0 0 15px rgba(34,197,94,.35);
 }
+
+/* ============================================================
+   EDIT / DELETE / SEE MORE / PHOTO VIEWER
+   ============================================================ */
+.mebook-root .mb-cap-text.clamp{
+display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+}
+.mebook-root .mb-see-more{
+display:inline-block;margin-top:2px;padding:0;
+font-size:14.5px;font-weight:700;color:var(--text-muted);
+}
+.mebook-root .mb-see-more:hover{text-decoration:underline;}
+.mebook-root .mb-post-media img{cursor:zoom-in;}
+.mebook-root .mb-edited-tag{font-size:12px;color:var(--text-muted);}
+
+/* Bottom sheet */
+.mebook-root .mb-sheet-backdrop{
+position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,.45);
+display:flex;align-items:flex-end;justify-content:center;
+animation:sheetFade .18s ease;
+}
+@keyframes sheetFade{from{opacity:0;}to{opacity:1;}}
+.mebook-root .mb-sheet{
+width:100%;max-width:480px;background:var(--card);color:var(--text);
+border-radius:18px 18px 0 0;padding:8px 8px calc(12px + env(safe-area-inset-bottom,0px));
+box-shadow:var(--shadow-lg);animation:sheetUp .22s cubic-bezier(.2,.8,.3,1);
+}
+@keyframes sheetUp{from{transform:translateY(100%);}to{transform:none;}}
+.mebook-root .mb-sheet-grip{width:38px;height:4px;border-radius:4px;background:var(--border);margin:4px auto 8px;}
+.mebook-root .mb-sheet-item{
+width:100%;display:flex;align-items:center;gap:14px;padding:14px 16px;
+border-radius:12px;font-size:15.5px;font-weight:600;text-align:left;
+}
+.mebook-root .mb-sheet-item:hover{background:var(--hover);}
+.mebook-root .mb-sheet-item svg{width:22px;height:22px;fill:currentColor;flex-shrink:0;}
+.mebook-root .mb-sheet-item.danger{color:#ef4444;}
+@media(min-width:640px){
+.mebook-root .mb-sheet-backdrop{align-items:center;}
+.mebook-root .mb-sheet{border-radius:18px;}
+}
+
+/* Edit post modal */
+.mebook-root .mb-modal-backdrop{
+position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,.55);
+display:flex;align-items:center;justify-content:center;padding:14px;
+animation:sheetFade .18s ease;
+}
+.mebook-root .mb-modal{
+width:100%;max-width:520px;max-height:92vh;overflow-y:auto;
+background:var(--card);color:var(--text);border-radius:16px;
+box-shadow:var(--shadow-lg);padding:0 0 14px;
+}
+.mebook-root .mb-modal-head{
+display:flex;align-items:center;justify-content:space-between;
+padding:14px 16px;border-bottom:1px solid var(--border);font-size:17px;
+}
+.mebook-root .mb-modal-x{
+width:34px;height:34px;border-radius:50%;background:var(--hover);
+display:flex;align-items:center;justify-content:center;
+}
+.mebook-root .mb-modal-x svg{width:18px;height:18px;fill:currentColor;}
+.mebook-root .mb-modal-textarea{
+width:calc(100% - 32px);margin:14px 16px 0;min-height:110px;resize:vertical;
+border:1px solid var(--border);border-radius:12px;padding:10px 12px;
+background:var(--input-bg);color:var(--text);font-size:15px;line-height:1.45;
+font-family:inherit;outline:none;box-sizing:border-box;
+}
+.mebook-root .mb-modal-textarea:focus{border-color:var(--green);}
+.mebook-root .mb-modal-img{position:relative;margin:12px 16px 0;border-radius:12px;overflow:hidden;background:#000;}
+.mebook-root .mb-modal-img img{width:100%;max-height:320px;object-fit:contain;display:block;}
+.mebook-root .mb-modal-img button{
+position:absolute;top:8px;right:8px;width:32px;height:32px;border-radius:50%;
+background:rgba(0,0,0,.65);color:#fff;display:flex;align-items:center;justify-content:center;
+}
+.mebook-root .mb-modal-img button svg{width:18px;height:18px;fill:currentColor;}
+.mebook-root .mb-modal-photo{
+display:flex;align-items:center;gap:8px;margin:12px 16px 0;padding:10px 14px;
+border:1px dashed var(--border);border-radius:12px;font-size:14px;font-weight:600;color:var(--green);
+width:calc(100% - 32px);justify-content:center;box-sizing:border-box;
+}
+.mebook-root .mb-modal-photo svg{width:20px;height:20px;fill:currentColor;}
+.mebook-root .mb-modal-save{
+display:block;width:calc(100% - 32px);margin:14px 16px 0;padding:12px;border-radius:12px;
+background:var(--green);color:#fff;font-size:15px;font-weight:700;
+}
+.mebook-root .mb-modal-save:disabled{opacity:.5;cursor:not-allowed;}
+
+/* Photo viewer */
+.mebook-root .mb-viewer{
+position:fixed;inset:0;z-index:10001;background:rgba(0,0,0,.96);
+display:flex;flex-direction:column;animation:sheetFade .18s ease;
+}
+.mebook-root .mb-viewer-top{
+display:flex;align-items:center;justify-content:space-between;gap:10px;
+padding:calc(10px + env(safe-area-inset-top,0px)) 12px 10px;color:#fff;
+}
+.mebook-root .mb-viewer-btn{
+width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.14);color:#fff;
+display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.mebook-root .mb-viewer-btn:hover{background:rgba(255,255,255,.26);}
+.mebook-root .mb-viewer-btn svg{width:22px;height:22px;fill:currentColor;}
+.mebook-root .mb-viewer-author{display:flex;align-items:center;gap:10px;min-width:0;flex:1;}
+.mebook-root .mb-viewer-author img{width:36px;height:36px;border-radius:50%;object-fit:cover;background:#334155;}
+.mebook-root .mb-viewer-author b{font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.mebook-root .mb-viewer-stage{
+flex:1;min-height:0;display:flex;align-items:center;justify-content:center;overflow:auto;
+}
+.mebook-root .mb-viewer-stage img{
+max-width:100%;max-height:100%;object-fit:contain;display:block;
+transition:transform .22s ease;user-select:none;-webkit-user-drag:none;
+}
+.mebook-root .mb-viewer-caption{
+max-height:28vh;overflow-y:auto;padding:12px 16px calc(14px + env(safe-area-inset-bottom,0px));
+color:#f1f5f9;font-size:14.5px;line-height:1.5;white-space:pre-wrap;word-wrap:break-word;
+background:linear-gradient(to top,rgba(0,0,0,.85),rgba(0,0,0,0));
+}
+
+/* Comment edit / menu */
+.mebook-root .cmt-more-btn{padding:2px 6px;letter-spacing:1px;font-weight:800;}
+.mebook-root .cmt-edit-box{display:block;max-width:92%;}
+.mebook-root .cmt-edit-input{
+width:100%;min-height:44px;resize:vertical;border:1px solid var(--border);
+border-radius:14px;padding:8px 12px;background:var(--input-bg);color:var(--text);
+font-size:14px;line-height:1.42;font-family:inherit;outline:none;box-sizing:border-box;
+}
+.mebook-root .cmt-edit-input:focus{border-color:var(--green);}
+.mebook-root .cmt-edit-actions{display:flex;align-items:center;gap:10px;margin-top:4px;padding:0 4px;font-size:12px;color:var(--text-muted);}
+.mebook-root .cmt-edit-actions span{flex:1;}
+.mebook-root .cmt-edit-actions button{font-size:12.5px;font-weight:700;padding:4px 10px;border-radius:8px;}
+.mebook-root .cmt-edit-actions .cmt-edit-save{background:var(--green);color:#fff;}
+.mebook-root .cmt-edit-actions .cmt-edit-save:disabled{opacity:.5;}
+.mebook-root .cmt-edit-actions .cmt-edit-cancel{background:var(--hover);}
+
+/* Chat message menu button + edit banner */
+.mebook-root .mechat-msg-more{
+width:28px;height:28px;border-radius:50%;flex-shrink:0;align-self:center;
+display:flex;align-items:center;justify-content:center;color:var(--text-muted);
+opacity:0;transition:opacity .15s,background .15s;
+}
+.mebook-root .mechat-msg-more svg{width:18px;height:18px;fill:currentColor;}
+.mebook-root .mechat-msg-more:hover{background:var(--hover);}
+.mebook-root .mechat-bubble-wrap:hover .mechat-msg-more{opacity:1;}
+@media(hover:none){.mebook-root .mechat-msg-more{opacity:.55;}}
 `
 
 /* ============================================================
@@ -2309,6 +2453,181 @@ function ChatReactionPicker({
    SPLASH SCREEN COMPONENT
    ============================================================ */
 
+
+/* ============================================================
+POST CAPTION (2 lines + See more), PHOTO VIEWER, ACTION SHEET
+============================================================ */
+
+function PostCaption({ text }: { text: string }) {
+  const [expanded, setExpanded] = useState(false)
+  const [clamped, setClamped] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const el = ref.current
+    if (!el || expanded) return
+    const check = () => setClamped(el.scrollHeight - el.clientHeight > 1)
+    check()
+    let ro: ResizeObserver | null = null
+    if (typeof ResizeObserver !== "undefined") {
+      ro = new ResizeObserver(check)
+      ro.observe(el)
+    } else {
+      window.addEventListener("resize", check)
+    }
+    return () => {
+      if (ro) ro.disconnect()
+      else window.removeEventListener("resize", check)
+    }
+  }, [text, expanded])
+
+  return (
+    <div className="mb-post-caption">
+      <div ref={ref} className={`mb-cap-text${expanded ? "" : " clamp"}`}>
+        {text}
+      </div>
+      {!expanded && clamped && (
+        <button className="mb-see-more" onClick={() => setExpanded(true)}>
+          See more
+        </button>
+      )}
+    </div>
+  )
+}
+
+function PhotoViewer({
+  src,
+  caption,
+  authorName,
+  authorAvatar,
+  onClose,
+}: {
+  src: string
+  caption?: string
+  authorName?: string
+  authorAvatar?: string
+  onClose: () => void
+}) {
+  const [zoom, setZoom] = useState(false)
+  const [origin, setOrigin] = useState("50% 50%")
+  const closeRef = useRef(onClose)
+  closeRef.current = onClose
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") closeRef.current()
+    }
+    window.addEventListener("keydown", onKey)
+    const prevOverflow = document.body.style.overflow
+    document.body.style.overflow = "hidden"
+    return () => {
+      window.removeEventListener("keydown", onKey)
+      document.body.style.overflow = prevOverflow
+    }
+  }, [])
+
+  return (
+    <div className="mb-viewer" role="dialog" aria-modal="true">
+      <div className="mb-viewer-top">
+        <div className="mb-viewer-author">
+          {authorAvatar ? <img src={authorAvatar} alt="" /> : null}
+          <b>{authorName || ""}</b>
+        </div>
+        <button className="mb-viewer-btn" onClick={() => setZoom((z) => !z)} title={zoom ? "Zoom out" : "Zoom in"}>
+          <svg viewBox="0 0 24 24">
+            {zoom ? (
+              <path d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14zM7 9h5v1H7z" />
+            ) : (
+              <path d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14zm2.5-4h-2v2H9v-2H7V9h2V7h1v2h2v1z" />
+            )}
+          </svg>
+        </button>
+        <button className="mb-viewer-btn" onClick={onClose} title="Close">
+          <svg viewBox="0 0 24 24">
+            <path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
+          </svg>
+        </button>
+      </div>
+
+      <div className="mb-viewer-stage" onClick={(e) => { if (e.target === e.currentTarget) onClose() }}>
+        <img
+          src={src}
+          alt=""
+          draggable={false}
+          style={{
+            transform: zoom ? "scale(2.2)" : "none",
+            transformOrigin: origin,
+            cursor: zoom ? "zoom-out" : "zoom-in",
+          }}
+          onClick={(e) => {
+            const r = (e.currentTarget as HTMLElement).getBoundingClientRect()
+            const x = ((e.clientX - r.left) / r.width) * 100
+            const y = ((e.clientY - r.top) / r.height) * 100
+            if (!zoom) setOrigin(`${x}% ${y}%`)
+            setZoom((z) => !z)
+          }}
+        />
+      </div>
+
+      {caption ? <div className="mb-viewer-caption">{caption}</div> : null}
+    </div>
+  )
+}
+
+type SheetItem = {
+  label: string
+  icon: React.ReactNode
+  danger?: boolean
+  onClick: () => void
+}
+
+function ActionSheet({ items, onClose }: { items: SheetItem[]; onClose: () => void }) {
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose()
+    }
+    window.addEventListener("keydown", onKey)
+    return () => window.removeEventListener("keydown", onKey)
+  }, [onClose])
+
+  return (
+    <div className="mb-sheet-backdrop" onClick={onClose}>
+      <div className="mb-sheet" onClick={(e) => e.stopPropagation()}>
+        <div className="mb-sheet-grip" />
+        {items.map((it, i) => (
+          <button
+            key={i}
+            className={`mb-sheet-item${it.danger ? " danger" : ""}`}
+            onClick={() => {
+              onClose()
+              it.onClick()
+            }}
+          >
+            {it.icon}
+            {it.label}
+          </button>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+const ICON_EDIT = (
+  <svg viewBox="0 0 24 24">
+    <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" />
+  </svg>
+)
+const ICON_TRASH = (
+  <svg viewBox="0 0 24 24">
+    <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" />
+  </svg>
+)
+const ICON_DOTS = (
+  <svg viewBox="0 0 24 24">
+    <path d="M6 10c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm12 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-6 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
+  </svg>
+)
+
 function MeBookSplash() {
   return (
     <div className="mebook-splash">
@@ -2524,6 +2843,30 @@ const lastMarkedSeenRef = useRef<string | null>(null)
   const [commentBusy, setCommentBusy] = useState(false)
   const [replyTo, setReplyTo] = useState<any>(null)
   const [expandedReplies, setExpandedReplies] = useState<Set<string>>(new Set())
+
+  // Edit / delete (posts, comments, chat messages) + photo viewer
+  const [actionMenu, setActionMenu] = useState<{
+    kind: "post" | "comment" | "msg"
+    id: string
+    postId?: string
+  } | null>(null)
+  const [photoViewer, setPhotoViewer] = useState<{
+    src: string
+    caption?: string
+    name?: string
+    avatar?: string
+  } | null>(null)
+  const [editPostId, setEditPostId] = useState<string | null>(null)
+  const [editPostText, setEditPostText] = useState("")
+  const [editPostImage, setEditPostImage] = useState("")
+  const [editPostFile, setEditPostFile] = useState<File | null>(null)
+  const [editPostPreview, setEditPostPreview] = useState("")
+  const [editPostBusy, setEditPostBusy] = useState(false)
+  const editPostFileRef = useRef<HTMLInputElement>(null)
+  const [editCommentId, setEditCommentId] = useState<string | null>(null)
+  const [editCommentText, setEditCommentText] = useState("")
+  const [editCommentBusy, setEditCommentBusy] = useState(false)
+  const [editingMsgId, setEditingMsgId] = useState<string | null>(null)
   const commentListRef = useRef<HTMLDivElement>(null)
   const commentInputRef = useRef<HTMLTextAreaElement>(null)
   const commentImgInputRef = useRef<HTMLInputElement>(null)
@@ -3487,6 +3830,247 @@ const handleChatTyping = (value: string) => {
   }
 
   /* ============================================================
+     EDIT / DELETE — COMMENTS
+     ============================================================ */
+
+  const startEditComment = (c: any) => {
+    setEditCommentId(c.id)
+    setEditCommentText(c.text || "")
+  }
+
+  const cancelEditComment = () => {
+    setEditCommentId(null)
+    setEditCommentText("")
+  }
+
+  const handleSaveEditComment = async (postId: string, commentId: string) => {
+    if (editCommentBusy) return
+    const text = editCommentText.trim()
+    setEditCommentBusy(true)
+    try {
+      const fb = await getFirebase()
+      const ref = fb.doc(fb.db, "posts", postId)
+      const snap = await fb.getDoc(ref)
+      if (!snap.exists()) return
+      const comments = snap.data().comments || []
+      const target = comments.find((c: any) => c.id === commentId)
+      if (!target || target.uid !== user.uid) {
+        showToast("Error", "You can only edit your own comment", "error")
+        return
+      }
+      if (!text && !target.image) {
+        showToast("Empty comment", "Write something or delete the comment", "error")
+        return
+      }
+      if (text === (target.text || "")) {
+        cancelEditComment()
+        return
+      }
+      const updated = comments.map((c: any) =>
+        c.id === commentId ? { ...c, text, edited: true, editedAt: Date.now() } : c
+      )
+      await fb.updateDoc(ref, { comments: updated })
+      cancelEditComment()
+      showToast("Comment updated", "", "success")
+    } catch (e: any) {
+      showToast("Error", e.message, "error")
+    } finally {
+      setEditCommentBusy(false)
+    }
+  }
+
+  const handleDeleteComment = async (postId: string, commentId: string) => {
+    if (!confirm("Delete this comment?")) return
+    try {
+      const fb = await getFirebase()
+      const ref = fb.doc(fb.db, "posts", postId)
+      const snap = await fb.getDoc(ref)
+      if (!snap.exists()) return
+      const comments = snap.data().comments || []
+      const target = comments.find((c: any) => c.id === commentId)
+      if (!target || target.uid !== user.uid) {
+        showToast("Error", "You can only delete your own comment", "error")
+        return
+      }
+      // Remove the comment and any replies under it
+      const updated = comments.filter(
+        (c: any) => c.id !== commentId && c.parentId !== commentId
+      )
+      await fb.updateDoc(ref, { comments: updated })
+      if (editCommentId === commentId) cancelEditComment()
+      showToast("Comment deleted", "", "success")
+    } catch (e: any) {
+      showToast("Error", e.message, "error")
+    }
+  }
+
+  /* ============================================================
+     EDIT — POSTS (caption + photo)
+     ============================================================ */
+
+  const openEditPost = (post: any) => {
+    setEditPostId(post.id)
+    setEditPostText(post.caption || "")
+    setEditPostImage(post.image || "")
+    setEditPostFile(null)
+    setEditPostPreview("")
+  }
+
+  const closeEditPost = () => {
+    if (editPostBusy) return
+    setEditPostId(null)
+    setEditPostText("")
+    setEditPostImage("")
+    setEditPostFile(null)
+    setEditPostPreview("")
+  }
+
+  const handleEditPostFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0]
+    if (!f) return
+    setEditPostFile(f)
+    setEditPostPreview(URL.createObjectURL(f))
+    e.target.value = ""
+  }
+
+  const removeEditPostPhoto = () => {
+    setEditPostFile(null)
+    setEditPostPreview("")
+    setEditPostImage("")
+  }
+
+  const handleSaveEditPost = async () => {
+    if (!editPostId || editPostBusy) return
+    const text = editPostText.trim()
+    const hasImage = !!editPostFile || !!editPostImage
+    if (!text && !hasImage) {
+      showToast("Empty post", "Write something or add a photo", "error")
+      return
+    }
+    setEditPostBusy(true)
+    try {
+      const fb = await getFirebase()
+      const ref = fb.doc(fb.db, "posts", editPostId)
+      const snap = await fb.getDoc(ref)
+      if (!snap.exists()) {
+        showToast("Error", "Post not found", "error")
+        return
+      }
+      if (snap.data().authorId !== user.uid) {
+        showToast("Error", "You can only edit your own post", "error")
+        return
+      }
+      let imageUrl = editPostImage
+      if (editPostFile) {
+        imageUrl = await cloudinaryUpload(editPostFile)
+      }
+      await fb.updateDoc(ref, {
+        caption: text,
+        image: imageUrl,
+        edited: true,
+        editedAt: fb.serverTimestamp(),
+      })
+      setEditPostBusy(false)
+      setEditPostId(null)
+      setEditPostText("")
+      setEditPostImage("")
+      setEditPostFile(null)
+      setEditPostPreview("")
+      showToast("Post updated", "Your changes are saved", "success")
+    } catch (e: any) {
+      showToast("Error", e.message, "error")
+    } finally {
+      setEditPostBusy(false)
+    }
+  }
+
+  /* ============================================================
+     EDIT / UNSEND — CHAT MESSAGES
+     ============================================================ */
+
+  const chatMsgSummary = (m: any) =>
+    m.type === "image"
+      ? "📷 Photo"
+      : m.type === "voice"
+      ? "🎤 Voice message"
+      : m.type === "like"
+      ? "👍"
+      : m.text || ""
+
+  const startEditMessage = (m: any) => {
+    setEditingMsgId(m.id)
+    setChatReplyTo(null)
+    setChatInput(m.text || "")
+    setTimeout(() => chatInputRef.current?.focus(), 50)
+  }
+
+  const cancelEditMessage = () => {
+    setEditingMsgId(null)
+    setChatInput("")
+  }
+
+  const handleSaveEditMessage = async (text: string) => {
+    const msgId = editingMsgId
+    if (!msgId || !activeChat) return
+    const msg = chatMessages.find((m) => m.id === msgId)
+    if (!msg || msg.from !== user.uid) {
+      cancelEditMessage()
+      return
+    }
+    if (text === (msg.text || "")) {
+      cancelEditMessage()
+      return
+    }
+    void updateTypingState(activeChat, false)
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current)
+      typingTimeoutRef.current = null
+    }
+    const isLast = chatMessages[chatMessages.length - 1]?.id === msgId
+    setEditingMsgId(null)
+    setChatInput("")
+    try {
+      const fb = await getFirebase()
+      await fb.updateDoc(fb.doc(fb.db, "chats", activeChat, "messages", msgId), {
+        text,
+        edited: true,
+        editedAt: fb.serverTimestamp(),
+      })
+      if (isLast) {
+        await fb.updateDoc(fb.doc(fb.db, "chats", activeChat), {
+          "lastMessage.text": text,
+        })
+      }
+    } catch (e: any) {
+      showToast("Error", e.message, "error")
+    }
+  }
+
+  const handleDeleteMessage = async (msgId: string) => {
+    if (!activeChat) return
+    const idx = chatMessages.findIndex((m) => m.id === msgId)
+    const msg = chatMessages[idx]
+    if (!msg || msg.from !== user.uid) return
+    if (!confirm("Unsend this message? It will be removed for everyone.")) return
+    const wasLast = idx === chatMessages.length - 1
+    const prev = idx > 0 ? chatMessages[idx - 1] : null
+    try {
+      const fb = await getFirebase()
+      await fb.deleteDoc(fb.doc(fb.db, "chats", activeChat, "messages", msgId))
+      if (editingMsgId === msgId) cancelEditMessage()
+      if (chatReplyTo && chatReplyTo.id === msgId) setChatReplyTo(null)
+      if (wasLast) {
+        await fb.updateDoc(fb.doc(fb.db, "chats", activeChat), {
+          lastMessage: prev ? { text: chatMsgSummary(prev), from: prev.from } : null,
+        })
+      }
+      showToast("Message unsent", "", "success")
+    } catch (e: any) {
+      showToast("Error", e.message, "error")
+    }
+  }
+
+  /* ============================================================
      CHAT REACTIONS
      ============================================================ */
 
@@ -4144,6 +4728,10 @@ const handleChatTyping = (value: string) => {
     }
 
     lastMarkedSeenRef.current = null
+    if (editingMsgId) {
+      setEditingMsgId(null)
+      setChatInput("")
+    }
     setPartnerTyping(false)
     setPartnerLastSeenMessageId(null)
     setActiveChat(chatId)
@@ -4191,6 +4779,7 @@ const handleChatTyping = (value: string) => {
     setChatPartner(null)
     setChatMessages([])
     setChatReplyTo(null)
+    setEditingMsgId(null)
     if (chatUnsubRef.current) {
       try { chatUnsubRef.current() } catch {}
       chatUnsubRef.current = null
@@ -4200,6 +4789,10 @@ const handleChatTyping = (value: string) => {
   const handleSendMessage = async () => {
   const text = chatInput.trim()
   if (!text || !activeChat) return
+  if (editingMsgId) {
+    await handleSaveEditMessage(text)
+    return
+  }
   const reply = chatReplyTo
 
   // Message send করার সাথে সাথে typing OFF
@@ -4741,6 +5334,7 @@ const handleChatTyping = (value: string) => {
     const myReactionEmoji = myReaction
       ? REACTIONS.find((r) => r.key === myReaction)?.emoji
       : null
+    const canManage = isMine || (!!user && !!post.authorId && post.authorId === user.uid)
 
     // Long press timer for reaction picker
     let pressTimer: any = null
@@ -4803,6 +5397,7 @@ const handleChatTyping = (value: string) => {
             </div>
             <div className="mb-post-meta">
               {timeText}
+              {post.edited && <span className="mb-edited-tag">{" · Edited"}</span>}
               {isOfficial && (
                 <>
                   {" · "}
@@ -4815,20 +5410,18 @@ const handleChatTyping = (value: string) => {
               </svg>
             </div>
           </div>
-          {isMine && (
+          {canManage && (
             <button
               className="mb-post-more"
-              onClick={() => handleDeletePost(post.id)}
-              title="Delete"
+              onClick={() => setActionMenu({ kind: "post", id: post.id })}
+              title="More options"
             >
-              <svg viewBox="0 0 24 24">
-                <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" />
-              </svg>
+              {ICON_DOTS}
             </button>
           )}
         </div>
 
-        {post.caption && <div className="mb-post-caption">{post.caption}</div>}
+        {post.caption && <PostCaption text={post.caption} />}
 
         {post.image ? (
           <div className="mb-post-media">
@@ -4838,7 +5431,19 @@ const handleChatTyping = (value: string) => {
               </svg>
               {post.movie || "Movie"}
             </span>
-            <img src={post.image} alt="post" loading="lazy" />
+            <img
+              src={post.image}
+              alt="post"
+              loading="lazy"
+              onClick={() =>
+                setPhotoViewer({
+                  src: post.image,
+                  caption: post.caption || "",
+                  name: post.authorName || "User",
+                  avatar: authorAvatar,
+                })
+              }
+            />
           </div>
         ) : post.movie ? (
           <div style={{ padding: "0 16px 8px" }}>
@@ -5271,6 +5876,109 @@ const handleChatTyping = (value: string) => {
           handlePostReact(postReactionPicker.postId, key, emoji, pos)
         }}
       />
+
+      {/* Action sheets: post / comment / chat message */}
+      {actionMenu && (() => {
+        const close = () => setActionMenu(null)
+        if (actionMenu.kind === "post") {
+          const target = findPost(actionMenu.id)
+          return (
+            <ActionSheet
+              onClose={close}
+              items={[
+                { label: "Edit post", icon: ICON_EDIT, onClick: () => target && openEditPost(target) },
+                { label: "Delete post", icon: ICON_TRASH, danger: true, onClick: () => handleDeletePost(actionMenu.id) },
+              ]}
+            />
+          )
+        }
+        if (actionMenu.kind === "comment") {
+          const postId = actionMenu.postId || ""
+          const cPost = findPost(postId)
+          const target = (cPost?.comments || []).find((c: any) => c.id === actionMenu.id)
+          return (
+            <ActionSheet
+              onClose={close}
+              items={[
+                { label: "Edit comment", icon: ICON_EDIT, onClick: () => target && startEditComment(target) },
+                { label: "Delete comment", icon: ICON_TRASH, danger: true, onClick: () => handleDeleteComment(postId, actionMenu.id) },
+              ]}
+            />
+          )
+        }
+        const m = chatMessages.find((x) => x.id === actionMenu.id)
+        const canEditMsg = !!m && !m.type && !!m.text
+        const items: SheetItem[] = []
+        if (m && canEditMsg) {
+          items.push({ label: "Edit message", icon: ICON_EDIT, onClick: () => startEditMessage(m) })
+        }
+        items.push({ label: "Unsend message", icon: ICON_TRASH, danger: true, onClick: () => handleDeleteMessage(actionMenu.id) })
+        return <ActionSheet onClose={close} items={items} />
+      })()}
+
+      {/* Edit post modal */}
+      {editPostId && (
+        <div className="mb-modal-backdrop" onClick={closeEditPost}>
+          <div className="mb-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="mb-modal-head">
+              <b>Edit post</b>
+              <button className="mb-modal-x" onClick={closeEditPost} title="Close">
+                <svg viewBox="0 0 24 24">
+                  <path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
+                </svg>
+              </button>
+            </div>
+            <textarea
+              className="mb-modal-textarea"
+              rows={5}
+              placeholder="What's on your mind?"
+              value={editPostText}
+              onChange={(e) => setEditPostText(e.target.value)}
+            />
+            {(editPostPreview || editPostImage) && (
+              <div className="mb-modal-img">
+                <img src={editPostPreview || editPostImage} alt="" />
+                <button onClick={removeEditPostPhoto} title="Remove photo">
+                  <svg viewBox="0 0 24 24">
+                    <path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
+                  </svg>
+                </button>
+              </div>
+            )}
+            <button className="mb-modal-photo" onClick={() => editPostFileRef.current?.click()}>
+              <svg viewBox="0 0 24 24">
+                <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z" />
+              </svg>
+              {editPostPreview || editPostImage ? "Change photo" : "Add photo"}
+            </button>
+            <input
+              ref={editPostFileRef}
+              type="file"
+              accept="image/*"
+              style={{ display: "none" }}
+              onChange={handleEditPostFile}
+            />
+            <button
+              className="mb-modal-save"
+              onClick={handleSaveEditPost}
+              disabled={editPostBusy || (!editPostText.trim() && !editPostPreview && !editPostImage)}
+            >
+              {editPostBusy ? (editPostFile ? "Uploading..." : "Saving...") : "Save"}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Photo viewer */}
+      {photoViewer && (
+        <PhotoViewer
+          src={photoViewer.src}
+          caption={photoViewer.caption}
+          authorName={photoViewer.name}
+          authorAvatar={photoViewer.avatar}
+          onClose={() => setPhotoViewer(null)}
+        />
+      )}
 
       {/* Comment reaction picker */}
       <ReactionPicker
@@ -6454,6 +7162,7 @@ const handleChatTyping = (value: string) => {
                               )}
                               <span>{m.text}</span>
                               <span className={`mechat-bubble-time ${mine ? "me" : "them"}`}>
+                                {m.edited ? "Edited · " : ""}
                                 {chatTime(m.at)}
                               </span>
                             </>
@@ -6476,6 +7185,22 @@ const handleChatTyping = (value: string) => {
                             onDoubleClick={(e) => openChatReactionPicker(e, m.id)}
                           >
                             {!mine && <img className="mechat-bubble-avatar" src={chatPartner ? avatarUrl(chatPartner) : ""} alt="" />}
+                            {mine && (
+                              <button
+                                className="mechat-msg-more"
+                                title="Edit or unsend"
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  setActionMenu({ kind: "msg", id: m.id })
+                                }}
+                                onDoubleClick={(e) => e.stopPropagation()}
+                                onTouchStart={(e) => e.stopPropagation()}
+                                onTouchMove={(e) => e.stopPropagation()}
+                                onTouchEnd={(e) => e.stopPropagation()}
+                              >
+                                {ICON_DOTS}
+                              </button>
+                            )}
                             <div
                               className={`mechat-bubble ${mine ? "me" : "them"} ${isImageMsg ? "mechat-bubble-image" : ""}`}
                               style={isImageMsg ? { padding: 3, background: "transparent", maxWidth: "72%" } : undefined}
@@ -6514,6 +7239,23 @@ const handleChatTyping = (value: string) => {
                       <button className="mechat-recording-send" onClick={sendVoiceRecording} title="Send">
                         <svg viewBox="0 0 24 24">
                           <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
+                        </svg>
+                      </button>
+                    </div>
+                  )}
+
+                  {editingMsgId && !recording && (
+                    <div className="mechat-reply-banner">
+                      <div className="bar" />
+                      <div className="mechat-reply-banner-info">
+                        <div className="mechat-reply-banner-title">Editing message</div>
+                        <div className="mechat-reply-banner-text">
+                          {chatMessages.find((x) => x.id === editingMsgId)?.text || ""}
+                        </div>
+                      </div>
+                      <button className="mechat-reply-banner-close" onClick={cancelEditMessage}>
+                        <svg viewBox="0 0 24 24">
+                          <path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
                         </svg>
                       </button>
                     </div>
@@ -6579,6 +7321,8 @@ const handleChatTyping = (value: string) => {
                           if (e.key === "Enter" && !e.shiftKey) {
                             e.preventDefault()
                             handleSendMessage()
+                          } else if (e.key === "Escape" && editingMsgId) {
+                            cancelEditMessage()
                           }
                         }}
                       />
@@ -6767,6 +7511,8 @@ const handleChatTyping = (value: string) => {
                 `https://ui-avatars.com/api/?background=16a34a&color=fff&name=${encodeURIComponent(c.name || "U")}`
               const myReaction = c.reactions?.[user.uid]
               const commentKey = c.id
+              const isMyComment = c.uid === user.uid
+              const isEditingThis = editCommentId === c.id
 
               return (
                 <div className={isReply ? "cmt-reply-row" : "cmt-row"} key={c.id}>
@@ -6777,6 +7523,37 @@ const handleChatTyping = (value: string) => {
                     onClick={() => c.uid && openUserProfile(c.uid)}
                   />
                   <div className="cmt-row-body">
+                    {isEditingThis ? (
+                      <div className="cmt-edit-box">
+                        <textarea
+                          className="cmt-edit-input"
+                          autoFocus
+                          value={editCommentText}
+                          onChange={(e) => setEditCommentText(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" && !e.shiftKey) {
+                              e.preventDefault()
+                              handleSaveEditComment(post.id, c.id)
+                            } else if (e.key === "Escape") {
+                              cancelEditComment()
+                            }
+                          }}
+                        />
+                        <div className="cmt-edit-actions">
+                          <span>Enter to save · Esc to cancel</span>
+                          <button className="cmt-edit-cancel" onClick={cancelEditComment}>
+                            Cancel
+                          </button>
+                          <button
+                            className="cmt-edit-save"
+                            onClick={() => handleSaveEditComment(post.id, c.id)}
+                            disabled={editCommentBusy || (!editCommentText.trim() && !c.image)}
+                          >
+                            {editCommentBusy ? "Saving..." : "Save"}
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
                     <div
                       className="cmt-bubble"
                       onDoubleClick={(evt) => handleLongPressReaction(evt, commentKey)}
@@ -6792,9 +7569,14 @@ const handleChatTyping = (value: string) => {
                           <img src={c.image} alt="" />
                         </div>
                       )}
-                      <span className="cmt-time">{timeAgo(c.at)}</span>
+                      <span className="cmt-time">
+                        {timeAgo(c.at)}
+                        {c.edited ? " · Edited" : ""}
+                      </span>
                       {renderReactionBadge(c.reactions || {})}
                     </div>
+                    )}
+                    {!isEditingThis && (
                     <div className="cmt-actions-row">
                       <button
                         className={`cmt-action-btn${myReaction ? " my-reaction" : ""}`}
@@ -6823,7 +7605,19 @@ const handleChatTyping = (value: string) => {
                       >
                         Reply
                       </button>
+                      {isMyComment && (
+                        <button
+                          className="cmt-action-btn cmt-more-btn"
+                          title="Edit or delete"
+                          onClick={() =>
+                            setActionMenu({ kind: "comment", id: c.id, postId: post.id })
+                          }
+                        >
+                          •••
+                        </button>
+                      )}
                     </div>
+                    )}
 
                     {!isReply && repliesMap[c.id] && repliesMap[c.id].length > 0 && (
                       <div className="cmt-replies">
@@ -7465,4 +8259,4 @@ function SideItem({
       {badge && badge > 0 ? <span className="mb-side-badge">{badge}</span> : null}
     </button>
   )
-  }
+          }

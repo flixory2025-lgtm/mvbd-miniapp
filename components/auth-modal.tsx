@@ -761,12 +761,14 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
             inset: 0;
             z-index: 0;
             pointer-events: none;
+            /* poster er slanted edge e green gradient-vibe glow border (mobile + desktop) */
+            filter: drop-shadow(0 0 7px rgba(var(--glow), 0.75));
           }
           .av-art {
             position: absolute;
             inset: 0;
             overflow: hidden;
-            background: linear-gradient(45deg, #06120c, rgb(var(--glow)));
+            background: #06120c; /* dark base — sweep er shomoy green jhilik dibe na */
             clip-path: polygon(46% 0, 100% 0, 100% 100%, 70% 100%);
           }
           .av-art-img {
@@ -775,7 +777,7 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
             background-position: center;
             background-size: cover;
             background-repeat: no-repeat;
-            transform: translateZ(0); /* nijer GPU layer — sweep smooth hoy */
+            background-color: #06120c;
           }
           .av-art-shade {
             position: absolute;
@@ -818,12 +820,6 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
             }
             100% {
               clip-path: polygon(46% 0, 100% 0, 100% 100%, 70% 100%);
-            }
-          }
-          /* edge glow shudhu desktop e (mobile e heavy) */
-          @media (min-width: 721px) {
-            .av-art-wrap {
-              filter: drop-shadow(0 0 7px rgba(var(--glow), 0.75));
             }
           }
 
@@ -970,24 +966,24 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
             transition-delay: calc(0.7s + 0.05s * var(--n));
           }
           .av-is-up .av-form-login .av-anim {
-            transform: translateX(-120%);
+            transform: translateX(-70px);
             opacity: 0;
             transition-delay: calc(0.04s * var(--n));
           }
           .av-is-up .av-info-login .av-anim {
-            transform: translateX(120%);
+            transform: translateX(70px);
             opacity: 0;
             transition-delay: calc(0.04s * var(--n));
           }
           /* sign-up hidden by default */
           .av-form-register .av-anim,
           .av-info-register .av-anim {
-            transform: translateX(120%);
+            transform: translateX(70px);
             opacity: 0;
             transition-delay: calc(0.04s * var(--n));
           }
           .av-info-register .av-anim {
-            transform: translateX(-120%);
+            transform: translateX(-70px);
           }
           .av-is-up .av-form-register .av-anim,
           .av-is-up .av-info-register .av-anim {
@@ -1233,4 +1229,4 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
       </DialogContent>
     </Dialog>
   )
-}
+              }

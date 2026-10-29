@@ -1,0 +1,14 @@
+name: YouTube sync
+on:
+  schedule:
+    - cron: "*/10 * * * *"   # every 10 minutes (GitHub may delay a few minutes)
+  workflow_dispatch: {}
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call sync route
+        run: |
+          curl -fsS -X POST "${{ secrets.SYNC_URL }}" \
+            -H "x-sync-key: ${{ secrets.SYNC_SECRET }}" \
+            --max-time 90

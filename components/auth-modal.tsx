@@ -15,10 +15,26 @@ import {
 /*
  * =========================================
  * GLOW COLOR (R,G,B)
- * লাল: "255,40,40"  |  সবুজ করতে চাইলে: "16,185,129"
+ * MVBD logo-r "BD" er green: "20,205,25"
+ * লাল: "255,40,40"  |  emerald: "16,185,129"
  * =========================================
  */
-const GLOW = "255,40,40"
+const GLOW = "20,205,25"
+
+/*
+ * =========================================
+ * IMAGES
+ * POSTER = sign in / sign up panel-er poster
+ * LOGO   = site logo
+ * =========================================
+ */
+const POSTER =
+  "https://i.postimg.cc/7hLqB21s/Netflix-all-movies-and-series-featured-image.jpg"
+const LOGO = "https://i.postimg.cc/V6GHC8yG/17773-removebg-preview.png"
+
+/* animation delay helper (--i = going out, --li = coming in) */
+const d = (i: number, li: number) =>
+  ({ "--i": i, "--li": li }) as React.CSSProperties
 
 /*
  * =========================================
@@ -231,6 +247,16 @@ function PillButton({
   )
 }
 
+/* Google icon (same as before) */
+const GoogleIcon = (
+  <svg className="size-5" viewBox="0 0 24 24">
+    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+  </svg>
+)
+
 type AuthModalProps = {
   open: boolean
   onOpenChange: (open: boolean) => void
@@ -242,27 +268,50 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
+  // poster panel sweep animation (first open e animation cholbe na, sudhu switch korle)
+  const [played, setPlayed] = useState(false)
+  const [logoFailed, setLogoFailed] = useState(false)
 
+  // Sign-in pane inputs
   const emailRef = useRef<HTMLInputElement>(null)
   const passwordRef = useRef<HTMLInputElement>(null)
+  // Sign-up pane inputs (email/password alada pane-e tai alada ref)
+  const emailUpRef = useRef<HTMLInputElement>(null)
+  const passwordUpRef = useRef<HTMLInputElement>(null)
   const nameRef = useRef<HTMLInputElement>(null)
   const dobRef = useRef<HTMLInputElement>(null)
   const referralRef = useRef<HTMLInputElement>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
+  const signInPaneRef = useRef<HTMLDivElement>(null)
+  const signUpPaneRef = useRef<HTMLDivElement>(null)
 
   // Reset on close
   useEffect(() => {
     if (!open) {
       if (emailRef.current) emailRef.current.value = ""
       if (passwordRef.current) passwordRef.current.value = ""
+      if (emailUpRef.current) emailUpRef.current.value = ""
+      if (passwordUpRef.current) passwordUpRef.current.value = ""
       if (nameRef.current) nameRef.current.value = ""
       if (dobRef.current) dobRef.current.value = ""
       if (referralRef.current) referralRef.current.value = ""
       setError("")
+      setPlayed(false)
       setMode("sign-in")
       setShowPassword(false)
     }
   }, [open])
+
+  // Hidden pane-er input e Tab / click jeno na jay
+  useEffect(() => {
+    const up = mode === "sign-up"
+    const inPane = signInPaneRef.current as (HTMLDivElement & { inert?: boolean }) | null
+    const upPane = signUpPaneRef.current as (HTMLDivElement & { inert?: boolean }) | null
+    if (inPane) inPane.inert = up
+    if (upPane) upPane.inert = !up
+    if (inPane) inPane.scrollTop = 0
+    if (upPane) upPane.scrollTop = 0
+  }, [mode, open])
 
   // Telegram Mini App: handle viewport resize (keyboard open/close)
   useEffect(() => {
@@ -292,8 +341,10 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
     setError("")
     setIsSubmitting(true)
 
-    const email = emailRef.current?.value.trim() ?? ""
-    const password = passwordRef.current?.value ?? ""
+    const emailInput = mode === "sign-in" ? emailRef : emailUpRef
+    const passwordInput = mode === "sign-in" ? passwordRef : passwordUpRef
+    const email = emailInput.current?.value.trim() ?? ""
+    const password = passwordInput.current?.value ?? ""
 
     try {
       if (mode === "sign-in") {
@@ -328,9 +379,50 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
 
   const switchMode = (next: "sign-in" | "sign-up") => {
     if (next === mode) return
+    // email / password jeno mode badlale hariye na jay
+    const from = mode === "sign-in" ? [emailRef, passwordRef] : [emailUpRef, passwordUpRef]
+    const to = next === "sign-in" ? [emailRef, passwordRef] : [emailUpRef, passwordUpRef]
+    if (to[0].current && from[0].current) to[0].current.value = from[0].current.value
+    if (to[1].current && from[1].current) to[1].current.value = from[1].current.value
+    setPlayed(true)
     setMode(next)
     setError("")
   }
+
+  const passwordToggle = (
+    <button
+      type="button"
+      aria-label={showPassword ? "Hide password" : "Show password"}
+      onClick={() => setShowPassword((v) => !v)}
+      className="flex size-8 items-center justify-center rounded-full text-slate-400 transition-colors hover:text-white"
+    >
+      {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+    </button>
+  )
+
+  const errorBox = (
+    <div
+      className="av-anim flex items-start gap-2 rounded-2xl border border-red-500/25 bg-red-500/10 px-3 py-2.5 text-xs text-red-300"
+      style={d(4, 16)}
+      role="alert"
+    >
+      <span className="mt-0.5 size-1.5 shrink-0 rounded-full bg-red-400" />
+      {error}
+    </div>
+  )
+
+  const lockup = (
+    <div className="av-lockup">
+      {!logoFailed ? (
+        <img src={LOGO} alt="MoviesVerseBD" onError={() => setLogoFailed(true)} />
+      ) : (
+        <div className="av-mark">MV</div>
+      )}
+      <span>
+        Movies<b>Verse</b>BD
+      </span>
+    </div>
+  )
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -340,25 +432,20 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
         onPointerDownOutside={(e) => {
           e.preventDefault()
         }}
-        className="fixed left-1/2 top-1/2 max-h-[92vh] w-[calc(100vw-2rem)] max-w-[400px] -translate-x-1/2 -translate-y-1/2 gap-0 overflow-hidden rounded-[36px] border border-white/10 bg-black/60 p-0 text-white shadow-[0_30px_80px_-20px_rgba(0,0,0,0.9)] backdrop-blur-2xl [&>button]:hidden data-[state=open]:animate-[authModalIn_0.5s_cubic-bezier(0.22,1.2,0.36,1)_both] data-[state=closed]:animate-[authModalOut_0.3s_cubic-bezier(0.4,0,1,1)_both]"
+        className="fixed left-1/2 top-1/2 h-[min(640px,calc(100dvh-20px))] max-h-none w-[calc(100vw-1.25rem)] max-w-[430px] -translate-x-1/2 -translate-y-1/2 gap-0 overflow-hidden rounded-[30px] border border-white/10 bg-[#07100c] p-0 text-white shadow-[0_30px_80px_-20px_rgba(0,0,0,0.9)] sm:max-w-[430px] min-[721px]:max-w-[960px] [&>button]:hidden data-[state=open]:animate-[authModalIn_0.5s_cubic-bezier(0.22,1.2,0.36,1)_both] data-[state=closed]:animate-[authModalOut_0.3s_cubic-bezier(0.4,0,1,1)_both]"
         style={{
           zIndex: 2147483647,
         }}
       >
-        {/* === Background (same image, dark glass overlay) === */}
-        <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden rounded-[36px]">
-          <div
-            className="absolute inset-0 bg-cover bg-center"
-            style={{
-              backgroundImage:
-                "url('https://i.postimg.cc/gkRTC0Mg/9934115925457a81b67404e741f62ffc.jpg')",
-            }}
-          />
-          <div className="absolute inset-0 bg-gradient-to-br from-black/60 via-black/80 to-black/90" />
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.06)_0%,rgba(0,0,0,0.6)_75%)]" />
-          {/* glass top highlight */}
-          <div className="absolute inset-x-10 top-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent" />
-        </div>
+        {/* accessibility (screen reader only) */}
+        <DialogHeader className="sr-only">
+          <DialogTitle>{mode === "sign-in" ? "Welcome back" : "Create account"}</DialogTitle>
+          <DialogDescription>
+            {mode === "sign-in"
+              ? "Sign in to your account"
+              : "Join MVBD and unlock unlimited movies & shows"}
+          </DialogDescription>
+        </DialogHeader>
 
         {/* === CLOSE BUTTON === */}
         <div className="absolute right-4 top-4" style={{ zIndex: 9999 }}>
@@ -390,141 +477,241 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
           </div>
         )}
 
-        {/* === Scrollable content === */}
+        {/* === Sign in <-> Sign up animated layout === */}
         <div
           ref={scrollRef}
-          className="auth-scroll relative z-10 max-h-[92vh] overflow-y-auto overscroll-contain px-6 pb-8 pt-10"
+          className={`av-root ${mode === "sign-up" ? "av-up" : ""} ${played ? "av-play" : ""}`}
+          style={{ "--glow": GLOW, "--poster": `url('${POSTER}')` } as React.CSSProperties}
         >
-          <DialogHeader className="items-center space-y-2 text-center sm:text-center">
-            <img
-              src="https://i.postimg.cc/V6GHC8yG/17773-removebg-preview.png"
-              alt="MoviesVerseBD"
-              className="mb-1 size-12 shrink-0 object-contain drop-shadow-[0_0_10px_rgba(255,255,255,0.25)]"
-            />
-            <DialogTitle className="text-center text-[28px] font-bold leading-tight tracking-tight text-white">
-              {mode === "sign-in" ? "Welcome back" : "Create account"}
-            </DialogTitle>
-            <DialogDescription className="text-center text-sm font-medium leading-relaxed text-slate-400">
-              {mode === "sign-in"
-                ? "Sign in to your account"
-                : "Join MVBD and unlock unlimited movies & shows"}
-            </DialogDescription>
-          </DialogHeader>
-
-          <form className="mt-8 flex flex-col gap-3.5" onSubmit={handleSubmit}>
-            {mode === "sign-up" && (
-              <>
-                <GlowField
-                  id="auth-name"
-                  ref={nameRef}
-                  label="Full name"
-                  autoComplete="name"
-                  required
-                />
-                <GlowField
-                  id="auth-dob"
-                  ref={dobRef}
-                  type="date"
-                  label="Date of birth"
-                  alwaysFloat
-                  required
-                />
-                <GlowField
-                  id="auth-referral"
-                  ref={referralRef}
-                  label="Referral code (optional)"
-                  autoCapitalize="characters"
-                />
-              </>
-            )}
-
-            <GlowField
-              id="auth-email"
-              ref={emailRef}
-              type="email"
-              inputMode="email"
-              autoComplete="email"
-              autoCorrect="off"
-              autoCapitalize="off"
-              spellCheck={false}
-              required
-              label="Email"
-            />
-
-            <GlowField
-              id="auth-password"
-              ref={passwordRef}
-              type={showPassword ? "text" : "password"}
-              autoComplete={mode === "sign-in" ? "current-password" : "new-password"}
-              autoCorrect="off"
-              autoCapitalize="off"
-              spellCheck={false}
-              required
-              minLength={6}
-              label="Password"
-              rightSlot={
-                <button
-                  type="button"
-                  aria-label={showPassword ? "Hide password" : "Show password"}
-                  onClick={() => setShowPassword((v) => !v)}
-                  className="flex size-8 items-center justify-center rounded-full text-slate-400 transition-colors hover:text-white"
-                >
-                  {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
-                </button>
-              }
-            />
-
-            {error ? (
-              <div
-                className="flex items-start gap-2 rounded-2xl border border-red-500/25 bg-red-500/10 px-3 py-2.5 text-xs text-red-300"
-                role="alert"
-              >
-                <span className="mt-0.5 size-1.5 shrink-0 rounded-full bg-red-400" />
-                {error}
-              </div>
-            ) : null}
-
-            <PillButton
-              type="submit"
-              disabled={isSubmitting}
-              className="mt-1 border-white/20 bg-white/[0.10] text-white hover:bg-white/[0.16]"
-            >
-              {mode === "sign-in" ? "Sign in" : "Create account"}
-            </PillButton>
-
-            <div className="relative flex items-center gap-3 py-0.5 text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-500">
-              <div className="h-px flex-1 bg-gradient-to-r from-transparent via-white/15 to-transparent" />
-              <span>or</span>
-              <div className="h-px flex-1 bg-gradient-to-r from-transparent via-white/15 to-transparent" />
+          {/* poster panel (animation-er sathe ghore) */}
+          <div className="av-art-wrap">
+            <div className="av-art">
+              <div className="av-art-img" />
+              <div className="av-art-shade" />
             </div>
+          </div>
 
-            <PillButton
-              type="button"
-              disabled={isSubmitting}
-              onClick={handleGoogleSignIn}
-              icon={
-                <svg className="size-5" viewBox="0 0 24 24">
-                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-                  <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
-                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
-                </svg>
-              }
-            >
-              Continue with Google
-            </PillButton>
-
-            <p className="pt-3 text-center text-[13px] font-medium text-slate-400">
-              {mode === "sign-in" ? "Don’t have an account?" : "Already have an account?"}{" "}
-              <button
-                type="button"
-                onClick={() => switchMode(mode === "sign-in" ? "sign-up" : "sign-in")}
-                className="font-semibold text-white underline-offset-4 transition-colors hover:underline"
-              >
-                {mode === "sign-in" ? "Sign up" : "Sign in"}
-              </button>
+          {/* text on poster : sign-in */}
+          <section className="av-pane av-info av-info-login" aria-hidden="true">
+            <div className="av-anim" style={d(0, 14)}>{lockup}</div>
+            <h2 className="av-anim" style={d(1, 15)}>Welcome back</h2>
+            <p className="av-anim" style={d(2, 16)}>
+              Your movies and shows are waiting. Sign in and pick up right where you left off.
             </p>
-          </form>
+          </section>
+
+          {/* text on poster : sign-up */}
+          <section className="av-pane av-info av-info-register" aria-hidden="true">
+            <div className="av-anim" style={d(17, 0)}>{lockup}</div>
+            <h2 className="av-anim" style={d(18, 1)}>Join MVBD</h2>
+            <p className="av-anim" style={d(19, 2)}>
+              Create your free account and unlock unlimited movies &amp; shows.
+            </p>
+          </section>
+
+          {/* ================= SIGN IN FORM ================= */}
+          <div ref={signInPaneRef} className="av-pane av-form av-form-login auth-scroll">
+            <form className="av-form-inner" onSubmit={handleSubmit}>
+              <h2 className="av-title av-anim" style={d(0, 14)}>Welcome back</h2>
+              <p className="av-sub av-anim" style={d(1, 15)}>Sign in to your account</p>
+
+              <div className="flex flex-col gap-3.5">
+                <div className="av-anim" style={d(2, 16)}>
+                  <GlowField
+                    id="auth-email"
+                    ref={emailRef}
+                    type="email"
+                    inputMode="email"
+                    autoComplete="email"
+                    autoCorrect="off"
+                    autoCapitalize="off"
+                    spellCheck={false}
+                    required
+                    label="Email"
+                  />
+                </div>
+
+                <div className="av-anim" style={d(3, 17)}>
+                  <GlowField
+                    id="auth-password"
+                    ref={passwordRef}
+                    type={showPassword ? "text" : "password"}
+                    autoComplete="current-password"
+                    autoCorrect="off"
+                    autoCapitalize="off"
+                    spellCheck={false}
+                    required
+                    minLength={6}
+                    label="Password"
+                    rightSlot={passwordToggle}
+                  />
+                </div>
+
+                {error && mode === "sign-in" ? errorBox : null}
+
+                <div className="av-anim" style={d(4, 18)}>
+                  <PillButton
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="av-primary mt-1"
+                  >
+                    Sign in
+                  </PillButton>
+                </div>
+
+                <div
+                  className="av-anim relative flex items-center gap-3 py-0.5 text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-500"
+                  style={d(5, 19)}
+                >
+                  <div className="h-px flex-1 bg-gradient-to-r from-transparent via-white/15 to-transparent" />
+                  <span>or</span>
+                  <div className="h-px flex-1 bg-gradient-to-r from-transparent via-white/15 to-transparent" />
+                </div>
+
+                <div className="av-anim" style={d(5, 19)}>
+                  <PillButton
+                    type="button"
+                    disabled={isSubmitting}
+                    onClick={handleGoogleSignIn}
+                    icon={GoogleIcon}
+                  >
+                    Continue with Google
+                  </PillButton>
+                </div>
+
+                <p
+                  className="av-anim pt-3 text-center text-[13px] font-medium text-slate-400"
+                  style={d(6, 20)}
+                >
+                  Don’t have an account?{" "}
+                  <button
+                    type="button"
+                    onClick={() => switchMode("sign-up")}
+                    className="font-semibold text-white underline-offset-4 transition-colors hover:underline"
+                  >
+                    Sign up
+                  </button>
+                </p>
+              </div>
+            </form>
+          </div>
+
+          {/* ================= SIGN UP FORM ================= */}
+          <div ref={signUpPaneRef} className="av-pane av-form av-form-register auth-scroll">
+            <form className="av-form-inner" onSubmit={handleSubmit}>
+              <h2 className="av-title av-anim" style={d(17, 0)}>Create account</h2>
+              <p className="av-sub av-anim" style={d(18, 1)}>
+                Join MVBD and unlock unlimited movies &amp; shows
+              </p>
+
+              <div className="flex flex-col gap-3.5">
+                <div className="av-anim" style={d(19, 2)}>
+                  <GlowField
+                    id="auth-name"
+                    ref={nameRef}
+                    label="Full name"
+                    autoComplete="name"
+                    required
+                  />
+                </div>
+                <div className="av-anim" style={d(20, 3)}>
+                  <GlowField
+                    id="auth-dob"
+                    ref={dobRef}
+                    type="date"
+                    label="Date of birth"
+                    alwaysFloat
+                    required
+                  />
+                </div>
+                <div className="av-anim" style={d(21, 4)}>
+                  <GlowField
+                    id="auth-referral"
+                    ref={referralRef}
+                    label="Referral code (optional)"
+                    autoCapitalize="characters"
+                  />
+                </div>
+
+                <div className="av-anim" style={d(22, 5)}>
+                  <GlowField
+                    id="auth-email-up"
+                    ref={emailUpRef}
+                    type="email"
+                    inputMode="email"
+                    autoComplete="email"
+                    autoCorrect="off"
+                    autoCapitalize="off"
+                    spellCheck={false}
+                    required
+                    label="Email"
+                  />
+                </div>
+
+                <div className="av-anim" style={d(23, 6)}>
+                  <GlowField
+                    id="auth-password-up"
+                    ref={passwordUpRef}
+                    type={showPassword ? "text" : "password"}
+                    autoComplete="new-password"
+                    autoCorrect="off"
+                    autoCapitalize="off"
+                    spellCheck={false}
+                    required
+                    minLength={6}
+                    label="Password"
+                    rightSlot={passwordToggle}
+                  />
+                </div>
+
+                {error && mode === "sign-up" ? errorBox : null}
+
+                <div className="av-anim" style={d(24, 7)}>
+                  <PillButton
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="av-primary mt-1"
+                  >
+                    Create account
+                  </PillButton>
+                </div>
+
+                <div
+                  className="av-anim relative flex items-center gap-3 py-0.5 text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-500"
+                  style={d(25, 8)}
+                >
+                  <div className="h-px flex-1 bg-gradient-to-r from-transparent via-white/15 to-transparent" />
+                  <span>or</span>
+                  <div className="h-px flex-1 bg-gradient-to-r from-transparent via-white/15 to-transparent" />
+                </div>
+
+                <div className="av-anim" style={d(25, 8)}>
+                  <PillButton
+                    type="button"
+                    disabled={isSubmitting}
+                    onClick={handleGoogleSignIn}
+                    icon={GoogleIcon}
+                  >
+                    Continue with Google
+                  </PillButton>
+                </div>
+
+                <p
+                  className="av-anim pt-3 text-center text-[13px] font-medium text-slate-400"
+                  style={d(26, 9)}
+                >
+                  Already have an account?{" "}
+                  <button
+                    type="button"
+                    onClick={() => switchMode("sign-in")}
+                    className="font-semibold text-white underline-offset-4 transition-colors hover:underline"
+                  >
+                    Sign in
+                  </button>
+                </p>
+              </div>
+            </form>
+          </div>
         </div>
 
         <style jsx>{`
@@ -575,7 +762,8 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
             }
           }
         `}</style>
-        {/* open / close animation keyframes */}
+
+        {/* open / close animation keyframes + poster panel animation */}
         <style jsx global>{`
           @keyframes authModalIn {
             0% {
@@ -614,8 +802,294 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
           .auth-close-btn {
             animation: authCloseIn 0.55s cubic-bezier(0.22, 1.4, 0.36, 1) 0.2s both;
           }
+
+          /* ===================================================
+             SIGN IN <-> SIGN UP  (poster panel + slide/blur)
+             =================================================== */
+          .av-root {
+            position: absolute;
+            inset: 0;
+            overflow: hidden;
+          }
+
+          /* ---- poster panel ---- */
+          .av-root .av-art-wrap {
+            position: absolute;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+            filter: drop-shadow(0 0 7px rgba(var(--glow), 0.75));
+          }
+          .av-root .av-art {
+            position: absolute;
+            inset: 0;
+            overflow: hidden;
+            background: linear-gradient(45deg, #06120c, rgb(var(--glow)));
+            clip-path: polygon(46% 0, 100% 0, 100% 100%, 70% 100%);
+          }
+          .av-root .av-art-img {
+            position: absolute;
+            inset: -4%;
+            background: var(--poster) center / cover no-repeat;
+            animation: avKenburns 22s ease-in-out infinite alternate;
+          }
+          .av-root .av-art-shade {
+            position: absolute;
+            inset: 0;
+            background:
+              linear-gradient(180deg, rgba(0, 0, 0, 0.35) 0%, rgba(0, 0, 0, 0) 30%, rgba(0, 0, 0, 0.25) 55%, rgba(0, 0, 0, 0.82) 100%),
+              linear-gradient(135deg, rgba(var(--glow), 0.18), transparent 55%);
+          }
+          @keyframes avKenburns {
+            from { transform: scale(1); }
+            to { transform: scale(1.09) translate(-1.2%, 0.8%); }
+          }
+          .av-root.av-up .av-art {
+            clip-path: polygon(0 0, 54% 0, 30% 100%, 0 100%);
+          }
+          .av-root.av-play:not(.av-up) .av-art {
+            animation: avSweepOut 1.5s ease both;
+          }
+          .av-root.av-play.av-up .av-art {
+            animation: avSweepIn 1.5s ease both;
+          }
+          @keyframes avSweepIn {
+            0% { clip-path: polygon(46% 0, 100% 0, 100% 100%, 70% 100%); }
+            45% { clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%); }
+            100% { clip-path: polygon(0 0, 54% 0, 30% 100%, 0 100%); }
+          }
+          @keyframes avSweepOut {
+            0% { clip-path: polygon(0 0, 54% 0, 30% 100%, 0 100%); }
+            45% { clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%); }
+            100% { clip-path: polygon(46% 0, 100% 0, 100% 100%, 70% 100%); }
+          }
+
+          /* ---- panes ---- */
+          .av-root .av-pane {
+            position: absolute;
+            top: 0;
+            height: 100%;
+            z-index: 2;
+          }
+          .av-root .av-info {
+            width: 40%;
+            padding: 0 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            pointer-events: none;
+            text-shadow: 0 2px 14px rgba(0, 0, 0, 0.8);
+          }
+          .av-root .av-info-login {
+            right: 0;
+            align-items: flex-end;
+            text-align: right;
+          }
+          .av-root .av-info-register {
+            left: 0;
+            width: 34%;
+            align-items: flex-start;
+            text-align: left;
+          }
+          .av-root .av-lockup {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 18px;
+          }
+          .av-root .av-info-login .av-lockup {
+            flex-direction: row-reverse;
+          }
+          .av-root .av-lockup img {
+            width: 52px;
+            height: 52px;
+            object-fit: contain;
+            filter: drop-shadow(0 0 12px rgba(255, 255, 255, 0.35));
+          }
+          .av-root .av-mark {
+            width: 52px;
+            height: 52px;
+            border-radius: 14px;
+            display: grid;
+            place-items: center;
+            font-weight: 800;
+            background: rgba(var(--glow), 0.16);
+            border: 1px solid rgba(var(--glow), 0.6);
+          }
+          .av-root .av-lockup span {
+            font-weight: 800;
+            font-size: 18px;
+            letter-spacing: -0.02em;
+          }
+          .av-root .av-lockup span b {
+            color: rgb(var(--glow));
+          }
+          .av-root .av-info h2 {
+            font-size: 30px;
+            line-height: 1.15;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: -0.01em;
+          }
+          .av-root .av-info p {
+            font-size: 14px;
+            line-height: 1.55;
+            margin-top: 10px;
+            color: #e6efe9;
+          }
+
+          .av-root .av-form {
+            width: 46%;
+            padding: 0 36px;
+            overflow-x: hidden;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+          }
+          .av-root .av-form-login { left: 0; }
+          .av-root .av-form-register { right: 0; }
+          .av-root .av-form-inner {
+            margin: auto 0;
+            padding: 26px 0;
+          }
+          .av-root .av-title {
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            line-height: 1.2;
+            text-align: center;
+            color: #fff;
+          }
+          .av-root .av-sub {
+            font-size: 14px;
+            font-weight: 500;
+            color: #94a3b8;
+            text-align: center;
+            margin: 6px 0 22px;
+          }
+
+          /* submit button (green) */
+          .av-root .av-primary {
+            color: #fff !important;
+            border-color: rgba(var(--glow), 0.55) !important;
+            background: linear-gradient(135deg, rgba(var(--glow), 0.32), rgba(var(--glow), 0.12)) !important;
+            box-shadow: 0 10px 26px -12px rgba(var(--glow), 0.8);
+          }
+          .av-root .av-primary:hover:not(:disabled) {
+            background: linear-gradient(135deg, rgba(var(--glow), 0.5), rgba(var(--glow), 0.2)) !important;
+          }
+
+          /* ---- slide + blur choreography ---- */
+          .av-root .av-anim {
+            transition: transform 0.7s ease, opacity 0.7s ease, filter 0.7s ease;
+          }
+          .av-root:not(.av-play) .av-anim { transition: none; }
+
+          .av-root .av-form-login .av-anim,
+          .av-root .av-info-login .av-anim {
+            transform: none;
+            opacity: 1;
+            filter: blur(0);
+            transition-delay: calc(0.1s * var(--li));
+          }
+          .av-root.av-up .av-form-login .av-anim {
+            transform: translateX(-120%);
+            opacity: 0;
+            filter: blur(10px);
+            transition-delay: calc(0.1s * var(--i));
+          }
+          .av-root.av-up .av-info-login .av-anim {
+            transform: translateX(120%);
+            opacity: 0;
+            filter: blur(10px);
+            transition-delay: calc(0.1s * var(--i));
+          }
+          .av-root .av-form-register .av-anim {
+            transform: translateX(120%);
+            opacity: 0;
+            filter: blur(10px);
+            transition-delay: calc(0.1s * var(--i));
+          }
+          .av-root .av-info-register .av-anim {
+            transform: translateX(-120%);
+            opacity: 0;
+            filter: blur(10px);
+            transition-delay: calc(0.1s * var(--i));
+          }
+          .av-root.av-up .av-form-register .av-anim,
+          .av-root.av-up .av-info-register .av-anim {
+            transform: none;
+            opacity: 1;
+            filter: blur(0);
+            transition-delay: calc(0.1s * var(--li));
+          }
+
+          /* ===================== MOBILE ===================== */
+          @media (max-width: 720px) {
+            .av-root .av-art {
+              clip-path: polygon(0 0, 100% 0, 100% 20%, 0 28%);
+            }
+            .av-root.av-up .av-art {
+              clip-path: polygon(0 0, 100% 0, 100% 28%, 0 20%);
+            }
+            @keyframes avSweepIn {
+              0% { clip-path: polygon(0 0, 100% 0, 100% 20%, 0 28%); }
+              45% { clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%); }
+              100% { clip-path: polygon(0 0, 100% 0, 100% 28%, 0 20%); }
+            }
+            @keyframes avSweepOut {
+              0% { clip-path: polygon(0 0, 100% 0, 100% 28%, 0 20%); }
+              45% { clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%); }
+              100% { clip-path: polygon(0 0, 100% 0, 100% 20%, 0 28%); }
+            }
+            .av-root .av-info,
+            .av-root .av-info-register {
+              width: 100%;
+              height: 21%;
+              top: 0;
+              padding: 0 64px 0 22px;
+              align-items: flex-start;
+              text-align: left;
+            }
+            .av-root .av-info-login {
+              right: auto;
+              left: 0;
+            }
+            .av-root .av-info .av-lockup,
+            .av-root .av-info-login .av-lockup {
+              margin-bottom: 6px;
+              flex-direction: row;
+            }
+            .av-root .av-lockup img,
+            .av-root .av-mark {
+              width: 34px;
+              height: 34px;
+            }
+            .av-root .av-lockup span { font-size: 15px; }
+            .av-root .av-info h2 { font-size: 19px; }
+            .av-root .av-info p { display: none; }
+            .av-root .av-form {
+              width: 100%;
+              top: auto;
+              bottom: 0;
+              height: 72%;
+              padding: 0 22px;
+            }
+            .av-root .av-form-login,
+            .av-root .av-form-register {
+              left: 0;
+              right: auto;
+            }
+            .av-root .av-form-inner { padding: 14px 0 22px; }
+            .av-root .av-title { font-size: 24px; }
+            .av-root .av-sub { margin: 4px 0 16px; font-size: 12.5px; }
+          }
+
+          @media (prefers-reduced-motion: reduce) {
+            .av-root .av-art-img { animation: none; }
+          }
         `}</style>
       </DialogContent>
     </Dialog>
   )
-}
+        }

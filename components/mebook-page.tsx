@@ -1997,6 +1997,64 @@ text-shadow:0 0 15px rgba(34,197,94,.35);
 }
 
 /* ============================================================
+   YOUTUBE POSTS (Shorts + videos)
+   ============================================================ */
+.mebook-root .mb-yt{position:relative;background:#000;width:100%;display:flex;justify-content:center;align-items:center;overflow:hidden;}
+.mebook-root .mb-yt.short{height:min(560px,78vh);}
+.mebook-root .mb-yt-stage{position:relative;background:#000;overflow:hidden;}
+.mebook-root .mb-yt.short .mb-yt-stage{height:100%;aspect-ratio:9/16;max-width:100%;}
+.mebook-root .mb-yt.video .mb-yt-stage{width:100%;aspect-ratio:16/9;}
+.mebook-root .mb-yt-stage iframe{position:absolute;inset:0;width:100%;height:100%;border:0;pointer-events:none;}
+.mebook-root .mb-yt-thumb{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
+.mebook-root .mb-yt-shade{position:absolute;inset:0;background:linear-gradient(to bottom,rgba(0,0,0,.25),rgba(0,0,0,.05) 40%,rgba(0,0,0,.35));}
+.mebook-root .mb-yt-badge{
+position:absolute;top:10px;left:10px;z-index:2;padding:4px 9px;border-radius:8px;
+background:rgba(0,0,0,.6);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;gap:5px;
+}
+.mebook-root .mb-yt-badge i{display:inline-block;width:0;height:0;border-left:7px solid #ff3b3b;border-top:5px solid transparent;border-bottom:5px solid transparent;}
+.mebook-root .mb-yt-bigplay{
+position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:2;
+width:68px;height:68px;border-radius:50%;background:rgba(0,0,0,.55);
+border:2px solid rgba(255,255,255,.85);display:flex;align-items:center;justify-content:center;
+transition:transform .15s,background .15s;
+}
+.mebook-root .mb-yt-bigplay:hover{transform:translate(-50%,-50%) scale(1.08);background:rgba(0,0,0,.7);}
+.mebook-root .mb-yt-bigplay svg{width:34px;height:34px;fill:#fff;margin-left:3px;}
+.mebook-root .mb-yt-spinner{
+position:absolute;left:50%;top:50%;z-index:2;width:38px;height:38px;margin:-19px 0 0 -19px;
+border:3px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:ytSpin .8s linear infinite;
+}
+@keyframes ytSpin{to{transform:rotate(360deg);}}
+.mebook-root .mb-yt-tap{position:absolute;inset:0;z-index:3;cursor:pointer;}
+.mebook-root .mb-yt-flash{
+position:absolute;left:50%;top:50%;z-index:4;pointer-events:none;
+min-width:64px;height:64px;padding:0 14px;border-radius:32px;background:rgba(0,0,0,.6);color:#fff;
+display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;
+transform:translate(-50%,-50%);animation:ytFlash .6s ease forwards;
+}
+@keyframes ytFlash{0%{opacity:0;transform:translate(-50%,-50%) scale(.7);}25%{opacity:1;transform:translate(-50%,-50%) scale(1);}100%{opacity:0;transform:translate(-50%,-50%) scale(1.1);}}
+.mebook-root .mb-yt-bar{
+position:absolute;left:0;right:0;bottom:0;z-index:5;padding:22px 10px 8px;
+background:linear-gradient(to top,rgba(0,0,0,.8),rgba(0,0,0,0));color:#fff;
+}
+.mebook-root .mb-yt-seek{width:100%;height:16px;margin:0;accent-color:#22c55e;cursor:pointer;display:block;}
+.mebook-root .mb-yt-row{display:flex;align-items:center;gap:4px;margin-top:2px;}
+.mebook-root .mb-yt-btn{
+min-width:36px;height:36px;padding:0 6px;border-radius:50%;color:#fff;
+display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;gap:2px;
+}
+.mebook-root .mb-yt-btn:hover{background:rgba(255,255,255,.18);}
+.mebook-root .mb-yt-btn svg{width:22px;height:22px;fill:currentColor;}
+.mebook-root .mb-yt-time{font-size:12px;font-weight:600;margin-left:auto;margin-right:4px;opacity:.9;white-space:nowrap;}
+.mebook-root .mb-yt-err{
+position:absolute;inset:0;z-index:6;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;
+background:rgba(0,0,0,.85);color:#fff;font-size:14px;text-align:center;padding:20px;
+}
+.mebook-root .mb-yt-err a{padding:9px 16px;border-radius:10px;background:#ff3b3b;color:#fff;font-weight:700;text-decoration:none;}
+.mebook-root .mb-yt:fullscreen{height:100vh;}
+.mebook-root .mb-yt:fullscreen .mb-yt-stage{width:100%;height:auto;max-height:100vh;aspect-ratio:16/9;}
+
+/* ============================================================
    EDIT / DELETE / SEE MORE / PHOTO VIEWER
    ============================================================ */
 .mebook-root .mb-cap-text.clamp{
@@ -2627,6 +2685,347 @@ const ICON_DOTS = (
     <path d="M6 10c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm12 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-6 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
   </svg>
 )
+
+
+/* ============================================================
+YOUTUBE POST PLAYER (Shorts 9:16 / video 16:9, custom controls)
+============================================================ */
+
+let ytApiPromise: Promise<any> | null = null
+function loadYouTubeApi(): Promise<any> {
+  const w = window as any
+  if (w.YT && w.YT.Player) return Promise.resolve(w.YT)
+  if (ytApiPromise) return ytApiPromise
+  ytApiPromise = new Promise((resolve, reject) => {
+    const prev = w.onYouTubeIframeAPIReady
+    w.onYouTubeIframeAPIReady = () => {
+      try { prev && prev() } catch {}
+      resolve(w.YT)
+    }
+    const tag = document.createElement("script")
+    tag.src = "https://www.youtube.com/iframe_api"
+    tag.async = true
+    tag.onerror = () => {
+      ytApiPromise = null
+      reject(new Error("YouTube API failed to load"))
+    }
+    document.head.appendChild(tag)
+  })
+  return ytApiPromise
+}
+
+// Only one YouTube post plays at a time
+let activeYTPause: (() => void) | null = null
+
+function fmtYT(sec: number) {
+  const s = Math.max(0, Math.floor(sec || 0))
+  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`
+}
+
+function YouTubePost({
+  videoId,
+  isShort,
+  thumb,
+  url,
+}: {
+  videoId: string
+  isShort: boolean
+  thumb?: string
+  url?: string
+}) {
+  const [active, setActive] = useState(false)
+  const [started, setStarted] = useState(false)
+  const [playing, setPlaying] = useState(false)
+  const [muted, setMuted] = useState(false)
+  const [cur, setCur] = useState(0)
+  const [dur, setDur] = useState(0)
+  const [err, setErr] = useState(false)
+  const [canFs, setCanFs] = useState(false)
+  const [flash, setFlash] = useState<{ label: string; n: number } | null>(null)
+
+  const rootRef = useRef<HTMLDivElement>(null)
+  const mountRef = useRef<HTMLDivElement>(null)
+  const playerRef = useRef<any>(null)
+  const flashTimer = useRef<any>(null)
+  const shortRef = useRef(isShort)
+  shortRef.current = isShort
+  const pauseSelf = useRef(() => {
+    try { playerRef.current?.pauseVideo() } catch {}
+  }).current
+
+  const thumbUrl = thumb || `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`
+  const watchUrl = url || `https://www.youtube.com/watch?v=${videoId}`
+
+  useEffect(() => {
+    setCanFs(!isShort && typeof document !== "undefined" && !!document.fullscreenEnabled)
+  }, [isShort])
+
+  // Create / destroy the YouTube player
+  useEffect(() => {
+    if (!active) return
+    let cancelled = false
+    let player: any = null
+    let tick: any = null
+
+    loadYouTubeApi()
+      .then((YT) => {
+        if (cancelled || !mountRef.current) return
+        const host = document.createElement("div")
+        mountRef.current.appendChild(host)
+        player = new YT.Player(host, {
+          width: "100%",
+          height: "100%",
+          videoId,
+          playerVars: {
+            autoplay: 1,
+            controls: 0,
+            playsinline: 1,
+            rel: 0,
+            modestbranding: 1,
+            fs: 0,
+            iv_load_policy: 3,
+            disablekb: 1,
+            origin: window.location.origin,
+          },
+          events: {
+            onReady: (e: any) => {
+              if (cancelled) return
+              playerRef.current = e.target
+              setDur(e.target.getDuration() || 0)
+              try { e.target.playVideo() } catch {}
+            },
+            onStateChange: (e: any) => {
+              if (cancelled) return
+              const st = e.data
+              if (st === YT.PlayerState.PLAYING) {
+                setPlaying(true)
+                setStarted(true)
+                setMuted(!!player?.isMuted?.())
+                setDur(player?.getDuration?.() || 0)
+                if (activeYTPause && activeYTPause !== pauseSelf) activeYTPause()
+                activeYTPause = pauseSelf
+              } else if (st === YT.PlayerState.PAUSED) {
+                setPlaying(false)
+              } else if (st === YT.PlayerState.ENDED) {
+                if (shortRef.current) {
+                  try { player.seekTo(0, true); player.playVideo() } catch {}
+                } else {
+                  setPlaying(false)
+                }
+              }
+            },
+            onError: () => {
+              if (!cancelled) setErr(true)
+            },
+          },
+        })
+        tick = setInterval(() => {
+          const p = playerRef.current
+          if (!p || !p.getCurrentTime) return
+          try {
+            setCur(p.getCurrentTime() || 0)
+            const d = p.getDuration()
+            if (d) setDur(d)
+          } catch {}
+        }, 250)
+      })
+      .catch(() => {
+        if (!cancelled) setErr(true)
+      })
+
+    return () => {
+      cancelled = true
+      if (tick) clearInterval(tick)
+      try { player?.destroy() } catch {}
+      playerRef.current = null
+      if (activeYTPause === pauseSelf) activeYTPause = null
+      if (mountRef.current) mountRef.current.innerHTML = ""
+      setStarted(false)
+      setPlaying(false)
+      setCur(0)
+    }
+  }, [active, videoId, pauseSelf])
+
+  // Pause when scrolled mostly out of view; free the iframe when far away
+  useEffect(() => {
+    const el = rootRef.current
+    if (!active || !el || typeof IntersectionObserver === "undefined") return
+    const near = new IntersectionObserver(
+      (entries) => {
+        const e = entries[0]
+        if (e.isIntersecting && e.intersectionRatio < 0.25) pauseSelf()
+      },
+      { threshold: [0, 0.25, 0.5] }
+    )
+    const far = new IntersectionObserver(
+      (entries) => {
+        if (!entries[0].isIntersecting) setActive(false)
+      },
+      { rootMargin: "1400px 0px 1400px 0px" }
+    )
+    near.observe(el)
+    far.observe(el)
+    return () => {
+      near.disconnect()
+      far.disconnect()
+    }
+  }, [active, pauseSelf])
+
+  const showFlash = (label: string) => {
+    setFlash((f) => ({ label, n: (f?.n || 0) + 1 }))
+    if (flashTimer.current) clearTimeout(flashTimer.current)
+    flashTimer.current = setTimeout(() => setFlash(null), 650)
+  }
+  useEffect(() => () => { if (flashTimer.current) clearTimeout(flashTimer.current) }, [])
+
+  const togglePlay = () => {
+    const p = playerRef.current
+    if (!p) return
+    try {
+      if (p.getPlayerState() === 1) {
+        p.pauseVideo()
+        showFlash("❚❚")
+      } else {
+        p.playVideo()
+        showFlash("▶")
+      }
+    } catch {}
+  }
+
+  const skip = (delta: number) => {
+    const p = playerRef.current
+    if (!p) return
+    try {
+      const d = p.getDuration() || dur || 0
+      let t = (p.getCurrentTime() || 0) + delta
+      t = Math.max(0, d ? Math.min(d - 0.3, t) : t)
+      p.seekTo(t, true)
+      setCur(t)
+      showFlash(delta < 0 ? "⏪ 10s" : "10s ⏩")
+    } catch {}
+  }
+
+  const toggleMute = () => {
+    const p = playerRef.current
+    if (!p) return
+    try {
+      if (p.isMuted()) { p.unMute(); setMuted(false) }
+      else { p.mute(); setMuted(true) }
+    } catch {}
+  }
+
+  const toggleFullscreen = () => {
+    const el = rootRef.current as any
+    if (!el) return
+    try {
+      if (document.fullscreenElement) document.exitFullscreen()
+      else el.requestFullscreen && el.requestFullscreen()
+    } catch {}
+  }
+
+  return (
+    <div ref={rootRef} className={`mb-yt ${isShort ? "short" : "video"}`}>
+      <div className="mb-yt-stage">
+        <div ref={mountRef} style={{ position: "absolute", inset: 0 }} />
+
+        {!started && (
+          <>
+            <img className="mb-yt-thumb" src={thumbUrl} alt="" loading="lazy" />
+            <div className="mb-yt-shade" />
+          </>
+        )}
+
+        <span className="mb-yt-badge">
+          <i />
+          {isShort ? "Shorts" : "Video"}
+        </span>
+
+        {!active && (
+          <button className="mb-yt-bigplay" onClick={() => setActive(true)} title="Play">
+            <svg viewBox="0 0 24 24">
+              <path d="M8 5v14l11-7z" />
+            </svg>
+          </button>
+        )}
+
+        {active && !started && !err && <div className="mb-yt-spinner" />}
+
+        {active && !err && <div className="mb-yt-tap" onClick={togglePlay} />}
+
+        {flash && (
+          <div className="mb-yt-flash" key={flash.n}>
+            {flash.label}
+          </div>
+        )}
+
+        {active && started && !err && (
+          <div className="mb-yt-bar" onClick={(e) => e.stopPropagation()}>
+            <input
+              className="mb-yt-seek"
+              type="range"
+              min={0}
+              max={dur || 1}
+              step={0.1}
+              value={Math.min(cur, dur || 1)}
+              onChange={(e) => {
+                const t = Number(e.target.value)
+                setCur(t)
+                try { playerRef.current?.seekTo(t, true) } catch {}
+              }}
+            />
+            <div className="mb-yt-row">
+              <button className="mb-yt-btn" onClick={() => skip(-10)} title="Back 10 seconds">
+                <svg viewBox="0 0 24 24">
+                  <path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z" />
+                </svg>
+                10
+              </button>
+              <button className="mb-yt-btn" onClick={togglePlay} title={playing ? "Pause" : "Play"}>
+                <svg viewBox="0 0 24 24">
+                  {playing ? <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" /> : <path d="M8 5v14l11-7z" />}
+                </svg>
+              </button>
+              <button className="mb-yt-btn" onClick={() => skip(10)} title="Forward 10 seconds">
+                10
+                <svg viewBox="0 0 24 24" style={{ transform: "scaleX(-1)" }}>
+                  <path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z" />
+                </svg>
+              </button>
+              <span className="mb-yt-time">
+                {fmtYT(cur)} / {fmtYT(dur)}
+              </span>
+              <button className="mb-yt-btn" onClick={toggleMute} title={muted ? "Unmute" : "Mute"}>
+                <svg viewBox="0 0 24 24">
+                  {muted ? (
+                    <path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51A8.8 8.8 0 0 0 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06a8.99 8.99 0 0 0 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z" />
+                  ) : (
+                    <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" />
+                  )}
+                </svg>
+              </button>
+              {canFs && (
+                <button className="mb-yt-btn" onClick={toggleFullscreen} title="Fullscreen">
+                  <svg viewBox="0 0 24 24">
+                    <path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z" />
+                  </svg>
+                </button>
+              )}
+            </div>
+          </div>
+        )}
+
+        {err && (
+          <div className="mb-yt-err">
+            <span>This video can’t be played here.</span>
+            <a href={watchUrl} target="_blank" rel="noopener noreferrer">
+              Watch on YouTube
+            </a>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
 
 function MeBookSplash() {
   return (
@@ -5423,7 +5822,14 @@ const handleChatTyping = (value: string) => {
 
         {post.caption && <PostCaption text={post.caption} />}
 
-        {post.image ? (
+        {post.type === "youtube" && post.youtube?.videoId ? (
+          <YouTubePost
+            videoId={post.youtube.videoId}
+            isShort={post.youtube.isShort === true}
+            thumb={post.image}
+            url={post.youtube.url}
+          />
+        ) : post.image ? (
           <div className="mb-post-media">
             <span className="mb-movie-badge">
               <svg viewBox="0 0 24 24">
@@ -8259,4 +8665,4 @@ function SideItem({
       {badge && badge > 0 ? <span className="mb-side-badge">{badge}</span> : null}
     </button>
   )
-          }
+        }

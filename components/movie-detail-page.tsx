@@ -95,7 +95,7 @@ type CommentItem = {
 type Me = { id: string; name: string; avatar?: string }
 
 const SITE_URL = "https://mvbds.xyz"
-const BG = "#0b0711"
+const BG = "#050507"
 
 /* ------------------------------------------------------------------ */
 /*  Firebase (Firestore) social layer: likes + comments                */
@@ -967,16 +967,16 @@ const PAGE_CSS = `
 
 /* CTA buttons: completely still, animate only on hover / press */
 .mv-cta {
-  border: 1px solid rgba(255,255,255,.16);
+  border: 1px solid rgba(255,255,255,.10);
   box-shadow: 0 8px 20px -12px var(--cta-glow);
   transition: transform .25s ease, filter .25s ease, box-shadow .25s ease;
 }
-.mv-cta-tg { background: linear-gradient(105deg,#0b6fc0 0%,#229ED9 48%,#45cdf0 100%); --cta-glow: rgba(34,158,217,.9) }
-.mv-cta-yt { background: linear-gradient(105deg,#9b0016 0%,#df0f2a 52%,#ff4d62 100%); --cta-glow: rgba(255,35,65,.85) }
+.mv-cta-tg { background: linear-gradient(105deg,#06243f 0%,#0a4a78 50%,#126a9c 100%); --cta-glow: rgba(34,158,217,.45) }
+.mv-cta-yt { background: linear-gradient(105deg,#2e0008 0%,#6a0818 52%,#92152a 100%); --cta-glow: rgba(255,35,65,.4) }
 .mv-cta .mv-art, .mv-cta .mv-ico, .mv-cta .mv-arrow { transition: transform .45s ease }
 .mv-cta:active { transform: scale(.97) }
 @media (hover:hover) {
-  .mv-cta:hover { transform: translateY(-2px); filter: brightness(1.08); box-shadow: 0 14px 26px -10px var(--cta-glow) }
+  .mv-cta:hover { transform: translateY(-2px); filter: brightness(1.18); box-shadow: 0 14px 26px -10px var(--cta-glow) }
   .mv-cta:hover .mv-art-a { transform: translate(-10px,3px) rotate(-6deg) scale(1.08) }
   .mv-cta:hover .mv-art-b { transform: translateX(8px) }
   .mv-cta:hover .mv-ico { transform: rotate(-10deg) scale(1.08) }
@@ -1168,26 +1168,9 @@ export default function MovieDetailPage({
   return (
     <div
       className="min-h-screen text-white relative overflow-x-hidden"
-      style={{ background: BG }}
+      style={{ background: BG, "--hero-h": "clamp(340px, 50vh, 520px)" } as any}
     >
       <style>{PAGE_CSS}</style>
-
-      {/* Page background: dark theme + this movie's poster */}
-      <div aria-hidden="true" className="fixed inset-0 z-0 pointer-events-none">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={movie.poster || "/placeholder.svg"}
-          alt=""
-          className="w-full h-full object-cover object-center scale-110 blur-[3px]"
-        />
-        <div
-          className="absolute inset-0"
-          style={{
-            background:
-              "linear-gradient(to bottom, rgba(10,10,13,.70), rgba(10,10,13,.88) 40%, rgba(8,8,10,.95))",
-          }}
-        />
-      </div>
 
       {/* Back button */}
       <button
@@ -1198,16 +1181,12 @@ export default function MovieDetailPage({
         <ArrowLeft className="w-4 h-4" />
       </button>
 
-      {/* HERO */}
-      <section className="relative w-full h-[50vh] min-h-[340px] max-h-[520px] overflow-hidden">
-        <div
-          className="relative mx-auto h-full w-full md:max-w-[380px] overflow-hidden"
-          style={{
-            WebkitMaskImage:
-              "linear-gradient(to bottom, #000 52%, transparent 100%)",
-            maskImage: "linear-gradient(to bottom, #000 52%, transparent 100%)",
-          }}
-        >
+      {/* FIXED POSTER — scroll korleo ekhane i thake */}
+      <div
+        className="fixed inset-x-0 top-0 z-0 pointer-events-none"
+        style={{ height: "var(--hero-h)" }}
+      >
+        <div className="relative mx-auto h-full w-full md:max-w-[380px] overflow-hidden">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={movie.poster || "/placeholder.svg"}
@@ -1220,68 +1199,73 @@ export default function MovieDetailPage({
             </span>
           )}
         </div>
-
-        {/* soft shade behind title */}
         <div
-          className="absolute inset-x-0 bottom-0 h-[38%] pointer-events-none"
-          style={{
-            background: "linear-gradient(to top, rgba(8,8,10,.75), transparent)",
-          }}
-        />
-        <div
-          className="absolute inset-x-0 top-0 h-24 pointer-events-none"
+          className="absolute inset-x-0 top-0 h-24"
           style={{
             background: "linear-gradient(to bottom, rgba(0,0,0,.55), transparent)",
           }}
         />
+      </div>
 
-        {/* title block */}
-        <div className="absolute inset-x-0 bottom-0 z-10 px-4 pb-3">
+      {/* SCROLLING CONTENT — poster er upor diye uthe */}
+      <div className="relative z-10">
+        {/* spacer: poster dekha jay */}
+        <div style={{ height: "calc(var(--hero-h) - 230px)" }} />
+
+        {/* dark → clear gradient + title */}
+        <div
+          className="relative flex items-end min-h-[230px] px-4 pb-3"
+          style={{
+            background: `linear-gradient(to bottom, transparent 0%, rgba(5,5,7,.35) 22%, rgba(5,5,7,.75) 52%, rgba(5,5,7,.96) 78%, ${BG} 100%)`,
+          }}
+        >
+          <div className="w-full">
           <div className="max-w-2xl mx-auto">
-            <div className="flex items-center flex-wrap gap-x-3 gap-y-2">
-              <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-balance leading-tight">
-                {movie.title}
-              </h1>
-              {movie.language && (
-                <span className="rounded-full bg-white/15 border border-white/20 backdrop-blur px-2 py-0.5 text-[10px] font-semibold text-slate-100">
-                  {movie.language}
-                </span>
-              )}
-            </div>
-
-            <div className="mt-2 flex flex-wrap items-center gap-x-2.5 gap-y-1 text-[11px] text-slate-300">
-              <span>{movie.year}</span>
-              {genreList.length > 0 && (
-                <>
-                  <span className="h-3 w-px bg-white/25" />
-                  <span>{genreList.slice(0, 3).join(" • ")}</span>
-                </>
-              )}
-              {hasRating && (
-                <>
-                  <span className="h-3 w-px bg-white/25" />
-                  <span className="flex items-center gap-1">
-                    <Star className="w-3 h-3 text-yellow-400" fill="currentColor" />
-                    {ratingText} Ratings
+              <div className="flex items-center flex-wrap gap-x-3 gap-y-2">
+                <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-balance leading-tight">
+                  {movie.title}
+                </h1>
+                {movie.language && (
+                  <span className="rounded-full bg-white/15 border border-white/20 backdrop-blur px-2 py-0.5 text-[10px] font-semibold text-slate-100">
+                    {movie.language}
                   </span>
-                </>
-              )}
-              {viewCount > 0 && (
-                <>
-                  <span className="h-3 w-px bg-white/25" />
-                  <span className="flex items-center gap-1 text-emerald-400">
-                    <Eye className="w-3 h-3" />
-                    {viewCount.toLocaleString()} views
-                  </span>
-                </>
-              )}
+                )}
+              </div>
+  
+              <div className="mt-2 flex flex-wrap items-center gap-x-2.5 gap-y-1 text-[11px] text-slate-300">
+                <span>{movie.year}</span>
+                {genreList.length > 0 && (
+                  <>
+                    <span className="h-3 w-px bg-white/25" />
+                    <span>{genreList.slice(0, 3).join(" • ")}</span>
+                  </>
+                )}
+                {hasRating && (
+                  <>
+                    <span className="h-3 w-px bg-white/25" />
+                    <span className="flex items-center gap-1">
+                      <Star className="w-3 h-3 text-yellow-400" fill="currentColor" />
+                      {ratingText} Ratings
+                    </span>
+                  </>
+                )}
+                {viewCount > 0 && (
+                  <>
+                    <span className="h-3 w-px bg-white/25" />
+                    <span className="flex items-center gap-1 text-emerald-400">
+                      <Eye className="w-3 h-3" />
+                      {viewCount.toLocaleString()} views
+                    </span>
+                  </>
+                )}
+              </div>
             </div>
-          </div>
+            </div>
         </div>
-      </section>
 
       {/* MAIN */}
-      <main className="relative z-10 max-w-2xl mx-auto px-4 pt-2 space-y-4">
+      <div style={{ background: BG }}>
+      <main className="relative max-w-2xl mx-auto px-4 pt-2 space-y-4">
         {/* Buttons */}
         <div className="space-y-2.5">
           <button
@@ -1316,7 +1300,7 @@ export default function MovieDetailPage({
             />
 
             <span className="relative z-10 h-full flex items-center justify-center gap-2.5 pl-3 pr-10 text-[14.5px] font-semibold tracking-wide">
-              <span className="mv-ico w-7 h-7 rounded-full bg-white flex items-center justify-center shadow">
+              <span className="mv-ico w-7 h-7 rounded-full bg-white/90 flex items-center justify-center shadow">
                 <TelegramLogo size={26} uid="btn" />
               </span>
               <span className="drop-shadow-sm">Download on Telegram</span>
@@ -1362,7 +1346,7 @@ export default function MovieDetailPage({
               </svg>
 
               <span className="relative z-10 h-full flex items-center justify-center gap-2.5 pl-3 pr-10 text-[14.5px] font-semibold tracking-wide">
-                <span className="mv-ico w-7 h-7 rounded-full bg-white flex items-center justify-center shadow">
+                <span className="mv-ico w-7 h-7 rounded-full bg-white/90 flex items-center justify-center shadow">
                   <YouTubeLogo size={22} />
                 </span>
                 <span className="drop-shadow-sm">Trailer</span>
@@ -1438,9 +1422,34 @@ export default function MovieDetailPage({
           </button>
         </div>
 
+      </main>
+      </div>
+
+      {/* Poster background: starts under Like/Comments/Share, fades in and out */}
+      <div className="relative" style={{ background: BG }}>
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 pointer-events-none overflow-hidden"
+          style={{
+            WebkitMaskImage:
+              "linear-gradient(to bottom, transparent 0%, #000 30%, #000 70%, transparent 100%)",
+            maskImage:
+              "linear-gradient(to bottom, transparent 0%, #000 30%, #000 70%, transparent 100%)",
+          }}
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={movie.poster || "/placeholder.svg"}
+            alt=""
+            className="w-full h-full object-cover object-center opacity-50 blur-[2px] scale-105"
+          />
+          <div className="absolute inset-0 bg-black/45" />
+        </div>
+
+        <div className="relative z-10 max-w-2xl mx-auto px-4 pt-6">
         {/* Cast */}
         <section>
-          <h3 className="text-base font-bold mb-2">Cast</h3>
+          <h3 className="text-xl font-bold mb-3">Cast</h3>
           <div ref={castRef}>
           <MovieCast
             title={movie.title}
@@ -1455,7 +1464,7 @@ export default function MovieDetailPage({
           />
           </div>
         </section>
-      </main>
+        </div>
 
       {/* RELATED */}
       {relatedMovies.length > 0 && (
@@ -1512,8 +1521,12 @@ export default function MovieDetailPage({
         </section>
       )}
 
+      </div>
+
+      </div>
+
       {/* Footer */}
-      <div className="relative z-10 bg-black/60 backdrop-blur-xl border-t border-white/10 mt-6">
+      <div className="relative z-10 bg-black border-t border-white/10 mt-0">
         <div className="px-4 py-8 max-w-6xl mx-auto">
           <div className="flex justify-center items-center gap-4">
             <p className="text-slate-500 text-xs text-center">
@@ -1595,4 +1608,4 @@ export default function MovieDetailPage({
       )}
     </div>
   )
-              }
+            }

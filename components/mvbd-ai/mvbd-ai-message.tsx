@@ -1,5 +1,8 @@
+"use client"
+
+import { useEffect, useMemo, useRef, useState } from "react"
 import type { ReactNode } from "react"
-import { Film } from "lucide-react"
+import { Check, Copy, Film, Share2 } from "lucide-react"
 
 const AI_AVATAR = "https://i.postimg.cc/Wz5YXJgC/c6d87db279f921d6f9c5b1be88b84014.jpg"
 
@@ -144,9 +147,147 @@ function MovieCard({ movie }: { movie: MvbdAiMovie }) {
   )
 }
 
+/* ---------- reply actions (copy / share) ---------- */
+
+async function copyText(text: string) {
+  try {
+    await navigator.clipboard.writeText(text)
+    return true
+  } catch {
+    try {
+      const ta = document.createElement("textarea")
+      ta.value = text
+      ta.style.position = "fixed"
+      ta.style.opacity = "0"
+      document.body.appendChild(ta)
+      ta.select()
+      const ok = document.execCommand("copy")
+      document.body.removeChild(ta)
+      return ok
+    } catch {
+      return false
+    }
+  }
+}
+
+function ReplyActions({ content }: { content: string }) {
+  const [copied, setCopied] = useState(false)
+  const timer = useRef<ReturnType<typeof setTimeout>>()
+  useEffect(() => () => clearTimeout(timer.current), [])
+
+  const flash = () => {
+    setCopied(true)
+    clearTimeout(timer.current)
+    timer.current = setTimeout(() => setCopied(false), 1800)
+  }
+  const onCopy = async () => {
+    if (await copyText(content)) flash()
+  }
+  const onShare = async () => {
+    if (typeof navigator !== "undefined" && typeof navigator.share === "function") {
+      try {
+        await navigator.share({ text: content })
+        return
+      } catch (err) {
+        if ((err as Error)?.name === "AbortError") return
+      }
+    }
+    if (await copyText(content)) flash()
+  }
+
+  return (
+    <div className="mvbd-ai-actions-row">
+      <button type="button" onClick={onCopy} aria-label={copied ? "কপি হয়েছে" : "কপি করুন"} title="কপি">
+        {copied ? <Check size={13} /> : <Copy size={13} />}
+      </button>
+      <button type="button" onClick={onShare} aria-label="শেয়ার করুন" title="শেয়ার">
+        <Share2 size={13} />
+      </button>
+    </div>
+  )
+}
+
+/* ---------- assistant reply with word-by-word typing ---------- */
+
+// replies already shown once (so reopening the chat doesn't replay old answers)
+const seenReplies = new Set<string>()
+
+function AssistantReply({
+  content,
+  error,
+  movies,
+  animate,
+}: {
+  content: string
+  error?: boolean
+  movies?: MvbdAiMovie[]
+  animate?: boolean
+}) {
+  const rootRef = useRef<HTMLDivElement>(null)
+  const [typing] = useState(() => {
+    if (error) return false
+    if (typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return false
+    if (animate !== undefined) return animate
+    return !seenReplies.has(content)
+  })
+  const tokens = useMemo(() => content.split(/(\s+)/), [content])
+  const [count, setCount] = useState(typing ? 0 : tokens.length)
+
+  useEffect(() => {
+    seenReplies.add(content)
+  }, [content])
+
+  useEffect(() => {
+    if (!typing || count >= tokens.length) return
+    // a bit faster for very long replies
+    const step = Math.max(1, Math.ceil(tokens.length / 260))
+    const id = setInterval(() => {
+      setCount((c) => Math.min(c + step, tokens.length))
+    }, 30)
+    return () => clearInterval(id)
+  }, [typing, count, tokens.length])
+
+  // keep the chat scrolled down while text is being typed
+  useEffect(() => {
+    if (!typing) return
+    const box = rootRef.current?.closest(".mvbd-ai-messages") as HTMLElement | null
+    if (!box) return
+    if (box.scrollHeight - box.scrollTop - box.clientHeight < 160) {
+      box.scrollTo({ top: box.scrollHeight, behavior: "auto" })
+    }
+  }, [typing, count])
+
+  const done = !typing || count >= tokens.length
+  const visible = typing ? tokens.slice(0, count).join("") : content
+
+  return (
+    <div className="mvbd-ai-message is-assistant" ref={rootRef}>
+      <span className="mvbd-ai-avatar" aria-hidden="true">
+        <img src={AI_AVATAR} alt="" />
+      </span>
+      <div className={`mvbd-ai-reply ${error ? "is-error" : ""}`}>
+        {renderContent(visible)}
+        {!done && <span className="mvbd-ai-caret" aria-hidden="true" />}
+        {done && movies && movies.length > 0 && (
+          <div className="mvbd-ai-movies" role="list">
+            {movies.map((movie, i) => <MovieCard key={`${movie.title}-${i}`} movie={movie} />)}
+          </div>
+        )}
+        {done && !error && content.trim() && <ReplyActions content={content} />}
+      </div>
+    </div>
+  )
+}
+
 /* ---------- exports ---------- */
 
-export function MvbdAiMessage({ role, content, error, movies }: MvbdAiChatMessage) {
+export function MvbdAiMessage({
+  role,
+  content,
+  error,
+  movies,
+  animate,
+}: MvbdAiChatMessage & { animate?: boolean }) {
   if (role === "user") {
     return (
       <div className="mvbd-ai-message is-user">
@@ -154,30 +295,49 @@ export function MvbdAiMessage({ role, content, error, movies }: MvbdAiChatMessag
       </div>
     )
   }
+  return <AssistantReply content={content} error={error} movies={movies} animate={animate} />
+}
+
+const DEFAULT_STEPS = [
+  "আপনার প্রশ্নটা বুঝছি…",
+  "চিন্তা করছি…",
+  "মুভি ডাটাবেজে খুঁজছি…",
+  "উত্তর সাজাচ্ছি…",
+]
+
+/** Thinking indicator: shows what the AI is doing, step by step.
+ *  Optional `status` overrides the current step with a real status text. */
+export function MvbdAiTyping({ steps = DEFAULT_STEPS, status }: { steps?: string[]; status?: string }) {
+  const [idx, setIdx] = useState(0)
+  useEffect(() => {
+    if (status || idx >= steps.length - 1) return
+    const id = setTimeout(() => setIdx((i) => i + 1), 1900)
+    return () => clearTimeout(id)
+  }, [idx, steps.length, status])
+
+  const shown = status ? [status] : steps.slice(Math.max(0, idx - 1), idx + 1)
+  const current = shown.length - 1
+
   return (
-    <div className="mvbd-ai-message is-assistant">
+    <div className="mvbd-ai-message is-assistant" aria-label="MVBD AI is thinking" role="status">
       <span className="mvbd-ai-avatar" aria-hidden="true">
         <img src={AI_AVATAR} alt="" />
       </span>
-      <div className={`mvbd-ai-reply ${error ? "is-error" : ""}`}>
-        {renderContent(content)}
-        {movies && movies.length > 0 && (
-          <div className="mvbd-ai-movies" role="list">
-            {movies.map((movie, i) => <MovieCard key={`${movie.title}-${i}`} movie={movie} />)}
+      <div className="mvbd-ai-reply mvbd-ai-thinking">
+        {shown.map((label, i) => (
+          <div
+            key={label}
+            className={`mvbd-ai-step ${i === current ? "is-current" : "is-done"}`}
+          >
+            {i === current ? (
+              <span className="mvbd-ai-pulse" aria-hidden="true"><i /><i /><i /></span>
+            ) : (
+              <Check size={13} aria-hidden="true" />
+            )}
+            <span className="mvbd-ai-step-text">{label}</span>
           </div>
-        )}
+        ))}
       </div>
     </div>
   )
-}
-
-export function MvbdAiTyping() {
-  return (
-    <div className="mvbd-ai-message is-assistant" aria-label="MVBD AI is typing">
-      <span className="mvbd-ai-avatar" aria-hidden="true">
-        <img src={AI_AVATAR} alt="" />
-      </span>
-      <div className="mvbd-ai-reply mvbd-ai-typing"><i /><i /><i /></div>
-    </div>
-  )
-}
+                          }

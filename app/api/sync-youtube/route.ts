@@ -60,7 +60,65 @@ function tag(block: string, name: string) {
   return m ? decodeXml(m[1]).trim() : ""
 }
 
-type Entry = { videoId: string; title: string; description: string; published: Date }
+type Entry = { videoId: string; title: string; description: string; published: Date; duration?: number }
+
+// ---------- YouTube Data API (optional, recommended: works from servers) ----------
+function parseIsoDuration(d: string) {
+  const m = d.match(/^P(?:(\d+)D)?T?(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?$/)
+  if (!m) return 0
+  return (Number(m[1]) || 0) * 86400 + (Number(m[2]) || 0) * 3600 + (Number(m[3]) || 0) * 60 + (Number(m[4]) || 0)
+}
+
+async function ytApi(path: string, params: Record<string, string>) {
+  const qs = new URLSearchParams({ ...params, key: process.env.YOUTUBE_API_KEY || "" })
+  const r = await fetch(`https://www.googleapis.com/youtube/v3/${path}?${qs}`, { cache: "no-store" })
+  const j: any = await r.json().catch(() => ({}))
+  if (!r.ok) throw new Error(`YouTube API: ${j?.error?.message || r.status}`)
+  return j
+}
+
+async function resolveViaApi(url: string) {
+  const path = decodeURIComponent(new URL(url).pathname)
+  let params: Record<string, string> | null = null
+  const ch = path.match(/\/channel\/(UC[\w-]{22})/)
+  const handle = path.match(/\/(@[\w.\-]+)/)
+  const user = path.match(/^\/user\/([^/]+)/)
+  if (ch) params = { id: ch[1] }
+  else if (handle) params = { forHandle: handle[1] }
+  else if (user) params = { forUsername: user[1] }
+  if (!params) return null
+  const j = await ytApi("channels", { part: "snippet", ...params })
+  const it = j.items?.[0]
+  if (!it) throw new Error("Channel not found on YouTube")
+  const th = it.snippet?.thumbnails
+  return {
+    channelId: it.id as string,
+    name: (it.snippet?.title || "") as string,
+    avatar: (th?.high?.url || th?.medium?.url || th?.default?.url || "") as string,
+  }
+}
+
+async function fetchEntriesApi(channelId: string): Promise<Entry[]> {
+  const pl = await ytApi("playlistItems", {
+    part: "contentDetails",
+    playlistId: "UU" + channelId.slice(2),
+    maxResults: "15",
+  })
+  const ids: string[] = (pl.items || []).map((i: any) => i.contentDetails?.videoId).filter(Boolean)
+  if (!ids.length) return []
+  const vd = await ytApi("videos", { part: "snippet,contentDetails", id: ids.join(","), maxResults: "15" })
+  const entries: Entry[] = (vd.items || [])
+    .filter((v: any) => v.snippet?.liveBroadcastContent !== "upcoming")
+    .map((v: any) => ({
+      videoId: v.id,
+      title: v.snippet?.title || "",
+      description: v.snippet?.description || "",
+      published: new Date(v.snippet?.publishedAt || Date.now()),
+      duration: parseIsoDuration(v.contentDetails?.duration || ""),
+    }))
+  entries.sort((a, b) => b.published.getTime() - a.published.getTime())
+  return entries
+}
 
 function parseFeed(xml: string): { channelName: string; entries: Entry[] } {
   const head = xml.split("<entry>")[0]
@@ -120,19 +178,20 @@ async function fetchFeed(channelId: string) {
     }
     await sleep(700)
   }
-  throw new Error(`YouTube feed returned ${lastStatus || "no response"} for channel ${channelId}. Check the channel ID is correct and the channel has public videos.`)
+  throw new Error(`YouTube feed returned ${lastStatus || "no response"} for channel ${channelId}. If the feed opens in your browser, YouTube is blocking the server: add YOUTUBE_API_KEY in Vercel.`)
 }
 
-async function isShort(videoId: string) {
+async function isShort(videoId: string, duration?: number) {
   try {
     const res = await fetch(`https://www.youtube.com/shorts/${videoId}`, {
       headers: YT_HEADERS,
       redirect: "manual",
     })
-    return res.status === 200
-  } catch {
-    return false
-  }
+    if (res.status === 200) return true
+    if ([301, 302, 303, 307, 308].includes(res.status)) return false
+  } catch {}
+  // could not tell from the URL (blocked?) -> use duration
+  return typeof duration === "number" && duration > 0 && duration <= 60
 }
 
 function buildCaption(title: string, description: string) {
@@ -150,20 +209,46 @@ async function syncChannel(db: FirebaseFirestore.Firestore, doc: FirebaseFiresto
     let name: string = ch.name || ""
     let avatar: string = ch.avatar || ""
 
+    const hasKey = !!process.env.YOUTUBE_API_KEY
     if (!channelId) {
-      const r = await resolveChannel(ch.url)
+      let r: { channelId: string; name: string; avatar: string } | null = null
+      if (hasKey) {
+        try { r = await resolveViaApi(ch.url) } catch {}
+      }
+      if (!r) r = await resolveChannel(ch.url)
       channelId = r.channelId
       name = r.name || name
       avatar = r.avatar || avatar
     } else if (!avatar || !name) {
       try {
-        const r = await resolveChannel(`https://www.youtube.com/channel/${channelId}`)
+        const url = `https://www.youtube.com/channel/${channelId}`
+        const r = (hasKey ? await resolveViaApi(url).catch(() => null) : null) || (await resolveChannel(url))
         name = name || r.name
         avatar = avatar || r.avatar
       } catch {}
     }
 
-    const { channelName, entries } = parseFeed(await fetchFeed(channelId))
+    let entries: Entry[] = []
+    let channelName = ""
+    let apiError = ""
+    let loaded = false
+    if (hasKey) {
+      try {
+        entries = await fetchEntriesApi(channelId)
+        loaded = true
+      } catch (e: any) {
+        apiError = String(e?.message || e)
+      }
+    }
+    if (!loaded) {
+      try {
+        const parsed = parseFeed(await fetchFeed(channelId))
+        entries = parsed.entries
+        channelName = parsed.channelName
+      } catch (e: any) {
+        throw new Error(apiError ? `${apiError} | ${e.message}` : e.message)
+      }
+    }
     update.channelId = channelId   // save the ID only after the feed worked
     name = name || channelName || "YouTube"
     if (!avatar) {
@@ -191,7 +276,7 @@ async function syncChannel(db: FirebaseFirestore.Firestore, doc: FirebaseFiresto
 
     // oldest first so feed order stays natural
     for (const e of [...toImport].reverse()) {
-      const short = await isShort(e.videoId)
+      const short = await isShort(e.videoId, e.duration)
       const postRef = db.collection("posts").doc(`yt_${e.videoId}`)
       await postRef.set({
         authorId: "admin",

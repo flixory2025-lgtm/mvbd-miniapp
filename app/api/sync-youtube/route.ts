@@ -99,6 +99,30 @@ async function resolveChannel(url: string) {
 }
 
 // A Short URL (/shorts/ID) returns 200; for normal videos YouTube redirects away.
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
+
+// YouTube sometimes answers 404 from cloud servers, so retry and fall back to the uploads playlist feed.
+async function fetchFeed(channelId: string) {
+  const urls = [
+    `https://www.youtube.com/feeds/videos.xml?channel_id=${channelId}`,
+    `https://www.youtube.com/feeds/videos.xml?playlist_id=UU${channelId.slice(2)}`,
+  ]
+  let lastStatus = 0
+  for (let attempt = 0; attempt < 3; attempt++) {
+    for (const u of urls) {
+      try {
+        const r = await fetch(u, { headers: { "User-Agent": UA, "Accept-Language": "en-US,en;q=0.9" }, cache: "no-store" })
+        if (r.ok) return await r.text()
+        lastStatus = r.status
+      } catch {
+        lastStatus = 0
+      }
+    }
+    await sleep(700)
+  }
+  throw new Error(`YouTube feed returned ${lastStatus || "no response"} for channel ${channelId}. Check the channel ID is correct and the channel has public videos.`)
+}
+
 async function isShort(videoId: string) {
   try {
     const res = await fetch(`https://www.youtube.com/shorts/${videoId}`, {
@@ -131,7 +155,6 @@ async function syncChannel(db: FirebaseFirestore.Firestore, doc: FirebaseFiresto
       channelId = r.channelId
       name = r.name || name
       avatar = r.avatar || avatar
-      update.channelId = channelId
     } else if (!avatar || !name) {
       try {
         const r = await resolveChannel(`https://www.youtube.com/channel/${channelId}`)
@@ -140,12 +163,8 @@ async function syncChannel(db: FirebaseFirestore.Firestore, doc: FirebaseFiresto
       } catch {}
     }
 
-    const feedRes = await fetch(`https://www.youtube.com/feeds/videos.xml?channel_id=${channelId}`, {
-      headers: { "User-Agent": UA },
-      cache: "no-store",
-    })
-    if (!feedRes.ok) throw new Error(`YouTube feed returned ${feedRes.status}`)
-    const { channelName, entries } = parseFeed(await feedRes.text())
+    const { channelName, entries } = parseFeed(await fetchFeed(channelId))
+    update.channelId = channelId   // save the ID only after the feed worked
     name = name || channelName || "YouTube"
     if (!avatar) {
       avatar = `https://ui-avatars.com/api/?background=ef4444&color=fff&name=${encodeURIComponent(name)}`

@@ -615,6 +615,42 @@ animation:betaPulse 1.6s ease-in-out infinite;
 .mebook-root .mb-avatar-btn:active{transform:scale(.93);}
 .mebook-root .mb-avatar-btn img{width:100%;height:100%;object-fit:cover;}
 
+/* ============ FACEBOOK-STYLE NAV BAR (below header, always visible) ============ */
+.mebook-root .mb-navbar{
+position:fixed;top:60px;left:0;right:0;height:48px;z-index:999;
+display:flex;align-items:stretch;justify-content:center;
+background:var(--header-bg);
+border-top:1px solid rgba(255,255,255,.06);
+box-shadow:0 2px 12px rgba(0,0,0,.25);
+transition:transform .35s ease;will-change:transform;
+}
+.mebook-root.dark-mode .mb-navbar{background:#000000;border-top-color:#151515;border-bottom:1px solid #151515;box-shadow:0 2px 16px rgba(0,0,0,.9);}
+.mebook-root .mb-navbar-inner{display:flex;align-items:stretch;width:100%;max-width:640px;}
+.mebook-root .mb-nav-tab{
+flex:1;position:relative;display:flex;align-items:center;justify-content:center;
+color:#b0b3b8;background:transparent;border:none;cursor:pointer;padding:0;
+-webkit-tap-highlight-color:transparent;
+transition:color .2s,background .2s;
+}
+.mebook-root .mb-nav-tab:hover{background:rgba(255,255,255,.06);}
+.mebook-root .mb-nav-tab:active{background:rgba(255,255,255,.1);}
+.mebook-root .mb-nav-tab svg{width:26px;height:26px;fill:currentColor;}
+.mebook-root .mb-nav-tab.active{color:#22c55e;}
+.mebook-root .mb-nav-tab::after{
+content:"";position:absolute;left:14%;right:14%;bottom:0;height:3px;border-radius:3px 3px 0 0;
+background:#22c55e;transform:scaleX(0);transition:transform .22s ease;
+}
+.mebook-root .mb-nav-tab.active::after{transform:scaleX(1);}
+.mebook-root .mb-nav-tab .mb-badge-dot{top:4px;right:calc(50% - 22px);}
+.mebook-root .mb-nav-tab .mb-nav-avatar{
+width:28px;height:28px;border-radius:50%;overflow:hidden;
+border:2px solid transparent;background:#334155;display:block;
+transition:border-color .2s;
+}
+.mebook-root .mb-nav-tab .mb-nav-avatar img{width:100%;height:100%;object-fit:cover;display:block;}
+.mebook-root .mb-nav-tab.active .mb-nav-avatar{border-color:#22c55e;}
+.mebook-root .mb-nav-tab.mb-nav-tab-avatar::after{display:block;}
+
 /* ============ 3-DOTS MENU ============ */
 .mebook-root .mb-menu-backdrop{
 position:fixed;inset:0;z-index:1050;
@@ -670,15 +706,15 @@ overscroll-behavior:contain;
 display:grid;
 grid-template-columns:280px minmax(0,1fr) 300px;
 gap:20px;max-width:1400px;margin:0 auto;
-padding:80px 16px 0;
+padding:128px 16px 0;
 align-items:start;
 min-height:100vh;
 }
 .mebook-root .mb-sidebar{
 position:sticky;
-top:80px;
+top:128px;
 align-self:start;
-max-height:calc(100vh - 100px);
+max-height:calc(100vh - 148px);
 overflow-y:auto;
 overflow-x:hidden;
 padding-bottom:12px;
@@ -1783,7 +1819,7 @@ background:var(--hover);
 }
 
 /* ============ CARDS ============ */
-.mebook-root .mb-right{position:sticky;top:80px;align-self:start;display:flex;flex-direction:column;gap:16px;max-height:calc(100vh - 100px);overflow-y:auto;scrollbar-width:none;}
+.mebook-root .mb-right{position:sticky;top:128px;align-self:start;display:flex;flex-direction:column;gap:16px;max-height:calc(100vh - 148px);overflow-y:auto;scrollbar-width:none;}
 .mebook-root .mb-right::-webkit-scrollbar{width:0;}
 .mebook-root .mb-card{border-radius:12px;box-shadow:var(--shadow);padding:14px 16px;transition:background .3s;}
 .mebook-root .mb-card-title{font-size:16px;font-weight:700;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;}
@@ -1894,7 +1930,7 @@ background:var(--hover);
 .mebook-root .mb-right{display:none;}
 }
 @media(max-width:820px){
-.mebook-root .mb-layout{grid-template-columns:minmax(0,1fr);padding:74px 10px 24px;}
+.mebook-root .mb-layout{grid-template-columns:minmax(0,1fr);padding:122px 10px 24px;}
 .mebook-root .mb-sidebar{display:none;}
 .mebook-root .mb-toast-container{left:10px;right:10px;max-width:none;top:70px;}
 .mebook-root .mb-menu{top:66px;right:10px;left:10px;max-width:none;}
@@ -2234,12 +2270,15 @@ opacity:0;transition:opacity .15s,background .15s;
 /* Auto-hide header on scroll (mobile) */
 @media(max-width:860px){
 .mebook-root .mb-header.hide{transform:translateY(-100%);box-shadow:none;}
+/* nav bar slides up into the header's place and stays pinned */
+.mebook-root .mb-navbar.hide{transform:translateY(-60px);}
 }
 
 /* ============================================================
    MECHAT FULL-SCREEN MESSENGER SHELL (header hidden, WhatsApp-style desktop)
    ============================================================ */
-.mebook-root.mc-open .mb-header{display:none;}
+.mebook-root.mc-open .mb-header,.mebook-root.mc-open .mb-navbar{display:none;}
+.mebook-root .mb-header-right .mb-plus-btn svg{width:22px;height:22px;}
 .mebook-root .mc-shell{position:fixed;left:0;top:0;right:0;height:100vh;height:100dvh;z-index:1200;display:flex;background:var(--card);overflow:hidden;}
 .mebook-root .mc-side{display:none;width:380px;max-width:38vw;min-width:300px;border-right:1px solid var(--border);flex-direction:column;background:var(--card);height:100%;}
 .mebook-root .mc-side-head{display:flex;align-items:center;gap:8px;padding:12px 14px 6px;flex-shrink:0;}
@@ -4625,14 +4664,19 @@ const handleChatTyping = (value: string) => {
   useEffect(() => {
     const onScroll = () => {
       const hd = document.querySelector(".mebook-root .mb-header") as HTMLElement | null
+      const nb = document.querySelector(".mebook-root .mb-navbar") as HTMLElement | null
       if (!hd) return
       const y = window.scrollY
       const ly = lastScrollYRef.current
+      const setHide = (hide: boolean) => {
+        hd.classList.toggle("hide", hide)
+        if (nb) nb.classList.toggle("hide", hide)
+      }
       if (window.innerWidth <= 860 && !menuOpenRef.current) {
-        if (y > ly + 8 && y > 120) hd.classList.add("hide")
-        else if (y < ly - 8 || y < 60) hd.classList.remove("hide")
+        if (y > ly + 8 && y > 120) setHide(true)
+        else if (y < ly - 8 || y < 60) setHide(false)
       } else {
-        hd.classList.remove("hide")
+        setHide(false)
       }
       lastScrollYRef.current = y
     }
@@ -4644,6 +4688,8 @@ const handleChatTyping = (value: string) => {
   useEffect(() => {
     const hd = document.querySelector(".mebook-root .mb-header")
     if (hd) hd.classList.remove("hide")
+    const nb = document.querySelector(".mebook-root .mb-navbar")
+    if (nb) nb.classList.remove("hide")
     lastScrollYRef.current = window.scrollY
   }, [currentView, menuOpen, user])
 
@@ -7697,47 +7743,14 @@ const handleChatTyping = (value: string) => {
 
         <div className="mb-header-right">
           <button
-            className="mb-icon-btn"
-            title="Notifications"
-            onClick={() => goTo("notifications")}
+            className="mb-icon-btn mb-plus-btn"
+            title="Create post"
+            aria-label="Create post"
+            onClick={openCreatePost}
           >
             <svg viewBox="0 0 24 24">
-              <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z" />
+              <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
             </svg>
-            {unreadNotifCount > 0 && (
-              <span className="mb-badge-dot">
-                {unreadNotifCount > 99 ? "99+" : unreadNotifCount}
-              </span>
-            )}
-          </button>
-          <button
-            className="mb-icon-btn"
-            title="MeChat"
-            onClick={() => goTo("messages")}
-          >
-            <svg viewBox="0 0 24 24">
-              <path d="M12 2C6.5 2 2 6.14 2 11.25c0 2.88 1.41 5.45 3.62 7.16.12 1.1-.28 2.62-1.05 3.59-.13.16-.02.4.18.38 2.34-.19 4.05-1.25 4.85-1.85.77.16 1.58.25 2.4.25 5.5 0 10-4.14 10-9.25S17.5 2 12 2z" />
-            </svg>
-            {unreadCount > 0 && <span className="mb-badge-dot">{unreadCount}</span>}
-          </button>
-          <button
-            className="mb-icon-btn"
-            title="Friends"
-            onClick={() => goTo("friends")}
-          >
-            <svg viewBox="0 0 24 24">
-              <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" />
-            </svg>
-            {requests.length > 0 && (
-              <span className="mb-badge-dot">{requests.length}</span>
-            )}
-          </button>
-          <button
-            className="mb-avatar-btn"
-            title="Profile"
-            onClick={() => goTo("profile")}
-          >
-            <img src={avatarUrl(profile)} alt="Profile" />
           </button>
           <button
             className={`mb-icon-btn${menuOpen ? " active" : ""}`}
@@ -7751,6 +7764,70 @@ const handleChatTyping = (value: string) => {
           </button>
         </div>
       </header>
+
+      <nav className="mb-navbar" aria-label="Main navigation">
+        <div className="mb-navbar-inner">
+          <button
+            className={`mb-nav-tab${currentView === "home" ? " active" : ""}`}
+            title="Home"
+            aria-label="Home"
+            onClick={() => handleNavClick("home")}
+          >
+            <svg viewBox="0 0 24 24">
+              <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
+            </svg>
+          </button>
+          <button
+            className={`mb-nav-tab${currentView === "friends" || currentView === "friends-list" ? " active" : ""}`}
+            title="Friends"
+            aria-label="Friends"
+            onClick={() => handleNavClick("friends")}
+          >
+            <svg viewBox="0 0 24 24">
+              <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" />
+            </svg>
+            {requests.length > 0 && (
+              <span className="mb-badge-dot">{requests.length}</span>
+            )}
+          </button>
+          <button
+            className={`mb-nav-tab${currentView === "messages" ? " active" : ""}`}
+            title="MeChat"
+            aria-label="MeChat"
+            onClick={() => handleNavClick("messages")}
+          >
+            <svg viewBox="0 0 24 24">
+              <path d="M12 2C6.5 2 2 6.14 2 11.25c0 2.88 1.41 5.45 3.62 7.16.12 1.1-.28 2.62-1.05 3.59-.13.16-.02.4.18.38 2.34-.19 4.05-1.25 4.85-1.85.77.16 1.58.25 2.4.25 5.5 0 10-4.14 10-9.25S17.5 2 12 2z" />
+            </svg>
+            {unreadCount > 0 && <span className="mb-badge-dot">{unreadCount}</span>}
+          </button>
+          <button
+            className={`mb-nav-tab${currentView === "notifications" ? " active" : ""}`}
+            title="Notifications"
+            aria-label="Notifications"
+            onClick={() => handleNavClick("notifications")}
+          >
+            <svg viewBox="0 0 24 24">
+              <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z" />
+            </svg>
+            {unreadNotifCount > 0 && (
+              <span className="mb-badge-dot">
+                {unreadNotifCount > 99 ? "99+" : unreadNotifCount}
+              </span>
+            )}
+          </button>
+          <button
+            className={`mb-nav-tab mb-nav-tab-avatar${currentView === "profile" ? " active" : ""}`}
+            title="Profile"
+            aria-label="Profile"
+            onClick={() => handleNavClick("profile")}
+          >
+            <span className="mb-nav-avatar">
+              <img src={avatarUrl(profile)} alt="Profile" />
+            </span>
+          </button>
+        </div>
+      </nav>
 
       <div
         className={`mb-menu-backdrop${menuOpen ? " open" : ""}`}
@@ -9929,4 +10006,4 @@ function SideItem({
       {badge && badge > 0 ? <span className="mb-side-badge">{badge}</span> : null}
     </button>
   )
-  }
+      }

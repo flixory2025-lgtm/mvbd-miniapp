@@ -904,6 +904,135 @@ animation:fastLikeFly .6s cubic-bezier(.2,.8,.3,1) forwards;
 .mebook-root .rx-send:disabled{opacity:.5;}
 .mebook-root .rx-send svg{width:18px;height:18px;fill:currentColor;}
 
+/* ---- Comments sheet v2: composer tools, stickers, edit ---- */
+.mebook-root .rx-head-shares{margin-left:auto;font-size:13.5px;color:var(--text-muted);font-weight:600;padding-right:4px;}
+.mebook-root .rx-write{padding:2px 14px;}
+.mebook-root .rx-tools{display:flex;align-items:center;gap:6px;padding:8px 2px 0;}
+.mebook-root .rx-tool{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#1877f2;background:none;transition:background .15s,transform .1s;}
+.mebook-root .rx-tool svg{width:24px;height:24px;fill:currentColor;}
+.mebook-root .rx-tool:active{transform:scale(.92);}
+.mebook-root .rx-tool.on{background:rgba(24,119,242,.16);}
+.mebook-root .rx-tool.send{margin-left:auto;}
+.mebook-root .rx-tool.send:disabled{color:var(--text-muted);opacity:.55;}
+.mebook-root .rx-img-prev{position:relative;display:inline-block;margin:0 0 8px 4px;}
+.mebook-root .rx-img-prev img{height:84px;max-width:160px;border-radius:12px;object-fit:cover;display:block;}
+.mebook-root .rx-img-prev button{position:absolute;top:-6px;right:-6px;width:22px;height:22px;border-radius:50%;background:rgba(0,0,0,.75);color:#fff;display:flex;align-items:center;justify-content:center;}
+.mebook-root .rx-img-prev button svg{width:14px;height:14px;fill:currentColor;}
+.mebook-root .rx-lock{padding:14px 10px;text-align:center;font-size:13.5px;color:var(--text-muted);font-weight:600;}
+.mebook-root .rx-sticker-panel{margin:8px -12px calc(-10px - env(safe-area-inset-bottom,0px));border-top:1px solid var(--border);height:260px;display:flex;flex-direction:column;background:var(--card);}
+.mebook-root .rx-sticker-cats{display:flex;gap:8px;overflow-x:auto;padding:10px 12px;scrollbar-width:none;flex-shrink:0;}
+.mebook-root .rx-sticker-cats::-webkit-scrollbar{display:none;}
+.mebook-root .rx-sticker-cats button{flex-shrink:0;padding:6px 12px;border-radius:18px;background:var(--input-bg);color:var(--text);font-size:13px;font-weight:700;}
+.mebook-root .rx-sticker-cats button.on{background:#1877f2;color:#fff;}
+.mebook-root .rx-sticker-grid{flex:1;overflow-y:auto;display:grid;grid-template-columns:repeat(4,1fr);gap:6px;padding:4px 12px 12px;align-content:start;}
+.mebook-root .rx-sticker-grid button{display:flex;align-items:center;justify-content:center;padding:6px;border-radius:12px;background:none;transition:background .15s,transform .12s;}
+.mebook-root .rx-sticker-grid button:active{background:var(--hover);transform:scale(.92);}
+.mebook-root .rx-cmt-sticker b{display:flex;align-items:center;gap:4px;font-size:13px;margin:0 0 2px 4px;}
+.mebook-root .rx-edit-box{background:var(--input-bg);border-radius:14px;padding:8px;}
+.mebook-root .rx-edit-box textarea{width:100%;min-height:54px;background:transparent;border:0;outline:0;color:var(--text);font-size:14.5px;resize:none;font-family:inherit;}
+.mebook-root .rx-edit-actions{display:flex;justify-content:flex-end;gap:8px;}
+.mebook-root .rx-edit-actions button{padding:6px 12px;border-radius:8px;font-size:13px;font-weight:700;background:var(--card);color:var(--text);}
+.mebook-root .rx-edit-actions button.save{background:#1877f2;color:#fff;}
+.mebook-root .rx-edit-actions button:disabled{opacity:.5;}
+
+/* ---- Shared post embed ---- */
+.mebook-root .rx-embed{margin:4px 12px 10px;border:1px solid var(--border);border-radius:12px;overflow:hidden;background:var(--card);}
+.mebook-root .rx-embed-head{display:flex;align-items:center;gap:10px;padding:10px 12px 6px;}
+.mebook-root .rx-embed-head img{width:36px;height:36px;border-radius:50%;object-fit:cover;cursor:pointer;}
+.mebook-root .rx-embed-name{font-size:14.5px;font-weight:700;display:flex;align-items:center;gap:4px;cursor:pointer;}
+.mebook-root .rx-embed .mb-post-media{margin:0;}
+.mebook-root .rx-embed-unavail{padding:14px 12px;font-size:13.5px;color:var(--text-muted);}
+.mebook-root .rx-product{display:flex;align-items:center;gap:8px;margin:0 12px 10px;padding:10px 14px;border-radius:10px;background:var(--input-bg);color:var(--text);font-size:14px;font-weight:700;text-decoration:none;}
+.mebook-root .rx-product svg{width:20px;height:20px;fill:#1877f2;flex-shrink:0;}
+.mebook-root .rx-post-tag{padding:8px 16px 0;font-size:12.5px;font-weight:700;color:var(--text-muted);}
+
+/* ---- Share sheet ---- */
+.mebook-root .sh-backdrop{position:fixed;inset:0;z-index:3000;background:rgba(0,0,0,0);display:flex;align-items:flex-end;justify-content:center;transition:background .25s ease;}
+.mebook-root .sh-backdrop.open{background:rgba(0,0,0,.55);}
+.mebook-root .sh-sheet{width:100%;max-width:560px;background:var(--bg);color:var(--text);border-radius:18px 18px 0 0;padding:0 0 calc(12px + env(safe-area-inset-bottom,0px));transform:translateY(100%);transition:transform .3s cubic-bezier(.2,.9,.3,1);box-shadow:0 -6px 30px rgba(0,0,0,.35);}
+.mebook-root .sh-backdrop.open .sh-sheet{transform:translateY(0);}
+.mebook-root .sh-top{padding:6px 0 0;touch-action:none;}
+.mebook-root .sh-compose{background:var(--card);margin:2px 10px 10px;border-radius:14px;padding:12px;}
+.mebook-root .sh-who{display:flex;gap:10px;align-items:center;}
+.mebook-root .sh-who img{width:42px;height:42px;border-radius:50%;object-fit:cover;}
+.mebook-root .sh-who-info b{display:flex;align-items:center;gap:4px;font-size:14.5px;}
+.mebook-root .sh-chips{display:flex;gap:8px;margin-top:4px;}
+.mebook-root .sh-chip{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:7px;background:var(--input-bg);color:var(--text);font-size:12.5px;font-weight:700;}
+.mebook-root .sh-chip span{font-size:10px;}
+.mebook-root .sh-text{width:100%;margin-top:10px;background:transparent;border:0;outline:0;color:var(--text);font-size:15.5px;resize:none;font-family:inherit;min-height:64px;}
+.mebook-root .sh-emojis{display:flex;flex-wrap:wrap;gap:2px;padding:4px 0;}
+.mebook-root .sh-emojis button{font-size:22px;padding:4px 6px;background:none;}
+.mebook-root .sh-compose-foot{display:flex;align-items:center;justify-content:space-between;}
+.mebook-root .sh-emoji-btn{width:34px;height:34px;display:flex;align-items:center;justify-content:center;color:var(--text-muted);background:none;}
+.mebook-root .sh-emoji-btn svg{fill:currentColor;width:22px;height:22px;}
+.mebook-root .sh-now{padding:9px 18px;border-radius:9px;background:#1877f2;color:#fff;font-size:14.5px;font-weight:700;transition:filter .15s,transform .1s;}
+.mebook-root .sh-now:active{transform:scale(.97);}
+.mebook-root .sh-now:disabled{opacity:.6;}
+.mebook-root .sh-row{display:flex;gap:14px;overflow-x:auto;padding:6px 14px 10px;scrollbar-width:none;}
+.mebook-root .sh-row::-webkit-scrollbar{display:none;}
+.mebook-root .sh-friend{display:flex;flex-direction:column;align-items:center;gap:5px;width:62px;flex-shrink:0;background:none;color:var(--text);}
+.mebook-root .sh-friend-av{position:relative;width:54px;height:54px;}
+.mebook-root .sh-friend-av img{width:54px;height:54px;border-radius:50%;object-fit:cover;}
+.mebook-root .sh-friend-av i{position:absolute;inset:0;border-radius:50%;background:rgba(0,0,0,.55);color:#fff;display:flex;align-items:center;justify-content:center;font-style:normal;font-size:18px;font-weight:800;}
+.mebook-root .sh-friend-av i.ok{background:rgba(24,119,242,.85);}
+.mebook-root .sh-friend-nm{font-size:11.5px;font-weight:600;text-align:center;line-height:1.15;max-height:27px;overflow:hidden;}
+.mebook-root .sh-app{display:flex;flex-direction:column;align-items:center;gap:5px;width:62px;flex-shrink:0;background:none;color:var(--text);}
+.mebook-root .sh-app-ic{width:54px;height:54px;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:transform .12s;}
+.mebook-root .sh-app:active .sh-app-ic{transform:scale(.92);}
+.mebook-root .sh-app-ic svg{width:26px;height:26px;}
+.mebook-root .sh-app-lb{font-size:11.5px;font-weight:600;text-align:center;line-height:1.15;}
+
+/* ---- Post menu / choice sheets (pm-*) ---- */
+.mebook-root .pm-backdrop{position:fixed;inset:0;z-index:3000;background:rgba(0,0,0,0);display:flex;align-items:flex-end;justify-content:center;transition:background .22s ease;}
+.mebook-root .pm-backdrop.open{background:rgba(0,0,0,.55);}
+.mebook-root .pm-sheet{width:100%;max-width:560px;background:var(--bg);color:var(--text);border-radius:18px 18px 0 0;padding:6px 10px calc(12px + env(safe-area-inset-bottom,0px));box-shadow:0 -6px 30px rgba(0,0,0,.35);transform:translateY(100%);transition:transform .28s cubic-bezier(.2,.9,.3,1);}
+.mebook-root .pm-backdrop.open .pm-sheet{transform:translateY(0);}
+.mebook-root .pm-sheet.pm-choice,.mebook-root .pm-sheet.pm-full{animation:sheetUp .25s cubic-bezier(.2,.9,.3,1);}
+.mebook-root .pm-menu{max-height:90vh;max-height:90dvh;display:flex;flex-direction:column;}
+.mebook-root .pm-menu-scroll{overflow-y:auto;overscroll-behavior:contain;padding-bottom:6px;}
+.mebook-root .pm-card{background:var(--card);border-radius:14px;padding:6px 4px;margin-bottom:10px;}
+.mebook-root .pm-row{width:100%;display:flex;align-items:center;gap:14px;padding:11px 12px;text-align:left;background:none;color:var(--text);border-radius:10px;}
+.mebook-root .pm-row:active{background:var(--hover);}
+.mebook-root .pm-row svg{width:24px;height:24px;fill:currentColor;flex-shrink:0;}
+.mebook-root .pm-row-txt{display:flex;flex-direction:column;font-size:15px;font-weight:700;min-width:0;}
+.mebook-root .pm-row-txt small{font-size:12.5px;font-weight:500;color:var(--text-muted);margin-top:1px;}
+.mebook-root .pm-row.danger{color:#ef4444;}
+.mebook-root .pm-choice{padding-top:10px;}
+.mebook-root .pm-back{width:36px;height:36px;display:flex;align-items:center;justify-content:center;background:none;color:var(--text);}
+.mebook-root .pm-back svg{width:26px;height:26px;fill:currentColor;}
+.mebook-root .pm-choice-title{font-size:17px;font-weight:800;padding:2px 10px 4px;}
+.mebook-root .pm-choice-sub{font-size:13px;color:var(--text-muted);padding:0 10px 8px;}
+.mebook-root .pm-choice-list{padding:4px 0;}
+.mebook-root .pm-choice-row{width:100%;display:flex;align-items:center;gap:14px;padding:12px 10px;background:none;color:var(--text);text-align:left;}
+.mebook-root .pm-choice-ic{width:28px;display:flex;justify-content:center;}
+.mebook-root .pm-choice-ic svg{width:24px;height:24px;fill:currentColor;}
+.mebook-root .pm-choice-txt{flex:1;display:flex;flex-direction:column;font-size:15px;font-weight:700;}
+.mebook-root .pm-choice-txt small{font-size:12px;font-weight:500;color:var(--text-muted);}
+.mebook-root .pm-radio{width:22px;height:22px;border-radius:50%;border:2px solid var(--text-muted);flex-shrink:0;position:relative;transition:border-color .15s;}
+.mebook-root .pm-radio.on{border-color:#1877f2;}
+.mebook-root .pm-radio.on::after{content:"";position:absolute;inset:3px;border-radius:50%;background:#1877f2;}
+.mebook-root .pm-default{display:flex;align-items:center;justify-content:space-between;padding:12px 10px;font-size:13.5px;color:var(--text-muted);}
+.mebook-root .pm-default input{width:20px;height:20px;accent-color:#1877f2;}
+.mebook-root .pm-done{width:100%;padding:12px;border-radius:10px;background:#1877f2;color:#fff;font-size:15px;font-weight:800;margin-top:4px;}
+.mebook-root .pm-full{padding-top:8px;}
+.mebook-root .pm-full-head{display:flex;align-items:center;gap:8px;padding:4px 4px 8px;font-size:17px;}
+.mebook-root .pm-back.inline{width:34px;height:34px;}
+.mebook-root .pm-dest{width:100%;display:flex;align-items:center;gap:14px;padding:14px 12px;font-size:15.5px;font-weight:700;background:none;color:var(--text);text-align:left;}
+.mebook-root .pm-dest svg{width:24px;height:24px;fill:currentColor;}
+.mebook-root .pm-dest .pm-radio{margin-left:auto;}
+.mebook-root .pm-manage{height:80vh;height:80dvh;display:flex;flex-direction:column;}
+.mebook-root .pm-manage-head{text-align:center;font-size:16px;font-weight:800;padding:2px 0 8px;}
+.mebook-root .pm-manage-note{font-size:12.5px;color:var(--text-muted);padding:8px 10px 0;}
+.mebook-root .pm-manage-list{flex:1;overflow-y:auto;padding:6px 0;}
+.mebook-root .pm-manage-row{display:flex;align-items:center;gap:10px;padding:8px 6px;}
+.mebook-root .pm-manage-row img,.mebook-root .pm-manage-ph{width:52px;height:52px;border-radius:10px;object-fit:cover;flex-shrink:0;background:var(--input-bg);display:flex;align-items:center;justify-content:center;font-size:22px;}
+.mebook-root .pm-manage-info{flex:1;min-width:0;display:flex;flex-direction:column;}
+.mebook-root .pm-manage-info b{font-size:14px;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;}
+.mebook-root .pm-manage-info small{font-size:12px;color:var(--text-muted);}
+.mebook-root .pm-manage-btn{padding:7px 12px;border-radius:8px;background:var(--input-bg);color:var(--text);font-size:13px;font-weight:700;flex-shrink:0;}
+.mebook-root .pm-manage-btn.danger{color:#ef4444;}
+.mebook-root .rx-manage-open{margin-left:auto;padding:7px 14px;border-radius:8px;background:var(--input-bg);color:var(--text);font-size:13.5px;font-weight:700;}
+
 /* ============ BUTTONS ============ */
 .mebook-root .mb-btn{width:100%;padding:9px;border-radius:9px;font-size:14.5px;font-weight:600;transition:filter .18s,transform .12s,background .2s;}
 .mebook-root .mb-btn:active{transform:scale(.98);}
@@ -2965,6 +3094,70 @@ function RxJump({
   )
 }
 
+/* ---- Stickers (animated Noto emoji, falls back to plain emoji) ---- */
+const STICKER_CATS: Array<{ key: string; icon: string; label: string; items: string[] }> = [
+  { key: "happy", icon: "😀", label: "Happy", items: ["😀", "😁", "😂", "🤣", "😊", "😄", "🥳", "🤩", "😎", "🤗", "😇", "😜"] },
+  { key: "love", icon: "😍", label: "In love", items: ["😍", "🥰", "😘", "😻", "💖", "💘", "😚", "🤩", "💕", "💞", "🌹", "💋"] },
+  { key: "sad", icon: "😢", label: "Sad", items: ["😢", "😭", "😞", "😔", "😟", "🥺", "😩", "😡", "🤬", "😱", "😰", "😓"] },
+  { key: "eating", icon: "🍕", label: "Eating", items: ["🍕", "🍔", "🍟", "🌭", "🍜", "🍣", "🍩", "🍰", "🍦", "🍿", "🥤", "☕"] },
+  { key: "cool", icon: "👍", label: "Cool", items: ["👍", "👏", "🙌", "🙏", "💪", "🔥", "💯", "✨", "🤝", "👌", "✌", "🤞"] },
+  { key: "party", icon: "🎉", label: "Party", items: ["🎉", "🎊", "🎂", "🎁", "🎈", "🥂", "🏆", "⚽", "🎮", "🎵", "🚀", "🌈"] },
+]
+
+function StickerImg({ emoji, size = 100 }: { emoji: string; size?: number }) {
+  const [fail, setFail] = useState(false)
+  const cp = Array.from(emoji)
+    .map((c) => (c.codePointAt(0) || 0).toString(16))
+    .join("_")
+  if (fail) return <span style={{ fontSize: size * 0.8, lineHeight: 1, display: "inline-block" }}>{emoji}</span>
+  return (
+    <img
+      src={`https://fonts.gstatic.com/s/e/notoemoji/latest/${cp}/512.webp`}
+      width={size}
+      height={size}
+      alt={emoji}
+      loading="lazy"
+      style={{ display: "block", objectFit: "contain" }}
+      onError={() => setFail(true)}
+    />
+  )
+}
+
+const PM_IC = {
+  pin: "M16 9V4h1c.55 0 1-.45 1-1s-.45-1-1-1H7c-.55 0-1 .45-1 1s.45 1 1 1h1v5c0 1.66-1.34 3-3 3v2h5.97v7l1 1 1-1v-7H19v-2c-1.66 0-3-1.34-3-3z",
+  bookmark: "M17 3H7c-1.1 0-1.99.9-1.99 2L5 21l7-3 7 3V5c0-1.1-.9-2-2-2zm0 15-5-2.18L7 18V5h10v13z",
+  edit: "M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z",
+  link: "M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z",
+  comment: "M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H5.17L4 17.17V4h16v12z",
+  globe: "M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z",
+  archive: "M20.54 5.23l-1.39-1.68C18.88 3.21 18.47 3 18 3H6c-.47 0-.88.21-1.16.55L3.46 5.23C3.17 5.57 3 6.02 3 6.5V19c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6.5c0-.48-.17-.93-.46-1.27zM12 17.5L6.5 12H10v-2h4v2h3.5L12 17.5zM5.12 5l.81-1h12l.94 1H5.12z",
+  trash: "M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z",
+  bellOff: "M20 18.69L7.84 6.14 5.27 3.49 4 4.76l2.8 2.8v.01c-.52.99-.8 2.16-.8 3.42v5l-2 2v1h13.73l2 2L21 19.72l-1-1.03zM12 22c1.11 0 2-.89 2-2h-4c0 1.11.89 2 2 2zm6-7.32V11c0-3.08-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68c-.15.03-.29.08-.42.12L18 14.68z",
+  bell: "M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z",
+  people: "M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z",
+  megaphone: "M18 11v2h4v-2h-4zm-2 6.61c.96.71 2.21 1.65 3.2 2.39.4-.53.8-1.07 1.2-1.6-.99-.74-2.24-1.68-3.2-2.4-.4.54-.8 1.08-1.2 1.61zM20.4 5.6c-.4-.53-.8-1.07-1.2-1.6-.99.74-2.24 1.68-3.2 2.4.4.53.8 1.07 1.2 1.6.96-.72 2.21-1.65 3.2-2.4zM4 9c-1.1 0-2 .9-2 2v2c0 1.1.9 2 2 2h1v4h2v-4h1l5 3V6L8 9H4zm11.5 3c0-1.33-.58-2.53-1.5-3.35v6.69c.92-.81 1.5-2.01 1.5-3.34z",
+  lock: "M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z",
+  back: "M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z",
+  smile: "M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm3.5-10c.83 0 1.5-.67 1.5-1.5S16.33 7 15.5 7 14 7.67 14 8.5s.67 1.5 1.5 1.5zm-7 0C9.33 10 10 9.33 10 8.5S9.33 7 8.5 7 7 7.67 7 8.5 7.67 10 8.5 10zm3.5 7.5c2.33 0 4.31-1.46 5.11-3.5H6.89c.8 2.04 2.78 3.5 5.11 3.5z",
+  camera: "M12 15.2a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4zM9 2 7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-3.17L15 2H9zm3 15c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z",
+  plus: "M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z",
+  send: "M2.01 21 23 12 2.01 3 2 10l15 2-15 2z",
+  close: "M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z",
+  more: "M6 10c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm12 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-6 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z",
+  story: "M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z",
+  feed: "M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zM4 9h16v3H4V9zm0 5h10v4H4v-4z",
+  group: "M12 12.75c1.63 0 3.07.39 4.24.9 1.08.48 1.76 1.56 1.76 2.73V18H6v-1.61c0-1.18.68-2.26 1.76-2.73 1.17-.52 2.61-.91 4.24-.91zM4 13c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm1.13 1.1c-.37-.06-.74-.1-1.13-.1-.99 0-1.93.21-2.78.58C.48 14.9 0 15.62 0 16.43V18h4.5v-1.61c0-.83.23-1.61.63-2.29zM20 13c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm4 3.43c0-.81-.48-1.53-1.22-1.85-.85-.37-1.79-.58-2.78-.58-.39 0-.76.04-1.13.1.4.68.63 1.46.63 2.29V18H24v-1.57zM12 6c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3z",
+  person: "M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z",
+  restore: "M13 3a9 9 0 0 0-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42A8.954 8.954 0 0 0 13 21a9 9 0 0 0 0-18zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z",
+}
+function PmIcon({ d }: { d: string }) {
+  return (
+    <svg viewBox="0 0 24 24" width="24" height="24">
+      <path d={d} />
+    </svg>
+  )
+}
+
 /* ---- Reactors list + comments bottom sheet ---- */
 function EngageSheet(props: {
   post: any
@@ -2984,19 +3177,34 @@ function EngageSheet(props: {
   commentText: string
   setCommentText: (s: string) => void
   commentBusy: boolean
+  commentImagePreview: string
+  onImageSelect: (e: React.ChangeEvent<HTMLInputElement>) => void
+  onRemoveImage: () => void
   replyTo: any
   setReplyTo: (r: any) => void
   onSend: () => void
   onQuickEmoji: (emoji: string) => void
+  onSendSticker: (emoji: string) => void
   onLikeComment: (commentId: string) => void
+  onCommentMenu: (commentId: string) => void
+  editCommentId: string | null
+  editCommentText: string
+  setEditCommentText: (s: string) => void
+  editBusy: boolean
+  onSaveEdit: (commentId: string) => void
+  onCancelEdit: () => void
+  lockMsg: string
   isVerifiedUid: (uid: any, obj: any) => boolean
 }) {
   const { post, mode, me } = props
   const [shown, setShown] = useState(false)
   const [sort, setSort] = useState<"relevant" | "newest" | "oldest">("relevant")
+  const [panel, setPanel] = useState<"" | "sticker">("")
+  const [stickerCat, setStickerCat] = useState("happy")
   const sheetRef = useRef<HTMLDivElement>(null)
+  const fileRef = useRef<HTMLInputElement>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
   const drag = useRef({ y0: 0, dy: 0 })
-  const listRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const id = requestAnimationFrame(() => setShown(true))
@@ -3084,6 +3292,8 @@ function EngageSheet(props: {
     const myDef = myR ? REACTIONS.find((r) => r.key === myR) : null
     const rEntries = Object.entries(c.reactions || {})
     const rKeys = Array.from(new Set(rEntries.map(([, k]) => k as string))).slice(0, 2)
+    const editing = props.editCommentId === c.id
+    const mine = c.uid === me.uid
     return (
       <React.Fragment key={c.id}>
         <div className={`rx-cmt${isReply ? " reply" : ""}`}>
@@ -3094,42 +3304,80 @@ function EngageSheet(props: {
             onClick={() => c.uid && props.onOpenProfile(c.uid)}
           />
           <div className="rx-cmt-main">
-            <div className="rx-cmt-bubble" style={rEntries.length ? { marginBottom: 8 } : undefined}>
-              <b>
-                {c.name || "User"}
-                {props.isVerifiedUid(c.uid, c) && mcVerifiedBadge(13)}
-              </b>
-              {c.text}
-              {c.image && <img src={c.image} alt="" />}
-              {rEntries.length > 0 && (
-                <span className="rx-cmt-react">
-                  {rKeys.map((k) => (
-                    <ReactionIcon key={k} k={k} size={15} />
-                  ))}
-                  {rEntries.length}
-                </span>
-              )}
-            </div>
-            <div className="rx-cmt-meta">
-              <span>{timeAgo(c.at)}</span>
-              <button
-                style={myDef ? { color: myDef.color } : undefined}
-                onClick={() => props.onLikeComment(c.id)}
-              >
-                {myDef ? myDef.label : "Like"}
-              </button>
-              <button
-                onClick={() => {
-                  props.setReplyTo({
-                    id: isReply && parent ? parent.id : c.id,
-                    name: c.name,
-                    uid: c.uid,
-                  })
-                }}
-              >
-                Reply
-              </button>
-            </div>
+            {editing ? (
+              <div className="rx-edit-box">
+                <textarea
+                  autoFocus
+                  value={props.editCommentText}
+                  onChange={(e) => props.setEditCommentText(e.target.value)}
+                />
+                <div className="rx-edit-actions">
+                  <button onClick={props.onCancelEdit}>Cancel</button>
+                  <button
+                    className="save"
+                    disabled={props.editBusy || (!props.editCommentText.trim() && !c.image && !c.sticker)}
+                    onClick={() => props.onSaveEdit(c.id)}
+                  >
+                    {props.editBusy ? "Saving…" : "Save"}
+                  </button>
+                </div>
+              </div>
+            ) : c.sticker && !c.text ? (
+              <div className="rx-cmt-sticker">
+                <b>
+                  {c.name || "User"}
+                  {props.isVerifiedUid(c.uid, c) && mcVerifiedBadge(13)}
+                </b>
+                <StickerImg emoji={c.sticker} size={104} />
+              </div>
+            ) : (
+              <div className="rx-cmt-bubble" style={rEntries.length ? { marginBottom: 8 } : undefined}>
+                <b>
+                  {c.name || "User"}
+                  {props.isVerifiedUid(c.uid, c) && mcVerifiedBadge(13)}
+                </b>
+                {c.text}
+                {c.sticker && <StickerImg emoji={c.sticker} size={96} />}
+                {c.image && <img src={c.image} alt="" />}
+                {rEntries.length > 0 && (
+                  <span className="rx-cmt-react">
+                    {rKeys.map((k) => (
+                      <ReactionIcon key={k} k={k} size={15} />
+                    ))}
+                    {rEntries.length}
+                  </span>
+                )}
+              </div>
+            )}
+            {!editing && (
+              <div className="rx-cmt-meta">
+                <span>{timeAgo(c.at)}{c.edited ? " · Edited" : ""}</span>
+                <button
+                  style={myDef ? { color: myDef.color } : undefined}
+                  onClick={() => props.onLikeComment(c.id)}
+                >
+                  {myDef ? myDef.label : "Like"}
+                </button>
+                <button
+                  onClick={() => {
+                    props.setReplyTo({
+                      id: isReply && parent ? parent.id : c.id,
+                      name: c.name,
+                      uid: c.uid,
+                    })
+                    setPanel("")
+                    setTimeout(() => inputRef.current?.focus(), 30)
+                  }}
+                >
+                  Reply
+                </button>
+                {mine && (
+                  <button title="Edit or delete" onClick={() => props.onCommentMenu(c.id)}>
+                    •••
+                  </button>
+                )}
+              </div>
+            )}
           </div>
         </div>
         {!isReply && (repliesMap[c.id] || []).map((r) => renderComment(r, true, c))}
@@ -3158,7 +3406,11 @@ function EngageSheet(props: {
     drag.current.dy = 0
   }
 
-  const canSend = !!props.commentText.trim() && !props.commentBusy
+  const hasDraft = !!props.commentText.trim() || !!props.commentImagePreview
+  const canSend = hasDraft && !props.commentBusy
+  const pending = props.commentBusy && hasDraft
+  const sharesCount = post.shares || 0
+  const cat = STICKER_CATS.find((c) => c.key === stickerCat) || STICKER_CATS[0]
 
   return (
     <div className={`rx-sheet-backdrop${shown ? " open" : ""}`} onClick={close}>
@@ -3193,6 +3445,9 @@ function EngageSheet(props: {
             >
               {allComments.length} {allComments.length === 1 ? "comment" : "comments"}
             </button>
+            <span className="rx-head-shares">
+              {sharesCount} {sharesCount === 1 ? "share" : "shares"}
+            </span>
           </div>
         </div>
 
@@ -3228,7 +3483,7 @@ function EngageSheet(props: {
                 rows.map(({ uid, k, u }) => {
                   const isMe = uid === me.uid
                   const isFriend = friendIds.has(uid)
-                  const pending = pendingIds.has(uid) || !!props.sentRequests[uid]
+                  const pend = pendingIds.has(uid) || !!props.sentRequests[uid]
                   return (
                     <div className="rx-row" key={uid}>
                       <div className="rx-row-av" onClick={() => props.onOpenProfile(uid)}>
@@ -3243,10 +3498,10 @@ function EngageSheet(props: {
                       </div>
                       {!isMe && !isFriend && u && (
                         <button
-                          className={`rx-add-btn${pending ? " sent" : ""}`}
+                          className={`rx-add-btn${pend ? " sent" : ""}`}
                           onClick={() => props.onAddFriend(uid)}
                         >
-                          {pending ? "Requested" : "Add friend"}
+                          {pend ? "Requested" : "Add friend"}
                         </button>
                       )}
                     </div>
@@ -3257,54 +3512,651 @@ function EngageSheet(props: {
           </>
         ) : (
           <>
-            <div className="rx-list" ref={listRef} style={{ display: "flex", flexDirection: "column" }}>
+            <div className="rx-list" style={{ display: "flex", flexDirection: "column" }}>
               {allComments.length > 0 && (
                 <button className="rx-sort" onClick={cycleSort}>
                   {sortLabel} ▾
                 </button>
               )}
-              {sortedTops.length === 0 ? (
+              {pending && (
+                <div className="rx-cmt">
+                  <img className="rx-cmt-av" src={avatarFor(props.profile)} alt="" />
+                  <div className="rx-cmt-main">
+                    <div className="rx-cmt-bubble">
+                      <b>{props.profile?.name || "You"}</b>
+                      {props.commentText}
+                      {props.commentImagePreview && <img src={props.commentImagePreview} alt="" />}
+                    </div>
+                    <div className="rx-cmt-meta">
+                      <span>Posting…</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+              {sortedTops.length === 0 && !pending ? (
                 <div className="rx-empty">No comments yet. Be the first to comment.</div>
               ) : (
                 sortedTops.map((c) => renderComment(c, false))
               )}
             </div>
             <div className="rx-foot">
-              {props.replyTo && (
-                <div className="rx-replying">
-                  <span>
-                    Replying to <b>{props.replyTo.name}</b>
-                  </span>
-                  <button onClick={() => props.setReplyTo(null)}>Cancel</button>
-                </div>
+              {props.lockMsg ? (
+                <div className="rx-lock">{props.lockMsg}</div>
+              ) : (
+                <>
+                  {props.replyTo && (
+                    <div className="rx-replying">
+                      <span>
+                        Replying to <b>{props.replyTo.name}</b>
+                      </span>
+                      <button onClick={() => props.setReplyTo(null)}>Cancel</button>
+                    </div>
+                  )}
+                  <div className="rx-quick">
+                    {["❤️", "🙌", "🔥", "👏", "😢", "😍", "😮", "😂"].map((em) => (
+                      <button key={em} type="button" onClick={() => props.onQuickEmoji(em)}>
+                        {em}
+                      </button>
+                    ))}
+                  </div>
+                  {props.commentImagePreview && (
+                    <div className="rx-img-prev">
+                      <img src={props.commentImagePreview} alt="" />
+                      <button onClick={props.onRemoveImage} title="Remove photo">
+                        <PmIcon d={PM_IC.close} />
+                      </button>
+                    </div>
+                  )}
+                  <div className="rx-write">
+                    <input
+                      ref={inputRef}
+                      value={props.commentText}
+                      placeholder={props.replyTo ? `Reply to ${props.replyTo.name}…` : "Write a comment…"}
+                      onFocus={() => setPanel("")}
+                      onChange={(e) => props.setCommentText(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && canSend) props.onSend()
+                      }}
+                    />
+                  </div>
+                  <div className="rx-tools">
+                    <button className="rx-tool" title="Photo" onClick={() => fileRef.current?.click()}>
+                      <PmIcon d={PM_IC.camera} />
+                    </button>
+                    <button
+                      className={`rx-tool${panel === "sticker" ? " on" : ""}`}
+                      title="Stickers"
+                      onClick={() => {
+                        inputRef.current?.blur()
+                        setPanel((p) => (p === "sticker" ? "" : "sticker"))
+                      }}
+                    >
+                      <PmIcon d={PM_IC.plus} />
+                    </button>
+                    <button
+                      className="rx-tool send"
+                      title="Send"
+                      disabled={!canSend}
+                      onClick={props.onSend}
+                    >
+                      <PmIcon d={PM_IC.send} />
+                    </button>
+                    <input
+                      ref={fileRef}
+                      type="file"
+                      accept="image/*"
+                      style={{ display: "none" }}
+                      onChange={props.onImageSelect}
+                    />
+                  </div>
+                  {panel === "sticker" && (
+                    <div className="rx-sticker-panel">
+                      <div className="rx-sticker-cats">
+                        {STICKER_CATS.map((c) => (
+                          <button
+                            key={c.key}
+                            className={stickerCat === c.key ? "on" : ""}
+                            onClick={() => setStickerCat(c.key)}
+                          >
+                            <span>{c.icon}</span> {c.label}
+                          </button>
+                        ))}
+                      </div>
+                      <div className="rx-sticker-grid">
+                        {cat.items.map((em) => (
+                          <button
+                            key={em}
+                            onClick={() => {
+                              setPanel("")
+                              props.onSendSticker(em)
+                            }}
+                          >
+                            <StickerImg emoji={em} size={64} />
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </>
               )}
-              <div className="rx-quick">
-                {["❤️", "🙌", "🔥", "👏", "😢", "😍", "😮", "😂"].map((em) => (
-                  <button key={em} type="button" onClick={() => props.onQuickEmoji(em)}>
-                    {em}
-                  </button>
-                ))}
-              </div>
-              <div className="rx-write">
-                <input
-                  value={props.commentText}
-                  placeholder={props.replyTo ? `Reply to ${props.replyTo.name}…` : "Write a comment…"}
-                  onChange={(e) => props.setCommentText(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && canSend) props.onSend()
-                  }}
-                />
-                {props.commentText.trim() && (
-                  <button className="rx-send" disabled={!canSend} onClick={props.onSend} title="Send">
-                    <svg viewBox="0 0 24 24">
-                      <path d="M2.01 21 23 12 2.01 3 2 10l15 2-15 2z" />
-                    </svg>
-                  </button>
-                )}
-              </div>
             </div>
           </>
         )}
+      </div>
+    </div>
+  )
+}
+
+/* ---- Generic radio list sheet (privacy / who can comment) ---- */
+function ChoiceSheet(props: {
+  title: string
+  subtitle?: string
+  options: Array<{ value: string; label: string; sub?: string; icon: string }>
+  value: string
+  showDefault?: boolean
+  defaultChecked?: boolean
+  onDone: (value: string, setDefault: boolean) => void
+  onBack: () => void
+  zIndex?: number
+}) {
+  const [val, setVal] = useState(props.value)
+  const [def, setDef] = useState(!!props.defaultChecked)
+  return (
+    <div className="pm-backdrop open" style={props.zIndex ? { zIndex: props.zIndex } : undefined} onClick={props.onBack}>
+      <div className="pm-sheet pm-choice" onClick={(e) => e.stopPropagation()}>
+        <button className="pm-back" onClick={props.onBack} title="Back">
+          <PmIcon d={PM_IC.back} />
+        </button>
+        <div className="pm-choice-title">{props.title}</div>
+        {props.subtitle && <div className="pm-choice-sub">{props.subtitle}</div>}
+        <div className="pm-choice-list">
+          {props.options.map((o) => (
+            <button key={o.value} className="pm-choice-row" onClick={() => setVal(o.value)}>
+              <span className="pm-choice-ic">
+                <PmIcon d={o.icon} />
+              </span>
+              <span className="pm-choice-txt">
+                {o.label}
+                {o.sub && <small>{o.sub}</small>}
+              </span>
+              <span className={`pm-radio${val === o.value ? " on" : ""}`} />
+            </button>
+          ))}
+        </div>
+        {props.showDefault && (
+          <label className="pm-default">
+            <span>Set as default audience.</span>
+            <input type="checkbox" checked={def} onChange={(e) => setDef(e.target.checked)} />
+          </label>
+        )}
+        <button className="pm-done" onClick={() => props.onDone(val, def)}>
+          Done
+        </button>
+      </div>
+    </div>
+  )
+}
+
+/* ---- Share bottom sheet (Facebook style) ---- */
+function ShareSheet(props: {
+  post: any
+  profile: any
+  friends: any[]
+  busy: boolean
+  defaultAudience: string
+  onClose: () => void
+  onShareNow: (caption: string, audience: string, setDefault: boolean) => Promise<boolean>
+  onSendToFriend: (uid: string) => Promise<boolean>
+  onCopy: () => void
+  onWhatsApp: () => void
+  onTelegram: () => void
+  onFacebook: () => void
+  onMore: () => void
+  onUnavailable: (what: string) => void
+}) {
+  const [shown, setShown] = useState(false)
+  const [caption, setCaption] = useState("")
+  const [audience, setAudience] = useState(props.defaultAudience || "public")
+  const [panel, setPanel] = useState<"" | "dest" | "aud">("")
+  const [emojiOpen, setEmojiOpen] = useState(false)
+  const [sent, setSent] = useState<Record<string, "sending" | "sent">>({})
+  const [setDefault, setSetDefault] = useState(false)
+  const sheetRef = useRef<HTMLDivElement>(null)
+  const drag = useRef({ y0: 0, dy: 0 })
+
+  useEffect(() => {
+    const id = requestAnimationFrame(() => setShown(true))
+    return () => cancelAnimationFrame(id)
+  }, [])
+
+  const close = () => {
+    setShown(false)
+    setTimeout(props.onClose, 230)
+  }
+
+  const audMeta: Record<string, { label: string; ic: string }> = {
+    public: { label: "Public", ic: PM_IC.globe },
+    friends: { label: "Friends", ic: PM_IC.people },
+    only_me: { label: "Only me", ic: PM_IC.lock },
+  }
+  const am = audMeta[audience] || audMeta.public
+  const avatar =
+    props.profile?.photoURL ||
+    `https://ui-avatars.com/api/?background=16a34a&color=fff&name=${encodeURIComponent(props.profile?.name || "User")}`
+
+  const onDragStart = (e: React.TouchEvent) => {
+    drag.current.y0 = e.touches[0].clientY
+    drag.current.dy = 0
+    if (sheetRef.current) sheetRef.current.style.transition = "none"
+  }
+  const onDragMove = (e: React.TouchEvent) => {
+    const dy = Math.max(0, e.touches[0].clientY - drag.current.y0)
+    drag.current.dy = dy
+    if (sheetRef.current) sheetRef.current.style.transform = `translateY(${dy}px)`
+  }
+  const onDragEnd = () => {
+    const el = sheetRef.current
+    if (el) {
+      el.style.transition = ""
+      el.style.transform = ""
+    }
+    if (drag.current.dy > 100) close()
+    drag.current.dy = 0
+  }
+
+  const shareNow = async () => {
+    const ok = await props.onShareNow(caption.trim(), audience, setDefault)
+    if (ok) close()
+  }
+
+  const sendFriend = async (uid: string) => {
+    if (sent[uid]) return
+    setSent((s) => ({ ...s, [uid]: "sending" }))
+    const ok = await props.onSendToFriend(uid)
+    setSent((s) => {
+      const c = { ...s }
+      if (ok) c[uid] = "sent"
+      else delete c[uid]
+      return c
+    })
+  }
+
+  const EMOJIS = ["😀", "😂", "😍", "🥰", "😎", "🤔", "😢", "😡", "👍", "🙏", "🔥", "🎉", "❤️", "💯", "👏", "✨"]
+
+  const appBtn = (key: string, label: string, bg: string, path: string, onClick: () => void, color = "#fff") => (
+    <button key={key} className="sh-app" onClick={onClick}>
+      <span className="sh-app-ic" style={{ background: bg, color }}>
+        <svg viewBox="0 0 24 24" fill="currentColor">
+          <path d={path} />
+        </svg>
+      </span>
+      <span className="sh-app-lb">{label}</span>
+    </button>
+  )
+
+  return (
+    <>
+      <div className={`sh-backdrop${shown ? " open" : ""}`} onClick={close}>
+        <div className="sh-sheet" ref={sheetRef} onClick={(e) => e.stopPropagation()}>
+          <div
+            className="sh-top"
+            onTouchStart={onDragStart}
+            onTouchMove={onDragMove}
+            onTouchEnd={onDragEnd}
+            onTouchCancel={onDragEnd}
+          >
+            <div className="rx-sheet-grip" />
+          </div>
+          <div className="sh-compose">
+            <div className="sh-who">
+              <img src={avatar} alt="" />
+              <div className="sh-who-info">
+                <b>
+                  {props.profile?.name || "You"}
+                  {props.profile?.verified === true && mcVerifiedBadge(14)}
+                </b>
+                <div className="sh-chips">
+                  <button className="sh-chip" onClick={() => setPanel("dest")}>
+                    Feed <span>▾</span>
+                  </button>
+                  <button className="sh-chip" onClick={() => setPanel("aud")}>
+                    <svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor">
+                      <path d={am.ic} />
+                    </svg>
+                    {am.label} <span>▾</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+            <textarea
+              className="sh-text"
+              rows={3}
+              placeholder="Say something..."
+              value={caption}
+              onChange={(e) => setCaption(e.target.value)}
+            />
+            {emojiOpen && (
+              <div className="sh-emojis">
+                {EMOJIS.map((e) => (
+                  <button key={e} onClick={() => setCaption((c) => c + e)}>
+                    {e}
+                  </button>
+                ))}
+              </div>
+            )}
+            <div className="sh-compose-foot">
+              <button className="sh-emoji-btn" onClick={() => setEmojiOpen((v) => !v)} title="Emoji">
+                <PmIcon d={PM_IC.smile} />
+              </button>
+              <button className="sh-now" disabled={props.busy} onClick={shareNow}>
+                {props.busy ? "Sharing…" : "Share now"}
+              </button>
+            </div>
+          </div>
+
+          {props.friends.length > 0 && (
+            <div className="sh-row sh-friends">
+              {props.friends.slice(0, 20).map((f: any) => (
+                <button key={f.uid} className="sh-friend" onClick={() => sendFriend(f.uid)}>
+                  <span className="sh-friend-av">
+                    <img
+                      src={
+                        f.photoURL ||
+                        `https://ui-avatars.com/api/?background=16a34a&color=fff&name=${encodeURIComponent(f.name || "U")}`
+                      }
+                      alt=""
+                    />
+                    {sent[f.uid] && <i className={sent[f.uid] === "sent" ? "ok" : ""}>{sent[f.uid] === "sent" ? "✓" : "…"}</i>}
+                  </span>
+                  <span className="sh-friend-nm">{(f.name || "User").split(" ").slice(0, 2).join(" ")}</span>
+                </button>
+              ))}
+            </div>
+          )}
+
+          <div className="sh-row sh-apps">
+            {appBtn("story", "Your story", "var(--input-bg)", PM_IC.plus, () => props.onUnavailable("Stories"), "var(--text)")}
+            {appBtn(
+              "wa",
+              "WhatsApp",
+              "#25d366",
+              "M17.47 14.38c-.3-.15-1.75-.86-2.02-.96-.27-.1-.47-.15-.67.15-.2.3-.77.96-.94 1.16-.17.2-.35.22-.64.07-.3-.15-1.25-.46-2.38-1.47-.88-.79-1.48-1.75-1.65-2.05-.17-.3-.02-.46.13-.6.13-.13.3-.35.44-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.07-.15-.65-1.58-.9-2.16-.24-.57-.48-.5-.66-.5-.17 0-.37-.02-.56-.02-.2 0-.5.07-.77.37-.27.3-1.02 1-1.02 2.42 0 1.43 1.04 2.81 1.19 3 .15.2 2.05 3.13 4.97 4.38.7.3 1.24.48 1.66.62.7.22 1.33.19 1.83.11.56-.08 1.75-.72 2-1.41.25-.7.25-1.29.17-1.41-.07-.13-.27-.2-.56-.35zM12 0C5.4 0 0 5.4 0 12c0 2.11.55 4.11 1.51 5.84L0 24l6.32-1.66C8.02 23.15 9.96 24 12 24c6.6 0 12-5.4 12-12S18.6 0 12 0z",
+              props.onWhatsApp
+            )}
+            {appBtn(
+              "tg",
+              "Telegram",
+              "#229ed9",
+              "M9.78 18.65l.28-4.23 7.68-6.92c.34-.31-.07-.46-.52-.19L7.74 13.3 3.64 12c-.88-.25-.89-.86.2-1.3l15.97-6.16c.73-.33 1.43.18 1.15 1.3l-2.72 12.81c-.19.91-.74 1.13-1.5.71L12.6 16.3l-1.99 1.93c-.23.23-.42.42-.83.42z",
+              props.onTelegram
+            )}
+            {appBtn(
+              "fb",
+              "Facebook",
+              "#1877f2",
+              "M24 12.07C24 5.4 18.63 0 12 0S0 5.4 0 12.07C0 18.1 4.39 23.1 10.13 24v-8.44H7.08v-3.49h3.05V9.41c0-3.02 1.79-4.69 4.53-4.69 1.31 0 2.68.24 2.68.24v2.96h-1.51c-1.49 0-1.95.93-1.95 1.88v2.27h3.32l-.53 3.49h-2.79V24C19.61 23.1 24 18.1 24 12.07z",
+              props.onFacebook
+            )}
+            {appBtn("link", "Copy link", "var(--input-bg)", PM_IC.link, props.onCopy, "var(--text)")}
+            {appBtn("more", "More", "var(--input-bg)", PM_IC.more, props.onMore, "var(--text)")}
+          </div>
+        </div>
+      </div>
+
+      {panel === "dest" && (
+        <div className="pm-backdrop open" style={{ zIndex: 3100 }} onClick={() => setPanel("")}>
+          <div className="pm-sheet pm-full" onClick={(e) => e.stopPropagation()}>
+            <div className="pm-full-head">
+              <button className="pm-back inline" onClick={() => setPanel("")}>
+                <PmIcon d={PM_IC.back} />
+              </button>
+              <b>Select destination</b>
+            </div>
+            <button className="pm-dest on" onClick={() => setPanel("")}>
+              <PmIcon d={PM_IC.feed} /> Share to Feed
+              <span className="pm-radio on" />
+            </button>
+            <button className="pm-dest" onClick={() => props.onUnavailable("Sharing to stories")}>
+              <PmIcon d={PM_IC.story} /> Your story
+            </button>
+            <button className="pm-dest" onClick={() => props.onUnavailable("Sharing on a friend's profile")}>
+              <PmIcon d={PM_IC.people} /> On a friend&apos;s profile
+            </button>
+            <button className="pm-dest" onClick={() => props.onUnavailable("Sharing in a group")}>
+              <PmIcon d={PM_IC.group} /> In a group
+            </button>
+          </div>
+        </div>
+      )}
+
+      {panel === "aud" && (
+        <ChoiceSheet
+          zIndex={3100}
+          title="Who can see your post?"
+          subtitle="Your post will appear in Feed, on your profile and in search results."
+          value={audience}
+          showDefault
+          defaultChecked={setDefault}
+          options={[
+            { value: "public", label: "Public", sub: "Anyone on or off MeBook", icon: PM_IC.globe },
+            { value: "friends", label: "Friends", sub: "Your MeBook friends", icon: PM_IC.people },
+            { value: "only_me", label: "Only me", sub: "Only you can see this", icon: PM_IC.lock },
+          ]}
+          onBack={() => setPanel("")}
+          onDone={(v, d) => {
+            setAudience(v)
+            setSetDefault(d)
+            setPanel("")
+          }}
+        />
+      )}
+    </>
+  )
+}
+
+/* ---- Own-post "..." menu (Facebook style, grouped) ---- */
+function PostMenuSheet(props: {
+  post: any
+  pinned: boolean
+  saved: boolean
+  archived: boolean
+  muted: boolean
+  onClose: () => void
+  onAction: (key: string) => void
+}) {
+  const [shown, setShown] = useState(false)
+  useEffect(() => {
+    const id = requestAnimationFrame(() => setShown(true))
+    const prev = document.body.style.overflow
+    document.body.style.overflow = "hidden"
+    return () => {
+      cancelAnimationFrame(id)
+      document.body.style.overflow = prev
+    }
+  }, [])
+  const close = (after?: () => void) => {
+    setShown(false)
+    setTimeout(() => {
+      props.onClose()
+      if (after) after()
+    }, 200)
+  }
+  type Row = { key: string; icon: string; label: string; sub?: string; danger?: boolean }
+  const g1: Row[] = [
+    { key: "pin", icon: PM_IC.pin, label: props.pinned ? "Unpin post" : "Pin post" },
+    {
+      key: "save",
+      icon: PM_IC.bookmark,
+      label: props.saved ? "Unsave post" : "Save post",
+      sub: props.saved ? "Remove this from your saved items." : "Add this to your saved items.",
+    },
+    { key: "edit", icon: PM_IC.edit, label: "Edit post" },
+    {
+      key: "product",
+      icon: PM_IC.link,
+      label: "Manage product link",
+      sub: "Add, update or remove an affiliate product link.",
+    },
+    { key: "comment", icon: PM_IC.comment, label: "Who can comment on your post?" },
+    { key: "privacy", icon: PM_IC.globe, label: "Edit privacy" },
+    { key: "archive", icon: PM_IC.archive, label: props.archived ? "Restore from archive" : "Move to archive" },
+    {
+      key: "bin",
+      icon: PM_IC.trash,
+      label: "Move to bin",
+      sub: "Items in your bin are deleted after 30 days.",
+    },
+    {
+      key: "notif",
+      icon: props.muted ? PM_IC.bell : PM_IC.bellOff,
+      label: props.muted ? "Turn on notifications for this post" : "Turn off notifications for this post",
+    },
+    { key: "copy", icon: PM_IC.link, label: "Copy link" },
+  ]
+  const g2: Row[] = [
+    { key: "ad_code", icon: PM_IC.people, label: "Share partnership ad code" },
+    { key: "ad", icon: PM_IC.megaphone, label: "Create ad" },
+  ]
+  const renderRow = (r: Row) => (
+    <button
+      key={r.key}
+      className={`pm-row${r.danger ? " danger" : ""}`}
+      onClick={() => close(() => props.onAction(r.key))}
+    >
+      <PmIcon d={r.icon} />
+      <span className="pm-row-txt">
+        {r.label}
+        {r.sub && <small>{r.sub}</small>}
+      </span>
+    </button>
+  )
+  return (
+    <div className={`pm-backdrop${shown ? " open" : ""}`} onClick={() => close()}>
+      <div className="pm-sheet pm-menu" onClick={(e) => e.stopPropagation()}>
+        <div className="rx-sheet-grip" />
+        <div className="pm-menu-scroll">
+          <div className="pm-card">{g1.map(renderRow)}</div>
+          <div className="pm-card">{g2.map(renderRow)}</div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/* ---- Manage posts: Archived + Bin ---- */
+function ManageSheet(props: {
+  posts: any[]
+  onClose: () => void
+  onRestore: (postId: string) => void
+  onDeleteForever: (postId: string) => void
+}) {
+  const [shown, setShown] = useState(false)
+  const [tab, setTab] = useState<"archived" | "bin">("archived")
+  useEffect(() => {
+    const id = requestAnimationFrame(() => setShown(true))
+    const prev = document.body.style.overflow
+    document.body.style.overflow = "hidden"
+    return () => {
+      cancelAnimationFrame(id)
+      document.body.style.overflow = prev
+    }
+  }, [])
+  const close = () => {
+    setShown(false)
+    setTimeout(props.onClose, 220)
+  }
+  const archived = props.posts.filter((p) => p.archived && !p.binnedAt)
+  const bin = props.posts.filter((p) => !!p.binnedAt)
+  const list = tab === "archived" ? archived : bin
+  return (
+    <div className={`pm-backdrop${shown ? " open" : ""}`} onClick={close}>
+      <div className="pm-sheet pm-manage" onClick={(e) => e.stopPropagation()}>
+        <div className="rx-sheet-grip" />
+        <div className="pm-manage-head">Manage posts</div>
+        <div className="rx-tabs">
+          <button
+            className={`rx-tab${tab === "archived" ? " active" : ""}`}
+            style={{ borderBottomColor: tab === "archived" ? "#1877f2" : "transparent" }}
+            onClick={() => setTab("archived")}
+          >
+            Archived {archived.length}
+          </button>
+          <button
+            className={`rx-tab${tab === "bin" ? " active" : ""}`}
+            style={{ borderBottomColor: tab === "bin" ? "#1877f2" : "transparent" }}
+            onClick={() => setTab("bin")}
+          >
+            Bin {bin.length}
+          </button>
+        </div>
+        {tab === "bin" && <div className="pm-manage-note">Items in your bin are deleted after 30 days.</div>}
+        <div className="pm-manage-list">
+          {list.length === 0 ? (
+            <div className="rx-empty">{tab === "archived" ? "No archived posts" : "Bin is empty"}</div>
+          ) : (
+            list.map((p) => {
+              const sp = p.sharedPost
+              const thumb = p.image || sp?.image || ""
+              const text = (p.caption || sp?.caption || p.movie || "Post").slice(0, 90)
+              return (
+                <div className="pm-manage-row" key={p.id}>
+                  {thumb ? <img src={thumb} alt="" /> : <span className="pm-manage-ph">📝</span>}
+                  <div className="pm-manage-info">
+                    <b>{text}</b>
+                    <small>{timeAgo(p.createdAt)}</small>
+                  </div>
+                  <button className="pm-manage-btn" onClick={() => props.onRestore(p.id)}>
+                    Restore
+                  </button>
+                  {tab === "bin" && (
+                    <button className="pm-manage-btn danger" onClick={() => props.onDeleteForever(p.id)}>
+                      Delete
+                    </button>
+                  )}
+                </div>
+              )
+            })
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/* ---- Product link dialog ---- */
+function LinkDialog(props: {
+  value: string
+  onSave: (v: string) => void
+  onClose: () => void
+}) {
+  const [v, setV] = useState(props.value)
+  return (
+    <div className="mb-modal-backdrop" onClick={props.onClose}>
+      <div className="mb-modal" onClick={(e) => e.stopPropagation()}>
+        <div className="mb-modal-head">
+          <b>Product link</b>
+          <button className="mb-modal-x" onClick={props.onClose} title="Close">
+            <svg viewBox="0 0 24 24">
+              <path d={PM_IC.close} />
+            </svg>
+          </button>
+        </div>
+        <div style={{ padding: "0 16px" }}>
+          <input
+            className="mb-modal-textarea"
+            style={{ minHeight: 0, height: 46, resize: "none" }}
+            placeholder="https://example.com/product"
+            value={v}
+            autoFocus
+            onChange={(e) => setV(e.target.value)}
+          />
+          <p style={{ fontSize: 12.5, color: "var(--text-muted)", margin: "8px 0 0" }}>
+            Leave empty and save to remove the link.
+          </p>
+        </div>
+        <button className="mb-modal-save" onClick={() => props.onSave(v.trim())}>
+          Save
+        </button>
       </div>
     </div>
   )
@@ -5262,6 +6114,32 @@ const lastMarkedSeenRef = useRef<string | null>(null)
   const reactLockRef = useRef(0)
   const likePressRef = useRef<any>({ timer: null, fired: false, sx: 0, sy: 0, lastTouch: 0 })
 
+  // Share sheet, post menu extras, manage posts, saved posts
+  const [shareSheetPostId, setShareSheetPostId] = useState<string | null>(null)
+  const [choiceFor, setChoiceFor] = useState<{ kind: "comment" | "privacy"; postId: string } | null>(null)
+  const [linkDialogPostId, setLinkDialogPostId] = useState<string | null>(null)
+  const [manageOpen, setManageOpen] = useState(false)
+  const [savedIds, setSavedIds] = useState<string[]>([])
+
+  useEffect(() => {
+    setSavedIds(Array.isArray(profile?.savedPosts) ? profile.savedPosts : [])
+  }, [profile])
+
+  // Bin items are deleted after 30 days
+  useEffect(() => {
+    if (!user) return
+    const old = myPosts.filter((p: any) => p.binnedAt && Date.now() - p.binnedAt > 30 * 86400000)
+    if (!old.length) return
+    ;(async () => {
+      try {
+        const fb = await getFirebase()
+        for (const p of old) {
+          try { await fb.deleteDoc(fb.doc(fb.db, "posts", p.id)) } catch {}
+        }
+      } catch {}
+    })()
+  }, [myPosts, user])
+
   // Comment reactions
   const [commentText, setCommentText] = useState("")
   const [commentBusy, setCommentBusy] = useState(false)
@@ -6061,7 +6939,7 @@ const handleChatTyping = (value: string) => {
         }, 750)
       }
 
-      if (!myCurrent && post.authorId && post.authorId !== user.uid && post.authorId !== "admin") {
+      if (!myCurrent && post.authorId && post.authorId !== user.uid && post.authorId !== "admin" && !post.muteNotifs) {
         await fb.addDoc(fb.collection(fb.db, "notifications"), {
           postId,
           fromUid: user.uid,
@@ -6218,7 +7096,7 @@ const handleChatTyping = (value: string) => {
           }, 650)
         }
 
-        if (post.authorId && post.authorId !== user.uid && post.authorId !== "admin") {
+        if (post.authorId && post.authorId !== user.uid && post.authorId !== "admin" && !post.muteNotifs) {
           await fb.addDoc(fb.collection(fb.db, "notifications"), {
             postId,
             fromUid: user.uid,
@@ -6294,7 +7172,7 @@ const handleChatTyping = (value: string) => {
       await fb.updateDoc(ref, { comments: updated })
 
       const post = snap.data()
-      if (post.authorId && post.authorId !== user.uid && post.authorId !== "admin") {
+      if (post.authorId && post.authorId !== user.uid && post.authorId !== "admin" && !post.muteNotifs) {
         await fb.addDoc(fb.collection(fb.db, "notifications"), {
           postId,
           fromUid: user.uid,
@@ -6345,8 +7223,8 @@ const handleChatTyping = (value: string) => {
     }
   }
 
-  const handleQuickComment = async (postId: string, text: string) => {
-    if (commentBusy || !text) return
+  const handleQuickComment = async (postId: string, text: string, sticker = "") => {
+    if (commentBusy || (!text && !sticker)) return
     setCommentBusy(true)
     try {
       const fb = await getFirebase()
@@ -6360,13 +7238,14 @@ const handleChatTyping = (value: string) => {
         name: profile.name,
         avatar: profile.photoURL || "",
         text,
+        sticker,
         image: "",
         at: Date.now(),
         reactions: {},
       }
       if (replyTo && replyTo.id) newComment.parentId = replyTo.id
       await fb.updateDoc(ref, { comments: [...(post.comments || []), newComment] })
-      if (post.authorId && post.authorId !== user.uid && post.authorId !== "admin") {
+      if (post.authorId && post.authorId !== user.uid && post.authorId !== "admin" && !post.muteNotifs) {
         await fb.addDoc(fb.collection(fb.db, "notifications"), {
           postId,
           fromUid: user.uid,
@@ -7098,6 +7977,267 @@ const handleChatTyping = (value: string) => {
 
   const openFriendsList = (uid: string, name: string) => {
     pushPage("friends-list", { uid, name })
+  }
+
+  /* ============================================================
+     POST MENU / SHARE / MANAGE POSTS (Facebook style)
+     ============================================================ */
+
+  const updatePostDoc = async (postId: string, patch: any, okTitle?: string, okMsg = "") => {
+    try {
+      const fb = await getFirebase()
+      await fb.updateDoc(fb.doc(fb.db, "posts", postId), patch)
+      if (okTitle) showToast(okTitle, okMsg, "success")
+      return true
+    } catch (e: any) {
+      showToast("Error", e.message, "error")
+      return false
+    }
+  }
+
+  const getShareDefaultAudience = () => {
+    try {
+      return localStorage.getItem("mebook_share_audience") || "public"
+    } catch {
+      return "public"
+    }
+  }
+
+  const canSeePost = (post: any, isMine = false) => {
+    if (!post) return false
+    if (post.binnedAt) return false
+    if (post.archived) return !!isMine
+    if (user && post.authorId === user.uid) return true
+    if (post.audience === "only_me") return false
+    if (post.audience === "friends") return myFriends.some((f: any) => f.uid === post.authorId)
+    return true
+  }
+
+  const commentLockMsg = (post: any) => {
+    if (!post || !user || post.authorId === user.uid) return ""
+    if (post.commentPermission === "none") return "Comments are turned off for this post."
+    if (post.commentPermission === "friends" && !myFriends.some((f: any) => f.uid === post.authorId)) {
+      return `Only ${post.authorName || "the author"}'s friends can comment on this post.`
+    }
+    return ""
+  }
+
+  const handlePostMenuAction = async (key: string, postId: string) => {
+    const post: any = findPost(postId)
+    if (!post) return
+    switch (key) {
+      case "pin": {
+        const willPin = !post.pinned
+        if (willPin) {
+          for (const p of myPosts) {
+            if (p.pinned && p.id !== postId) await updatePostDoc(p.id, { pinned: false })
+          }
+        }
+        await updatePostDoc(
+          postId,
+          { pinned: willPin, pinnedAt: willPin ? Date.now() : 0 },
+          willPin ? "Post pinned" : "Post unpinned",
+          willPin ? "It now shows at the top of your profile." : ""
+        )
+        break
+      }
+      case "save": {
+        try {
+          const fb = await getFirebase()
+          const has = savedIds.includes(postId)
+          await fb.updateDoc(fb.doc(fb.db, "users", user.uid), {
+            savedPosts: has ? fb.arrayRemove(postId) : fb.arrayUnion(postId),
+          })
+          setSavedIds((s) => (has ? s.filter((x) => x !== postId) : [...s, postId]))
+          showToast(has ? "Removed from saved" : "Post saved", "", "success")
+        } catch (e: any) {
+          showToast("Error", e.message, "error")
+        }
+        break
+      }
+      case "edit":
+        openEditPost(post)
+        break
+      case "product":
+        setLinkDialogPostId(postId)
+        break
+      case "comment":
+        setChoiceFor({ kind: "comment", postId })
+        break
+      case "privacy":
+        setChoiceFor({ kind: "privacy", postId })
+        break
+      case "archive":
+        await updatePostDoc(
+          postId,
+          { archived: !post.archived, pinned: false },
+          post.archived ? "Restored from archive" : "Moved to archive",
+          post.archived ? "" : "Only you can see it now. Manage it from your profile."
+        )
+        break
+      case "bin":
+        await updatePostDoc(
+          postId,
+          { binnedAt: Date.now(), pinned: false },
+          "Moved to bin",
+          "Items in your bin are deleted after 30 days."
+        )
+        break
+      case "notif":
+        await updatePostDoc(
+          postId,
+          { muteNotifs: !post.muteNotifs },
+          post.muteNotifs ? "Notifications turned on" : "Notifications turned off",
+          "For this post"
+        )
+        break
+      case "copy":
+        copyLink(post)
+        break
+      case "ad_code": {
+        const code = `MB-${String(postId).slice(0, 8).toUpperCase()}`
+        try {
+          await navigator.clipboard.writeText(code)
+          showToast("Ad code copied", code, "success")
+        } catch {
+          showToast("Ad code", code, "info")
+        }
+        break
+      }
+      case "ad":
+        showToast("Ads aren't available yet", "Creating ads isn't supported on MeBook right now.", "info")
+        break
+    }
+  }
+
+  const restorePost = async (postId: string) => {
+    const p: any = findPost(postId)
+    if (!p) return
+    await updatePostDoc(postId, p.binnedAt ? { binnedAt: 0 } : { archived: false }, "Post restored")
+  }
+
+  const deleteForever = async (postId: string) => {
+    if (!confirm("Delete this post permanently?")) return
+    try {
+      const fb = await getFirebase()
+      await fb.deleteDoc(fb.doc(fb.db, "posts", postId))
+      showToast("Post deleted", "", "success")
+    } catch (e: any) {
+      showToast("Error", e.message, "error")
+    }
+  }
+
+  const shareNow = async (post: any, caption: string, audience: string, setDefault: boolean) => {
+    if (!post || shareBusy) return false
+    setShareBusy(true)
+    try {
+      const fb = await getFirebase()
+      const root: any = post.sharedPost
+        ? post.sharedPost
+        : {
+            id: post.id,
+            authorId: post.authorId || "",
+            authorName: post.authorName || "User",
+            authorAvatar: post.isOfficial ? LOGO_URL : post.authorAvatar || "",
+            verified: isVerified(post),
+            caption: post.caption || "",
+            image: post.image || "",
+            movie: post.movie || "",
+            type: post.type || "",
+            youtube: post.youtube || null,
+            createdMs: post.createdAt?.toMillis
+              ? post.createdAt.toMillis()
+              : post.createdAt?.seconds
+              ? post.createdAt.seconds * 1000
+              : Date.now(),
+          }
+      await fb.addDoc(fb.collection(fb.db, "posts"), {
+        authorId: user.uid,
+        authorName: profile.name,
+        authorAvatar: profile.photoURL || "",
+        verified: profile.verified === true,
+        caption,
+        movie: "",
+        image: "",
+        sharedPost: root,
+        originalPostId: root.id,
+        originalAuthor: root.authorName || "",
+        audience,
+        likes: [],
+        reactions: {},
+        comments: [],
+        shares: 0,
+        createdAt: fb.serverTimestamp(),
+      })
+      await fb.updateDoc(fb.doc(fb.db, "posts", post.id), { shares: fb.increment(1) })
+      if (setDefault) {
+        try { localStorage.setItem("mebook_share_audience", audience) } catch {}
+      }
+      if (post.authorId && post.authorId !== user.uid && post.authorId !== "admin" && !post.muteNotifs) {
+        await fb.addDoc(fb.collection(fb.db, "notifications"), {
+          postId: post.id,
+          fromUid: user.uid,
+          fromName: profile?.name || "",
+          fromAvatar: profile?.photoURL || "",
+          uid: post.authorId,
+          title: "Post Shared",
+          message: `${profile.name} shared your post.`,
+          type: "share",
+          read: false,
+          createdAt: fb.serverTimestamp(),
+        })
+      }
+      showToast("You shared this post.", "", "success")
+      return true
+    } catch (e: any) {
+      console.error(e)
+      showToast("Share failed", e.message, "error")
+      return false
+    } finally {
+      setShareBusy(false)
+    }
+  }
+
+  const sendPostToFriend = async (post: any, friendUid: string) => {
+    try {
+      const fb = await getFirebase()
+      const cid = chatIdFor(user.uid, friendUid)
+      const cref = fb.doc(fb.db, "chats", cid)
+      const snap = await fb.getDoc(cref)
+      if (!snap.exists()) {
+        await fb.setDoc(cref, {
+          members: [user.uid, friendUid],
+          createdAt: fb.serverTimestamp(),
+          lastMessage: null,
+          lastAt: fb.serverTimestamp(),
+        })
+      }
+      const text = `📎 ${post.authorName || "A"}'s post\n${buildShareUrl(post.id)}`
+      await fb.addDoc(fb.collection(fb.db, "chats", cid, "messages"), {
+        from: user.uid,
+        text,
+        at: fb.serverTimestamp(),
+      })
+      await fb.updateDoc(cref, {
+        lastMessage: { text: "📎 Shared a post", from: user.uid },
+        lastAt: fb.serverTimestamp(),
+      })
+      return true
+    } catch (e: any) {
+      showToast("Couldn't send", e.message, "error")
+      return false
+    }
+  }
+
+  const nativeShare = async (post: any) => {
+    const url = buildShareUrl(post.id)
+    try {
+      if (typeof navigator !== "undefined" && (navigator as any).share) {
+        await (navigator as any).share({ title: `${post.authorName || "MeBook"} on MeBook`, url })
+      } else {
+        copyLink(post)
+      }
+    } catch {}
   }
 
   const handleDeletePost = async (postId: string) => {
@@ -8106,7 +9246,62 @@ const handleChatTyping = (value: string) => {
   /* ============================================================
   RENDER POST
   ============================================================ */
+  const renderSharedEmbed = (sp: any) => {
+    const av =
+      sp.authorAvatar ||
+      `https://ui-avatars.com/api/?background=16a34a&color=fff&name=${encodeURIComponent(sp.authorName || "User")}`
+    const goAuthor = () => {
+      if (sp.authorId && sp.authorId !== "admin") openUserProfile(sp.authorId)
+    }
+    return (
+      <div className="rx-embed">
+        <div className="rx-embed-head">
+          <img src={av} alt="" onClick={goAuthor} />
+          <div>
+            <div className="rx-embed-name" onClick={goAuthor}>
+              {sp.authorName || "User"}
+              {sp.verified === true && mcVerifiedBadge(14)}
+            </div>
+            <div className="mb-post-meta">
+              {timeAgo(sp.createdMs)}
+              {" · "}
+              <svg className="globe" viewBox="0 0 24 24">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" />
+              </svg>
+            </div>
+          </div>
+        </div>
+        {sp.caption && <PostCaption text={sp.caption} />}
+        {sp.type === "youtube" && sp.youtube?.videoId ? (
+          <YouTubePost
+            videoId={sp.youtube.videoId}
+            isShort={sp.youtube.isShort === true}
+            thumb={sp.image}
+            url={sp.youtube.url}
+          />
+        ) : sp.image ? (
+          <div className="mb-post-media">
+            <img
+              src={sp.image}
+              alt="post"
+              loading="lazy"
+              onClick={() =>
+                setPhotoViewer({
+                  src: sp.image,
+                  caption: sp.caption || "",
+                  name: sp.authorName || "User",
+                  avatar: av,
+                })
+              }
+            />
+          </div>
+        ) : null}
+      </div>
+    )
+  }
+
   const renderPost = (post: any, isMine = false) => {
+    if (!canSeePost(post, isMine)) return null
     const postReacts = post.reactions || postReactions[post.id] || {}
     const myReaction = postReacts[user.uid]
     const reactionEntries = Object.entries(postReacts)
@@ -8183,7 +9378,18 @@ const handleChatTyping = (value: string) => {
           )}
         </div>
 
+        {post.pinned && <div className="rx-post-tag">📌 Pinned post</div>}
+        {post.archived && isMine && <div className="rx-post-tag">🗄 Archived · only you can see this</div>}
         {post.caption && <PostCaption text={post.caption} />}
+        {post.sharedPost && renderSharedEmbed(post.sharedPost)}
+        {post.productLink && (
+          <a className="rx-product" href={post.productLink} target="_blank" rel="noopener noreferrer nofollow">
+            <svg viewBox="0 0 24 24">
+              <path d={PM_IC.link} />
+            </svg>
+            View product
+          </a>
+        )}
 
         {post.type === "youtube" && post.youtube?.videoId ? (
           <YouTubePost
@@ -8249,7 +9455,7 @@ const handleChatTyping = (value: string) => {
             <span
               className="rx-count-link"
               onClick={() =>
-                commentsCount > 0 && setEngageSheet({ postId: post.id, mode: "comments", tab: "all" })
+                setEngageSheet({ postId: post.id, mode: "comments", tab: "all" })
               }
             >
               {commentsCount} comments
@@ -8283,13 +9489,13 @@ const handleChatTyping = (value: string) => {
               ? (REACTIONS.find((r) => r.key === myReaction)?.label || "Like")
               : "Like"}
           </button>
-          <button className="mb-action" onClick={() => openComments(post)}>
+          <button className="mb-action" onClick={() => setEngageSheet({ postId: post.id, mode: "comments", tab: "all" })}>
             <svg viewBox="0 0 24 24">
               <path d="M21.99 4c0-1.1-.89-2-1.99-2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14l4 4-.01-18z" />
             </svg>
             Comment
           </button>
-          <button className="mb-action" onClick={() => openShare(post)}>
+          <button className="mb-action" onClick={() => setShareSheetPostId(post.id)}>
             <svg viewBox="0 0 24 24">
               <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z" />
             </svg>
@@ -8904,6 +10110,9 @@ const handleChatTyping = (value: string) => {
               setEngageSheet(null)
               setReplyTo(null)
               setCommentText("")
+              setCommentImageFile(null)
+              setCommentImagePreview("")
+              cancelEditComment()
             }}
             me={user}
             profile={profile}
@@ -8919,15 +10128,121 @@ const handleChatTyping = (value: string) => {
             commentText={commentText}
             setCommentText={setCommentText}
             commentBusy={commentBusy}
+            commentImagePreview={commentImagePreview}
+            onImageSelect={handleCommentImageSelect}
+            onRemoveImage={removeCommentImage}
             replyTo={replyTo}
             setReplyTo={setReplyTo}
             onSend={() => handleAddComment(sp.id)}
             onQuickEmoji={(em) => handleQuickComment(sp.id, em)}
+            onSendSticker={(em) => handleQuickComment(sp.id, "", em)}
             onLikeComment={(cid) => handleReactToComment(sp.id, cid, "like", "👍")}
+            onCommentMenu={(cid) => setActionMenu({ kind: "comment", id: cid, postId: sp.id })}
+            editCommentId={editCommentId}
+            editCommentText={editCommentText}
+            setEditCommentText={setEditCommentText}
+            editBusy={editCommentBusy}
+            onSaveEdit={(cid) => handleSaveEditComment(sp.id, cid)}
+            onCancelEdit={cancelEditComment}
+            lockMsg={commentLockMsg(sp)}
             isVerifiedUid={isVerifiedUid}
           />
         )
       })()}
+
+      {/* Share sheet */}
+      {shareSheetPostId && (() => {
+        const sp: any = findPost(shareSheetPostId)
+        if (!sp) return null
+        return (
+          <ShareSheet
+            key={shareSheetPostId}
+            post={sp}
+            profile={profile}
+            friends={myFriends}
+            busy={shareBusy}
+            defaultAudience={getShareDefaultAudience()}
+            onClose={() => setShareSheetPostId(null)}
+            onShareNow={(c, a, d) => shareNow(sp, c, a, d)}
+            onSendToFriend={(uid) => sendPostToFriend(sp, uid)}
+            onCopy={() => copyLink(sp)}
+            onWhatsApp={() => shareToWhatsApp(sp)}
+            onTelegram={() => shareToTelegram(sp)}
+            onFacebook={() => shareToFacebook(sp)}
+            onMore={() => nativeShare(sp)}
+            onUnavailable={(w) => showToast(`${w} isn't available yet`, "", "info")}
+          />
+        )
+      })()}
+
+      {/* Who can comment / Edit privacy */}
+      {choiceFor && (() => {
+        const cp: any = findPost(choiceFor.postId)
+        if (!cp) return null
+        if (choiceFor.kind === "comment") {
+          return (
+            <ChoiceSheet
+              title="Who can comment on your post?"
+              value={cp.commentPermission || "everyone"}
+              options={[
+                { value: "everyone", label: "Everyone", sub: "Anyone who can see your post", icon: PM_IC.globe },
+                { value: "friends", label: "Friends", sub: "Only your friends", icon: PM_IC.people },
+                { value: "none", label: "No one", sub: "Turn off commenting", icon: PM_IC.lock },
+              ]}
+              onBack={() => setChoiceFor(null)}
+              onDone={(v) => {
+                updatePostDoc(cp.id, { commentPermission: v }, "Comment settings saved")
+                setChoiceFor(null)
+              }}
+            />
+          )
+        }
+        return (
+          <ChoiceSheet
+            title="Who can see your post?"
+            subtitle="Your post will appear in Feed, on your profile and in search results."
+            value={cp.audience || "public"}
+            options={[
+              { value: "public", label: "Public", sub: "Anyone on or off MeBook", icon: PM_IC.globe },
+              { value: "friends", label: "Friends", sub: "Your MeBook friends", icon: PM_IC.people },
+              { value: "only_me", label: "Only me", sub: "Only you can see this", icon: PM_IC.lock },
+            ]}
+            onBack={() => setChoiceFor(null)}
+            onDone={(v) => {
+              updatePostDoc(cp.id, { audience: v }, "Privacy updated")
+              setChoiceFor(null)
+            }}
+          />
+        )
+      })()}
+
+      {/* Product link */}
+      {linkDialogPostId && (() => {
+        const lp: any = findPost(linkDialogPostId)
+        if (!lp) return null
+        return (
+          <LinkDialog
+            value={lp.productLink || ""}
+            onClose={() => setLinkDialogPostId(null)}
+            onSave={(v) => {
+              let url = v
+              if (url && !/^https?:\/\//i.test(url)) url = "https://" + url
+              updatePostDoc(lp.id, { productLink: url }, url ? "Product link saved" : "Product link removed")
+              setLinkDialogPostId(null)
+            }}
+          />
+        )
+      })()}
+
+      {/* Manage posts (archive + bin) */}
+      {manageOpen && (
+        <ManageSheet
+          posts={myPosts}
+          onClose={() => setManageOpen(false)}
+          onRestore={restorePost}
+          onDeleteForever={deleteForever}
+        />
+      )}
 
       {/* Notification options sheet */}
       {notifMenu && (() => {
@@ -9020,14 +10335,17 @@ const handleChatTyping = (value: string) => {
       {actionMenu && (() => {
         const close = () => setActionMenu(null)
         if (actionMenu.kind === "post") {
-          const target = findPost(actionMenu.id)
+          const target: any = findPost(actionMenu.id)
+          if (!target) return null
           return (
-            <ActionSheet
+            <PostMenuSheet
+              post={target}
+              pinned={!!target.pinned}
+              saved={savedIds.includes(target.id)}
+              archived={!!target.archived}
+              muted={!!target.muteNotifs}
               onClose={close}
-              items={[
-                { label: "Edit post", icon: ICON_EDIT, onClick: () => target && openEditPost(target) },
-                { label: "Delete post", icon: ICON_TRASH, danger: true, onClick: () => handleDeletePost(actionMenu.id) },
-              ]}
+              onAction={(k) => handlePostMenuAction(k, target.id)}
             />
           )
         }
@@ -10107,7 +11425,7 @@ const handleChatTyping = (value: string) => {
                     <p style={{ fontSize: 14, marginTop: 4 }}>This user hasn't posted anything</p>
                   </div>
                 ) : (
-                  viewingUserPosts.map((p) => renderPost(p))
+                  viewingUserPosts.slice().sort((a: any, b: any) => Number(!!b.pinned) - Number(!!a.pinned)).map((p) => renderPost(p))
                 )}
               </div>
             </div>
@@ -10815,6 +12133,7 @@ const handleChatTyping = (value: string) => {
                     >
                       <b>{c.name || "User"}{isVerifiedUid(c.uid, c) && mcVerifiedBadge(14)}</b>
                       {c.text}
+                      {c.sticker && <StickerImg emoji={c.sticker} size={96} />}
                       {c.image && (
                         <div className="cmt-bubble-image">
                           <img src={c.image} alt="" />
@@ -11156,8 +12475,14 @@ const handleChatTyping = (value: string) => {
                 </div>
               </div>
 
-              <div className="mb-card-title" style={{ fontSize: 18, marginBottom: 10, padding: "0 4px" }}>
+              <div
+                className="mb-card-title"
+                style={{ fontSize: 18, marginBottom: 10, padding: "0 4px", display: "flex", alignItems: "center" }}
+              >
                 My Posts
+                <button className="rx-manage-open" onClick={() => setManageOpen(true)}>
+                  Manage posts
+                </button>
               </div>
               <div>
                 {myPosts.length === 0 ? (
@@ -11169,7 +12494,7 @@ const handleChatTyping = (value: string) => {
                     <p style={{ fontSize: 14, marginTop: 4 }}>Create your first movie review!</p>
                   </div>
                 ) : (
-                  myPosts.map((p) => renderPost(p, true))
+                  myPosts.slice().sort((a: any, b: any) => Number(!!b.pinned) - Number(!!a.pinned)).map((p) => renderPost(p, true))
                 )}
               </div>
             </div>

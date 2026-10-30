@@ -171,7 +171,7 @@
 
 /* ---------- THE ORB ----------
    Real silk-ribbon orb animation (from your video, recoloured green).
-   Put mvbd-orb.webp next to this CSS file (or change the url below).
+   Put mvbd-orb.webp inside your project public/ folder (served as /mvbd-orb.webp).
    welcome: big orb in the middle
    after first message: it jumps (slow-motion) into the chat box,
    shrinks and keeps animating at the right end of the pill.
@@ -189,7 +189,7 @@
   pointer-events: none;
   opacity: 1;
   transform: scale(0.3);
-  background: url("mvbd-orb.webp") center / 100% 100% no-repeat;
+  background: url("/mvbd-orb.webp") center / 100% 100% no-repeat;
   mix-blend-mode: screen;
   -webkit-mask-image: radial-gradient(circle, #000 58%, transparent 71%);
   mask-image: radial-gradient(circle, #000 58%, transparent 71%);
@@ -991,4 +991,4 @@ a.mvbd-ai-movie:hover .mvbd-ai-poster {
     animation: none !important;
     transition: none !important;
   }
-}
+  }

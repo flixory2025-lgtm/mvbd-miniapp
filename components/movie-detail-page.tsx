@@ -1184,7 +1184,7 @@ export default function MovieDetailPage({
       {/* FIXED POSTER — scroll korleo ekhane i thake */}
       <div
         className="fixed inset-x-0 top-0 z-0 pointer-events-none"
-        style={{ height: "var(--hero-h)" }}
+        style={{ height: "calc(var(--hero-h) + 80px)" }}
       >
         <div className="relative mx-auto h-full w-full md:max-w-[380px] overflow-hidden">
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -1210,11 +1210,11 @@ export default function MovieDetailPage({
       {/* SCROLLING CONTENT — poster er upor diye uthe */}
       <div className="relative z-10">
         {/* spacer: poster dekha jay */}
-        <div style={{ height: "calc(var(--hero-h) - 230px)" }} />
+        <div style={{ height: "calc(var(--hero-h) - 155px)" }} />
 
         {/* dark → clear gradient + title */}
         <div
-          className="relative flex items-end min-h-[230px] px-4 pb-3"
+          className="relative flex items-end min-h-[200px] px-4 pb-3"
           style={{
             background: `linear-gradient(to bottom, transparent 0%, rgba(5,5,7,.35) 22%, rgba(5,5,7,.75) 52%, rgba(5,5,7,.96) 78%, ${BG} 100%)`,
           }}
@@ -1425,25 +1425,25 @@ export default function MovieDetailPage({
       </main>
       </div>
 
-      {/* Poster background: starts under Like/Comments/Share, fades in and out */}
-      <div className="relative" style={{ background: BG }}>
+      {/* Poster background: starts under Like/Comments/Share, full poster (no zoom), fades in and out */}
+      <div className="relative overflow-hidden" style={{ background: BG }}>
         <div
           aria-hidden="true"
-          className="absolute inset-0 pointer-events-none overflow-hidden"
+          className="absolute top-0 left-1/2 -translate-x-1/2 w-full md:w-[480px] aspect-[2/3] pointer-events-none"
           style={{
             WebkitMaskImage:
-              "linear-gradient(to bottom, transparent 0%, #000 30%, #000 70%, transparent 100%)",
+              "linear-gradient(to bottom, transparent 0%, #000 28%, #000 68%, transparent 100%)",
             maskImage:
-              "linear-gradient(to bottom, transparent 0%, #000 30%, #000 70%, transparent 100%)",
+              "linear-gradient(to bottom, transparent 0%, #000 28%, #000 68%, transparent 100%)",
           }}
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={movie.poster || "/placeholder.svg"}
             alt=""
-            className="w-full h-full object-cover object-center opacity-50 blur-[2px] scale-105"
+            className="w-full h-full object-cover object-center opacity-60"
           />
-          <div className="absolute inset-0 bg-black/45" />
+          <div className="absolute inset-0 bg-black/35" />
         </div>
 
         <div className="relative z-10 max-w-2xl mx-auto px-4 pt-6">
@@ -1608,4 +1608,4 @@ export default function MovieDetailPage({
       )}
     </div>
   )
-            }
+                            }

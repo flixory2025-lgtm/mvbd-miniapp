@@ -1620,7 +1620,15 @@ background:var(--hover);
 .mebook-root .notif-text{font-size:14.5px;line-height:1.45;color:var(--text);word-wrap:break-word;}
 .mebook-root .notif-text b{font-weight:700;}
 .mebook-root .notif-time{font-size:12px;color:var(--text-muted);margin-top:3px;font-weight:500;}
-.mebook-root .notif-dot{width:10px;height:10px;border-radius:50%;background:#22c55e;position:absolute;top:16px;right:16px;flex-shrink:0;}
+.mebook-root .notif-dot{width:10px;height:10px;border-radius:50%;background:#22c55e;position:absolute;bottom:16px;right:20px;flex-shrink:0;}
+.mebook-root .notif-more{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--text-muted);align-self:flex-start;margin:-4px -6px 0 0;}
+.mebook-root .notif-more:hover{background:var(--hover);}
+.mebook-root .notif-more svg{width:22px;height:22px;fill:currentColor;}
+.mebook-root .notif-sheet-head{display:flex;flex-direction:column;align-items:center;gap:8px;padding:8px 16px 12px;text-align:center;}
+.mebook-root .notif-sheet-head img,.mebook-root .notif-sheet-head .notif-icon{width:56px;height:56px;}
+.mebook-root .notif-sheet-head span{font-size:14px;color:var(--text-muted);line-height:1.4;}
+.mebook-root .mb-sheet-item small{display:block;font-size:12.5px;font-weight:500;color:var(--text-muted);margin-top:2px;}
+.mebook-root .mb-sheet-item .mb-sheet-txt{display:flex;flex-direction:column;}
 .mebook-root .notif-empty{padding:60px 20px;text-align:center;color:var(--text-muted);}
 .mebook-root .notif-empty svg{width:72px;height:72px;fill:var(--border);margin-bottom:12px;}
 .mebook-root .notif-empty b{font-size:17px;display:block;margin-bottom:4px;color:var(--text);}
@@ -2906,6 +2914,7 @@ function fmtYT(sec: number) {
 }
 
 // Detects black bars (top/bottom) baked into a Short's thumbnail so we can crop them away
+let ytMutePref = false // user mute korle sob video mute, unmute korle sob video sound e
 const ytCropCache = new Map<string, { t: number; b: number } | null>()
 function detectShortCrop(src: string): Promise<{ t: number; b: number } | null> {
   return new Promise((resolve) => {
@@ -2980,7 +2989,7 @@ function YouTubePost({
   const activeRef = useRef(false)
   const errRef = useRef(false)
   const userPausedRef = useRef(false)
-  const wantMutedRef = useRef(true)
+  const wantMutedRef = useRef(ytMutePref)
 
   const rootRef = useRef<HTMLDivElement>(null)
   const mountRef = useRef<HTMLDivElement>(null)
@@ -3072,7 +3081,7 @@ function YouTubePost({
             fs: 0,
             iv_load_policy: 3,
             disablekb: 1,
-            mute: 1,
+            mute: ytMutePref ? 1 : 0,
             origin: window.location.origin,
           },
           events: {
@@ -3081,6 +3090,26 @@ function YouTubePost({
               playerRef.current = e.target
               setDur(e.target.getDuration() || 0)
               try { e.target.playVideo() } catch {}
+              // browser sound-autoplay block korle shudhu tokhon muted kore chalabe
+              setTimeout(() => {
+                if (cancelled || userPausedRef.current) return
+                try {
+                  const stt = e.target.getPlayerState()
+                  if (stt !== 1 && stt !== 3) {
+                    e.target.mute()
+                    setMuted(true)
+                    e.target.playVideo()
+                  }
+                } catch {}
+              }, 1200)
+            },
+            onAutoplayBlocked: () => {
+              if (cancelled) return
+              try {
+                player.mute()
+                setMuted(true)
+                player.playVideo()
+              } catch {}
             },
             onStateChange: (e: any) => {
               if (cancelled) return
@@ -3088,9 +3117,6 @@ function YouTubePost({
               if (st === YT.PlayerState.PLAYING) {
                 setPlaying(true)
                 setStarted(true)
-                if (!wantMutedRef.current) {
-                  try { player?.unMute?.() } catch {}
-                }
                 setMuted(!!player?.isMuted?.())
                 setDur(player?.getDuration?.() || 0)
                 if (activeYTPause && activeYTPause !== pauseSelf) activeYTPause()
@@ -3202,8 +3228,8 @@ function YouTubePost({
     const p = playerRef.current
     if (!p) return
     try {
-      if (p.isMuted()) { p.unMute(); setMuted(false); wantMutedRef.current = false }
-      else { p.mute(); setMuted(true); wantMutedRef.current = true }
+      if (p.isMuted()) { p.unMute(); setMuted(false); wantMutedRef.current = false; ytMutePref = false }
+      else { p.mute(); setMuted(true); wantMutedRef.current = true; ytMutePref = true }
     } catch {}
   }
 
@@ -3260,7 +3286,6 @@ function YouTubePost({
           <button
             className="mb-yt-bigplay"
             onClick={() => {
-              wantMutedRef.current = false
               userPausedRef.current = false
               setActive(true)
             }}
@@ -3656,6 +3681,10 @@ export default function MeBookPage({ onExit }: MeBookPageProps) {
 
   const [feed, setFeed] = useState<any[]>([])
 const [myPosts, setMyPosts] = useState<any[]>([])
+  const [extraPosts, setExtraPosts] = useState<any[]>([])
+  const [notifMenu, setNotifMenu] = useState<any | null>(null)
+  const [notifPrefs, setNotifPrefs] = useState<{ less: string[]; muted: string[] }>({ less: [], muted: [] })
+  const notifPrefsLoaded = useRef(false)
 // communityFeed line টা পুরো delete করে দিন
 const [friends, setFriends] = useState<any[]>([])
   const [requests, setRequests] = useState<any[]>([])
@@ -4687,6 +4716,10 @@ const handleChatTyping = (value: string) => {
 
       if (!myCurrent && post.authorId && post.authorId !== user.uid && post.authorId !== "admin") {
         await fb.addDoc(fb.collection(fb.db, "notifications"), {
+          postId,
+          fromUid: user.uid,
+          fromName: profile?.name || "",
+          fromAvatar: profile?.photoURL || "",
           uid: post.authorId,
           title: "New Reaction",
           message: `${profile.name} reacted ${emoji} to your post.`,
@@ -4759,6 +4792,10 @@ const handleChatTyping = (value: string) => {
 
         if (post.authorId && post.authorId !== user.uid && post.authorId !== "admin") {
           await fb.addDoc(fb.collection(fb.db, "notifications"), {
+            postId,
+            fromUid: user.uid,
+            fromName: profile?.name || "",
+            fromAvatar: profile?.photoURL || "",
             uid: post.authorId,
             title: "New Like",
             message: `${profile.name} liked your post.`,
@@ -4831,6 +4868,10 @@ const handleChatTyping = (value: string) => {
       const post = snap.data()
       if (post.authorId && post.authorId !== user.uid && post.authorId !== "admin") {
         await fb.addDoc(fb.collection(fb.db, "notifications"), {
+          postId,
+          fromUid: user.uid,
+          fromName: profile?.name || "",
+          fromAvatar: profile?.photoURL || "",
           uid: post.authorId,
           title: replyTo ? "New Reply" : "New Comment",
           message: `${profile.name} ${replyTo ? "replied to a comment" : "commented"} on your post.`,
@@ -4842,6 +4883,10 @@ const handleChatTyping = (value: string) => {
 
       if (replyTo && replyTo.uid && replyTo.uid !== user.uid && replyTo.uid !== post.authorId) {
         await fb.addDoc(fb.collection(fb.db, "notifications"), {
+          postId,
+          fromUid: user.uid,
+          fromName: profile?.name || "",
+          fromAvatar: profile?.photoURL || "",
           uid: replyTo.uid,
           title: "New Reply",
           message: `${profile.name} replied to your comment.`,
@@ -4913,6 +4958,10 @@ const handleChatTyping = (value: string) => {
       const targetComment = comments.find((c: any) => c.id === commentId)
       if (targetComment && targetComment.uid && targetComment.uid !== user.uid) {
         await fb.addDoc(fb.collection(fb.db, "notifications"), {
+          postId,
+          fromUid: user.uid,
+          fromName: profile?.name || "",
+          fromAvatar: profile?.photoURL || "",
           uid: targetComment.uid,
           title: "New Reaction",
           message: `${profile.name} reacted ${emoji} to your comment.`,
@@ -5234,6 +5283,10 @@ const handleChatTyping = (value: string) => {
 
       if (data.from && data.from !== user.uid) {
         await fb.addDoc(fb.collection(fb.db, "notifications"), {
+          chatId: activeChat,
+          fromUid: user.uid,
+          fromName: profile?.name || "",
+          fromAvatar: profile?.photoURL || "",
           uid: data.from,
           title: "New Reaction",
           message: `${profile.name} reacted ${emoji} to your message.`,
@@ -5769,6 +5822,9 @@ const handleChatTyping = (value: string) => {
 
       try {
         await fb.addDoc(fb.collection(fb.db, "notifications"), {
+          fromUid: user.uid,
+          fromName: profile?.name || "",
+          fromAvatar: profile?.photoURL || "",
           uid: fromUid,
           title: "Friend Request Accepted",
           message: `${profile?.name || "Someone"} accepted your friend request.`,
@@ -5813,6 +5869,94 @@ const handleChatTyping = (value: string) => {
       const fb = await getFirebase()
       await fb.updateDoc(fb.doc(fb.db, "notifications", notifId), { read: true })
     } catch {}
+  }
+
+  // load saved notification preferences once
+  useEffect(() => {
+    if (!profile || notifPrefsLoaded.current) return
+    notifPrefsLoaded.current = true
+    const np = (profile as any).notifPrefs
+    if (np) setNotifPrefs({ less: np.less || [], muted: np.muted || [] })
+  }, [profile])
+
+  const saveNotifPrefs = async (next: { less: string[]; muted: string[] }) => {
+    setNotifPrefs(next)
+    try {
+      const fb = await getFirebase()
+      await fb.updateDoc(fb.doc(fb.db, "users", user.uid), { notifPrefs: next })
+    } catch {}
+  }
+
+  const visibleNotifications = notifications.filter(
+    (n) =>
+      !(n.fromUid && notifPrefs.muted.includes(n.fromUid)) &&
+      !(n.read && n.type && notifPrefs.less.includes(n.type))
+  )
+
+  // notification এ click করলে সংশ্লিষ্ট জায়গায় নিয়ে যাবে
+  const openNotification = async (n: any) => {
+    if (!n.read) markNotificationRead(n.id)
+    const type = n.type
+    try {
+      if (n.postId) {
+        if (!findPost(n.postId)) {
+          const fb = await getFirebase()
+          const snap = await fb.getDoc(fb.doc(fb.db, "posts", n.postId))
+          if (!snap.exists()) {
+            showToast("Not found", "This post is no longer available", "info")
+            return
+          }
+          setExtraPosts((prev) => [...prev.filter((x) => x.id !== n.postId), { id: snap.id, ...snap.data() }])
+        }
+        pushPage("comments", { postId: n.postId })
+        return
+      }
+      if (n.chatId && n.fromUid) {
+        await startChat(n.fromUid, n.fromName || "User", n.fromAvatar || "")
+        return
+      }
+      if (type === "friend") {
+        if (n.fromUid) await openUserProfile(n.fromUid)
+        else goTo("friends")
+        return
+      }
+      if (type === "verification" || type === "subscription" || type === "account") {
+        goTo("profile")
+        return
+      }
+      if (type === "like" || type === "comment" || type === "share" || type === "post") {
+        goTo("home")
+      }
+    } catch (e: any) {
+      showToast("Error", e.message || "Could not open", "error")
+    }
+  }
+
+  const deleteNotification = async (n: any) => {
+    try {
+      const fb = await getFirebase()
+      await fb.deleteDoc(fb.doc(fb.db, "notifications", n.id))
+      showToast("Deleted", "Notification removed", "success")
+    } catch (e: any) {
+      showToast("Error", e.message || "Delete failed", "error")
+    }
+  }
+
+  const reportNotificationIssue = async (n: any) => {
+    try {
+      const fb = await getFirebase()
+      await fb.addDoc(fb.collection(fb.db, "notification_reports"), {
+        uid: user.uid,
+        notificationId: n.id,
+        type: n.type || "",
+        title: n.title || "",
+        message: n.message || "",
+        createdAt: fb.serverTimestamp(),
+      })
+      showToast("Reported", "Thanks! Notifications team will look into it", "success")
+    } catch (e: any) {
+      showToast("Error", e.message || "Report failed", "error")
+    }
   }
 
   const startChat = async (otherId: string, otherName: string, otherPhoto: string) => {
@@ -6259,6 +6403,10 @@ const handleChatTyping = (value: string) => {
       })
       if (post.authorId && post.authorId !== "admin") {
         await fb.addDoc(fb.collection(fb.db, "notifications"), {
+          postId: post.id,
+          fromUid: user.uid,
+          fromName: profile?.name || "",
+          fromAvatar: profile?.photoURL || "",
           uid: post.authorId,
           title: "Post Shared",
           message: `${profile.name} shared your post on their profile.`,
@@ -6743,7 +6891,8 @@ const handleChatTyping = (value: string) => {
   const findPost = (postId: string) =>
     feed.find((p) => p.id === postId) ||
     myPosts.find((p) => p.id === postId) ||
-    viewingUserPosts.find((p) => p.id === postId)
+    viewingUserPosts.find((p) => p.id === postId) ||
+    extraPosts.find((p) => p.id === postId)
 
   /* ============================================================
   renderProfilePage
@@ -7255,6 +7404,93 @@ const handleChatTyping = (value: string) => {
         }}
       />
 
+      {/* Notification options sheet */}
+      {notifMenu && (() => {
+        const n = notifMenu
+        const close = () => setNotifMenu(null)
+        const ty = n.type || "admin"
+        const who = n.fromName || "this user"
+        const isLess = notifPrefs.less.includes(ty)
+        const mk = (path: string) => (
+          <svg viewBox="0 0 24 24">
+            <path d={path} />
+          </svg>
+        )
+        const rows: { label: string; sub?: string; icon: React.ReactNode; danger?: boolean; onClick: () => void }[] = [
+          {
+            label: "Show more",
+            sub: "More of your notifications will be like this.",
+            icon: mk("M4 12l1.41 1.41L11 7.83V20h2V7.83l5.58 5.59L20 12l-8-8-8 8z"),
+            onClick: () => {
+              saveNotifPrefs({ ...notifPrefs, less: notifPrefs.less.filter((x) => x !== ty) })
+              showToast("Done", "You'll see more notifications like this", "success")
+            },
+          },
+          {
+            label: "Show less",
+            sub: "Fewer of your notifications will be like this.",
+            icon: mk("M20 12l-1.41-1.41L13 16.17V4h-2v12.17l-5.58-5.59L4 12l8 8 8-8z"),
+            onClick: () => {
+              if (!isLess) saveNotifPrefs({ ...notifPrefs, less: [...notifPrefs.less, ty] })
+              showToast("Done", "You'll see fewer notifications like this", "success")
+            },
+          },
+          {
+            label: "Delete this notification",
+            icon: mk("M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-3.3 11.3l-1.4 1.4L12 13.4l-2.3 2.3-1.4-1.4L10.6 12 8.3 9.7l1.4-1.4L12 10.6l2.3-2.3 1.4 1.4L13.4 12l2.3 2.3z"),
+            onClick: () => deleteNotification(n),
+          },
+          {
+            label: `Turn off notifications about ${who}'s updates`,
+            icon: mk("M20 6h-2.18c.11-.31.18-.65.18-1 0-1.66-1.34-3-3-3-1.05 0-1.96.54-2.5 1.35l-.5.67-.5-.68C10.96 2.54 10.05 2 9 2 7.34 2 6 3.34 6 5c0 .35.07.69.18 1H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-5-2c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zM9 4c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1z"),
+            onClick: () => {
+              if (!n.fromUid) {
+                showToast("Not available", "This notification has no sender", "info")
+                return
+              }
+              if (!notifPrefs.muted.includes(n.fromUid))
+                saveNotifPrefs({ ...notifPrefs, muted: [...notifPrefs.muted, n.fromUid] })
+              showToast("Turned off", `You won't see notifications about ${who}`, "success")
+            },
+          },
+          {
+            label: "Report issue to notifications team",
+            icon: mk("M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-7 12h-2v-2h2v2zm0-4h-2V6h2v4z"),
+            onClick: () => reportNotificationIssue(n),
+          },
+        ]
+        return (
+          <div className="mb-sheet-backdrop" onClick={close}>
+            <div className="mb-sheet" onClick={(e) => e.stopPropagation()}>
+              <div className="mb-sheet-grip" />
+              <div className="notif-sheet-head">
+                {n.fromAvatar ? <img className="notif-avatar" src={n.fromAvatar} alt="" /> : null}
+                <span>
+                  {n.title}
+                  {n.message ? ` — ${n.message}` : ""}
+                </span>
+              </div>
+              {rows.map((r, i) => (
+                <button
+                  key={i}
+                  className={`mb-sheet-item${r.danger ? " danger" : ""}`}
+                  onClick={() => {
+                    close()
+                    r.onClick()
+                  }}
+                >
+                  {r.icon}
+                  <span className="mb-sheet-txt">
+                    {r.label}
+                    {r.sub && <small>{r.sub}</small>}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )
+      })()}
+
       {/* Action sheets: post / comment / chat message */}
       {actionMenu && (() => {
         const close = () => setActionMenu(null)
@@ -7742,7 +7978,7 @@ const handleChatTyping = (value: string) => {
               <PushPrompt perm={pushPerm} onEnable={enablePush} />
               <div className="notif-page-wrap">
                 <div className="notif-page-head">
-                  <span>{notifications.length} total</span>
+                  <span>{visibleNotifications.length} total</span>
                   {unreadNotifCount > 0 && (
                     <button className="notif-mark-all" onClick={markAllNotificationsRead}>
                       Mark all as read
@@ -7750,7 +7986,7 @@ const handleChatTyping = (value: string) => {
                   )}
                 </div>
                 <div className="notif-list">
-                  {notifications.length === 0 ? (
+                  {visibleNotifications.length === 0 ? (
                     <div className="notif-empty">
                       <svg viewBox="0 0 24 24">
                         <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z" />
@@ -7759,7 +7995,7 @@ const handleChatTyping = (value: string) => {
                       <p>When someone likes, comments or sends a friend request, you'll see it here.</p>
                     </div>
                   ) : (
-                    notifications.map((n) => {
+                    visibleNotifications.map((n) => {
                       const type = n.type || "admin"
                       const iconClass =
                         type === "like" ? "like"
@@ -7776,7 +8012,7 @@ const handleChatTyping = (value: string) => {
                         <div
                           className={`notif-item${!n.read ? " unread" : ""}`}
                           key={n.id}
-                          onClick={() => !n.read && markNotificationRead(n.id)}
+                          onClick={() => openNotification(n)}
                         >
                           {n.fromAvatar ? (
                             <img className="notif-avatar" src={n.fromAvatar} alt="" />
@@ -7851,6 +8087,20 @@ const handleChatTyping = (value: string) => {
                             )}
                           </div>
                           {!n.read && <span className="notif-dot" />}
+                          <button
+                            className="notif-more"
+                            aria-label="More options"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              setNotifMenu(n)
+                            }}
+                          >
+                            <svg viewBox="0 0 24 24">
+                              <circle cx="5" cy="12" r="2" />
+                              <circle cx="12" cy="12" r="2" />
+                              <circle cx="19" cy="12" r="2" />
+                            </svg>
+                          </button>
                         </div>
                       )
                     })
@@ -9679,4 +9929,4 @@ function SideItem({
       {badge && badge > 0 ? <span className="mb-side-badge">{badge}</span> : null}
     </button>
   )
-    }
+  }

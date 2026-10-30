@@ -14,6 +14,7 @@ import {
   MessageCircle,
   Share2,
   Send,
+  ArrowRight,
   X,
   MoreHorizontal,
   Copy,
@@ -951,18 +952,6 @@ function CommentsSheet({
 /* ------------------------------------------------------------------ */
 
 const PAGE_CSS = `
-@keyframes mvShine { 0%{transform:translateX(-160%) skewX(-18deg)} 55%,100%{transform:translateX(520%) skewX(-18deg)} }
-@keyframes mvFlow { 0%{background-position:0% 50%} 100%{background-position:200% 50%} }
-@keyframes mvGlowBlue {
-  0%,100%{ box-shadow:0 10px 30px -8px rgba(34,158,217,.65), 0 0 0 0 rgba(34,158,217,.45) }
-  50%{ box-shadow:0 14px 40px -6px rgba(34,158,217,.9), 0 0 0 9px rgba(34,158,217,0) }
-}
-@keyframes mvGlowRed {
-  0%,100%{ box-shadow:0 8px 26px -10px rgba(255,30,60,.55), inset 0 0 0 1px rgba(255,70,90,.45) }
-  50%{ box-shadow:0 10px 34px -8px rgba(255,30,60,.85), inset 0 0 0 1px rgba(255,90,110,.8) }
-}
-@keyframes mvBob { 0%,100%{transform:translateY(0) rotate(0)} 50%{transform:translateY(-2px) rotate(-8deg)} }
-@keyframes mvBeat { 0%,100%{transform:scale(1)} 50%{transform:scale(1.12)} }
 @keyframes mvSheetUp { from{transform:translateY(100%)} to{transform:none} }
 @keyframes mvZoomIn { from{opacity:0;transform:scale(.94) translateY(12px)} to{opacity:1;transform:none} }
 @keyframes mvFade { from{opacity:0} to{opacity:1} }
@@ -976,43 +965,24 @@ const PAGE_CSS = `
 .mv-pop-in { animation: mvZoomIn .15s ease both }
 .mv-like-pop { animation: mvLikePop .45s ease both }
 
-.tg-btn {
-  background: linear-gradient(110deg,#1b8fd6 0%,#229ED9 28%,#4cc2f5 52%,#229ED9 74%,#1779b8 100%);
-  background-size: 220% 100%;
-  animation: mvFlow 5s linear infinite, mvGlowBlue 2.4s ease-in-out infinite;
-  border: 1px solid rgba(255,255,255,.28);
-  transition: transform .2s ease, filter .2s ease;
+/* CTA buttons: completely still, animate only on hover / press */
+.mv-cta {
+  border: 1px solid rgba(255,255,255,.16);
+  box-shadow: 0 8px 20px -12px var(--cta-glow);
+  transition: transform .25s ease, filter .25s ease, box-shadow .25s ease;
 }
-.tg-btn:hover { transform: translateY(-2px) scale(1.01); filter: brightness(1.08) }
-.tg-btn:active { transform: scale(.97) }
-.tg-btn:hover .tg-icon { animation: mvBob .6s ease-in-out infinite }
-.tg-icon { animation: mvBeat 2.4s ease-in-out infinite }
-
-.yt-btn {
-  background: linear-gradient(135deg, rgba(255,0,40,.22), rgba(255,0,40,.05) 60%, rgba(255,255,255,.04));
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  animation: mvGlowRed 2.8s ease-in-out infinite;
-  transition: transform .2s ease, background .25s ease;
+.mv-cta-tg { background: linear-gradient(105deg,#0b6fc0 0%,#229ED9 48%,#45cdf0 100%); --cta-glow: rgba(34,158,217,.9) }
+.mv-cta-yt { background: linear-gradient(105deg,#9b0016 0%,#df0f2a 52%,#ff4d62 100%); --cta-glow: rgba(255,35,65,.85) }
+.mv-cta .mv-art, .mv-cta .mv-ico, .mv-cta .mv-arrow { transition: transform .45s ease }
+.mv-cta:active { transform: scale(.97) }
+@media (hover:hover) {
+  .mv-cta:hover { transform: translateY(-2px); filter: brightness(1.08); box-shadow: 0 14px 26px -10px var(--cta-glow) }
+  .mv-cta:hover .mv-art-a { transform: translate(-10px,3px) rotate(-6deg) scale(1.08) }
+  .mv-cta:hover .mv-art-b { transform: translateX(8px) }
+  .mv-cta:hover .mv-ico { transform: rotate(-10deg) scale(1.08) }
+  .mv-cta:hover .mv-arrow { transform: translateX(3px) }
 }
-.yt-btn:hover {
-  transform: translateY(-2px) scale(1.01);
-  background: linear-gradient(135deg, rgba(255,0,40,.4), rgba(255,0,40,.12) 60%, rgba(255,255,255,.06));
-}
-.yt-btn:active { transform: scale(.97) }
-.yt-btn:hover .yt-icon { transform: scale(1.18) }
-.yt-icon { transition: transform .25s ease }
-
-.btn-shine {
-  position:absolute; top:0; bottom:0; left:0; width:28%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,.38), transparent);
-  animation: mvShine 3.2s ease-in-out infinite;
-  pointer-events:none;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .tg-btn,.yt-btn,.btn-shine,.tg-icon { animation: none !important }
-}
+.mv-script { font-family: 'Snell Roundhand','Segoe Script','Brush Script MT','Lucida Handwriting','Apple Chancery',cursive; font-style: italic }
 `
 
 /* ------------------------------------------------------------------ */
@@ -1035,6 +1005,7 @@ export default function MovieDetailPage({
   const [showComments, setShowComments] = useState(false)
   const [showShare, setShowShare] = useState(false)
   const [descOpen, setDescOpen] = useState(false)
+  const castRef = useRef<HTMLDivElement>(null)
   const [likePop, setLikePop] = useState(0)
   const { user, entitlement } = useAuth()
 
@@ -1043,6 +1014,22 @@ export default function MovieDetailPage({
     setDescOpen(false)
     setShowComments(false)
     setShowShare(false)
+  }, [movie.id])
+
+  /* MovieCast এর ভিতরের বাংলা heading লুকানো (শুধু English "Cast" থাকবে) */
+  useEffect(() => {
+    const root = castRef.current
+    if (!root) return
+    const bn = /[\u0980-\u09FF]/
+    const hide = () => {
+      root.querySelectorAll<HTMLElement>("h1,h2,h3,h4,h5,h6").forEach((el) => {
+        if (bn.test(el.textContent || "")) el.style.display = "none"
+      })
+    }
+    hide()
+    const mo = new MutationObserver(hide)
+    mo.observe(root, { childList: true, subtree: true, characterData: true })
+    return () => mo.disconnect()
   }, [movie.id])
 
   /* real view count (Firebase) — counts once per browser session */
@@ -1181,11 +1168,26 @@ export default function MovieDetailPage({
   return (
     <div
       className="min-h-screen text-white relative overflow-x-hidden"
-      style={{
-        background: `radial-gradient(900px 500px at 85% 55%, rgba(120,40,160,.18), transparent 60%), radial-gradient(700px 400px at 5% 85%, rgba(200,30,80,.12), transparent 60%), ${BG}`,
-      }}
+      style={{ background: BG }}
     >
       <style>{PAGE_CSS}</style>
+
+      {/* Page background: dark theme + this movie's poster */}
+      <div aria-hidden="true" className="fixed inset-0 z-0 pointer-events-none">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={movie.poster || "/placeholder.svg"}
+          alt=""
+          className="w-full h-full object-cover object-center scale-110 blur-[3px]"
+        />
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              "linear-gradient(to bottom, rgba(10,10,13,.70), rgba(10,10,13,.88) 40%, rgba(8,8,10,.95))",
+          }}
+        />
+      </div>
 
       {/* Back button */}
       <button
@@ -1198,16 +1200,14 @@ export default function MovieDetailPage({
 
       {/* HERO */}
       <section className="relative w-full h-[50vh] min-h-[340px] max-h-[520px] overflow-hidden">
-        {/* blurred backdrop (visible on wide screens) */}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={movie.poster || "/placeholder.svg"}
-          alt=""
-          aria-hidden="true"
-          className="absolute inset-0 w-full h-full object-cover scale-125 blur-2xl opacity-50"
-        />
-
-        <div className="relative mx-auto h-full w-full md:max-w-[380px] overflow-hidden">
+        <div
+          className="relative mx-auto h-full w-full md:max-w-[380px] overflow-hidden"
+          style={{
+            WebkitMaskImage:
+              "linear-gradient(to bottom, #000 52%, transparent 100%)",
+            maskImage: "linear-gradient(to bottom, #000 52%, transparent 100%)",
+          }}
+        >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={movie.poster || "/placeholder.svg"}
@@ -1221,11 +1221,11 @@ export default function MovieDetailPage({
           )}
         </div>
 
-        {/* dark fade */}
+        {/* soft shade behind title */}
         <div
-          className="absolute inset-x-0 bottom-0 h-[60%] pointer-events-none"
+          className="absolute inset-x-0 bottom-0 h-[38%] pointer-events-none"
           style={{
-            background: `linear-gradient(to top, ${BG} 4%, ${BG}f2 22%, ${BG}b0 48%, transparent)`,
+            background: "linear-gradient(to top, rgba(8,8,10,.75), transparent)",
           }}
         />
         <div
@@ -1283,28 +1283,93 @@ export default function MovieDetailPage({
       {/* MAIN */}
       <main className="relative z-10 max-w-2xl mx-auto px-4 pt-2 space-y-4">
         {/* Buttons */}
-        <div className="space-y-2">
+        <div className="space-y-2.5">
           <button
             onClick={handleWatchNow}
-            className="tg-btn relative w-full overflow-hidden rounded-xl py-2.5 px-4 flex items-center justify-center gap-2.5 text-white font-semibold text-[15px]"
+            className="mv-cta mv-cta-tg relative block w-[88%] max-w-[330px] mx-auto h-12 overflow-hidden rounded-xl text-white"
           >
-            <span className="btn-shine" />
-            <span className="tg-icon relative w-7 h-7 rounded-full bg-white flex items-center justify-center shadow-md">
-              <TelegramLogo size={26} uid="btn" />
+            {/* calligraphy-style artwork */}
+            <svg
+              aria-hidden="true"
+              viewBox="0 0 330 48"
+              preserveAspectRatio="none"
+              className="mv-art mv-art-b absolute inset-0 w-full h-full pointer-events-none"
+              fill="none"
+              stroke="#fff"
+              strokeLinecap="round"
+            >
+              <path d="M-5 38 C30 4, 62 54, 112 22 S 190 2, 236 30 S 304 44, 336 12" strokeWidth="1.6" opacity=".22" />
+              <path d="M-5 44 C40 16, 80 50, 130 30 S 210 14, 252 36 S 310 40, 336 24" strokeWidth=".8" opacity=".25" />
+              <circle cx="300" cy="9" r="2" fill="#fff" stroke="none" opacity=".25" />
+              <circle cx="22" cy="40" r="1.6" fill="#fff" stroke="none" opacity=".25" />
+            </svg>
+            <span
+              aria-hidden="true"
+              className="mv-art mv-art-b mv-script absolute -left-1 -bottom-3 text-[46px] leading-none text-white/[0.14] pointer-events-none select-none"
+            >
+              Telegram
             </span>
-            <span className="relative drop-shadow">Download on Telegram</span>
+            <Send
+              aria-hidden="true"
+              strokeWidth={1.1}
+              className="mv-art mv-art-a absolute -right-3 -top-6 w-24 h-24 -rotate-12 text-white/[0.17] pointer-events-none"
+            />
+
+            <span className="relative z-10 h-full flex items-center justify-center gap-2.5 pl-3 pr-10 text-[14.5px] font-semibold tracking-wide">
+              <span className="mv-ico w-7 h-7 rounded-full bg-white flex items-center justify-center shadow">
+                <TelegramLogo size={26} uid="btn" />
+              </span>
+              <span className="drop-shadow-sm">Download on Telegram</span>
+            </span>
+            <span className="mv-arrow absolute right-2.5 top-1/2 -translate-y-1/2 z-10 w-6 h-6 rounded-full border border-white/45 bg-white/10 flex items-center justify-center">
+              <ArrowRight className="w-3.5 h-3.5" />
+            </span>
           </button>
 
           {movie.trailer && (
             <button
               onClick={() => setShowTrailer(true)}
-              className="yt-btn relative w-full overflow-hidden rounded-xl py-2.5 px-4 flex items-center justify-center gap-2.5 text-white font-semibold text-[15px]"
+              className="mv-cta mv-cta-yt relative block w-[88%] max-w-[330px] mx-auto h-12 overflow-hidden rounded-xl text-white"
             >
-              <span className="btn-shine" style={{ animationDelay: "1.4s" }} />
-              <span className="yt-icon relative flex items-center justify-center">
-                <YouTubeLogo size={24} />
+              <svg
+                aria-hidden="true"
+                viewBox="0 0 330 48"
+                preserveAspectRatio="none"
+                className="mv-art mv-art-b absolute inset-0 w-full h-full pointer-events-none"
+                fill="none"
+                stroke="#fff"
+                strokeLinecap="round"
+              >
+                <path d="M-5 38 C30 4, 62 54, 112 22 S 190 2, 236 30 S 304 44, 336 12" strokeWidth="1.6" opacity=".22" />
+                <path d="M-5 44 C40 16, 80 50, 130 30 S 210 14, 252 36 S 310 40, 336 24" strokeWidth=".8" opacity=".25" />
+                <circle cx="300" cy="9" r="2" fill="#fff" stroke="none" opacity=".25" />
+                <circle cx="22" cy="40" r="1.6" fill="#fff" stroke="none" opacity=".25" />
+              </svg>
+              <span
+                aria-hidden="true"
+                className="mv-art mv-art-b mv-script absolute -left-1 -bottom-3 text-[46px] leading-none text-white/[0.14] pointer-events-none select-none"
+              >
+                YouTube
               </span>
-              <span className="relative">Trailer</span>
+              <svg
+                aria-hidden="true"
+                viewBox="0 0 24 24"
+                className="mv-art mv-art-a absolute -right-4 -top-5 w-24 h-24 -rotate-12 pointer-events-none"
+                fill="none"
+              >
+                <rect x="1.2" y="4.2" width="21.6" height="15.6" rx="4.4" stroke="#fff" strokeWidth=".6" opacity=".2" />
+                <path d="M9.8 8.6v6.8l5.9-3.4z" stroke="#fff" strokeWidth=".6" opacity=".2" />
+              </svg>
+
+              <span className="relative z-10 h-full flex items-center justify-center gap-2.5 pl-3 pr-10 text-[14.5px] font-semibold tracking-wide">
+                <span className="mv-ico w-7 h-7 rounded-full bg-white flex items-center justify-center shadow">
+                  <YouTubeLogo size={22} />
+                </span>
+                <span className="drop-shadow-sm">Trailer</span>
+              </span>
+              <span className="mv-arrow absolute right-2.5 top-1/2 -translate-y-1/2 z-10 w-6 h-6 rounded-full border border-white/45 bg-white/10 flex items-center justify-center">
+                <ArrowRight className="w-3.5 h-3.5" />
+              </span>
             </button>
           )}
         </div>
@@ -1376,6 +1441,7 @@ export default function MovieDetailPage({
         {/* Cast */}
         <section>
           <h3 className="text-base font-bold mb-2">Cast</h3>
+          <div ref={castRef}>
           <MovieCast
             title={movie.title}
             year={movie.year}
@@ -1387,6 +1453,7 @@ export default function MovieDetailPage({
             imdbId={movie.imdbId}
             mdlId={movie.mdlId}
           />
+          </div>
         </section>
       </main>
 

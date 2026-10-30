@@ -26,8 +26,8 @@
 ========================================================= */
 .mvbd-ai-root {
   /* ✏️ Welcome text — এখানে থেকে বদলাতে পারবেন */
-  --mvbd-hello: "হ্যালো 👋";
-  --mvbd-headline: "আজ আমি আপনাকে কীভাবে সাহায্য করতে পারি?";
+  --mvbd-hello: "Hello there";
+  --mvbd-headline: "How can I help you today?";
   /* English চাইলে:
      --mvbd-hello: "Hello there";
      --mvbd-headline: "How can I help you today?"; */

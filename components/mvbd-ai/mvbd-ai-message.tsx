@@ -298,25 +298,19 @@ export function MvbdAiMessage({
   return <AssistantReply content={content} error={error} movies={movies} animate={animate} />
 }
 
-const DEFAULT_STEPS = [
-  "আপনার প্রশ্নটা বুঝছি…",
-  "চিন্তা করছি…",
-  "মুভি ডাটাবেজে খুঁজছি…",
-  "উত্তর সাজাচ্ছি…",
-]
+const DEFAULT_STEPS = ["Thinking...", "Searching...", "Preparing the answer..."]
 
-/** Thinking indicator: shows what the AI is doing, step by step.
- *  Optional `status` overrides the current step with a real status text. */
+/** Thinking indicator: shows one step at a time, in English.
+ *  Pass `status` to show a real status text instead of the timed steps. */
 export function MvbdAiTyping({ steps = DEFAULT_STEPS, status }: { steps?: string[]; status?: string }) {
   const [idx, setIdx] = useState(0)
   useEffect(() => {
     if (status || idx >= steps.length - 1) return
-    const id = setTimeout(() => setIdx((i) => i + 1), 1900)
+    const id = setTimeout(() => setIdx((i) => i + 1), 1600)
     return () => clearTimeout(id)
   }, [idx, steps.length, status])
 
-  const shown = status ? [status] : steps.slice(Math.max(0, idx - 1), idx + 1)
-  const current = shown.length - 1
+  const label = status ?? steps[idx] ?? steps[steps.length - 1]
 
   return (
     <div className="mvbd-ai-message is-assistant" aria-label="MVBD AI is thinking" role="status">
@@ -324,20 +318,11 @@ export function MvbdAiTyping({ steps = DEFAULT_STEPS, status }: { steps?: string
         <img src={AI_AVATAR} alt="" />
       </span>
       <div className="mvbd-ai-reply mvbd-ai-thinking">
-        {shown.map((label, i) => (
-          <div
-            key={label}
-            className={`mvbd-ai-step ${i === current ? "is-current" : "is-done"}`}
-          >
-            {i === current ? (
-              <span className="mvbd-ai-pulse" aria-hidden="true"><i /><i /><i /></span>
-            ) : (
-              <Check size={13} aria-hidden="true" />
-            )}
-            <span className="mvbd-ai-step-text">{label}</span>
-          </div>
-        ))}
+        <div key={label} className="mvbd-ai-step is-current">
+          <span className="mvbd-ai-pulse" aria-hidden="true"><i /><i /><i /></span>
+          <span className="mvbd-ai-step-text">{label}</span>
+        </div>
       </div>
     </div>
   )
-                          }
+}

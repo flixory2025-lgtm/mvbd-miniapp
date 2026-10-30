@@ -2320,6 +2320,32 @@ opacity:0;transition:opacity .15s,background .15s;
 .mebook-root .mc-head img{width:100%;height:100%;border-radius:50%;object-fit:cover;border:2px solid #fff;pointer-events:none;}
 .mebook-root .mc-head-x{position:absolute;top:-6px;right:-6px;width:20px;height:20px;border-radius:50%;background:#333;color:#fff;font-size:14px;line-height:1;display:flex;align-items:center;justify-content:center;border:none;cursor:pointer;padding:0;}
 .mebook-root .mc-sender-name{font-size:11.5px;font-weight:700;opacity:.75;margin-bottom:2px;}
+
+/* ============================================================
+   MECHAT — FULL SCREEN LIST PAGE, GLASS BACK BUTTON, TITLE
+   ============================================================ */
+.mebook-root .mc-title{font-size:24px;font-weight:800;color:#fff;margin:0;letter-spacing:.2px;line-height:1.1;}
+.mebook-root .mc-title span{color:#22c55e;}
+.mebook-root .mc-listpage{position:fixed;left:0;top:0;right:0;height:100vh;height:100dvh;z-index:1200;display:flex;flex-direction:column;background:var(--bg);}
+.mebook-root .mc-listpage-head{display:flex;align-items:center;gap:10px;padding:14px 16px 12px;padding-top:calc(14px + env(safe-area-inset-top,0px));background:var(--header-bg);flex-shrink:0;box-shadow:0 2px 12px rgba(0,0,0,.25);}
+.mebook-root .mc-listpage-head svg{width:28px;height:28px;fill:#22c55e;flex-shrink:0;}
+.mebook-root .mc-listpage-body{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding:12px 12px 0;width:100%;max-width:760px;margin:0 auto;}
+.mebook-root .mc-side-head{background:var(--header-bg);padding:12px 14px;margin-bottom:6px;}
+.mebook-root .mc-side-head .mc-side-back{color:#fff;}
+.mebook-root .mc-side-head .mc-side-back:hover{background:rgba(255,255,255,.14);}
+.mebook-root .mc-side{position:relative;}
+.mebook-root .mc-side-body{padding-bottom:90px;}
+.mebook-root .mc-back-glass{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:1300;display:flex;align-items:center;gap:10px;padding:13px 26px;border-radius:999px;font-family:inherit;font-weight:700;font-size:15px;white-space:nowrap;color:var(--text);cursor:pointer;overflow:hidden;
+background:linear-gradient(135deg,rgba(34,197,94,.34) 0%,rgba(255,255,255,.14) 55%,rgba(34,197,94,.18) 100%);
+-webkit-backdrop-filter:blur(18px) saturate(190%);backdrop-filter:blur(18px) saturate(190%);
+border:1px solid rgba(255,255,255,.42);
+box-shadow:0 10px 30px rgba(0,0,0,.30),inset 0 1.5px 1px rgba(255,255,255,.75),inset 0 -10px 20px rgba(255,255,255,.07),inset 0 0 0 1px rgba(255,255,255,.08);
+transition:transform .15s ease,box-shadow .15s ease;-webkit-tap-highlight-color:transparent;}
+.mebook-root .mc-back-glass::before{content:"";position:absolute;left:8%;right:8%;top:0;height:52%;border-radius:999px;background:linear-gradient(180deg,rgba(255,255,255,.5),rgba(255,255,255,0));opacity:.55;pointer-events:none;}
+.mebook-root .mc-back-glass:active{transform:translateX(-50%) scale(.95);}
+.mebook-root .mc-back-glass svg{width:20px;height:20px;fill:currentColor;position:relative;}
+.mebook-root .mc-back-glass span{position:relative;}
+.mebook-root .mc-back-glass.in-side{position:absolute;z-index:5;}
 `
 
 /* ============================================================
@@ -4140,101 +4166,39 @@ const handleChatTyping = (value: string) => {
       )
       unsubscribersRef.current.push(
         fb.onSnapshot(reqQ, async (snap: any) => {
-          const arr: any[] = []
-          for (const d of snap.docs) {
-            const data = d.data()
-            const fromSnap = await fb.getDoc(fb.doc(fb.db, "users", data.from))
-            arr.push({
-              id: d.id,
-              from: data.from,
-              fromUser: fromSnap.exists() ? fromSnap.data() : { name: "User", photoURL: "" },
-            })
-          }
-          setRequests(arr)
-        })
-      )
-
-      const sentQ = fb.query(
-        fb.collection(fb.db, "friendRequests"),
-        fb.where("from", "==", uid)
-      )
-      unsubscribersRef.current.push(
-        fb.onSnapshot(sentQ, async (snap: any) => {
-          const arr: any[] = []
-          for (const d of snap.docs) {
-            const data = d.data()
-            const toSnap = await fb.getDoc(fb.doc(fb.db, "users", data.to))
-            arr.push({
-              id: d.id,
-              to: data.to,
-              status: data.status,
-              toUser: toSnap.exists() ? toSnap.data() : { name: "User", photoURL: "" },
-            })
-          }
-          setSentFriendRequests(arr)
-        })
-      )
-
-      const myFriendsQ = fb.query(
-        fb.collection(fb.db, "friends"),
-        fb.where("members", "array-contains", uid)
-      )
-
-      unsubscribersRef.current.push(
-        fb.onSnapshot(myFriendsQ, async (snap: any) => {
-          const arr: any[] = []
-          const seen = new Set<string>()
-          for (const d of snap.docs) {
-            const data = d.data()
-            const otherId = (data.members || []).find((m: string) => m !== uid)
-            if (!otherId || seen.has(otherId)) continue
-            seen.add(otherId)
-            try {
-              const s = await fb.getDoc(fb.doc(fb.db, "users", otherId))
-              if (s.exists()) {
-                arr.push({
-                  uid: s.id,
-                  ...s.data(),
-                  friendsSince: data.createdAt || null,
-                })
+          const results = await Promise.all(
+            snap.docs.map(async (d: any) => {
+              try {
+                const data = d.data()
+                if (data.isGroup || (data.members && data.members.length > 2)) {
+                  return {
+                    id: d.id,
+                    otherId: d.id,
+                    other: { uid: d.id, name: data.name || "Group chat", photoURL: data.photoURL || "", isGroup: true },
+                    last: data.lastMessage || "",
+                    lastAt: data.lastAt,
+                    isGroup: true,
+                    members: data.members,
+                  }
+                }
+                const otherId = data.members.find((m: any) => m !== uid)
+                if (!otherId) return null
+                const s = await fb.getDoc(fb.doc(fb.db, "users", otherId))
+                if (!s.exists()) return null
+                return {
+                  id: d.id,
+                  otherId,
+                  other: s.data(),
+                  last: data.lastMessage || "",
+                  lastAt: data.lastAt,
+                  members: data.members,
+                }
+              } catch (e) {
+                return null
               }
-            } catch {}
-          }
-          setMyFriends(arr)
-        })
-      )
-
-      const chatsQ = fb.query(fb.collection(fb.db, "chats"), fb.where("members", "array-contains", uid))
-      unsubscribersRef.current.push(
-        fb.onSnapshot(chatsQ, async (snap: any) => {
-          const arr: any[] = []
-          for (const d of snap.docs) {
-            const data = d.data()
-            if (data.isGroup || (data.members && data.members.length > 2)) {
-              arr.push({
-                id: d.id,
-                otherId: d.id,
-                other: { uid: d.id, name: data.name || "Group chat", photoURL: data.photoURL || "", isGroup: true },
-                last: data.lastMessage || "",
-                lastAt: data.lastAt,
-                isGroup: true,
-                members: data.members,
-              })
-              continue
-            }
-            const otherId = data.members.find((m: string) => m !== uid)
-            if (!otherId) continue
-            const s = await fb.getDoc(fb.doc(fb.db, "users", otherId))
-            if (!s.exists()) continue
-            arr.push({
-              id: d.id,
-              otherId,
-              other: s.data(),
-              last: data.lastMessage || "",
-              lastAt: data.lastAt,
-              members: data.members,
             })
-          }
+          )
+          const arr: any[] = results.filter(Boolean)
           arr.sort((a, b) => (b.lastAt?.seconds || 0) - (a.lastAt?.seconds || 0))
           setChats(arr)
         })
@@ -4371,9 +4335,10 @@ const handleChatTyping = (value: string) => {
      MECHAT FULL-SCREEN: lock page scroll + Esc handling
      ============================================================ */
   const mcOpen = currentView === "messages" && !!activeChat
+  const mcPage = currentView === "messages"
 
   useEffect(() => {
-    if (!mcOpen) return
+    if (!mcPage) return
     const prevBody = document.body.style.overflow
     const prevHtml = document.documentElement.style.overflow
     document.body.style.overflow = "hidden"
@@ -4382,7 +4347,7 @@ const handleChatTyping = (value: string) => {
       document.body.style.overflow = prevBody
       document.documentElement.style.overflow = prevHtml
     }
-  }, [mcOpen])
+  }, [mcPage])
 
   /* ============================================================
      HEADER AUTO-HIDE ON SCROLL (down = hide, up = show)
@@ -6486,9 +6451,13 @@ const handleChatTyping = (value: string) => {
     )
   }
 
-  const unreadCount = chats.filter(
-    (c) => c.last && (c.last as any).read === false && (c.last as any).from !== user.uid
-  ).length
+  const unreadCount = chats.filter((c: any) => {
+    const pr: any = chatPrefs
+    if (pr.archived[c.id] || pr.ignored[c.id] || pr.muted[c.id]) return false
+    const del = pr.deleted[c.id]
+    if (del && (c.lastAt && c.lastAt.seconds ? c.lastAt.seconds : 0) <= del) return false
+    return !!pr.unread[c.id] || !!(c.last && c.last.read === false && c.last.from !== user.uid)
+  }).length
 
   const filteredFriends = friends.filter((f) => {
     const q = friendSearch.trim().toLowerCase()
@@ -6524,7 +6493,7 @@ const handleChatTyping = (value: string) => {
         .slice(0, 6)
     : []
 
-  const rootClass = `mebook-root ${theme === "dark" ? "dark-mode" : ""}${currentView === "messages" && activeChat ? " mc-open" : ""}`
+  const rootClass = `mebook-root ${theme === "dark" ? "dark-mode" : ""}${currentView === "messages" ? " mc-open" : ""}`
 
   const findPost = (postId: string) =>
     feed.find((p) => p.id === postId) ||
@@ -6558,7 +6527,6 @@ const handleChatTyping = (value: string) => {
     onContextMenu: (e: any) => {
       e.preventDefault()
       clearTimeout(lpTimerRef.current)
-      lpFiredRef.current = true
       setChatMenu(c)
     },
     onClick: () => {
@@ -6604,6 +6572,10 @@ const handleChatTyping = (value: string) => {
         React.createElement("span", null, chatListMode === "archived" ? "Archived chats" : "Ignored chats"),
         React.createElement("b", null, "Back"))
   const recentTitle = chatListMode === "main" ? "Recent" : (chatListMode === "archived" ? "Archived" : "Ignored")
+
+  const mcBackBtn = (extra: any) =>
+    React.createElement("button", { className: "mc-back-glass " + extra, onClick: () => goTo("home"), title: "Back to MeBook" },
+      mcIcon(MC_IC.back, 20), React.createElement("span", null, "Back to MeBook"))
 
   const mcOverlays = React.createElement(React.Fragment, null,
     chatMenu ? React.createElement(McChatSheet, {
@@ -8086,16 +8058,16 @@ const handleChatTyping = (value: string) => {
           {currentView === "messages" && (
             <div className="mb-view active">
               {!activeChat ? (
-                <>
-                  <h1 className="mb-page-title" style={{ marginBottom: 12 }}>
+                <div className="mc-listpage">
+                  <div className="mc-listpage-head">
                     <svg viewBox="0 0 24 24">
                       <path d="M12 2C6.5 2 2 6.14 2 11.25c0 2.88 1.41 5.45 3.62 7.16.12 1.1-.28 2.62-1.05 3.59-.13.16-.02.4.18.38 2.34-.19 4.05-1.25 4.85-1.85.77.16 1.58.25 2.4.25 5.5 0 10-4.14 10-9.25S17.5 2 12 2z" />
                     </svg>
-                    MeChat
-                  </h1>
-
-                  {renderChatListPanel(false)}
-                </>
+                    <h1 className="mc-title"><span>Me</span>Chat</h1>
+                  </div>
+                  <div className="mc-listpage-body">{renderChatListPanel(false)}</div>
+                  {mcBackBtn("")}
+                </div>
               ) : (
                 <div className="mc-shell" style={kbUp && vvh ? { height: vvh } : undefined}>
                   <aside className="mc-side">
@@ -8103,9 +8075,10 @@ const handleChatTyping = (value: string) => {
                       <button className="mc-side-back" onClick={() => goTo("home")} title="Back to MeBook">
                         <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" /></svg>
                       </button>
-                      <h2>MeChat</h2>
+                      <h2 className="mc-title"><span>Me</span>Chat</h2>
                     </div>
                     <div className="mc-side-body">{renderChatListPanel(true)}</div>
+                    {mcBackBtn("in-side")}
                   </aside>
                   <section className="mc-main">
                 <div className="mechat-page">
@@ -9457,4 +9430,4 @@ function SideItem({
       {badge && badge > 0 ? <span className="mb-side-badge">{badge}</span> : null}
     </button>
   )
-    }
+  }

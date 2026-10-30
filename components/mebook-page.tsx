@@ -7,6 +7,7 @@ import React, {
   useCallback,
 } from "react"
 
+
 /* ============================================================
 FIREBASE
 ============================================================ */
@@ -305,6 +306,23 @@ function chatTime(ts: any) {
   return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
 }
 
+function dayKey(ts: any) {
+  if (!ts) return ""
+  const d = ts.toDate ? ts.toDate() : new Date(ts)
+  return d.toDateString()
+}
+
+function dayLabel(ts: any) {
+  if (!ts) return ""
+  const d = ts.toDate ? ts.toDate() : new Date(ts)
+  const today = new Date()
+  const y = new Date()
+  y.setDate(today.getDate() - 1)
+  if (d.toDateString() === today.toDateString()) return "Today"
+  if (d.toDateString() === y.toDateString()) return "Yesterday"
+  return d.toLocaleDateString([], { weekday: "short", month: "short", day: "numeric", year: d.getFullYear() !== today.getFullYear() ? "numeric" : undefined })
+}
+
 function monthYear(ts: any) {
   if (!ts) return ""
   const d = ts.toDate ? ts.toDate() : new Date(ts)
@@ -530,6 +548,7 @@ animation:cardFloat .7s cubic-bezier(.2,.8,.3,1);color:#f3f4f6;
 /* ============ HEADER ============ */
 .mebook-root .mb-header{
 position:fixed;top:0;left:0;right:0;height:60px;z-index:1000;
+transition:transform .35s ease;will-change:transform;
 background:var(--header-bg);
 display:flex;align-items:center;justify-content:space-between;
 padding:0 16px;
@@ -2197,6 +2216,48 @@ opacity:0;transition:opacity .15s,background .15s;
 .mebook-root .mechat-msg-more:hover{background:var(--hover);}
 .mebook-root .mechat-bubble-wrap:hover .mechat-msg-more{opacity:1;}
 @media(hover:none){.mebook-root .mechat-msg-more{opacity:.55;}}
+
+/* Auto-hide header on scroll (mobile) */
+@media(max-width:860px){
+.mebook-root .mb-header.hide{transform:translateY(-100%);box-shadow:none;}
+}
+
+/* ============================================================
+   MECHAT FULL-SCREEN MESSENGER SHELL (header hidden, WhatsApp-style desktop)
+   ============================================================ */
+.mebook-root.mc-open .mb-header{display:none;}
+.mebook-root .mc-shell{position:fixed;left:0;top:0;right:0;height:100vh;height:100dvh;z-index:1200;display:flex;background:var(--card);overflow:hidden;}
+.mebook-root .mc-side{display:none;width:380px;max-width:38vw;min-width:300px;border-right:1px solid var(--border);flex-direction:column;background:var(--card);height:100%;}
+.mebook-root .mc-side-head{display:flex;align-items:center;gap:8px;padding:12px 14px 6px;flex-shrink:0;}
+.mebook-root .mc-side-head h2{font-size:22px;font-weight:800;flex:1;color:var(--text);}
+.mebook-root .mc-side-back{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--text);}
+.mebook-root .mc-side-back:hover{background:var(--hover);}
+.mebook-root .mc-side-back svg{width:22px;height:22px;fill:currentColor;}
+.mebook-root .mc-side-body{flex:1;min-height:0;overflow-y:auto;padding:0 10px 12px;overscroll-behavior:contain;}
+.mebook-root .mc-side-body .mb-search-box{box-shadow:none;background:var(--input-bg);margin:6px 0 10px;}
+.mebook-root .mc-side-body .msgr-wrap,.mebook-root .mc-list{box-shadow:none;height:auto;min-height:0;border-radius:0;background:transparent;border:none;}
+.mebook-root .mc-list .msgr-list{overflow:visible;width:100%;border:none;}
+.mebook-root .mc-side-body .msgr-item{border-radius:12px;}
+.mebook-root .mc-main{flex:1;min-width:0;display:flex;flex-direction:column;height:100%;}
+.mebook-root .mc-shell .mechat-page{height:100%;flex:1;min-height:0;position:relative;}
+@media(min-width:821px){
+.mebook-root .mc-side{display:flex;}
+.mebook-root .mc-shell .mechat-head-back{display:none;}
+}
+.mebook-root .mechat-date-sep{display:flex;justify-content:center;margin:12px 0 6px;}
+.mebook-root .mechat-date-sep span{font-size:11.5px;font-weight:700;color:var(--text-muted);background:rgba(128,128,128,.16);padding:3px 12px;border-radius:12px;}
+.mebook-root .mechat-scrolldown{position:absolute;right:16px;bottom:88px;width:40px;height:40px;border-radius:50%;background:var(--card);box-shadow:0 4px 16px rgba(0,0,0,.25);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;z-index:6;animation:bubbleIn .2s ease;}
+.mebook-root .mechat-scrolldown svg{width:22px;height:22px;fill:var(--green);}
+.mebook-root .mechat-side-actions{display:flex;gap:2px;align-self:center;opacity:0;transition:opacity .15s;}
+.mebook-root .mechat-bubble-wrap:hover .mechat-side-actions{opacity:1;}
+.mebook-root .mechat-side-actions button{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--text-muted);}
+.mebook-root .mechat-side-actions button:hover{background:var(--hover);}
+.mebook-root .mechat-side-actions svg{width:16px;height:16px;fill:currentColor;}
+@media(hover:none){.mebook-root .mechat-side-actions{display:none;}}
+.mebook-root .mechat-reply-quote{cursor:pointer;}
+.mebook-root .mechat-bubble-wrap.mc-flash .mechat-bubble{animation:mcFlash 1.4s ease;}
+@keyframes mcFlash{0%,60%{box-shadow:0 0 0 3px rgba(34,197,94,.75);}100%{box-shadow:0 0 0 3px rgba(34,197,94,0);}}
+.mebook-root .mechat-bubble-image img{cursor:zoom-in;}
 `
 
 /* ============================================================
@@ -2680,6 +2741,16 @@ const ICON_TRASH = (
     <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" />
   </svg>
 )
+const ICON_REPLY = (
+  <svg viewBox="0 0 24 24">
+    <path d="M10 9V5l-7 7 7 7v-4.1c5 0 8.5 1.6 11 5.1-1-5-4-10-11-11z" />
+  </svg>
+)
+const ICON_COPY = (
+  <svg viewBox="0 0 24 24">
+    <path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z" />
+  </svg>
+)
 const ICON_DOTS = (
   <svg viewBox="0 0 24 24">
     <path d="M6 10c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm12 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-6 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
@@ -3061,9 +3132,7 @@ function MeBookSplash() {
 MAIN COMPONENT
 ============================================================ */
 
-interface MeBookPageProps {
-  onExit: () => void
-}
+
 
 /* ============ PUSH PERMISSION BANNER ============ */
 function PushPrompt({ perm, onEnable }: { perm: string; onEnable: () => void }) {
@@ -3112,6 +3181,10 @@ function PushPrompt({ perm, onEnable }: { perm: string; onEnable: () => void }) 
       )}
     </div>
   )
+}
+
+interface MeBookPageProps {
+  onExit: () => void
 }
 
 export default function MeBookPage({ onExit }: MeBookPageProps) {
@@ -3365,6 +3438,8 @@ const handleChatTyping = (value: string) => {
 
   // Keyboard handling for mobile
   const [kbUp, setKbUp] = useState(false)
+  const [vvh, setVvh] = useState(0)
+  const [showScrollDown, setShowScrollDown] = useState(false)
   useEffect(() => {
     if (typeof window === "undefined") return
     const vv = (window as any).visualViewport
@@ -3372,6 +3447,7 @@ const handleChatTyping = (value: string) => {
     const handleResize = () => {
       const isKbOpen = window.innerHeight - vv.height > 120
       setKbUp(isKbOpen)
+      setVvh(vv.height)
       setTimeout(() => {
         if (chatBodyRef.current) {
           chatBodyRef.current.scrollTop = chatBodyRef.current.scrollHeight
@@ -3890,6 +3966,55 @@ const handleChatTyping = (value: string) => {
     document.addEventListener("keydown", onKey)
     return () => document.removeEventListener("keydown", onKey)
   }, [])
+
+  /* ============================================================
+     MECHAT FULL-SCREEN: lock page scroll + Esc handling
+     ============================================================ */
+  const mcOpen = currentView === "messages" && !!activeChat
+
+  useEffect(() => {
+    if (!mcOpen) return
+    const prevBody = document.body.style.overflow
+    const prevHtml = document.documentElement.style.overflow
+    document.body.style.overflow = "hidden"
+    document.documentElement.style.overflow = "hidden"
+    return () => {
+      document.body.style.overflow = prevBody
+      document.documentElement.style.overflow = prevHtml
+    }
+  }, [mcOpen])
+
+  /* ============================================================
+     HEADER AUTO-HIDE ON SCROLL (down = hide, up = show)
+     ============================================================ */
+  const lastScrollYRef = useRef(0)
+  const menuOpenRef = useRef(false)
+  menuOpenRef.current = menuOpen
+
+  useEffect(() => {
+    const onScroll = () => {
+      const hd = document.querySelector(".mebook-root .mb-header") as HTMLElement | null
+      if (!hd) return
+      const y = window.scrollY
+      const ly = lastScrollYRef.current
+      if (window.innerWidth <= 860 && !menuOpenRef.current) {
+        if (y > ly + 8 && y > 120) hd.classList.add("hide")
+        else if (y < ly - 8 || y < 60) hd.classList.remove("hide")
+      } else {
+        hd.classList.remove("hide")
+      }
+      lastScrollYRef.current = y
+    }
+    window.addEventListener("scroll", onScroll, { passive: true })
+    return () => window.removeEventListener("scroll", onScroll)
+  }, [])
+
+  // Show header again when page/view changes or menu opens
+  useEffect(() => {
+    const hd = document.querySelector(".mebook-root .mb-header")
+    if (hd) hd.classList.remove("hide")
+    lastScrollYRef.current = window.scrollY
+  }, [currentView, menuOpen, user])
 
   useEffect(() => {
     if (!reactionPicker.open && !postReactionPicker.open && !chatReactionPicker.open) return
@@ -5133,6 +5258,12 @@ const handleChatTyping = (value: string) => {
     }
     setPartnerTyping(false)
     setPartnerLastSeenMessageId(null)
+    if (activeChat !== chatId) {
+      setChatMessages([])
+      setChatReplyTo(null)
+      setChatInput("")
+      setShowScrollDown(false)
+    }
     setActiveChat(chatId)
     setChatPartner({ ...other, uid: otherId })
     setMobileChatWindow(true)
@@ -5146,15 +5277,28 @@ const handleChatTyping = (value: string) => {
       fb.collection(fb.db, "chats", chatId, "messages"),
       fb.orderBy("at", "asc")
     )
+    let firstLoad = true
     chatUnsubRef.current = fb.onSnapshot(q, (snap: any) => {
       const arr: any[] = []
       snap.forEach((d: any) => arr.push({ id: d.id, ...d.data() }))
+      const el = chatBodyRef.current
+      const near = !el || el.scrollHeight - el.scrollTop - el.clientHeight < 180
+      const lastM = arr[arr.length - 1]
       setChatMessages(arr)
-      setTimeout(() => {
-        if (chatBodyRef.current) {
-          chatBodyRef.current.scrollTop = chatBodyRef.current.scrollHeight
-        }
-      }, 80)
+      if (firstLoad || near || (lastM && lastM.from === user.uid)) {
+        setTimeout(() => {
+          if (chatBodyRef.current) {
+            chatBodyRef.current.scrollTop = chatBodyRef.current.scrollHeight
+          }
+        }, 80)
+      }
+      if (firstLoad) {
+        firstLoad = false
+        // Desktop: focus message box right away (mobile: keyboard opens on tap)
+        setTimeout(() => {
+          if (window.innerWidth > 820) chatInputRef.current?.focus()
+        }, 200)
+      }
     })
   }
 
@@ -5185,6 +5329,19 @@ const handleChatTyping = (value: string) => {
     }
   }
 
+  useEffect(() => {
+    if (!mcOpen) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== "Escape") return
+      if (photoViewer || actionMenu || chatReactionPicker.open) return
+      if (chatReplyTo) { setChatReplyTo(null); return }
+      if (editingMsgId) { cancelEditMessage(); return }
+      if (window.innerWidth > 820) closeChat()
+    }
+    window.addEventListener("keydown", onKey)
+    return () => window.removeEventListener("keydown", onKey)
+  })
+
   const handleSendMessage = async () => {
   const text = chatInput.trim()
   if (!text || !activeChat) return
@@ -5203,6 +5360,10 @@ const handleChatTyping = (value: string) => {
   }
     setChatInput("")
     setChatReplyTo(null)
+    if (chatInputRef.current) {
+      chatInputRef.current.style.height = "auto"
+      chatInputRef.current.focus()
+    }
     try {
       const fb = await getFirebase()
       const payload: any = {
@@ -5946,7 +6107,7 @@ const handleChatTyping = (value: string) => {
         .slice(0, 6)
     : []
 
-  const rootClass = `mebook-root ${theme === "dark" ? "dark-mode" : ""}`
+  const rootClass = `mebook-root ${theme === "dark" ? "dark-mode" : ""}${currentView === "messages" && activeChat ? " mc-open" : ""}`
 
   const findPost = (postId: string) =>
     feed.find((p) => p.id === postId) ||
@@ -5956,6 +6117,94 @@ const handleChatTyping = (value: string) => {
   /* ============================================================
   renderProfilePage
   ============================================================ */
+  const renderChatListPanel = (inShell: boolean) => (
+    <>
+                  <div className="mb-search-box">
+                    <svg viewBox="0 0 24 24">
+                      <path d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
+                    </svg>
+                    <input
+                      type="text"
+                      placeholder="Search people or chats"
+                      value={chatSearch}
+                      onChange={(e) => setChatSearch(e.target.value)}
+                    />
+                  </div>
+
+                  {searchedUsersForChat.length > 0 && (
+                    <div className="msgr-wrap" style={{ height: "auto", marginBottom: 16 }}>
+                      <div style={{ padding: "14px 16px 8px", fontSize: 12, fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase" }}>
+                        People
+                      </div>
+                      {searchedUsersForChat.map((u) => {
+                        const photo = avatarUrl(u)
+                        return (
+                          <div className="msgr-item" key={u.uid} onClick={() => startChat(u.uid, u.name, photo)}>
+                            <div className="msgr-item-avatar-wrap">
+                              <img src={photo} alt="" />
+                              <span className="msgr-item-dot" />
+                            </div>
+                            <div className="msgr-item-body">
+                              <div className="msgr-item-name">{u.name}</div>
+                              <div className="msgr-item-last">Tap to start chatting</div>
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  )}
+
+                  <div className={inShell ? "mc-list" : "msgr-wrap"}>
+                    <div className="msgr-list" style={{ width: "100%", borderRight: "none" }}>
+                      {onlineList.length > 0 && (
+                        <>
+                          <div className="msgr-section">Online now</div>
+                          <div className="msgr-online-row">
+                            {onlineList.map((u) => {
+                              const photo = avatarUrl(u)
+                              return (
+                                <div key={u.uid} className="msgr-online-item" onClick={() => startChat(u.uid, u.name, photo)}>
+                                  <div className="msgr-online-avatar-wrap">
+                                    <img src={photo} alt="" />
+                                    <span className="msgr-online-dot" />
+                                  </div>
+                                  <div className="msgr-online-name">{u.name?.split(" ")[0]}</div>
+                                </div>
+                              )
+                            })}
+                          </div>
+                        </>
+                      )}
+                      <div className="msgr-section">Recent</div>
+                      {filteredChats.length === 0 ? (
+                        <div style={{ padding: 20, color: "var(--text-muted)", fontSize: 14, textAlign: "center" }}>
+                          No conversations yet. Start one!
+                        </div>
+                      ) : (
+                        filteredChats.map((c) => {
+                          const photo = avatarUrl(c.other)
+                          return (
+                            <div className={`msgr-item${c.id === activeChat ? " active" : ""}`} key={c.id} onClick={() => openChat(c.id, c.otherId, c.other)}>
+                              <div className="msgr-item-avatar-wrap">
+                                <img src={photo} alt="" />
+                                <span className="msgr-item-dot" />
+                              </div>
+                              <div className="msgr-item-body">
+                                <div className="msgr-item-name">{c.other.name}</div>
+                                <div className="msgr-item-last">
+                                  {(c.last as any)?.text || "Say hi 👋"}
+                                </div>
+                              </div>
+                              <div className="msgr-item-time">{c.lastAt ? timeShort(c.lastAt) : ""}</div>
+                            </div>
+                          )
+                        })
+                      )}
+                    </div>
+                  </div>
+    </>
+  )
+
   const renderProfilePage = (
     u: any,
     posts: any[],
@@ -6317,6 +6566,25 @@ const handleChatTyping = (value: string) => {
         const items: SheetItem[] = []
         if (m && canEditMsg) {
           items.push({ label: "Edit message", icon: ICON_EDIT, onClick: () => startEditMessage(m) })
+        }
+        if (m) {
+          items.push({
+            label: "Reply",
+            icon: ICON_REPLY,
+            onClick: () => {
+              setChatReplyTo({ id: m.id, from: m.from, text: m.type === "image" ? "📷 Photo" : m.type === "voice" ? "🎤 Voice" : m.type === "like" ? "👍" : (m.text || "") })
+              setTimeout(() => chatInputRef.current?.focus(), 50)
+            },
+          })
+          if (m.text) {
+            items.push({
+              label: "Copy text",
+              icon: ICON_COPY,
+              onClick: async () => {
+                try { await navigator.clipboard.writeText(m.text); showToast("Copied", "", "success") } catch { showToast("Could not copy", "", "error") }
+              },
+            })
+          }
         }
         items.push({ label: "Unsend message", icon: ICON_TRASH, danger: true, onClick: () => handleDeleteMessage(actionMenu.id) })
         return <ActionSheet onClose={close} items={items} />
@@ -7315,7 +7583,7 @@ const handleChatTyping = (value: string) => {
               ============================================================ */}
           {currentView === "messages" && (
             <div className="mb-view active">
-              {chatView === "list" || (!activeChat && chatView === "window") ? (
+              {!activeChat ? (
                 <>
                   <h1 className="mb-page-title" style={{ marginBottom: 12 }}>
                     <svg viewBox="0 0 24 24">
@@ -7324,92 +7592,20 @@ const handleChatTyping = (value: string) => {
                     MeChat
                   </h1>
 
-                  <div className="mb-search-box">
-                    <svg viewBox="0 0 24 24">
-                      <path d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
-                    </svg>
-                    <input
-                      type="text"
-                      placeholder="Search people or chats"
-                      value={chatSearch}
-                      onChange={(e) => setChatSearch(e.target.value)}
-                    />
-                  </div>
-
-                  {searchedUsersForChat.length > 0 && (
-                    <div className="msgr-wrap" style={{ height: "auto", marginBottom: 16 }}>
-                      <div style={{ padding: "14px 16px 8px", fontSize: 12, fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase" }}>
-                        People
-                      </div>
-                      {searchedUsersForChat.map((u) => {
-                        const photo = avatarUrl(u)
-                        return (
-                          <div className="msgr-item" key={u.uid} onClick={() => startChat(u.uid, u.name, photo)}>
-                            <div className="msgr-item-avatar-wrap">
-                              <img src={photo} alt="" />
-                              <span className="msgr-item-dot" />
-                            </div>
-                            <div className="msgr-item-body">
-                              <div className="msgr-item-name">{u.name}</div>
-                              <div className="msgr-item-last">Tap to start chatting</div>
-                            </div>
-                          </div>
-                        )
-                      })}
-                    </div>
-                  )}
-
-                  <div className="msgr-wrap">
-                    <div className="msgr-list" style={{ width: "100%", borderRight: "none" }}>
-                      {onlineList.length > 0 && (
-                        <>
-                          <div className="msgr-section">Online now</div>
-                          <div className="msgr-online-row">
-                            {onlineList.map((u) => {
-                              const photo = avatarUrl(u)
-                              return (
-                                <div key={u.uid} className="msgr-online-item" onClick={() => startChat(u.uid, u.name, photo)}>
-                                  <div className="msgr-online-avatar-wrap">
-                                    <img src={photo} alt="" />
-                                    <span className="msgr-online-dot" />
-                                  </div>
-                                  <div className="msgr-online-name">{u.name?.split(" ")[0]}</div>
-                                </div>
-                              )
-                            })}
-                          </div>
-                        </>
-                      )}
-                      <div className="msgr-section">Recent</div>
-                      {filteredChats.length === 0 ? (
-                        <div style={{ padding: 20, color: "var(--text-muted)", fontSize: 14, textAlign: "center" }}>
-                          No conversations yet. Start one!
-                        </div>
-                      ) : (
-                        filteredChats.map((c) => {
-                          const photo = avatarUrl(c.other)
-                          return (
-                            <div className="msgr-item" key={c.id} onClick={() => openChat(c.id, c.otherId, c.other)}>
-                              <div className="msgr-item-avatar-wrap">
-                                <img src={photo} alt="" />
-                                <span className="msgr-item-dot" />
-                              </div>
-                              <div className="msgr-item-body">
-                                <div className="msgr-item-name">{c.other.name}</div>
-                                <div className="msgr-item-last">
-                                  {(c.last as any)?.text || "Say hi 👋"}
-                                </div>
-                              </div>
-                              <div className="msgr-item-time">{c.lastAt ? timeShort(c.lastAt) : ""}</div>
-                            </div>
-                          )
-                        })
-                      )}
-                    </div>
-                  </div>
+                  {renderChatListPanel(false)}
                 </>
               ) : (
-                /* MeChat fullpage window */
+                <div className="mc-shell" style={kbUp && vvh ? { height: vvh } : undefined}>
+                  <aside className="mc-side">
+                    <div className="mc-side-head">
+                      <button className="mc-side-back" onClick={() => goTo("home")} title="Back to MeBook">
+                        <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" /></svg>
+                      </button>
+                      <h2>MeChat</h2>
+                    </div>
+                    <div className="mc-side-body">{renderChatListPanel(true)}</div>
+                  </aside>
+                  <section className="mc-main">
                 <div className="mechat-page">
                   <div className="mechat-head">
                     <button className="mechat-head-back" onClick={closeChat}>
@@ -7459,7 +7655,15 @@ const handleChatTyping = (value: string) => {
                     </div>
                   </div>
 
-                  <div className="mechat-body" ref={chatBodyRef}>
+                  <div
+                    className="mechat-body"
+                    ref={chatBodyRef}
+                    onScroll={(e) => {
+                      const el = e.currentTarget
+                      const far = el.scrollHeight - el.scrollTop - el.clientHeight > 300
+                      setShowScrollDown((v) => (v === far ? v : far))
+                    }}
+                  >
                     {chatMessages.length === 0 ? (
                       <div className="mechat-empty">
                         <svg viewBox="0 0 24 24">
@@ -7485,6 +7689,13 @@ const handleChatTyping = (value: string) => {
                         const isLikeMsg = m.type === "like"
                         const isImageMsg = m.type === "image"
                         const isVoiceMsg = m.type === "voice"
+
+                        const curDay = dayKey(m.at)
+                        const prevDay = prevMsg ? dayKey(prevMsg.at) : ""
+                        const dateSep =
+                          curDay && curDay !== prevDay ? (
+                            <div className="mechat-date-sep"><span>{dayLabel(m.at)}</span></div>
+                          ) : null
 
                         let touchStartX = 0
                         let touchCurrentX = 0
@@ -7520,7 +7731,18 @@ const handleChatTyping = (value: string) => {
                         if (isImageMsg && m.imageUrl) {
                           bubbleContent = (
                             <div className="mechat-bubble-image">
-                              <img src={m.imageUrl} alt="" />
+                              <img
+                                src={m.imageUrl}
+                                alt=""
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  setPhotoViewer({
+                                    src: m.imageUrl,
+                                    name: mine ? profile.name : chatPartner?.name,
+                                    avatar: mine ? avatarUrl(profile) : chatPartner ? avatarUrl(chatPartner) : "",
+                                  })
+                                }}
+                              />
                               <span className="mechat-image-time">{chatTime(m.at)}</span>
                             </div>
                           )
@@ -7561,7 +7783,20 @@ const handleChatTyping = (value: string) => {
                           bubbleContent = (
                             <>
                               {m.replyTo && (
-                                <div className="mechat-reply-quote">
+                                <div
+                                  className="mechat-reply-quote"
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    const target = chatBodyRef.current?.querySelector(
+                                      `[data-message-id="${m.replyTo.id}"]`
+                                    ) as HTMLElement | null
+                                    if (target) {
+                                      target.scrollIntoView({ behavior: "smooth", block: "center" })
+                                      target.classList.add("mc-flash")
+                                      setTimeout(() => target.classList.remove("mc-flash"), 1400)
+                                    }
+                                  }}
+                                >
                                   <b>{m.replyTo.from === user.uid ? "You" : m.replyTo.name}</b>
                                   <span>{m.replyTo.text}</span>
                                 </div>
@@ -7576,8 +7811,9 @@ const handleChatTyping = (value: string) => {
                         }
 
                         return (
+                          <React.Fragment key={m.id}>
+                          {dateSep}
                           <div
-                            key={m.id}
                             data-mechat-message="true"
                             data-message-id={String(m.id)}
                             className={`mechat-bubble-wrap ${mine ? "me" : "them"} ${showAvatar ? "show-avatar" : ""}`}
@@ -7613,6 +7849,39 @@ const handleChatTyping = (value: string) => {
                             >
                               {bubbleContent}
                             </div>
+                            {!mine && !isLikeMsg && (
+                              <div
+                                className="mechat-side-actions"
+                                onTouchStart={(e) => e.stopPropagation()}
+                                onTouchMove={(e) => e.stopPropagation()}
+                                onTouchEnd={(e) => e.stopPropagation()}
+                                onDoubleClick={(e) => e.stopPropagation()}
+                              >
+                                <button
+                                  title="React"
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    openChatReactionPicker(e, m.id)
+                                  }}
+                                >
+                                  <svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm3.5-9c.83 0 1.5-.67 1.5-1.5S16.33 8 15.5 8 14 8.67 14 9.5s.67 1.5 1.5 1.5zm-7 0c.83 0 1.5-.67 1.5-1.5S9.33 8 8.5 8 7 8.67 7 9.5 7.67 11 8.5 11zm3.5 6.5c2.33 0 4.31-1.46 5.11-3.5H6.89c.8 2.04 2.78 3.5 5.11 3.5z" /></svg>
+                                </button>
+                                <button
+                                  title="Reply"
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    setChatReplyTo({
+                                      id: m.id,
+                                      from: m.from,
+                                      text: isImageMsg ? "📷 Photo" : isVoiceMsg ? "🎤 Voice" : (m.text || ""),
+                                    })
+                                    setTimeout(() => chatInputRef.current?.focus(), 50)
+                                  }}
+                                >
+                                  <svg viewBox="0 0 24 24"><path d="M10 9V5l-7 7 7 7v-4.1c5 0 8.5 1.6 11 5.1-1-5-4-10-11-11z" /></svg>
+                                </button>
+                              </div>
+                            )}
                             {isSeenByPartner && (
                               <img
                                 className="mechat-seen-avatar"
@@ -7627,10 +7896,24 @@ const handleChatTyping = (value: string) => {
                               </span>
                             )}
                           </div>
+                          </React.Fragment>
                         )
                       })
                     )}
                   </div>
+
+                  {showScrollDown && (
+                    <button
+                      className="mechat-scrolldown"
+                      title="Latest messages"
+                      onClick={() => {
+                        const el = chatBodyRef.current
+                        if (el) el.scrollTo({ top: el.scrollHeight, behavior: "smooth" })
+                      }}
+                    >
+                      <svg viewBox="0 0 24 24"><path d="M7.41 8.59 12 13.17l4.59-4.58L18 10l-6 6-6-6z" /></svg>
+                    </button>
+                  )}
 
                   {recording && (
                     <div className="mechat-recording-bar">
@@ -7722,7 +8005,11 @@ const handleChatTyping = (value: string) => {
                         placeholder="Aa"
                         rows={1}
                         value={chatInput}
-                        onChange={(e) => handleChatTyping(e.target.value)}
+                        onChange={(e) => {
+                          handleChatTyping(e.target.value)
+                          e.target.style.height = "auto"
+                          e.target.style.height = Math.min(e.target.scrollHeight, 120) + "px"
+                        }}
                         onKeyDown={(e) => {
                           if (e.key === "Enter" && !e.shiftKey) {
                             e.preventDefault()
@@ -7785,6 +8072,8 @@ const handleChatTyping = (value: string) => {
                       if (f) await handleChatImageUpload(f)
                     }}
                   />
+                </div>
+                  </section>
                 </div>
               )}
             </div>

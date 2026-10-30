@@ -5,7 +5,6 @@ import {
   useEffect,
   useMemo,
   useRef,
-  useCallback,
   type ReactNode,
 } from "react"
 import {
@@ -25,6 +24,23 @@ import {
   Trash2,
   Star,
 } from "lucide-react"
+import {
+  doc,
+  collection,
+  onSnapshot,
+  query,
+  orderBy,
+  limit,
+  writeBatch,
+  updateDoc,
+  increment,
+  serverTimestamp,
+  arrayUnion,
+  arrayRemove,
+  type QueryDocumentSnapshot,
+  type DocumentData,
+} from "firebase/firestore"
+import { db, auth, incrementMovieView, getMovieViews } from "@/lib/firebase"
 import { movies } from "@/lib/movie-data"
 import TelegramJoinPopup from "./telegram-join-popup"
 import AuthModal from "./auth-modal"
@@ -75,68 +91,203 @@ type CommentItem = {
   likes: string[]
 }
 
-type SocialState = {
-  likes: string[]
-  comments: CommentItem[]
-}
-
 type Me = { id: string; name: string; avatar?: string }
 
 const SITE_URL = "https://mvbds.xyz"
 const BG = "#0b0711"
 
 /* ------------------------------------------------------------------ */
-/*  Social data layer (likes + comments)                               */
-/*  এখন এটা localStorage এ save হয়। সব ইউজারের জন্য real-time shared    */
-/*  করতে শুধু readSocial / writeSocial বদলে আপনার database call বসাতে হবে */
+/*  Firebase (Firestore) social layer: likes + comments                */
+/*                                                                     */
+/*  movieSocial/{mediaType_movieId}                                    */
+/*      likeCount, commentCount                                        */
+/*      /likes/{uid}                                                   */
+/*      /comments/{commentId}                                          */
 /* ------------------------------------------------------------------ */
 
-const EMPTY_SOCIAL: SocialState = { likes: [], comments: [] }
+function toMillis(v: any): number | undefined {
+  if (!v) return undefined
+  if (typeof v.toMillis === "function") return v.toMillis()
+  if (typeof v === "number") return v
+  return undefined
+}
 
-function readSocial(key: string): SocialState {
-  try {
-    const raw = localStorage.getItem(key)
-    if (!raw) return EMPTY_SOCIAL
-    const p = JSON.parse(raw)
-    return {
-      likes: Array.isArray(p.likes) ? p.likes : [],
-      comments: Array.isArray(p.comments) ? p.comments : [],
-    }
-  } catch {
-    return EMPTY_SOCIAL
+function toComment(d: QueryDocumentSnapshot<DocumentData>): CommentItem {
+  const x = d.data({ serverTimestamps: "estimate" })
+  return {
+    id: d.id,
+    userId: x.userId,
+    name: x.name ?? "User",
+    avatar: x.avatar ?? undefined,
+    text: x.text ?? "",
+    createdAt: toMillis(x.createdAt) ?? Date.now(),
+    editedAt: toMillis(x.editedAt),
+    parentId: x.parentId ?? undefined,
+    likes: Array.isArray(x.likes) ? x.likes : [],
   }
 }
 
-function writeSocial(key: string, state: SocialState) {
-  try {
-    localStorage.setItem(key, JSON.stringify(state))
-  } catch {
-    /* storage full / blocked */
+function useMovieSocial(
+  socialId: string,
+  meId: string | null,
+  commentsOpen: boolean
+) {
+  const [likeCount, setLikeCount] = useState(0)
+  const [commentCount, setCommentCount] = useState(0)
+  const [liked, setLiked] = useState(false)
+  const [comments, setComments] = useState<CommentItem[]>([])
+  const [error, setError] = useState("")
+  const busyLike = useRef(false)
+
+  const report = (e: unknown) => {
+    console.error("[movieSocial]", e)
+    setError("Something went wrong. Please try again.")
+    setTimeout(() => setError(""), 3000)
   }
-}
 
-function useMovieSocial(storageKey: string) {
-  const [state, setState] = useState<SocialState>(EMPTY_SOCIAL)
+  const parentRef = () => doc(db, "movieSocial", socialId)
+  const commentRef = (id: string) =>
+    doc(db, "movieSocial", socialId, "comments", id)
 
+  // like + comment counters (live)
   useEffect(() => {
-    setState(readSocial(storageKey))
-    const onStorage = (e: StorageEvent) => {
-      if (e.key === storageKey) setState(readSocial(storageKey))
+    setLikeCount(0)
+    setCommentCount(0)
+    const unsub = onSnapshot(
+      parentRef(),
+      (snap) => {
+        const d = snap.data()
+        setLikeCount(Math.max(0, d?.likeCount ?? 0))
+        setCommentCount(Math.max(0, d?.commentCount ?? 0))
+      },
+      (e) => console.error("[movieSocial] counters", e)
+    )
+    return unsub
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [socialId])
+
+  // did I like it? (live)
+  useEffect(() => {
+    setLiked(false)
+    if (!meId) return
+    const unsub = onSnapshot(
+      doc(db, "movieSocial", socialId, "likes", meId),
+      (snap) => setLiked(snap.exists()),
+      (e) => console.error("[movieSocial] myLike", e)
+    )
+    return unsub
+  }, [socialId, meId])
+
+  // comments (live, only while the sheet is open → saves reads)
+  useEffect(() => {
+    if (!commentsOpen) return
+    const q = query(
+      collection(db, "movieSocial", socialId, "comments"),
+      orderBy("createdAt", "desc"),
+      limit(300)
+    )
+    const unsub = onSnapshot(
+      q,
+      (snap) => setComments(snap.docs.map(toComment)),
+      (e) => console.error("[movieSocial] comments", e)
+    )
+    return () => {
+      unsub()
+      setComments([])
     }
-    window.addEventListener("storage", onStorage)
-    return () => window.removeEventListener("storage", onStorage)
-  }, [storageKey])
+  }, [socialId, commentsOpen])
 
-  const update = useCallback(
-    (fn: (s: SocialState) => SocialState) => {
-      const next = fn(readSocial(storageKey))
-      writeSocial(storageKey, next)
-      setState(next)
-    },
-    [storageKey]
-  )
+  const toggleLike = async (me: Me) => {
+    if (busyLike.current) return
+    busyLike.current = true
+    try {
+      const batch = writeBatch(db)
+      const likeRef = doc(db, "movieSocial", socialId, "likes", me.id)
+      if (liked) {
+        batch.delete(likeRef)
+        batch.set(parentRef(), { likeCount: increment(-1) }, { merge: true })
+      } else {
+        batch.set(likeRef, { userId: me.id, createdAt: serverTimestamp() })
+        batch.set(parentRef(), { likeCount: increment(1) }, { merge: true })
+      }
+      await batch.commit()
+    } catch (e) {
+      report(e)
+    } finally {
+      busyLike.current = false
+    }
+  }
 
-  return [state, update] as const
+  const addComment = async (me: Me, text: string, parentId?: string) => {
+    try {
+      const ref = doc(collection(db, "movieSocial", socialId, "comments"))
+      const batch = writeBatch(db)
+      batch.set(ref, {
+        userId: me.id,
+        name: me.name,
+        avatar: me.avatar ?? null,
+        text,
+        parentId: parentId ?? null,
+        likes: [],
+        createdAt: serverTimestamp(),
+        editedAt: null,
+      })
+      batch.set(parentRef(), { commentCount: increment(1) }, { merge: true })
+      await batch.commit()
+    } catch (e) {
+      report(e)
+    }
+  }
+
+  const editComment = async (id: string, text: string) => {
+    try {
+      await updateDoc(commentRef(id), { text, editedAt: serverTimestamp() })
+    } catch (e) {
+      report(e)
+    }
+  }
+
+  const deleteComment = async (id: string) => {
+    try {
+      const replies = comments.filter((c) => c.parentId === id)
+      const batch = writeBatch(db)
+      replies.forEach((r) => batch.delete(commentRef(r.id)))
+      batch.delete(commentRef(id))
+      batch.set(
+        parentRef(),
+        { commentCount: increment(-(1 + replies.length)) },
+        { merge: true }
+      )
+      await batch.commit()
+    } catch (e) {
+      report(e)
+    }
+  }
+
+  const likeComment = async (me: Me, id: string) => {
+    try {
+      const c = comments.find((x) => x.id === id)
+      const has = !!c && c.likes.includes(me.id)
+      await updateDoc(commentRef(id), {
+        likes: has ? arrayRemove(me.id) : arrayUnion(me.id),
+      })
+    } catch (e) {
+      report(e)
+    }
+  }
+
+  return {
+    likeCount,
+    commentCount,
+    liked,
+    comments,
+    error,
+    toggleLike,
+    addComment,
+    editComment,
+    deleteComment,
+    likeComment,
+  }
 }
 
 /* ------------------------------------------------------------------ */
@@ -817,7 +968,6 @@ const PAGE_CSS = `
 @keyframes mvFade { from{opacity:0} to{opacity:1} }
 @keyframes mvFadeUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:none} }
 @keyframes mvLikePop { 0%{transform:scale(1)} 35%{transform:scale(1.45) rotate(-12deg)} 100%{transform:scale(1)} }
-@keyframes mvKen { from{transform:scale(1)} to{transform:scale(1.06)} }
 
 .mv-sheet { animation: mvSheetUp .32s cubic-bezier(.2,.8,.2,1) both }
 @media (min-width:640px){ .mv-sheet { animation-name: mvZoomIn } }
@@ -825,7 +975,6 @@ const PAGE_CSS = `
 .mv-fadeup { animation: mvFadeUp .3s ease both }
 .mv-pop-in { animation: mvZoomIn .15s ease both }
 .mv-like-pop { animation: mvLikePop .45s ease both }
-.mv-ken { animation: mvKen 14s ease-in-out infinite alternate }
 
 .tg-btn {
   background: linear-gradient(110deg,#1b8fd6 0%,#229ED9 28%,#4cc2f5 52%,#229ED9 74%,#1779b8 100%);
@@ -862,7 +1011,7 @@ const PAGE_CSS = `
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .tg-btn,.yt-btn,.btn-shine,.tg-icon,.mv-ken { animation: none !important }
+  .tg-btn,.yt-btn,.btn-shine,.tg-icon { animation: none !important }
 }
 `
 
@@ -879,7 +1028,7 @@ export default function MovieDetailPage({
   mediaType = "movie",
 }: MovieDetailPageProps) {
   const [showTrailer, setShowTrailer] = useState(false)
-  const [viewCount] = useState(Math.floor(Math.random() * 1000) + 1)
+  const [viewCount, setViewCount] = useState(0)
   const [showTelegramPopup, setShowTelegramPopup] = useState(false)
   const [showSubscriptions, setShowSubscriptions] = useState(false)
   const [showAuthModal, setShowAuthModal] = useState(false)
@@ -889,9 +1038,6 @@ export default function MovieDetailPage({
   const [likePop, setLikePop] = useState(0)
   const { user, entitlement } = useAuth()
 
-  const socialKey = `mvbds:social:v1:${mediaType}:${movie.id}`
-  const [social, updateSocial] = useMovieSocial(socialKey)
-
   useEffect(() => {
     window.scrollTo(0, 0)
     setDescOpen(false)
@@ -899,27 +1045,57 @@ export default function MovieDetailPage({
     setShowShare(false)
   }, [movie.id])
 
+  /* real view count (Firebase) — counts once per browser session */
+  useEffect(() => {
+    let alive = true
+    const k = `mv_viewed_${movie.id}`
+    ;(async () => {
+      let seen = false
+      try {
+        seen = sessionStorage.getItem(k) === "1"
+      } catch {}
+      const n = seen
+        ? await getMovieViews(movie.id)
+        : await incrementMovieView(movie.id)
+      if (!seen) {
+        try {
+          sessionStorage.setItem(k, "1")
+        } catch {}
+      }
+      if (alive) setViewCount(n)
+    })()
+    return () => {
+      alive = false
+    }
+  }, [movie.id])
+
   /* current user (auth shape unknown → defensive) */
   const me: Me | null = useMemo(() => {
     if (!user) return null
     const u = user as any
-    const id = String(u.id ?? u.uid ?? u.email ?? u.username ?? "user")
+    const fb = auth.currentUser
+    const id: string | undefined = fb?.uid ?? u.uid ?? u.id
+    if (!id) return null
     const name: string =
-      u.name ??
+      fb?.displayName ??
       u.displayName ??
+      u.name ??
       u.full_name ??
       u.user_metadata?.full_name ??
       u.username ??
       (u.email ? String(u.email).split("@")[0] : "User")
     const avatar: string | undefined =
-      u.avatar ??
+      fb?.photoURL ??
       u.photoURL ??
+      u.avatar ??
       u.image ??
       u.picture ??
       u.user_metadata?.avatar_url ??
       undefined
     return { id, name, avatar }
   }, [user])
+
+  const social = useMovieSocial(`${mediaType}_${movie.id}`, me?.id ?? null, showComments)
 
   const isAdultMovie = (genre: string): boolean => {
     const adultGenres = ["Adult", "18+"]
@@ -942,77 +1118,24 @@ export default function MovieDetailPage({
     setShowAuthModal(true)
   }
 
-  /* likes */
-  const liked = !!me && social.likes.includes(me.id)
+  /* likes + comments (Firebase) */
+  const liked = social.liked
   const toggleLike = () => {
     if (!me) return needLogin()
     setLikePop((n) => n + 1)
-    updateSocial((s) => ({
-      ...s,
-      likes: s.likes.includes(me.id)
-        ? s.likes.filter((x) => x !== me.id)
-        : [...s.likes, me.id],
-    }))
+    social.toggleLike(me)
   }
-
-  /* comments */
   const addComment = (text: string, parentId?: string) => {
-    if (!me) return
-    const c: CommentItem = {
-      id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-      userId: me.id,
-      name: me.name,
-      avatar: me.avatar,
-      text,
-      createdAt: Date.now(),
-      parentId,
-      likes: [],
-    }
-    updateSocial((s) => ({ ...s, comments: [...s.comments, c] }))
+    if (me) social.addComment(me, text, parentId)
   }
-
   const editComment = (id: string, text: string) => {
-    if (!me) return
-    updateSocial((s) => ({
-      ...s,
-      comments: s.comments.map((c) =>
-        c.id === id && c.userId === me.id
-          ? { ...c, text, editedAt: Date.now() }
-          : c
-      ),
-    }))
+    if (me) social.editComment(id, text)
   }
-
   const deleteComment = (id: string) => {
-    if (!me) return
-    updateSocial((s) => ({
-      ...s,
-      comments: s.comments.filter((c) => {
-        if (c.id === id) return c.userId !== me.id
-        if (c.parentId === id) {
-          const parent = s.comments.find((p) => p.id === id)
-          return !(parent && parent.userId === me.id)
-        }
-        return true
-      }),
-    }))
+    if (me) social.deleteComment(id)
   }
-
   const likeComment = (id: string) => {
-    if (!me) return
-    updateSocial((s) => ({
-      ...s,
-      comments: s.comments.map((c) =>
-        c.id === id
-          ? {
-              ...c,
-              likes: c.likes.includes(me.id)
-                ? c.likes.filter((x) => x !== me.id)
-                : [...c.likes, me.id],
-            }
-          : c
-      ),
-    }))
+    if (me) social.likeComment(me, id)
   }
 
   /* derived */
@@ -1068,13 +1191,13 @@ export default function MovieDetailPage({
       <button
         onClick={onBack}
         aria-label="Back"
-        className="fixed top-[max(1rem,env(safe-area-inset-top))] left-4 z-40 w-10 h-10 rounded-full bg-black/40 backdrop-blur-md border border-white/20 flex items-center justify-center hover:bg-black/60 hover:scale-105 active:scale-95 transition"
+        className="fixed top-[max(1rem,env(safe-area-inset-top))] left-4 z-40 w-9 h-9 rounded-full bg-black/40 backdrop-blur-md border border-white/20 flex items-center justify-center hover:bg-black/60 hover:scale-105 active:scale-95 transition"
       >
-        <ArrowLeft className="w-5 h-5" />
+        <ArrowLeft className="w-4 h-4" />
       </button>
 
       {/* HERO */}
-      <section className="relative w-full h-[74vh] min-h-[500px] max-h-[780px] overflow-hidden">
+      <section className="relative w-full h-[50vh] min-h-[340px] max-h-[520px] overflow-hidden">
         {/* blurred backdrop (visible on wide screens) */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
@@ -1084,15 +1207,15 @@ export default function MovieDetailPage({
           className="absolute inset-0 w-full h-full object-cover scale-125 blur-2xl opacity-50"
         />
 
-        <div className="relative mx-auto h-full w-full md:max-w-[480px] overflow-hidden">
+        <div className="relative mx-auto h-full w-full md:max-w-[380px] overflow-hidden">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={movie.poster || "/placeholder.svg"}
             alt={movie.title}
-            className="mv-ken h-full w-full object-cover object-top"
+            className="h-full w-full object-cover object-top"
           />
           {isAdult && (
-            <span className="absolute top-4 right-4 bg-gradient-to-r from-pink-500 to-red-500 text-white text-xs px-3 py-1 rounded-full font-bold animate-pulse border border-white z-10">
+            <span className="absolute top-4 right-4 bg-gradient-to-r from-pink-500 to-red-500 text-white text-[10px] px-2.5 py-0.5 rounded-full font-bold animate-pulse border border-white z-10">
               18+
             </span>
           )}
@@ -1100,7 +1223,7 @@ export default function MovieDetailPage({
 
         {/* dark fade */}
         <div
-          className="absolute inset-x-0 bottom-0 h-[62%] pointer-events-none"
+          className="absolute inset-x-0 bottom-0 h-[60%] pointer-events-none"
           style={{
             background: `linear-gradient(to top, ${BG} 4%, ${BG}f2 22%, ${BG}b0 48%, transparent)`,
           }}
@@ -1113,20 +1236,20 @@ export default function MovieDetailPage({
         />
 
         {/* title block */}
-        <div className="absolute inset-x-0 bottom-0 z-10 px-5 pb-4">
+        <div className="absolute inset-x-0 bottom-0 z-10 px-4 pb-3">
           <div className="max-w-2xl mx-auto">
             <div className="flex items-center flex-wrap gap-x-3 gap-y-2">
-              <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-balance leading-tight">
+              <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-balance leading-tight">
                 {movie.title}
               </h1>
               {movie.language && (
-                <span className="rounded-full bg-white/15 border border-white/20 backdrop-blur px-2.5 py-0.5 text-[11px] font-semibold text-slate-100">
+                <span className="rounded-full bg-white/15 border border-white/20 backdrop-blur px-2 py-0.5 text-[10px] font-semibold text-slate-100">
                   {movie.language}
                 </span>
               )}
             </div>
 
-            <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[13px] text-slate-300">
+            <div className="mt-2 flex flex-wrap items-center gap-x-2.5 gap-y-1 text-[11px] text-slate-300">
               <span>{movie.year}</span>
               {genreList.length > 0 && (
                 <>
@@ -1138,32 +1261,36 @@ export default function MovieDetailPage({
                 <>
                   <span className="h-3 w-px bg-white/25" />
                   <span className="flex items-center gap-1">
-                    <Star className="w-3.5 h-3.5 text-yellow-400" fill="currentColor" />
+                    <Star className="w-3 h-3 text-yellow-400" fill="currentColor" />
                     {ratingText} Ratings
                   </span>
                 </>
               )}
-              <span className="h-3 w-px bg-white/25" />
-              <span className="flex items-center gap-1 text-emerald-400">
-                <Eye className="w-3.5 h-3.5" />
-                {viewCount.toLocaleString()} views
-              </span>
+              {viewCount > 0 && (
+                <>
+                  <span className="h-3 w-px bg-white/25" />
+                  <span className="flex items-center gap-1 text-emerald-400">
+                    <Eye className="w-3 h-3" />
+                    {viewCount.toLocaleString()} views
+                  </span>
+                </>
+              )}
             </div>
           </div>
         </div>
       </section>
 
       {/* MAIN */}
-      <main className="relative z-10 max-w-2xl mx-auto px-5 pt-3 space-y-6">
+      <main className="relative z-10 max-w-2xl mx-auto px-4 pt-2 space-y-4">
         {/* Buttons */}
-        <div className="space-y-3">
+        <div className="space-y-2">
           <button
             onClick={handleWatchNow}
-            className="tg-btn relative w-full overflow-hidden rounded-2xl py-3.5 px-5 flex items-center justify-center gap-3 text-white font-bold text-[17px]"
+            className="tg-btn relative w-full overflow-hidden rounded-xl py-2.5 px-4 flex items-center justify-center gap-2.5 text-white font-semibold text-[15px]"
           >
             <span className="btn-shine" />
-            <span className="tg-icon relative w-9 h-9 rounded-full bg-white flex items-center justify-center shadow-md">
-              <TelegramLogo size={34} uid="btn" />
+            <span className="tg-icon relative w-7 h-7 rounded-full bg-white flex items-center justify-center shadow-md">
+              <TelegramLogo size={26} uid="btn" />
             </span>
             <span className="relative drop-shadow">Download on Telegram</span>
           </button>
@@ -1171,11 +1298,11 @@ export default function MovieDetailPage({
           {movie.trailer && (
             <button
               onClick={() => setShowTrailer(true)}
-              className="yt-btn relative w-full overflow-hidden rounded-2xl py-3.5 px-5 flex items-center justify-center gap-3 text-white font-bold text-[17px]"
+              className="yt-btn relative w-full overflow-hidden rounded-xl py-2.5 px-4 flex items-center justify-center gap-2.5 text-white font-semibold text-[15px]"
             >
               <span className="btn-shine" style={{ animationDelay: "1.4s" }} />
               <span className="yt-icon relative flex items-center justify-center">
-                <YouTubeLogo size={34} />
+                <YouTubeLogo size={24} />
               </span>
               <span className="relative">Trailer</span>
             </button>
@@ -1186,8 +1313,8 @@ export default function MovieDetailPage({
         {movie.description && (
           <div>
             <p
-              className={`text-[14px] leading-relaxed text-slate-300 ${
-                descOpen ? "" : "line-clamp-4"
+              className={`text-[12.5px] leading-relaxed text-slate-300 ${
+                descOpen ? "" : "line-clamp-3"
               }`}
             >
               {movie.description}
@@ -1195,7 +1322,7 @@ export default function MovieDetailPage({
             {longDesc && (
               <button
                 onClick={() => setDescOpen((v) => !v)}
-                className="mt-1 text-[14px] font-bold text-white hover:text-sky-300 transition"
+                className="mt-0.5 text-[12.5px] font-bold text-white hover:text-sky-300 transition"
               >
                 {descOpen ? "Show Less" : "Read More"}
               </button>
@@ -1204,51 +1331,51 @@ export default function MovieDetailPage({
         )}
 
         {/* Like / Comments / Share */}
-        <div className="flex items-stretch rounded-2xl bg-white/[0.04] border border-white/10 divide-x divide-white/10 overflow-hidden">
+        <div className="flex items-stretch rounded-xl bg-white/[0.04] border border-white/10 divide-x divide-white/10 overflow-hidden">
           <button
             onClick={toggleLike}
-            className={`flex-1 flex items-center justify-center gap-2 py-3.5 text-sm font-semibold transition hover:bg-white/5 active:bg-white/10 ${
+            className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 text-[13px] font-semibold transition hover:bg-white/5 active:bg-white/10 ${
               liked ? "text-sky-400" : "text-slate-200"
             }`}
           >
             <ThumbsUp
               key={likePop}
-              className={`w-5 h-5 ${liked ? "mv-like-pop" : ""}`}
+              className={`w-4 h-4 ${liked ? "mv-like-pop" : ""}`}
               fill={liked ? "currentColor" : "none"}
             />
             <span>{liked ? "Liked" : "Like"}</span>
-            {social.likes.length > 0 && (
-              <span className="rounded-full bg-white/10 px-2 py-0.5 text-xs">
-                {social.likes.length}
+            {social.likeCount > 0 && (
+              <span className="rounded-full bg-white/10 px-1.5 py-0.5 text-[11px]">
+                {social.likeCount}
               </span>
             )}
           </button>
 
           <button
             onClick={() => setShowComments(true)}
-            className="flex-1 flex items-center justify-center gap-2 py-3.5 text-sm font-semibold text-slate-200 transition hover:bg-white/5 active:bg-white/10"
+            className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-[13px] font-semibold text-slate-200 transition hover:bg-white/5 active:bg-white/10"
           >
-            <MessageCircle className="w-5 h-5" />
+            <MessageCircle className="w-4 h-4" />
             <span>Comments</span>
-            {social.comments.length > 0 && (
-              <span className="rounded-full bg-white/10 px-2 py-0.5 text-xs">
-                {social.comments.length}
+            {social.commentCount > 0 && (
+              <span className="rounded-full bg-white/10 px-1.5 py-0.5 text-[11px]">
+                {social.commentCount}
               </span>
             )}
           </button>
 
           <button
             onClick={() => setShowShare(true)}
-            className="flex-1 flex items-center justify-center gap-2 py-3.5 text-sm font-semibold text-slate-200 transition hover:bg-white/5 active:bg-white/10"
+            className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-[13px] font-semibold text-slate-200 transition hover:bg-white/5 active:bg-white/10"
           >
-            <Share2 className="w-5 h-5" />
+            <Share2 className="w-4 h-4" />
             <span>Share</span>
           </button>
         </div>
 
         {/* Cast */}
         <section>
-          <h3 className="text-lg font-bold mb-3">Cast</h3>
+          <h3 className="text-base font-bold mb-2">Cast</h3>
           <MovieCast
             title={movie.title}
             year={movie.year}
@@ -1265,8 +1392,8 @@ export default function MovieDetailPage({
 
       {/* RELATED */}
       {relatedMovies.length > 0 && (
-        <section className="relative z-10 max-w-5xl mx-auto px-5 pt-10 pb-6">
-          <h3 className="text-lg font-bold mb-4">
+        <section className="relative z-10 max-w-5xl mx-auto px-4 pt-12 pb-6">
+          <h3 className="text-base font-bold mb-3">
             {mediaType === "anime" ? "Related Anime" : "Related Movies & Series"}
           </h3>
           <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4">
@@ -1393,6 +1520,12 @@ export default function MovieDetailPage({
         open={showSubscriptions}
         onOpenChange={setShowSubscriptions}
       />
+
+      {social.error && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[90] rounded-full bg-red-500/90 px-4 py-2 text-sm font-semibold shadow-lg mv-fadeup">
+          {social.error}
+        </div>
+      )}
     </div>
   )
-                                            }
+              }

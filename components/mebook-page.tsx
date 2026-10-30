@@ -2403,6 +2403,74 @@ transition:transform .15s ease,box-shadow .15s ease;-webkit-tap-highlight-color:
 .mebook-root .mc-back-glass svg{width:20px;height:20px;fill:currentColor;position:relative;}
 .mebook-root .mc-back-glass span{position:relative;}
 .mebook-root .mc-back-glass.in-side{position:absolute;z-index:5;}
+
+/* ============ HEADER: fixed logo size, no beta badge ============ */
+.mebook-root .mb-header .mb-header-left{flex-shrink:0;gap:6px;}
+.mebook-root .mb-header .mb-header-logo{height:38px;width:38px;flex:0 0 38px;}
+.mebook-root .mb-header .mb-logo-text{font-size:26px;font-weight:800;letter-spacing:-.6px;white-space:nowrap;flex-shrink:0;margin-left:0;}
+.mebook-root .mb-header .mb-logo-stack{flex-shrink:0;}
+.mebook-root .mb-header .mb-header-right{flex-shrink:0;gap:8px;}
+
+/* ============ FACEBOOK-STYLE SEARCH PAGE ============ */
+.mebook-root.sr-open .mb-header,.mebook-root.sr-open .mb-navbar{display:none;}
+.mebook-root .sr-page{position:fixed;inset:0;z-index:1300;background:var(--card);display:flex;flex-direction:column;padding-top:env(safe-area-inset-top,0px);}
+.mebook-root .sr-top{display:flex;align-items:center;gap:8px;padding:10px 12px;flex-shrink:0;}
+.mebook-root .sr-ibtn{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--text);flex-shrink:0;transition:background .15s;}
+.mebook-root .sr-ibtn:hover{background:var(--hover);}
+.mebook-root .sr-ibtn:active{transform:scale(.93);}
+.mebook-root .sr-ibtn svg{width:24px;height:24px;fill:currentColor;}
+.mebook-root .sr-box{flex:1;min-width:0;display:flex;align-items:center;gap:8px;background:var(--input-bg);border-radius:22px;padding:0 6px 0 14px;height:42px;}
+.mebook-root .sr-box input{flex:1;min-width:0;border:none;outline:none;background:transparent;font-size:16px;color:var(--text);height:100%;}
+.mebook-root .sr-box input::placeholder{color:var(--text-muted);}
+.mebook-root .sr-clear{width:28px;height:28px;border-radius:50%;background:rgba(128,128,128,.35);color:var(--card);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.mebook-root .sr-clear svg{width:16px;height:16px;fill:currentColor;}
+.mebook-root .sr-chips{display:flex;gap:8px;padding:2px 12px 8px;flex-shrink:0;overflow-x:auto;}
+.mebook-root .sr-chip{padding:7px 16px;border-radius:18px;font-size:14px;font-weight:600;background:var(--input-bg);color:var(--text);white-space:nowrap;}
+.mebook-root .sr-chip.on{background:var(--green);color:#fff;}
+.mebook-root .sr-body{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding-bottom:calc(24px + env(safe-area-inset-bottom,0px));}
+.mebook-root .sr-row{display:flex;align-items:center;gap:12px;padding:8px 8px 8px 14px;cursor:pointer;transition:background .12s;}
+.mebook-root .sr-row:hover{background:var(--hover);}
+.mebook-root .sr-av{width:48px;height:48px;border-radius:50%;object-fit:cover;flex-shrink:0;background:var(--input-bg);}
+.mebook-root .sr-av.sm{width:40px;height:40px;}
+.mebook-root .sr-av-ico{width:48px;height:48px;border-radius:50%;background:var(--input-bg);color:var(--text);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.mebook-root .sr-av-ico svg{width:24px;height:24px;fill:currentColor;}
+.mebook-root .sr-info{flex:1;min-width:0;}
+.mebook-root .sr-name{font-size:16px;font-weight:600;color:var(--text);display:flex;align-items:center;gap:5px;line-height:1.25;}
+.mebook-root .sr-name span.t{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.mebook-root .sr-sub{font-size:13.5px;color:var(--text-muted);display:flex;align-items:center;gap:6px;margin-top:1px;line-height:1.3;}
+.mebook-root .sr-sub .dot{width:9px;height:9px;border-radius:50%;background:#1877f2;flex-shrink:0;}
+.mebook-root .sr-sub .pin{width:13px;height:13px;fill:currentColor;flex-shrink:0;}
+.mebook-root .sr-more{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--text-muted);flex-shrink:0;}
+.mebook-root .sr-more:hover{background:var(--hover);}
+.mebook-root .sr-more svg{width:22px;height:22px;fill:currentColor;}
+.mebook-root .sr-sec{display:flex;align-items:center;justify-content:space-between;padding:14px 14px 4px;font-size:17px;font-weight:700;color:var(--text);}
+.mebook-root .sr-sec button{font-size:14px;font-weight:600;color:var(--green);}
+.mebook-root .sr-post{display:flex;gap:12px;padding:10px 14px;cursor:pointer;transition:background .12s;}
+.mebook-root .sr-post:hover{background:var(--hover);}
+.mebook-root .sr-post-main{flex:1;min-width:0;}
+.mebook-root .sr-post-head{display:flex;align-items:center;gap:5px;font-size:15px;font-weight:600;color:var(--text);cursor:pointer;}
+.mebook-root .sr-post-head small{font-weight:400;color:var(--text-muted);font-size:12.5px;}
+.mebook-root .sr-snip{font-size:14px;color:var(--text-muted);line-height:1.4;margin-top:2px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;word-break:break-word;}
+.mebook-root .sr-snip mark{background:rgba(34,197,94,.22);color:var(--text);border-radius:3px;padding:0 1px;font-weight:600;}
+.mebook-root .sr-movie{display:inline-block;margin-top:4px;font-size:12px;font-weight:600;color:var(--green);background:rgba(34,197,94,.1);padding:2px 8px;border-radius:10px;}
+.mebook-root .sr-thumb{width:58px;height:58px;border-radius:10px;object-fit:cover;flex-shrink:0;align-self:center;}
+.mebook-root .sr-empty{padding:48px 24px;text-align:center;color:var(--text-muted);font-size:15px;}
+.mebook-root .sr-empty b{display:block;color:var(--text);font-size:17px;margin-bottom:4px;}
+.mebook-root .sr-seemore{display:block;width:calc(100% - 28px);margin:8px 14px;padding:11px;border-radius:10px;background:var(--input-bg);font-size:14.5px;font-weight:600;color:var(--text);}
+.mebook-root .sr-sheet-bd{position:fixed;inset:0;z-index:1400;background:rgba(0,0,0,.55);animation:srFade .18s ease;}
+.mebook-root .sr-sheet{position:fixed;left:0;right:0;bottom:0;z-index:1401;background:var(--card);border-radius:18px 18px 0 0;padding:8px 0 calc(16px + env(safe-area-inset-bottom,0px));animation:srUp .22s cubic-bezier(.2,.8,.3,1);max-width:640px;margin:0 auto;}
+.mebook-root .sr-grab{width:44px;height:5px;border-radius:3px;background:rgba(128,128,128,.5);margin:4px auto 14px;}
+.mebook-root .sr-sheet-head{display:flex;align-items:center;gap:14px;padding:6px 18px 14px;border-bottom:1px solid var(--border);margin-bottom:6px;}
+.mebook-root .sr-sheet-head .sr-av,.mebook-root .sr-sheet-head .sr-av-ico{width:56px;height:56px;}
+.mebook-root .sr-opt{display:flex;align-items:center;gap:16px;width:100%;text-align:left;padding:10px 18px;}
+.mebook-root .sr-opt:hover{background:var(--hover);}
+.mebook-root .sr-opt:disabled{opacity:.5;cursor:not-allowed;}
+.mebook-root .sr-opt-ico{width:50px;height:50px;border-radius:50%;background:var(--input-bg);color:var(--text);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.mebook-root .sr-opt-ico svg{width:24px;height:24px;fill:currentColor;}
+.mebook-root .sr-opt b{display:block;font-size:17px;font-weight:600;color:var(--text);}
+.mebook-root .sr-opt small{display:block;font-size:14px;color:var(--text-muted);margin-top:1px;}
+@keyframes srFade{from{opacity:0}to{opacity:1}}
+@keyframes srUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
 `
 
 /* ============================================================
@@ -3680,6 +3748,663 @@ function McChatHead(props: any) {
     }, "\u00d7"))
 }
 
+/* ============================================================
+   FACEBOOK-STYLE SEARCH PAGE (history, pin, advanced search)
+   ============================================================ */
+
+const SR_ICON = {
+  back: "M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z",
+  search: "M15.5 14h-.79l-.28-.27A6.47 6.47 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z",
+  clock: "M13 3a9 9 0 0 0-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42A8.954 8.954 0 0 0 13 21a9 9 0 0 0 0-18zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z",
+  close: "M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z",
+  dots: "M6 10c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm12 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-6 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z",
+  trash: "M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z",
+  pin: "M16 9V4h1c.55 0 1-.45 1-1s-.45-1-1-1H7c-.55 0-1 .45-1 1s.45 1 1 1h1v5c0 1.66-1.34 3-3 3v2h5.97v7l1 1 1-1v-7H19v-2c-1.66 0-3-1.34-3-3z",
+  verified: "M23 12l-2.44-2.79.34-3.69-3.61-.82-1.89-3.2L12 2.96 8.6 1.5 6.71 4.69l-3.61.82.34 3.69L1 12l2.44 2.79-.34 3.7 3.61.82L8.6 22.5l3.4-1.47 3.4 1.46 1.89-3.19 3.61-.82-.34-3.69L23 12zm-12.91 4.72l-3.8-3.81 1.48-1.48 2.32 2.33 5.85-5.87 1.48 1.48-7.33 7.35z",
+}
+
+function SrIco({ d, size }: { d: string; size?: number }) {
+  return (
+    <svg viewBox="0 0 24 24" style={size ? { width: size, height: size } : undefined}>
+      <path d={d} />
+    </svg>
+  )
+}
+
+function srNorm(s: any): string {
+  return String(s || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^\p{L}\p{M}\p{N}\s]/gu, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+}
+
+function srLev(a: string, b: string, max: number): number {
+  if (Math.abs(a.length - b.length) > max) return max + 1
+  const prev = new Array(b.length + 1)
+  for (let j = 0; j <= b.length; j++) prev[j] = j
+  for (let i = 1; i <= a.length; i++) {
+    let cur = [i]
+    let rowMin = i
+    for (let j = 1; j <= b.length; j++) {
+      const v = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1))
+      cur[j] = v
+      if (v < rowMin) rowMin = v
+    }
+    if (rowMin > max) return max + 1
+    for (let j = 0; j <= b.length; j++) prev[j] = cur[j]
+  }
+  return prev[b.length]
+}
+
+// score one token against a list of words (0 = no match)
+function srTokenScore(tok: string, words: string[]): number {
+  let best = 0
+  for (const w of words) {
+    let s = 0
+    if (w === tok) s = 100
+    else if (w.startsWith(tok)) s = 82
+    else if (tok.length >= 2 && w.includes(tok)) s = 55
+    else if (tok.length >= 4) {
+      const allow = tok.length >= 7 ? 2 : 1
+      const d = Math.min(
+        srLev(tok, w, allow),
+        w.length > tok.length ? srLev(tok, w.slice(0, tok.length), allow) : allow + 1
+      )
+      if (d <= allow) s = 42 - d * 8
+    }
+    if (s > best) best = s
+    if (best === 100) break
+  }
+  return best
+}
+
+// all tokens must match (AND). returns total score or 0
+function srScoreText(tokens: string[], text: string): number {
+  const n = srNorm(text)
+  if (!n) return 0
+  const words = n.split(" ")
+  let total = 0
+  for (const t of tokens) {
+    const s = srTokenScore(t, words)
+    if (!s) return 0
+    total += s
+  }
+  total /= tokens.length
+  const phrase = tokens.join(" ")
+  if (n === phrase) total += 60
+  else if (n.startsWith(phrase)) total += 35
+  else if (n.includes(phrase)) total += 20
+  return total
+}
+
+function srEsc(s: string) {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+}
+
+function srSnippet(caption: string, tokens: string[]) {
+  const clean = String(caption || "")
+    .replace(/\n+🔁 Shared from.*$/s, "")
+    .replace(/\s+/g, " ")
+    .trim()
+  if (!clean) return null
+  const low = clean.toLowerCase()
+  let at = -1
+  for (const t of tokens) {
+    const i = low.indexOf(t)
+    if (i !== -1 && (at === -1 || i < at)) at = i
+  }
+  const MAX = 110
+  let start = 0
+  if (at > 40) start = Math.max(0, at - 30)
+  let part = clean.slice(start, start + MAX)
+  const pre = start > 0 ? "…" : ""
+  const post = start + MAX < clean.length ? "…" : ""
+  if (!tokens.length) return <>{pre + part + post}</>
+  const re = new RegExp("(" + tokens.filter((t) => t.length > 0).map(srEsc).join("|") + ")", "giu")
+  const pieces = part.split(re)
+  return (
+    <>
+      {pre}
+      {pieces.map((p, i) =>
+        i % 2 === 1 ? <mark key={i}>{p}</mark> : <React.Fragment key={i}>{p}</React.Fragment>
+      )}
+      {post}
+    </>
+  )
+}
+
+type SrHistItem = {
+  key: string
+  type: "user" | "query"
+  uid?: string
+  name: string
+  photo?: string
+  pinned?: boolean
+  t: number
+}
+
+function SearchPage(props: {
+  me: string
+  query: string
+  setQuery: (q: string) => void
+  users: any[]
+  posts: any[]
+  avatarOf: (u: any) => string
+  isVerUid: (uid: any, obj: any) => boolean
+  onBack: () => void
+  onOpenUser: (uid: string) => void
+  onOpenPost: (post: any) => void
+}) {
+  const { me, query, setQuery, users, posts, avatarOf, isVerUid, onBack, onOpenUser, onOpenPost } = props
+  const HKEY = "mebook_search_history_" + me
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  const [hist, setHist] = useState<SrHistItem[]>([])
+  const [hidden, setHidden] = useState<string[]>([])
+  const [sheet, setSheet] = useState<{ item: SrHistItem; fromHistory: boolean } | null>(null)
+  const [tab, setTab] = useState<"all" | "people" | "posts">("all")
+  const [showHistory, setShowHistory] = useState(false)
+  const [postLimit, setPostLimit] = useState(8)
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(HKEY)
+      if (raw) setHist(JSON.parse(raw))
+    } catch {}
+    const t = setTimeout(() => inputRef.current?.focus(), 120)
+    return () => clearTimeout(t)
+  }, [HKEY])
+
+  const saveHist = (next: SrHistItem[]) => {
+    setHist(next)
+    try {
+      localStorage.setItem(HKEY, JSON.stringify(next.slice(0, 40)))
+    } catch {}
+  }
+
+  const addHist = (item: Omit<SrHistItem, "t">) => {
+    const old = hist.find((h) => h.key === item.key)
+    const rest = hist.filter((h) => h.key !== item.key)
+    saveHist([{ ...item, pinned: old?.pinned, t: Date.now() }, ...rest])
+  }
+
+  const pinCount = hist.filter((h) => h.pinned).length
+
+  const togglePin = (item: SrHistItem) => {
+    const exists = hist.find((h) => h.key === item.key)
+    if (exists) {
+      if (!exists.pinned && pinCount >= 3) return
+      saveHist(hist.map((h) => (h.key === item.key ? { ...h, pinned: !h.pinned } : h)))
+    } else if (pinCount < 3) {
+      saveHist([{ ...item, pinned: true, t: Date.now() }, ...hist])
+    }
+    setSheet(null)
+  }
+
+  const removeItem = (item: SrHistItem, fromHistory: boolean) => {
+    if (fromHistory) saveHist(hist.filter((h) => h.key !== item.key))
+    else setHidden((h) => [...h, item.key])
+    setSheet(null)
+  }
+
+  const userMap = React.useMemo(() => {
+    const m: Record<string, any> = {}
+    users.forEach((u) => (m[u.uid] = u))
+    return m
+  }, [users])
+
+  // suggested = authors of the latest posts (newest first, unique)
+  const suggested = React.useMemo(() => {
+    const seen = new Set<string>()
+    const out: Array<{ item: SrHistItem; post: any }> = []
+    for (const p of posts) {
+      const uid = p.authorId
+      if (!uid || uid === me || seen.has(uid)) continue
+      seen.add(uid)
+      const u = userMap[uid]
+      out.push({
+        item: {
+          key: "u:" + uid,
+          type: "user",
+          uid,
+          name: u?.name || p.authorName || "User",
+          photo: u ? avatarOf(u) : p.authorAvatar || "",
+          t: 0,
+        },
+        post: p,
+      })
+      if (out.length >= 15) break
+    }
+    return out
+  }, [posts, userMap, me])
+
+  const latestPostOf = (uid?: string) => (uid ? posts.find((p) => p.authorId === uid) : null)
+
+  const postAgeMs = (p: any) => {
+    const ts = p?.createdAt
+    if (!ts) return 0
+    const d = ts.toDate ? ts.toDate() : new Date(ts)
+    return Date.now() - d.getTime()
+  }
+
+  /* ---------- the search engine ---------- */
+  const deferred = React.useDeferredValue(query)
+  const tokens = React.useMemo(() => srNorm(deferred).split(" ").filter(Boolean), [deferred])
+
+  const results = React.useMemo(() => {
+    if (!tokens.length) return { people: [] as any[], posts: [] as any[] }
+
+    const people = users
+      .map((u) => {
+        let s = srScoreText(tokens, u.name || "")
+        if (!s && u.email) s = srScoreText(tokens, String(u.email).split("@")[0]) * 0.6
+        if (s && u.uid === me) s *= 0.8
+        if (s && isVerUid(u.uid, u)) s += 6
+        return { u, s }
+      })
+      .filter((x) => x.s > 0)
+      .sort((a, b) => b.s - a.s || String(a.u.name).localeCompare(String(b.u.name)))
+      .slice(0, 12)
+      .map((x) => x.u)
+
+    const found = posts
+      .map((p) => {
+        const cap = srScoreText(tokens, p.caption || "")
+        const mov = srScoreText(tokens, p.movie || "") * 1.25
+        const au = srScoreText(tokens, p.authorName || "") * 0.8
+        // also allow tokens split across caption + movie + author
+        const all = srScoreText(tokens, `${p.caption || ""} ${p.movie || ""} ${p.authorName || ""}`) * 0.7
+        let s = Math.max(cap, mov, au, all)
+        if (s) {
+          const age = postAgeMs(p) / 86400000
+          s += Math.max(0, 15 - age) // fresh posts float up
+          s += Math.min(8, ((p.likes?.length || 0) + (p.comments?.length || 0)) * 0.5)
+        }
+        return { p, s }
+      })
+      .filter((x) => x.s > 0)
+      .sort((a, b) => b.s - a.s)
+      .map((x) => x.p)
+
+    return { people, posts: found }
+  }, [tokens, users, posts, me])
+
+  const rememberQuery = () => {
+    const q = query.trim()
+    if (!q) return
+    addHist({ key: "q:" + srNorm(q), type: "query", name: q })
+  }
+
+  const openUserFromItem = (it: SrHistItem) => {
+    if (!it.uid) return
+    addHist({ key: it.key, type: "user", uid: it.uid, name: it.name, photo: it.photo })
+    onOpenUser(it.uid)
+  }
+
+  const onItemClick = (it: SrHistItem) => {
+    if (it.type === "user") openUserFromItem(it)
+    else {
+      setQuery(it.name)
+      addHist({ key: it.key, type: "query", name: it.name })
+      inputRef.current?.focus()
+    }
+  }
+
+  const verified = (uid: any, obj?: any) =>
+    isVerUid(uid, obj) ? (
+      <svg viewBox="0 0 24 24" width="15" height="15" fill="#22c55e" style={{ flexShrink: 0 }}>
+        <path d={SR_ICON.verified} />
+      </svg>
+    ) : null
+
+  const renderItemRow = (it: SrHistItem, fromHistory: boolean) => {
+    const lp = it.type === "user" ? (latestPostOf(it.uid) as any) : null
+    const age = lp ? postAgeMs(lp) : Infinity
+    const fresh = age < 86400000 * 2
+    return (
+      <div className="sr-row" key={(fromHistory ? "h" : "s") + it.key} onClick={() => onItemClick(it)}>
+        {it.type === "user" ? (
+          <img className="sr-av" src={it.photo || avatarOf({ name: it.name })} alt="" />
+        ) : (
+          <div className="sr-av-ico">
+            <SrIco d={SR_ICON.clock} />
+          </div>
+        )}
+        <div className="sr-info">
+          <div className="sr-name">
+            <span className="t">{it.name}</span>
+            {it.type === "user" ? verified(it.uid) : null}
+          </div>
+          {(it.pinned || fresh) && (
+            <div className="sr-sub">
+              {it.pinned && (
+                <svg className="pin" viewBox="0 0 24 24">
+                  <path d={SR_ICON.pin} />
+                </svg>
+              )}
+              {fresh && <span className="dot" />}
+              <span>{fresh ? `New post · ${timeAgo(lp.createdAt)}` : "Pinned"}</span>
+            </div>
+          )}
+        </div>
+        <button
+          className="sr-more"
+          aria-label="More"
+          onClick={(e) => {
+            e.stopPropagation()
+            setSheet({ item: it, fromHistory })
+          }}
+        >
+          <SrIco d={SR_ICON.dots} />
+        </button>
+      </div>
+    )
+  }
+
+  /* ---------- views ---------- */
+  const q = query.trim()
+
+  const sortedHist = [...hist].sort((a, b) => Number(!!b.pinned) - Number(!!a.pinned) || b.t - a.t)
+  const histKeys = new Set(hist.map((h) => h.key))
+  const suggestedItems = suggested.filter((s) => !histKeys.has(s.item.key) && !hidden.includes(s.item.key))
+
+  const renderIdle = () => {
+    if (showHistory) {
+      return (
+        <>
+          <div className="sr-sec">
+            <span>Search history</span>
+            {hist.length > 0 && <button onClick={() => saveHist([])}>Clear all</button>}
+          </div>
+          {sortedHist.length === 0 ? (
+            <div className="sr-empty">No recent searches</div>
+          ) : (
+            sortedHist.map((h) => renderItemRow(h, true))
+          )}
+        </>
+      )
+    }
+    return (
+      <>
+        {sortedHist.slice(0, 10).map((h) => renderItemRow(h, true))}
+        {suggestedItems.length > 0 && (
+          <>
+            <div className="sr-sec">
+              <span>Suggested</span>
+            </div>
+            {suggestedItems.map((s) => renderItemRow(s.item, false))}
+          </>
+        )}
+        {sortedHist.length === 0 && suggestedItems.length === 0 && (
+          <div className="sr-empty">
+            <b>Search MeBook</b>
+            Find people, posts, captions and movies
+          </div>
+        )}
+      </>
+    )
+  }
+
+  const renderPostRow = (p: any) => {
+    const u = userMap[p.authorId]
+    const name = u?.name || p.authorName || "User"
+    const photo = u ? avatarOf(u) : p.authorAvatar || avatarOf({ name })
+    const snip = srSnippet(p.caption || "", tokens)
+    return (
+      <div
+        className="sr-post"
+        key={p.id}
+        onClick={() => {
+          rememberQuery()
+          onOpenPost(p)
+        }}
+      >
+        <img
+          className="sr-av sm"
+          src={photo}
+          alt=""
+          onClick={(e) => {
+            e.stopPropagation()
+            rememberQuery()
+            if (p.authorId) onOpenUser(p.authorId)
+          }}
+        />
+        <div className="sr-post-main">
+          <div
+            className="sr-post-head"
+            onClick={(e) => {
+              e.stopPropagation()
+              rememberQuery()
+              if (p.authorId) onOpenUser(p.authorId)
+            }}
+          >
+            <span>{name}</span>
+            {verified(p.authorId, p)}
+            <small>· {timeAgo(p.createdAt)}</small>
+          </div>
+          {snip && <div className="sr-snip">{snip}</div>}
+          {p.movie ? <span className="sr-movie">🎬 {p.movie}</span> : null}
+        </div>
+        {p.image ? <img className="sr-thumb" src={p.image} alt="" /> : null}
+      </div>
+    )
+  }
+
+  const renderResults = () => {
+    const showPeople = tab !== "posts"
+    const showPosts = tab !== "people"
+    const people = results.people
+    const plist = results.posts
+    const nothing = (!showPeople || people.length === 0) && (!showPosts || plist.length === 0)
+    const limit = tab === "posts" ? postLimit + 12 : postLimit
+
+    return (
+      <>
+        <div
+          className="sr-row"
+          onClick={() => {
+            rememberQuery()
+            inputRef.current?.blur()
+          }}
+        >
+          <div className="sr-av-ico">
+            <SrIco d={SR_ICON.search} />
+          </div>
+          <div className="sr-info">
+            <div className="sr-name">
+              <span className="t">{q}</span>
+            </div>
+          </div>
+        </div>
+
+        {showPeople && people.length > 0 && (
+          <>
+            <div className="sr-sec">
+              <span>People</span>
+            </div>
+            {(tab === "people" ? people : people.slice(0, 5)).map((u) => (
+              <div
+                className="sr-row"
+                key={u.uid}
+                onClick={() =>
+                  openUserFromItem({
+                    key: "u:" + u.uid,
+                    type: "user",
+                    uid: u.uid,
+                    name: u.name || "User",
+                    photo: avatarOf(u),
+                    t: 0,
+                  })
+                }
+              >
+                <img className="sr-av" src={avatarOf(u)} alt="" />
+                <div className="sr-info">
+                  <div className="sr-name">
+                    <span className="t">{u.name}</span>
+                    {verified(u.uid, u)}
+                  </div>
+                  {latestPostOf(u.uid) && (
+                    <div className="sr-sub">Last post · {timeAgo((latestPostOf(u.uid) as any).createdAt)}</div>
+                  )}
+                </div>
+              </div>
+            ))}
+            {tab === "all" && people.length > 5 && (
+              <button className="sr-seemore" onClick={() => setTab("people")}>
+                See all people
+              </button>
+            )}
+          </>
+        )}
+
+        {showPosts && plist.length > 0 && (
+          <>
+            <div className="sr-sec">
+              <span>Posts</span>
+            </div>
+            {plist.slice(0, limit).map(renderPostRow)}
+            {plist.length > limit && (
+              <button
+                className="sr-seemore"
+                onClick={() => {
+                  if (tab === "all") setTab("posts")
+                  else setPostLimit((n) => n + 12)
+                }}
+              >
+                See more posts
+              </button>
+            )}
+          </>
+        )}
+
+        {nothing && (
+          <div className="sr-empty">
+            <b>No results for “{q}”</b>
+            Check the spelling or try a different name, caption or movie
+          </div>
+        )}
+      </>
+    )
+  }
+
+  return (
+    <div className="sr-page">
+      <div className="sr-top">
+        <button className="sr-ibtn" onClick={onBack} aria-label="Back">
+          <SrIco d={SR_ICON.back} />
+        </button>
+        <div className="sr-box">
+          <input
+            ref={inputRef}
+            type="text"
+            value={query}
+            placeholder="Search"
+            enterKeyHint="search"
+            autoComplete="off"
+            autoCorrect="off"
+            spellCheck={false}
+            onChange={(e) => {
+              setQuery(e.target.value)
+              setPostLimit(8)
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                rememberQuery()
+                inputRef.current?.blur()
+              }
+            }}
+          />
+          {query && (
+            <button
+              className="sr-clear"
+              aria-label="Clear"
+              onClick={() => {
+                setQuery("")
+                inputRef.current?.focus()
+              }}
+            >
+              <SrIco d={SR_ICON.close} />
+            </button>
+          )}
+        </div>
+        {!query && (
+          <button
+            className="sr-ibtn"
+            aria-label="Search history"
+            onClick={() => setShowHistory((v) => !v)}
+            style={showHistory ? { color: "var(--green)" } : undefined}
+          >
+            <SrIco d={SR_ICON.clock} />
+          </button>
+        )}
+      </div>
+
+      {q && (
+        <div className="sr-chips">
+          {(["all", "people", "posts"] as const).map((t) => (
+            <button key={t} className={`sr-chip${tab === t ? " on" : ""}`} onClick={() => setTab(t)}>
+              {t === "all" ? "All" : t === "people" ? "People" : "Posts"}
+            </button>
+          ))}
+        </div>
+      )}
+
+      <div className="sr-body">{q ? renderResults() : renderIdle()}</div>
+
+      {sheet && (
+        <>
+          <div className="sr-sheet-bd" onClick={() => setSheet(null)} />
+          <div className="sr-sheet" role="dialog">
+            <div className="sr-grab" />
+            <div className="sr-sheet-head">
+              {sheet.item.type === "user" ? (
+                <img className="sr-av" src={sheet.item.photo || avatarOf({ name: sheet.item.name })} alt="" />
+              ) : (
+                <div className="sr-av-ico">
+                  <SrIco d={SR_ICON.clock} />
+                </div>
+              )}
+              <div className="sr-info">
+                <div className="sr-name">
+                  <span className="t">{sheet.item.name}</span>
+                </div>
+              </div>
+            </div>
+            <button className="sr-opt" onClick={() => removeItem(sheet.item, sheet.fromHistory)}>
+              <span className="sr-opt-ico">
+                <SrIco d={SR_ICON.trash} />
+              </span>
+              <span>
+                <b>{sheet.fromHistory ? "Delete" : "Remove"}</b>
+                <small>{sheet.fromHistory ? "Remove this from your search history." : "Hide this suggestion."}</small>
+              </span>
+            </button>
+            {(() => {
+              const cur = hist.find((h) => h.key === sheet.item.key)
+              const isPinned = !!cur?.pinned
+              const blocked = !isPinned && pinCount >= 3
+              return (
+                <button className="sr-opt" disabled={blocked} onClick={() => togglePin(sheet.item)}>
+                  <span className="sr-opt-ico">
+                    <SrIco d={SR_ICON.pin} />
+                  </span>
+                  <span>
+                    <b>{isPinned ? "Unpin this search" : "Pin this search"}</b>
+                    <small>You can only pin 3 searches at a time.</small>
+                  </span>
+                </button>
+              )
+            })()}
+          </div>
+        </>
+      )}
+    </div>
+  )
+}
+
 export default function MeBookPage({ onExit }: MeBookPageProps) {
   const rootRef = useRef<HTMLDivElement>(null)
   const [ready, setReady] = useState(false)
@@ -3704,6 +4429,7 @@ export default function MeBookPage({ onExit }: MeBookPageProps) {
   const [themeRipple, setThemeRipple] = useState<{ x: number; y: number; color: string } | null>(null)
 
   const [menuOpen, setMenuOpen] = useState(false)
+  const [srQuery, setSrQuery] = useState("")
 
   const [toasts, setToasts] = useState<ToastItem[]>([])
   const toastIdRef = useRef(0)
@@ -5594,6 +6320,11 @@ const handleChatTyping = (value: string) => {
 
   const openShare = (post: any) => pushPage("share", { postId: post.id })
 
+  const openSearch = () => {
+    setSrQuery("")
+    pushPage("search")
+  }
+
   const openUserProfile = async (uid: string) => {
     if (uid === user.uid) {
       goTo("profile")
@@ -6932,7 +7663,7 @@ const handleChatTyping = (value: string) => {
         .slice(0, 6)
     : []
 
-  const rootClass = `mebook-root ${theme === "dark" ? "dark-mode" : ""}${currentView === "messages" ? " mc-open" : ""}`
+  const rootClass = `mebook-root ${theme === "dark" ? "dark-mode" : ""}${currentView === "messages" ? " mc-open" : ""}${currentView === "search" ? " sr-open" : ""}`
 
   const findPost = (postId: string) =>
     feed.find((p) => p.id === postId) ||
@@ -7734,10 +8465,6 @@ const handleChatTyping = (value: string) => {
               <span className="me">Me</span>
               <span className="book">Book</span>
             </div>
-            <span className="mb-beta-badge">
-              <span className="mb-beta-dot" />
-              BETA
-            </span>
           </div>
         </div>
 
@@ -7750,6 +8477,16 @@ const handleChatTyping = (value: string) => {
           >
             <svg viewBox="0 0 24 24">
               <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
+            </svg>
+          </button>
+          <button
+            className="mb-icon-btn"
+            title="Search"
+            aria-label="Search"
+            onClick={openSearch}
+          >
+            <svg viewBox="0 0 24 24">
+              <path d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
             </svg>
           </button>
           <button
@@ -9131,6 +9868,25 @@ const handleChatTyping = (value: string) => {
             </div>
           )}
 
+          {currentView === "search" && (
+            <SearchPage
+              me={user.uid}
+              query={srQuery}
+              setQuery={setSrQuery}
+              users={allUsers}
+              posts={Array.from(
+                new Map(
+                  [...feed, ...extraPosts, ...myPosts].map((p: any) => [p.id, p])
+                ).values()
+              ).sort((a: any, b: any) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0))}
+              avatarOf={avatarUrl}
+              isVerUid={isVerifiedUid}
+              onBack={goBack}
+              onOpenUser={(uid: string) => openUserProfile(uid)}
+              onOpenPost={(post: any) => openComments(post)}
+            />
+          )}
+
           {currentView === "create-post" && (
             <div className="mb-view active">
               <button className="mb-back-btn" onClick={goBack}>
@@ -10006,4 +10762,4 @@ function SideItem({
       {badge && badge > 0 ? <span className="mb-side-badge">{badge}</span> : null}
     </button>
   )
-      }
+    }

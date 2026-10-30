@@ -2321,6 +2321,12 @@ opacity:0;transition:opacity .15s,background .15s;
 .mebook-root .mc-head-x{position:absolute;top:-6px;right:-6px;width:20px;height:20px;border-radius:50%;background:#333;color:#fff;font-size:14px;line-height:1;display:flex;align-items:center;justify-content:center;border:none;cursor:pointer;padding:0;}
 .mebook-root .mc-sender-name{font-size:11.5px;font-weight:700;opacity:.75;margin-bottom:2px;}
 
+.mebook-root .mc-vbadge{display:inline-block;vertical-align:-2px;margin-left:4px;}
+.mebook-root .msgr-item-name.mc-has-badge{display:flex;align-items:center;gap:0;}
+.mebook-root .msgr-item-name .mc-name-text{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;}
+.mebook-root .msgr-item-name.mc-has-badge .mc-vbadge{margin-left:4px;}
+.mebook-root .mc-sender-name .mc-vbadge{margin-left:3px;vertical-align:-1px;}
+
 /* ============================================================
    MECHAT — FULL SCREEN LIST PAGE, GLASS BACK BUTTON, TITLE
    ============================================================ */
@@ -3295,6 +3301,11 @@ const MC_IC: any = {
   check: "M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z",
 }
 
+function mcVerifiedBadge(size: any) {
+  return React.createElement("svg", { className: "mc-vbadge", width: size, height: size, viewBox: "0 0 24 24", fill: "#22c55e", style: { flexShrink: 0 } },
+    React.createElement("path", { d: "M23 12l-2.44-2.79.34-3.69-3.61-.82-1.89-3.2L12 2.96 8.6 1.5 6.71 4.69l-3.61.82.34 3.69L1 12l2.44 2.79-.34 3.7 3.61.82L8.6 22.5l3.4-1.47 3.4 1.46 1.89-3.19 3.61-.82-.34-3.69L23 12zm-12.91 4.72l-3.8-3.81 1.48-1.48 2.32 2.33 5.85-5.87 1.48 1.48-7.33 7.35z" }))
+}
+
 function mcIcon(d: any, size: any) {
   return React.createElement("svg", { viewBox: "0 0 24 24", width: size, height: size, fill: "currentColor" },
     React.createElement("path", { d: d }))
@@ -3348,7 +3359,7 @@ function McChatSheet(props: any) {
       React.createElement("div", { className: "mc-sheet-handle" }),
       React.createElement("div", { className: "mc-sheet-head" },
         React.createElement("img", { src: props.avatar, alt: "" }),
-        React.createElement("b", null, chat.other.name)),
+        React.createElement("b", null, chat.other.name, props.verified ? mcVerifiedBadge(15) : null)),
       rows.map((r: any) =>
         React.createElement("button", {
           key: r.k,
@@ -3393,7 +3404,7 @@ function McAddMembers(props: any) {
               const on = sel.includes(u.uid)
               return React.createElement("div", { key: u.uid, className: "mc-add-row", onClick: () => toggle(u.uid) },
                 React.createElement("img", { src: props.avatarOf(u), alt: "" }),
-                React.createElement("span", null, u.name),
+                React.createElement("span", null, u.name, props.isVer && props.isVer(u) ? mcVerifiedBadge(14) : null),
                 React.createElement("i", { className: on ? "on" : "" }, on ? mcIcon(MC_IC.check, 16) : null))
             })),
       React.createElement("button", {
@@ -4166,6 +4177,73 @@ const handleChatTyping = (value: string) => {
       )
       unsubscribersRef.current.push(
         fb.onSnapshot(reqQ, async (snap: any) => {
+          const arr: any[] = []
+          for (const d of snap.docs) {
+            const data = d.data()
+            const fromSnap = await fb.getDoc(fb.doc(fb.db, "users", data.from))
+            arr.push({
+              id: d.id,
+              from: data.from,
+              fromUser: fromSnap.exists() ? fromSnap.data() : { name: "User", photoURL: "" },
+            })
+          }
+          setRequests(arr)
+        })
+      )
+
+      const sentQ = fb.query(
+        fb.collection(fb.db, "friendRequests"),
+        fb.where("from", "==", uid)
+      )
+      unsubscribersRef.current.push(
+        fb.onSnapshot(sentQ, async (snap: any) => {
+          const arr: any[] = []
+          for (const d of snap.docs) {
+            const data = d.data()
+            const toSnap = await fb.getDoc(fb.doc(fb.db, "users", data.to))
+            arr.push({
+              id: d.id,
+              to: data.to,
+              status: data.status,
+              toUser: toSnap.exists() ? toSnap.data() : { name: "User", photoURL: "" },
+            })
+          }
+          setSentFriendRequests(arr)
+        })
+      )
+
+      const myFriendsQ = fb.query(
+        fb.collection(fb.db, "friends"),
+        fb.where("members", "array-contains", uid)
+      )
+
+      unsubscribersRef.current.push(
+        fb.onSnapshot(myFriendsQ, async (snap: any) => {
+          const arr: any[] = []
+          const seen = new Set<string>()
+          for (const d of snap.docs) {
+            const data = d.data()
+            const otherId = (data.members || []).find((m: string) => m !== uid)
+            if (!otherId || seen.has(otherId)) continue
+            seen.add(otherId)
+            try {
+              const s = await fb.getDoc(fb.doc(fb.db, "users", otherId))
+              if (s.exists()) {
+                arr.push({
+                  uid: s.id,
+                  ...s.data(),
+                  friendsSince: data.createdAt || null,
+                })
+              }
+            } catch {}
+          }
+          setMyFriends(arr)
+        })
+      )
+
+      const chatsQ = fb.query(fb.collection(fb.db, "chats"), fb.where("members", "array-contains", uid))
+      unsubscribersRef.current.push(
+        fb.onSnapshot(chatsQ, async (snap: any) => {
           const results = await Promise.all(
             snap.docs.map(async (d: any) => {
               try {
@@ -6093,6 +6171,14 @@ const handleChatTyping = (value: string) => {
 
   const isVerified = (obj: any) => obj?.verified === true || obj?.isOfficial === true
 
+  // Live verified lookup by uid (so old comments/chats also show the badge)
+  const isVerifiedUid = (uid: any, obj: any) => {
+    if (obj && (obj.verified === true || obj.isOfficial === true)) return true
+    if (!uid) return false
+    if (user && uid === user.uid) return isVerified(profile)
+    return isVerified(allUsers.find((u: any) => u.uid === uid))
+  }
+
   /* ============================================================
   AUTH SCREEN
   ============================================================ */
@@ -6552,7 +6638,9 @@ const handleChatTyping = (value: string) => {
         React.createElement("img", { src: photo, alt: "", draggable: false }),
         c.isGroup ? null : React.createElement("span", { className: "msgr-item-dot" })),
       React.createElement("div", { className: "msgr-item-body" },
-        React.createElement("div", { className: "msgr-item-name" + (unread ? " mc-unread" : "") }, c.other.name),
+        React.createElement("div", { className: "msgr-item-name mc-has-badge" + (unread ? " mc-unread" : "") },
+          React.createElement("span", { className: "mc-name-text" }, c.other.name),
+          !c.isGroup && isVerifiedUid(c.otherId, c.other) ? mcVerifiedBadge(14) : null),
         React.createElement("div", { className: "msgr-item-last" + (unread ? " unread" : "") }, (lastObj && lastObj.text) || "Say hi 👋")),
       React.createElement("div", { className: "mc-item-meta" },
         React.createElement("div", { className: "msgr-item-time" }, c.lastAt ? timeShort(c.lastAt) : ""),
@@ -6580,6 +6668,7 @@ const handleChatTyping = (value: string) => {
   const mcOverlays = React.createElement(React.Fragment, null,
     chatMenu ? React.createElement(McChatSheet, {
       chat: chatMenu, prefs: chatPrefs, avatar: avatarUrl(chatMenu.other),
+      verified: !chatMenu.isGroup && isVerifiedUid(chatMenu.otherId, chatMenu.other),
       onClose: () => setChatMenu(null), onAction: (k: any) => chatAction(k, chatMenu),
     }) : null,
     chatConfirm ? React.createElement(McConfirm, {
@@ -6592,6 +6681,7 @@ const handleChatTyping = (value: string) => {
     }) : null,
     addMembersFor ? React.createElement(McAddMembers, {
       chat: addMembersFor, users: allUsers, me: user.uid, avatarOf: avatarUrl,
+      isVer: (u: any) => isVerifiedUid(u.uid, u),
       onClose: () => setAddMembersFor(null),
       onConfirm: (ids: any) => confirmAddMembers(addMembersFor, ids),
     }) : null,
@@ -6634,7 +6724,7 @@ const handleChatTyping = (value: string) => {
                               <span className="msgr-item-dot" />
                             </div>
                             <div className="msgr-item-body">
-                              <div className="msgr-item-name">{u.name}</div>
+                              <div className="msgr-item-name">{u.name}{isVerifiedUid(u.uid, u) && mcVerifiedBadge(14)}</div>
                               <div className="msgr-item-last">Tap to start chatting</div>
                             </div>
                           </div>
@@ -8322,7 +8412,7 @@ const handleChatTyping = (value: string) => {
                               className={`mechat-bubble ${mine ? "me" : "them"} ${isImageMsg ? "mechat-bubble-image" : ""}`}
                               style={isImageMsg ? { padding: 3, background: "transparent", maxWidth: "72%" } : undefined}
                             >
-                              {chatPartner?.isGroup && !mine && <div className="mc-sender-name">{mcSenderName(m)}</div>}
+                              {chatPartner?.isGroup && !mine && <div className="mc-sender-name">{mcSenderName(m)}{isVerifiedUid(m.from, null) && mcVerifiedBadge(12)}</div>}
                               {bubbleContent}
                             </div>
                             {!mine && !isLikeMsg && (
@@ -8733,7 +8823,7 @@ const handleChatTyping = (value: string) => {
                         handleLongPressReaction(evt, commentKey)
                       }}
                     >
-                      <b>{c.name || "User"}</b>
+                      <b>{c.name || "User"}{isVerifiedUid(c.uid, c) && mcVerifiedBadge(14)}</b>
                       {c.text}
                       {c.image && (
                         <div className="cmt-bubble-image">
@@ -9430,4 +9520,4 @@ function SideItem({
       {badge && badge > 0 ? <span className="mb-side-badge">{badge}</span> : null}
     </button>
   )
-  }
+                }

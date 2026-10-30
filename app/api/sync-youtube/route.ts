@@ -257,10 +257,17 @@ async function syncChannel(db: FirebaseFirestore.Firestore, doc: FirebaseFiresto
     update.name = name
     update.avatar = avatar
 
-    // which videos are already known?
-    const refs = entries.map((e) => db.collection("youtubeVideos").doc(e.videoId))
-    const seenSnaps = refs.length ? await db.getAll(...refs) : []
-    const unseen = entries.filter((_, i) => !seenSnaps[i].exists)
+    // which videos are already known? (kept inside the channel doc => no extra reads)
+    const seen = new Set<string>(Array.isArray(ch.seenIds) ? ch.seenIds : [])
+    if (!Array.isArray(ch.seenIds) && entries.length) {
+      // older records from before "seenIds" existed: look them up once
+      const refs = entries.map((e) => db.collection("youtubeVideos").doc(e.videoId))
+      const snaps = await db.getAll(...refs)
+      snaps.forEach((sn, i) => {
+        if (sn.exists) seen.add(entries[i].videoId)
+      })
+    }
+    const unseen = entries.filter((e) => !seen.has(e.videoId))
 
     const firstSync = !ch.lastSyncAt
     let toImport: Entry[] = []
@@ -278,7 +285,8 @@ async function syncChannel(db: FirebaseFirestore.Firestore, doc: FirebaseFiresto
     for (const e of [...toImport].reverse()) {
       const short = await isShort(e.videoId, e.duration)
       const postRef = db.collection("posts").doc(`yt_${e.videoId}`)
-      await postRef.set({
+      try {
+      await postRef.create({
         authorId: "admin",
         authorName: name,
         authorAvatar: avatar,
@@ -304,22 +312,16 @@ async function syncChannel(db: FirebaseFirestore.Firestore, doc: FirebaseFiresto
         shares: 0,
         createdAt: Timestamp.fromDate(isNaN(e.published.getTime()) ? new Date() : e.published),
       })
-      await db.collection("youtubeVideos").doc(e.videoId).set({
-        channelId,
-        postId: postRef.id,
-        imported: true,
-        at: FieldValue.serverTimestamp(),
-      })
       imported++
+      } catch (err: any) {
+        // code 6 = ALREADY_EXISTS (post was created in an earlier, interrupted run)
+        if (err?.code !== 6) throw err
+      }
     }
 
-    for (const e of toMarkOnly) {
-      await db.collection("youtubeVideos").doc(e.videoId).set({
-        channelId,
-        imported: false,
-        at: FieldValue.serverTimestamp(),
-      })
-    }
+    // remember every video we have now seen (newest first, keep 80)
+    update.seenIds = Array.from(new Set([...entries.map((e) => e.videoId), ...Array.from(seen)])).slice(0, 80)
+    void toMarkOnly
 
     update.status = "ok"
     update.error = ""

@@ -262,6 +262,7 @@ const HEADER_LOGO = "https://i.postimg.cc/rsBBsQWF/17832-removebg-preview.png"
 const REACTIONS = [
   { key: "like", emoji: "👍", label: "Like", color: "#1877f2" },
   { key: "love", emoji: "❤️", label: "Love", color: "#f33e58" },
+  { key: "care", emoji: "🥰", label: "Care", color: "#f7b125" },
   { key: "haha", emoji: "😂", label: "Haha", color: "#f7b125" },
   { key: "wow", emoji: "😮", label: "Wow", color: "#f7b125" },
   { key: "sad", emoji: "😢", label: "Sad", color: "#f7b125" },
@@ -817,6 +818,91 @@ position:fixed;z-index:3500;font-size:28px;
 pointer-events:none;
 animation:fastLikeFly .6s cubic-bezier(.2,.8,.3,1) forwards;
 }
+
+/* ============ Facebook-style reactions (rx-*) ============ */
+.mebook-root .rx-badge{display:inline-flex;align-items:center;justify-content:center;border-radius:50%;flex-shrink:0;}
+.mebook-root .rx-badge svg.rx-svg{width:58%;height:58%;fill:#fff;}
+.mebook-root .rx-emoji{display:inline-flex;align-items:center;justify-content:center;line-height:1;flex-shrink:0;border-radius:50%;}
+.mebook-root .rx-ring{box-shadow:0 0 0 2px var(--card);background:var(--card);}
+.mebook-root .rx-stack{display:inline-flex;align-items:center;}
+.mebook-root .rx-stack-item{display:inline-flex;position:relative;}
+.mebook-root .rx-like-btn{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent;}
+.mebook-root .rx-btn-ico{display:inline-flex;align-items:center;justify-content:center;}
+.mebook-root .rx-btn-ico.rx-land{animation:rxLand .5s cubic-bezier(.2,1.7,.4,1);}
+@keyframes rxLand{0%{transform:scale(.2) rotate(-25deg);}55%{transform:scale(1.5) rotate(8deg);}100%{transform:scale(1) rotate(0);}}
+.mebook-root .rx-count-link{cursor:pointer;}
+.mebook-root .rx-count-link:hover{text-decoration:underline;}
+
+.mebook-root .rx-picker{position:fixed;z-index:3000;display:flex;flex-direction:column;align-items:flex-start;pointer-events:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;}
+.mebook-root .rx-picker.open{pointer-events:auto;}
+.mebook-root .rx-bar{display:flex;align-items:flex-end;padding:6px 8px;background:var(--card);border-radius:36px;box-shadow:0 8px 28px rgba(0,0,0,.28),0 0 0 1px rgba(0,0,0,.06);transform-origin:bottom left;transform:scale(.3) translateY(10px);opacity:0;transition:transform .3s cubic-bezier(.2,1.4,.4,1),opacity .14s ease;}
+.mebook-root.dark-mode .rx-bar{box-shadow:0 8px 30px rgba(0,0,0,.9),0 0 0 1px rgba(255,255,255,.08);}
+.mebook-root .rx-picker.below .rx-bar{transform-origin:top left;}
+.mebook-root .rx-picker.open .rx-bar{transform:scale(1) translateY(0);opacity:1;}
+.mebook-root .rx-slot{position:relative;width:40px;height:44px;padding:0;display:flex;align-items:flex-end;justify-content:center;background:none;border:0;cursor:pointer;touch-action:none;-webkit-tap-highlight-color:transparent;}
+.mebook-root .rx-pop{display:flex;}
+.mebook-root .rx-picker.open .rx-pop{animation:rxIconIn .55s cubic-bezier(.2,1.5,.4,1) both;animation-delay:calc(var(--i) * 45ms + 70ms);}
+@keyframes rxIconIn{0%{transform:translateY(26px) scale(.15);opacity:0;}55%{transform:translateY(-9px) scale(1.18);opacity:1;}100%{transform:translateY(0) scale(1);opacity:1;}}
+.mebook-root .rx-item{display:flex;transform-origin:bottom center;transition:transform .2s cubic-bezier(.3,1.6,.5,1);}
+.mebook-root .rx-slot.active .rx-item{transform:translateY(-14px) scale(1.55);}
+.mebook-root .rx-picker.has-active .rx-slot:not(.active) .rx-item{transform:scale(.8);}
+.mebook-root .rx-slot.active .rx-item{animation:rxWiggle .5s ease .1s;}
+@keyframes rxWiggle{0%,100%{rotate:0deg;}30%{rotate:-8deg;}65%{rotate:7deg;}}
+.mebook-root .rx-label{position:absolute;bottom:calc(100% + 26px);left:50%;transform:translateX(-50%) scale(.7);opacity:0;pointer-events:none;background:rgba(18,18,18,.88);color:#fff;font-size:11.5px;font-weight:700;padding:3px 9px;border-radius:12px;white-space:nowrap;transition:opacity .12s,transform .15s cubic-bezier(.3,1.6,.5,1);z-index:2;}
+.mebook-root .rx-slot.active .rx-label{opacity:1;transform:translateX(-50%) scale(1);}
+.mebook-root .rx-hint{margin:8px 0 0 10px;font-size:12px;font-weight:600;color:var(--text-muted);opacity:0;transition:opacity .2s .15s;text-shadow:0 0 6px var(--bg);}
+.mebook-root .rx-picker.open .rx-hint{opacity:1;}
+.mebook-root .rx-jump{position:fixed;left:0;top:0;z-index:3600;pointer-events:none;will-change:transform;}
+
+/* ---- Reactions / Comments bottom sheet ---- */
+.mebook-root .rx-sheet-backdrop{position:fixed;inset:0;z-index:2800;background:rgba(0,0,0,0);display:flex;align-items:flex-end;justify-content:center;transition:background .25s ease;}
+.mebook-root .rx-sheet-backdrop.open{background:rgba(0,0,0,.55);}
+.mebook-root .rx-sheet{width:100%;max-width:560px;height:84vh;height:84dvh;background:var(--card);color:var(--text);border-radius:18px 18px 0 0;display:flex;flex-direction:column;overflow:hidden;transform:translateY(100%);transition:transform .3s cubic-bezier(.2,.9,.3,1);box-shadow:0 -6px 30px rgba(0,0,0,.35);}
+.mebook-root .rx-sheet-backdrop.open .rx-sheet{transform:translateY(0);}
+.mebook-root .rx-sheet-top{flex-shrink:0;padding:6px 14px 4px;touch-action:none;}
+.mebook-root .rx-sheet-grip{width:40px;height:4px;border-radius:4px;background:var(--border);margin:2px auto 10px;}
+.mebook-root .rx-sheet-head{display:flex;align-items:center;gap:8px;}
+.mebook-root .rx-head-pill{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:18px;font-size:14px;font-weight:700;color:var(--text);background:transparent;transition:background .15s;}
+.mebook-root .rx-head-pill.active{background:rgba(24,119,242,.16);}
+.mebook-root .rx-tabs{display:flex;gap:2px;overflow-x:auto;border-bottom:1px solid var(--border);padding:0 8px;flex-shrink:0;scrollbar-width:none;}
+.mebook-root .rx-tabs::-webkit-scrollbar{display:none;}
+.mebook-root .rx-tab{display:flex;align-items:center;gap:5px;padding:10px 12px;font-size:14px;font-weight:700;color:var(--text-muted);border-bottom:3px solid transparent;white-space:nowrap;background:none;}
+.mebook-root .rx-tab.active{color:var(--text);}
+.mebook-root .rx-list{flex:1;overflow-y:auto;overscroll-behavior:contain;padding:6px 0 18px;}
+.mebook-root .rx-row{display:flex;align-items:center;gap:12px;padding:8px 16px;}
+.mebook-root .rx-row-av{position:relative;width:44px;height:44px;flex-shrink:0;}
+.mebook-root .rx-row-av img{width:44px;height:44px;border-radius:50%;object-fit:cover;display:block;background:var(--input-bg);}
+.mebook-root .rx-row-badge{position:absolute;right:-3px;bottom:-3px;display:flex;}
+.mebook-root .rx-row-name{flex:1;min-width:0;font-size:15px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer;display:flex;flex-direction:column;}
+.mebook-root .rx-row-name small{font-size:12.5px;font-weight:500;color:var(--text-muted);margin-top:1px;}
+.mebook-root .rx-add-btn{padding:8px 14px;border-radius:8px;background:#1877f2;color:#fff;font-size:13.5px;font-weight:700;flex-shrink:0;transition:filter .15s,transform .1s;}
+.mebook-root .rx-add-btn:active{transform:scale(.96);}
+.mebook-root .rx-add-btn.sent{background:var(--input-bg);color:var(--text-muted);pointer-events:none;}
+.mebook-root .rx-empty{padding:40px 20px;text-align:center;color:var(--text-muted);font-size:14px;}
+.mebook-root .rx-sort{align-self:flex-start;margin:6px 16px 4px;font-size:14px;font-weight:700;color:var(--text);background:none;}
+.mebook-root .rx-cmt{display:flex;gap:9px;padding:6px 16px;align-items:flex-start;}
+.mebook-root .rx-cmt.reply{padding-left:56px;}
+.mebook-root .rx-cmt-av{width:36px;height:36px;border-radius:50%;object-fit:cover;flex-shrink:0;cursor:pointer;background:var(--input-bg);}
+.mebook-root .rx-cmt.reply .rx-cmt-av{width:28px;height:28px;}
+.mebook-root .rx-cmt-main{min-width:0;max-width:calc(100% - 46px);}
+.mebook-root .rx-cmt-bubble{position:relative;display:inline-block;max-width:100%;background:var(--input-bg);border-radius:18px;padding:8px 12px;font-size:14.5px;line-height:1.35;word-break:break-word;white-space:pre-wrap;}
+.mebook-root .rx-cmt-bubble b{display:flex;align-items:center;gap:4px;font-size:13.5px;margin-bottom:1px;}
+.mebook-root .rx-cmt-bubble img{display:block;max-width:100%;max-height:200px;border-radius:12px;margin-top:6px;}
+.mebook-root .rx-cmt-react{position:absolute;right:-6px;bottom:-9px;display:flex;align-items:center;gap:3px;background:var(--card);border-radius:12px;padding:1px 5px 1px 2px;box-shadow:0 1px 4px rgba(0,0,0,.3);font-size:11.5px;font-weight:700;color:var(--text-muted);}
+.mebook-root .rx-cmt-meta{display:flex;align-items:center;gap:14px;padding:3px 12px 0;font-size:12.5px;font-weight:700;color:var(--text-muted);}
+.mebook-root .rx-cmt-meta span{font-weight:500;}
+.mebook-root .rx-cmt-meta button{font-size:12.5px;font-weight:700;color:var(--text-muted);background:none;padding:2px 0;}
+.mebook-root .rx-foot{flex-shrink:0;border-top:1px solid var(--border);padding:8px 12px calc(10px + env(safe-area-inset-bottom,0px));background:var(--card);}
+.mebook-root .rx-quick{display:flex;justify-content:space-between;padding:2px 4px 8px;}
+.mebook-root .rx-quick button{font-size:26px;line-height:1;padding:3px;background:none;transition:transform .15s cubic-bezier(.3,1.6,.5,1);}
+.mebook-root .rx-quick button:active{transform:scale(1.35);}
+.mebook-root .rx-replying{display:flex;align-items:center;justify-content:space-between;font-size:12.5px;color:var(--text-muted);padding:0 6px 6px;}
+.mebook-root .rx-replying button{font-weight:700;color:var(--text);background:none;}
+.mebook-root .rx-write{display:flex;align-items:center;gap:8px;background:var(--input-bg);border-radius:22px;padding:4px 6px 4px 14px;}
+.mebook-root .rx-write input{flex:1;min-width:0;background:transparent;border:0;outline:0;color:var(--text);font-size:14.5px;padding:8px 0;}
+.mebook-root .rx-send{width:34px;height:34px;border-radius:50%;background:#1877f2;color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.mebook-root .rx-send:disabled{opacity:.5;}
+.mebook-root .rx-send svg{width:18px;height:18px;fill:currentColor;}
 
 /* ============ BUTTONS ============ */
 .mebook-root .mb-btn{width:100%;padding:9px;border-radius:9px;font-size:14.5px;font-weight:600;transition:filter .18s,transform .12s,background .2s;}
@@ -2669,82 +2755,557 @@ function ReactionPicker({
 }
 
 /* ============================================================
-POST REACTION PICKER — Facebook screenshot style with swipe-select
+FACEBOOK-STYLE REACTIONS — icon, picker, jump animation, sheet
 ============================================================ */
+
+function ReactionIcon({ k, size = 20, ring = false }: { k: string; size?: number; ring?: boolean }) {
+  const r = REACTIONS.find((x) => x.key === k)
+  const ringCls = ring ? " rx-ring" : ""
+  if (k === "like") {
+    return (
+      <span className={`rx-badge${ringCls}`} style={{ width: size, height: size, background: "linear-gradient(180deg,#5aaeff,#1877f2)" }}>
+        <svg className="rx-svg" viewBox="0 0 24 24">
+          <path d="M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-1.91z" />
+        </svg>
+      </span>
+    )
+  }
+  if (k === "love") {
+    return (
+      <span className={`rx-badge${ringCls}`} style={{ width: size, height: size, background: "linear-gradient(180deg,#ff6680,#f02849)" }}>
+        <svg className="rx-svg" viewBox="0 0 24 24">
+          <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+        </svg>
+      </span>
+    )
+  }
+  return (
+    <span className={`rx-emoji${ringCls}`} style={{ width: size, height: size, fontSize: size * 0.92 }}>
+      {r?.emoji}
+    </span>
+  )
+}
 
 function PostReactionPicker({
   anchorRect,
   open,
   onReact,
 }: {
-  anchorRect: { x: number; y: number; width: number } | null
+  anchorRect: { x: number; y: number; width: number; height?: number } | null
   open: boolean
-  onReact: (reactionKey: string, emoji: string) => void
+  onReact: (reactionKey: string, emoji: string, from: { x: number; y: number }) => void
 }) {
   const [activeKey, setActiveKey] = useState<string | null>(null)
-  const pickerRef = useRef<HTMLDivElement>(null)
+  const [down, setDown] = useState(true)
+  const activeRef = useRef<string | null>(null)
+  const downRef = useRef(false)
+  const barRef = useRef<HTMLDivElement>(null)
+  const onReactRef = useRef(onReact)
+  onReactRef.current = onReact
+
+  const setActive = (k: string | null) => {
+    activeRef.current = k
+    setActiveKey(k)
+  }
+
+  const centerOf = (key: string) => {
+    const el = barRef.current?.querySelector(`[data-rkey="${key}"] .rx-item`) as HTMLElement | null
+    if (!el) return { x: window.innerWidth / 2, y: window.innerHeight / 2 }
+    const r = el.getBoundingClientRect()
+    return { x: r.left + r.width / 2, y: r.top + r.height / 2 }
+  }
+
+  const choose = (key: string) => {
+    const r = REACTIONS.find((x) => x.key === key)
+    if (!r) return
+    onReactRef.current(key, r.emoji, centerOf(key))
+  }
 
   useEffect(() => {
     if (!open) {
-      setActiveKey(null)
+      downRef.current = false
+      setActive(null)
       return
     }
+    downRef.current = true
+    setDown(true)
 
-    const handleMove = (clientX: number, clientY: number) => {
-      if (!pickerRef.current) return
-      const buttons = pickerRef.current.querySelectorAll("button[data-rkey]")
-      buttons.forEach((btn) => {
-        const rect = btn.getBoundingClientRect()
-        if (
-          clientX >= rect.left - 4 &&
-          clientX <= rect.right + 4 &&
-          clientY >= rect.top - 24 &&
-          clientY <= rect.bottom + 24
-        ) {
-          const key = btn.getAttribute("data-rkey")
-          setActiveKey(key)
+    const hit = (cx: number, cy: number) => {
+      const bar = barRef.current
+      if (!bar) return
+      const b = bar.getBoundingClientRect()
+      let found = null as string | null
+      if (cy >= b.top - 110 && cy <= b.bottom + 80) {
+        for (const el of Array.from(bar.querySelectorAll("[data-rkey]"))) {
+          const r = (el as HTMLElement).getBoundingClientRect()
+          if (cx >= r.left && cx < r.right) {
+            found = (el as HTMLElement).getAttribute("data-rkey")
+            break
+          }
         }
-      })
+      }
+      if (found !== activeRef.current) setActive(found)
     }
 
-    const onMouseMove = (e: MouseEvent) => handleMove(e.clientX, e.clientY)
-    const onTouchMove = (e: TouchEvent) => {
-      if (e.touches[0]) handleMove(e.touches[0].clientX, e.touches[0].clientY)
+    const release = (cancel: boolean) => {
+      if (!downRef.current) return
+      downRef.current = false
+      setDown(false)
+      const k = activeRef.current
+      if (k && !cancel) choose(k)
     }
 
-    window.addEventListener("mousemove", onMouseMove)
-    window.addEventListener("touchmove", onTouchMove)
+    const onTM = (e: TouchEvent) => {
+      if (!downRef.current) return
+      if (e.cancelable) e.preventDefault()
+      const t = e.touches[0]
+      if (t) hit(t.clientX, t.clientY)
+    }
+    const onTE = (e: TouchEvent) => {
+      if (downRef.current && activeRef.current && e.cancelable) e.preventDefault()
+      release(false)
+    }
+    const onTC = () => release(true)
+    const onMM = (e: MouseEvent) => {
+      if (downRef.current) hit(e.clientX, e.clientY)
+    }
+    const onMU = () => release(false)
+
+    window.addEventListener("touchmove", onTM, { passive: false })
+    window.addEventListener("touchend", onTE, { passive: false })
+    window.addEventListener("touchcancel", onTC)
+    window.addEventListener("mousemove", onMM)
+    window.addEventListener("mouseup", onMU)
     return () => {
-      window.removeEventListener("mousemove", onMouseMove)
-      window.removeEventListener("touchmove", onTouchMove)
+      window.removeEventListener("touchmove", onTM)
+      window.removeEventListener("touchend", onTE)
+      window.removeEventListener("touchcancel", onTC)
+      window.removeEventListener("mousemove", onMM)
+      window.removeEventListener("mouseup", onMU)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open])
 
   if (!anchorRect) return null
 
+  const barW = REACTIONS.length * 40 + 16
+  const left = Math.max(8, Math.min(anchorRect.x, window.innerWidth - barW - 8))
+  const below = anchorRect.y < 150
+  const pos: React.CSSProperties = below
+    ? { left, top: anchorRect.y + (anchorRect.height || 44) + 8 }
+    : { left, bottom: window.innerHeight - anchorRect.y + 6 }
+
   return (
     <div
-      ref={pickerRef}
-      className={`post-reaction-picker${open ? " open" : ""}`}
-      style={{
-        left: Math.max(8, Math.min(anchorRect.x, window.innerWidth - 340)),
-        top: Math.max(70, anchorRect.y - 68),
-      }}
+      className={`rx-picker${open ? " open" : ""}${below ? " below" : ""}${activeKey ? " has-active" : ""}`}
+      style={pos}
       onClick={(e) => e.stopPropagation()}
+      onContextMenu={(e) => e.preventDefault()}
     >
-      {REACTIONS.map((r) => (
-        <button
-          key={r.key}
-          type="button"
-          data-rkey={r.key}
-          title={r.label}
-          className={activeKey === r.key ? "swipe-active" : ""}
-          onMouseEnter={() => setActiveKey(r.key)}
-          onClick={() => onReact(r.key, r.emoji)}
+      <div className="rx-bar" ref={barRef} onMouseLeave={() => setActive(null)}>
+        {REACTIONS.map((r, i) => (
+          <button
+            key={r.key}
+            type="button"
+            data-rkey={r.key}
+            title={r.label}
+            className={`rx-slot${activeKey === r.key ? " active" : ""}`}
+            style={{ ["--i" as any]: i } as React.CSSProperties}
+            onMouseEnter={() => setActive(r.key)}
+            onClick={() => choose(r.key)}
+          >
+            <span className="rx-label">{r.label}</span>
+            <span className="rx-pop">
+              <span className="rx-item">
+                <ReactionIcon k={r.key} size={32} />
+              </span>
+            </span>
+          </button>
+        ))}
+      </div>
+      <div className="rx-hint">{down ? "Slide finger across" : "Tap to select"}</div>
+    </div>
+  )
+}
+
+/* Selected reaction jumps from the picker into the Like button */
+function RxJump({
+  k, fx, fy, tx, ty, onDone,
+}: {
+  k: string; fx: number; fy: number; tx: number; ty: number; onDone: () => void
+}) {
+  const ref = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    const el = ref.current
+    if (!el || typeof (el as any).animate !== "function") {
+      onDone()
+      return
+    }
+    const mx = fx + (tx - fx) * 0.45
+    const my = Math.min(fy, ty) - 80
+    const t = (x: number, y: number, s: number) =>
+      `translate(${x}px,${y}px) translate(-50%,-50%) scale(${s})`
+    const anim = el.animate(
+      [
+        { transform: t(fx, fy, 1.5), opacity: 1, offset: 0, easing: "cubic-bezier(.2,.8,.4,1)" },
+        { transform: t(mx, my, 1.9), opacity: 1, offset: 0.45, easing: "cubic-bezier(.5,0,.85,.55)" },
+        { transform: t(tx, ty, 0.75), opacity: 1, offset: 0.92 },
+        { transform: t(tx, ty, 0.5), opacity: 0, offset: 1 },
+      ],
+      { duration: 580, fill: "forwards" }
+    )
+    anim.onfinish = () => onDone()
+    return () => anim.cancel()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+  return (
+    <div ref={ref} className="rx-jump">
+      <ReactionIcon k={k} size={30} />
+    </div>
+  )
+}
+
+/* ---- Reactors list + comments bottom sheet ---- */
+function EngageSheet(props: {
+  post: any
+  mode: "reactions" | "comments"
+  tab: string
+  onMode: (m: "reactions" | "comments") => void
+  onTab: (t: string) => void
+  onClose: () => void
+  me: any
+  profile: any
+  allUsers: any[]
+  myFriends: any[]
+  sentRequests: Record<string, string>
+  sentFriendRequests: any[]
+  onAddFriend: (uid: string) => void
+  onOpenProfile: (uid: string) => void
+  commentText: string
+  setCommentText: (s: string) => void
+  commentBusy: boolean
+  replyTo: any
+  setReplyTo: (r: any) => void
+  onSend: () => void
+  onQuickEmoji: (emoji: string) => void
+  onLikeComment: (commentId: string) => void
+  isVerifiedUid: (uid: any, obj: any) => boolean
+}) {
+  const { post, mode, me } = props
+  const [shown, setShown] = useState(false)
+  const [sort, setSort] = useState<"relevant" | "newest" | "oldest">("relevant")
+  const sheetRef = useRef<HTMLDivElement>(null)
+  const drag = useRef({ y0: 0, dy: 0 })
+  const listRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const id = requestAnimationFrame(() => setShown(true))
+    const prev = document.body.style.overflow
+    document.body.style.overflow = "hidden"
+    return () => {
+      cancelAnimationFrame(id)
+      document.body.style.overflow = prev
+    }
+  }, [])
+
+  const close = () => {
+    setShown(false)
+    setTimeout(props.onClose, 240)
+  }
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") close()
+    }
+    document.addEventListener("keydown", onKey)
+    return () => document.removeEventListener("keydown", onKey)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  const avatarFor = (u: any) =>
+    u?.photoURL ||
+    u?.avatar ||
+    `https://ui-avatars.com/api/?background=16a34a&color=fff&name=${encodeURIComponent(u?.name || "User")}`
+
+  /* ---------- reactions data ---------- */
+  const reactionMap: Record<string, string> = { ...(post.reactions || {}) }
+  ;(Array.isArray(post.likes) ? post.likes : []).forEach((uid: string) => {
+    if (!reactionMap[uid]) reactionMap[uid] = "like"
+  })
+  const entries = Object.entries(reactionMap)
+  const counts: Record<string, number> = {}
+  entries.forEach(([, k]) => {
+    counts[k] = (counts[k] || 0) + 1
+  })
+  const total = entries.length
+  const tabKeys = REACTIONS.map((r) => r.key)
+    .filter((k) => counts[k])
+    .sort((a, b) => counts[b] - counts[a])
+  const topKeys = tabKeys.slice(0, 3)
+  const tab = props.tab === "all" || counts[props.tab] ? props.tab : "all"
+  const friendIds = new Set(props.myFriends.map((f: any) => f.uid))
+  const pendingIds = new Set(
+    props.sentFriendRequests.filter((r: any) => r.status === "pending").map((r: any) => r.to)
+  )
+
+  const userOf = (uid: string) => {
+    if (uid === me.uid) return { uid, name: props.profile?.name || "You", photoURL: props.profile?.photoURL || "" }
+    return props.allUsers.find((u: any) => u.uid === uid) || null
+  }
+
+  const rows = entries
+    .filter(([, k]) => tab === "all" || k === tab)
+    .map(([uid, k]) => ({ uid, k, u: userOf(uid) }))
+    .sort((a, b) => {
+      const w = (x: any) => (x.uid === me.uid ? 0 : friendIds.has(x.uid) ? 1 : 2)
+      return w(a) - w(b)
+    })
+
+  /* ---------- comments data ---------- */
+  const allComments: any[] = Array.isArray(post.comments) ? post.comments : []
+  const tops = allComments.filter((c) => !c.parentId)
+  const repliesMap: Record<string, any[]> = {}
+  allComments.forEach((c) => {
+    if (c.parentId) (repliesMap[c.parentId] = repliesMap[c.parentId] || []).push(c)
+  })
+  const rcount = (c: any) => Object.keys(c.reactions || {}).length
+  const sortedTops = tops.slice().sort((a, b) => {
+    if (sort === "newest") return (b.at || 0) - (a.at || 0)
+    if (sort === "oldest") return (a.at || 0) - (b.at || 0)
+    const sa = rcount(a) * 2 + (repliesMap[a.id]?.length || 0)
+    const sb = rcount(b) * 2 + (repliesMap[b.id]?.length || 0)
+    return sb - sa || (a.at || 0) - (b.at || 0)
+  })
+  const sortLabel = sort === "relevant" ? "Most relevant" : sort === "newest" ? "Newest" : "Oldest"
+  const cycleSort = () => setSort((s) => (s === "relevant" ? "newest" : s === "newest" ? "oldest" : "relevant"))
+
+  const renderComment = (c: any, isReply: boolean, parent?: any): React.ReactNode => {
+    const myR = c.reactions?.[me.uid]
+    const myDef = myR ? REACTIONS.find((r) => r.key === myR) : null
+    const rEntries = Object.entries(c.reactions || {})
+    const rKeys = Array.from(new Set(rEntries.map(([, k]) => k as string))).slice(0, 2)
+    return (
+      <React.Fragment key={c.id}>
+        <div className={`rx-cmt${isReply ? " reply" : ""}`}>
+          <img
+            className="rx-cmt-av"
+            src={avatarFor({ photoURL: c.avatar, name: c.name })}
+            alt=""
+            onClick={() => c.uid && props.onOpenProfile(c.uid)}
+          />
+          <div className="rx-cmt-main">
+            <div className="rx-cmt-bubble" style={rEntries.length ? { marginBottom: 8 } : undefined}>
+              <b>
+                {c.name || "User"}
+                {props.isVerifiedUid(c.uid, c) && mcVerifiedBadge(13)}
+              </b>
+              {c.text}
+              {c.image && <img src={c.image} alt="" />}
+              {rEntries.length > 0 && (
+                <span className="rx-cmt-react">
+                  {rKeys.map((k) => (
+                    <ReactionIcon key={k} k={k} size={15} />
+                  ))}
+                  {rEntries.length}
+                </span>
+              )}
+            </div>
+            <div className="rx-cmt-meta">
+              <span>{timeAgo(c.at)}</span>
+              <button
+                style={myDef ? { color: myDef.color } : undefined}
+                onClick={() => props.onLikeComment(c.id)}
+              >
+                {myDef ? myDef.label : "Like"}
+              </button>
+              <button
+                onClick={() => {
+                  props.setReplyTo({
+                    id: isReply && parent ? parent.id : c.id,
+                    name: c.name,
+                    uid: c.uid,
+                  })
+                }}
+              >
+                Reply
+              </button>
+            </div>
+          </div>
+        </div>
+        {!isReply && (repliesMap[c.id] || []).map((r) => renderComment(r, true, c))}
+      </React.Fragment>
+    )
+  }
+
+  /* ---------- drag to close ---------- */
+  const onDragStart = (e: React.TouchEvent) => {
+    drag.current.y0 = e.touches[0].clientY
+    drag.current.dy = 0
+    if (sheetRef.current) sheetRef.current.style.transition = "none"
+  }
+  const onDragMove = (e: React.TouchEvent) => {
+    const dy = Math.max(0, e.touches[0].clientY - drag.current.y0)
+    drag.current.dy = dy
+    if (sheetRef.current) sheetRef.current.style.transform = `translateY(${dy}px)`
+  }
+  const onDragEnd = () => {
+    const el = sheetRef.current
+    if (el) {
+      el.style.transition = ""
+      el.style.transform = ""
+    }
+    if (drag.current.dy > 110) close()
+    drag.current.dy = 0
+  }
+
+  const canSend = !!props.commentText.trim() && !props.commentBusy
+
+  return (
+    <div className={`rx-sheet-backdrop${shown ? " open" : ""}`} onClick={close}>
+      <div className="rx-sheet" ref={sheetRef} onClick={(e) => e.stopPropagation()}>
+        <div
+          className="rx-sheet-top"
+          onTouchStart={onDragStart}
+          onTouchMove={onDragMove}
+          onTouchEnd={onDragEnd}
+          onTouchCancel={onDragEnd}
         >
-          {r.emoji}
-        </button>
-      ))}
+          <div className="rx-sheet-grip" />
+          <div className="rx-sheet-head">
+            {total > 0 && (
+              <button
+                className={`rx-head-pill${mode === "reactions" ? " active" : ""}`}
+                onClick={() => props.onMode("reactions")}
+              >
+                <span className="rx-stack">
+                  {topKeys.map((k, i) => (
+                    <span key={k} className="rx-stack-item" style={{ marginLeft: i ? -5 : 0, zIndex: 5 - i }}>
+                      <ReactionIcon k={k} size={20} ring />
+                    </span>
+                  ))}
+                </span>
+                {total}
+              </button>
+            )}
+            <button
+              className={`rx-head-pill${mode === "comments" ? " active" : ""}`}
+              onClick={() => props.onMode("comments")}
+            >
+              {allComments.length} {allComments.length === 1 ? "comment" : "comments"}
+            </button>
+          </div>
+        </div>
+
+        {mode === "reactions" ? (
+          <>
+            <div className="rx-tabs">
+              <button
+                className={`rx-tab${tab === "all" ? " active" : ""}`}
+                style={{ borderBottomColor: tab === "all" ? "#1877f2" : "transparent" }}
+                onClick={() => props.onTab("all")}
+              >
+                All {total}
+              </button>
+              {tabKeys.map((k) => {
+                const def = REACTIONS.find((r) => r.key === k)
+                return (
+                  <button
+                    key={k}
+                    className={`rx-tab${tab === k ? " active" : ""}`}
+                    style={{ borderBottomColor: tab === k ? def?.color : "transparent" }}
+                    onClick={() => props.onTab(k)}
+                  >
+                    <ReactionIcon k={k} size={20} />
+                    {counts[k]}
+                  </button>
+                )
+              })}
+            </div>
+            <div className="rx-list">
+              {rows.length === 0 ? (
+                <div className="rx-empty">No reactions yet</div>
+              ) : (
+                rows.map(({ uid, k, u }) => {
+                  const isMe = uid === me.uid
+                  const isFriend = friendIds.has(uid)
+                  const pending = pendingIds.has(uid) || !!props.sentRequests[uid]
+                  return (
+                    <div className="rx-row" key={uid}>
+                      <div className="rx-row-av" onClick={() => props.onOpenProfile(uid)}>
+                        <img src={avatarFor(u)} alt="" />
+                        <span className="rx-row-badge">
+                          <ReactionIcon k={k} size={19} ring />
+                        </span>
+                      </div>
+                      <div className="rx-row-name" onClick={() => props.onOpenProfile(uid)}>
+                        {u?.name || "Unknown user"}
+                        {isMe && <small>You</small>}
+                      </div>
+                      {!isMe && !isFriend && u && (
+                        <button
+                          className={`rx-add-btn${pending ? " sent" : ""}`}
+                          onClick={() => props.onAddFriend(uid)}
+                        >
+                          {pending ? "Requested" : "Add friend"}
+                        </button>
+                      )}
+                    </div>
+                  )
+                })
+              )}
+            </div>
+          </>
+        ) : (
+          <>
+            <div className="rx-list" ref={listRef} style={{ display: "flex", flexDirection: "column" }}>
+              {allComments.length > 0 && (
+                <button className="rx-sort" onClick={cycleSort}>
+                  {sortLabel} ▾
+                </button>
+              )}
+              {sortedTops.length === 0 ? (
+                <div className="rx-empty">No comments yet. Be the first to comment.</div>
+              ) : (
+                sortedTops.map((c) => renderComment(c, false))
+              )}
+            </div>
+            <div className="rx-foot">
+              {props.replyTo && (
+                <div className="rx-replying">
+                  <span>
+                    Replying to <b>{props.replyTo.name}</b>
+                  </span>
+                  <button onClick={() => props.setReplyTo(null)}>Cancel</button>
+                </div>
+              )}
+              <div className="rx-quick">
+                {["❤️", "🙌", "🔥", "👏", "😢", "😍", "😮", "😂"].map((em) => (
+                  <button key={em} type="button" onClick={() => props.onQuickEmoji(em)}>
+                    {em}
+                  </button>
+                ))}
+              </div>
+              <div className="rx-write">
+                <input
+                  value={props.commentText}
+                  placeholder={props.replyTo ? `Reply to ${props.replyTo.name}…` : "Write a comment…"}
+                  onChange={(e) => props.setCommentText(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && canSend) props.onSend()
+                  }}
+                />
+                {props.commentText.trim() && (
+                  <button className="rx-send" disabled={!canSend} onClick={props.onSend} title="Send">
+                    <svg viewBox="0 0 24 24">
+                      <path d="M2.01 21 23 12 2.01 3 2 10l15 2-15 2z" />
+                    </svg>
+                  </button>
+                )}
+              </div>
+            </div>
+          </>
+        )}
+      </div>
     </div>
   )
 }
@@ -4681,11 +5242,25 @@ const lastMarkedSeenRef = useRef<string | null>(null)
   const [postReactionPicker, setPostReactionPicker] = useState<{
     open: boolean
     postId: string | null
-    anchorRect: { x: number; y: number; width: number } | null
+    anchorRect: { x: number; y: number; width: number; height?: number } | null
   }>({ open: false, postId: null, anchorRect: null })
   const [postReactions, setPostReactions] = useState<Record<string, Record<string, string>>>({})
   const [fastLikeFlyers, setFastLikeFlyers] = useState<Array<{ id: number; x: number; y: number; emoji: string }>>([])
   const fastLikeIdRef = useRef(0)
+
+  // Facebook-style reactions: jump animation, landing pop, reactors/comments sheet
+  const [rxJumps, setRxJumps] = useState<
+    Array<{ id: number; postId: string; k: string; fx: number; fy: number; tx: number; ty: number }>
+  >([])
+  const [rxLand, setRxLand] = useState<{ postId: string | null }>({ postId: null })
+  const [engageSheet, setEngageSheet] = useState<{
+    postId: string
+    mode: "reactions" | "comments"
+    tab: string
+  } | null>(null)
+  const jumpIdRef = useRef(0)
+  const reactLockRef = useRef(0)
+  const likePressRef = useRef<any>({ timer: null, fired: false, sx: 0, sy: 0, lastTouch: 0 })
 
   // Comment reactions
   const [commentText, setCommentText] = useState("")
@@ -5520,6 +6095,87 @@ const handleChatTyping = (value: string) => {
     })
   }
 
+  const openPostReactionPickerAt = (el: HTMLElement, postId: string) => {
+    const rect = el.getBoundingClientRect()
+    setPostReactionPicker({
+      open: true,
+      postId,
+      anchorRect: { x: rect.left, y: rect.top, width: rect.width, height: rect.height },
+    })
+  }
+
+  // Tap = like, long press = Facebook-style reaction picker (slide finger + release to pick)
+  const likeBtnProps = (postId: string) => {
+    const st = likePressRef.current
+    const cancelTimer = () => {
+      if (st.timer) {
+        clearTimeout(st.timer)
+        st.timer = null
+      }
+    }
+    const startPress = (el: HTMLElement, x: number, y: number) => {
+      st.fired = false
+      st.sx = x
+      st.sy = y
+      cancelTimer()
+      st.timer = setTimeout(() => {
+        st.timer = null
+        st.fired = true
+        try { if (navigator.vibrate) navigator.vibrate(15) } catch {}
+        openPostReactionPickerAt(el, postId)
+      }, 380)
+    }
+    const finish = (x: number, y: number) => {
+      const wasFired = st.fired
+      const hadTimer = !!st.timer
+      cancelTimer()
+      if (wasFired) {
+        setTimeout(() => { st.fired = false }, 60)
+        return
+      }
+      if (!hadTimer) return
+      handleFastLike(postId, { clientX: x, clientY: y })
+    }
+    return {
+      onTouchStart: (e: any) => {
+        st.lastTouch = Date.now()
+        const t = e.touches[0]
+        startPress(e.currentTarget, t.clientX, t.clientY)
+      },
+      onTouchMove: (e: any) => {
+        if (st.fired) return
+        const t = e.touches[0]
+        if (Math.abs(t.clientX - st.sx) > 10 || Math.abs(t.clientY - st.sy) > 10) cancelTimer()
+      },
+      onTouchEnd: (e: any) => {
+        st.lastTouch = Date.now()
+        const t = e.changedTouches[0]
+        if (e.cancelable) e.preventDefault()
+        finish(t.clientX, t.clientY)
+      },
+      onTouchCancel: () => cancelTimer(),
+      onMouseDown: (e: any) => {
+        if (Date.now() - st.lastTouch < 800 || e.button !== 0) return
+        startPress(e.currentTarget, e.clientX, e.clientY)
+      },
+      onMouseUp: (e: any) => {
+        if (Date.now() - st.lastTouch < 800) return
+        finish(e.clientX, e.clientY)
+      },
+      onMouseLeave: () => {
+        if (!st.fired) cancelTimer()
+      },
+      onContextMenu: (e: any) => {
+        e.preventDefault()
+        if (!st.fired) {
+          cancelTimer()
+          st.fired = true
+          openPostReactionPickerAt(e.currentTarget, postId)
+        }
+      },
+    }
+  }
+
   /* ============================================================
      FAST LIKE (single tap)
      ============================================================ */
@@ -5686,6 +6342,49 @@ const handleChatTyping = (value: string) => {
     } finally {
       setCommentBusy(false)
       setCommentUploading(false)
+    }
+  }
+
+  const handleQuickComment = async (postId: string, text: string) => {
+    if (commentBusy || !text) return
+    setCommentBusy(true)
+    try {
+      const fb = await getFirebase()
+      const ref = fb.doc(fb.db, "posts", postId)
+      const snap = await fb.getDoc(ref)
+      if (!snap.exists()) return
+      const post = snap.data()
+      const newComment: any = {
+        id: buildCommentId(),
+        uid: user.uid,
+        name: profile.name,
+        avatar: profile.photoURL || "",
+        text,
+        image: "",
+        at: Date.now(),
+        reactions: {},
+      }
+      if (replyTo && replyTo.id) newComment.parentId = replyTo.id
+      await fb.updateDoc(ref, { comments: [...(post.comments || []), newComment] })
+      if (post.authorId && post.authorId !== user.uid && post.authorId !== "admin") {
+        await fb.addDoc(fb.collection(fb.db, "notifications"), {
+          postId,
+          fromUid: user.uid,
+          fromName: profile?.name || "",
+          fromAvatar: profile?.photoURL || "",
+          uid: post.authorId,
+          title: replyTo ? "New Reply" : "New Comment",
+          message: `${profile.name} ${replyTo ? "replied to a comment" : "commented"} on your post.`,
+          type: "comment",
+          read: false,
+          createdAt: fb.serverTimestamp(),
+        })
+      }
+      setReplyTo(null)
+    } catch (e: any) {
+      showToast("Error", e.message, "error")
+    } finally {
+      setCommentBusy(false)
     }
   }
 
@@ -7411,11 +8110,12 @@ const handleChatTyping = (value: string) => {
     const postReacts = post.reactions || postReactions[post.id] || {}
     const myReaction = postReacts[user.uid]
     const reactionEntries = Object.entries(postReacts)
-    const uniqueReactions = Array.from(new Set(reactionEntries.map(([, k]) => k)))
-    const reactionEmojis = uniqueReactions
-      .map((k) => REACTIONS.find((r) => r.key === k)?.emoji)
-      .filter(Boolean)
-      .slice(0, 3) as string[]
+    const reactionCounts: Record<string, number> = {}
+    reactionEntries.forEach(([, k]) => {
+      reactionCounts[k as string] = (reactionCounts[k as string] || 0) + 1
+    })
+    const sortedReactionKeys = Object.keys(reactionCounts).sort((a, b) => reactionCounts[b] - reactionCounts[a])
+    const topReactionKeys = sortedReactionKeys.length ? sortedReactionKeys.slice(0, 3) : ["like"]
     const totalLikes = reactionEntries.length
 
     const liked = Array.isArray(post.likes) && post.likes.includes(user?.uid)
@@ -7435,46 +8135,9 @@ const handleChatTyping = (value: string) => {
       : null
     const canManage = isMine || (!!user && !!post.authorId && post.authorId === user.uid)
 
-    // Long press timer for reaction picker
-    let pressTimer: any = null
-    let longPressTriggered = false
-
-    const startPress = (e: React.MouseEvent | React.TouchEvent) => {
-      longPressTriggered = false
-      pressTimer = setTimeout(() => {
-        longPressTriggered = true
-        openPostReactionPicker(e, post.id)
-      }, 400)
-    }
-
-    const cancelPress = () => {
-      if (pressTimer) {
-        clearTimeout(pressTimer)
-        pressTimer = null
-      }
-    }
-
-    const onLikeBtnRelease = (e: React.MouseEvent | React.TouchEvent) => {
-      const wasLongPress = longPressTriggered
-      cancelPress()
-      if (wasLongPress) {
-        // picker already opened by long press — do nothing
-        longPressTriggered = false
-        return
-      }
-      // Short tap → fast like
-      let cx = window.innerWidth / 2
-      let cy = window.innerHeight / 2
-      if ("clientX" in e) {
-        cx = (e as React.MouseEvent).clientX
-        cy = (e as React.MouseEvent).clientY
-      } else if ("changedTouches" in e && (e as React.TouchEvent).changedTouches[0]) {
-        const t = (e as React.TouchEvent).changedTouches[0]
-        cx = t.clientX
-        cy = t.clientY
-      }
-      handleFastLike(post.id, { clientX: cx, clientY: cy })
-    }
+    const myReactionColor = myReaction
+      ? REACTIONS.find((r) => r.key === myReaction)?.color
+      : undefined
 
     return (
       <article className={`mb-post${isOfficial ? " official" : ""}`} key={post.id}>
@@ -7563,10 +8226,19 @@ const handleChatTyping = (value: string) => {
         ) : null}
 
         <div className="mb-post-stats">
-          <div className="mb-reacts">
+          <div
+            className="mb-reacts"
+            onClick={() => likesCount > 0 && setEngageSheet({ postId: post.id, mode: "reactions", tab: "all" })}
+          >
             {likesCount ? (
               <span className="mb-react-pill">
-                {reactionEmojis.length > 0 ? reactionEmojis.join("") : "👍"}
+                <span className="rx-stack">
+                  {topReactionKeys.map((k, i) => (
+                    <span key={k} className="rx-stack-item" style={{ marginLeft: i ? -5 : 0, zIndex: 5 - i }}>
+                      <ReactionIcon k={k} size={18} ring />
+                    </span>
+                  ))}
+                </span>
                 <span>{likesCount}</span>
               </span>
             ) : (
@@ -7574,32 +8246,39 @@ const handleChatTyping = (value: string) => {
             )}
           </div>
           <div>
-            {commentsCount} comments · {sharesCount} shares
+            <span
+              className="rx-count-link"
+              onClick={() =>
+                commentsCount > 0 && setEngageSheet({ postId: post.id, mode: "comments", tab: "all" })
+              }
+            >
+              {commentsCount} comments
+            </span>
+            {" · "}
+            {sharesCount} shares
           </div>
         </div>
 
         <div className="mb-post-actions">
           <button
-            className={`mb-action${liked || myReaction ? " liked" : ""}`}
-            onMouseDown={startPress}
-            onMouseUp={onLikeBtnRelease}
-            onMouseLeave={cancelPress}
-            onTouchStart={startPress}
-            onTouchEnd={onLikeBtnRelease}
-            onTouchCancel={cancelPress}
-            onContextMenu={(e) => {
-              e.preventDefault()
-              openPostReactionPicker(e, post.id)
-            }}
+            className={`mb-action rx-like-btn${liked || myReaction ? " liked" : ""}`}
+            data-like-btn={post.id}
+            style={myReaction ? { color: myReactionColor } : undefined}
+            {...(likeBtnProps(post.id) as any)}
             title="Tap to like, hold for reactions"
           >
-            {myReactionEmoji ? (
-              <span style={{ fontSize: 18, lineHeight: 1 }}>{myReactionEmoji}</span>
-            ) : (
-              <svg viewBox="0 0 24 24">
-                <path d="M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-1.91z" />
-              </svg>
-            )}
+            <span
+              key={myReaction || "none"}
+              className={`rx-btn-ico${rxLand.postId === post.id ? " rx-land" : ""}`}
+            >
+              {myReaction ? (
+                <ReactionIcon k={myReaction} size={22} />
+              ) : (
+                <svg viewBox="0 0 24 24">
+                  <path d="M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-1.91z" />
+                </svg>
+              )}
+            </span>
             {myReaction
               ? (REACTIONS.find((r) => r.key === myReaction)?.label || "Like")
               : "Like"}
@@ -8166,20 +8845,89 @@ const handleChatTyping = (value: string) => {
         </div>
       ))}
 
-      {/* Post reaction picker */}
+      {/* Post reaction picker (Facebook style) */}
       <PostReactionPicker
         anchorRect={postReactionPicker.anchorRect}
         open={postReactionPicker.open}
-        onReact={(key, emoji) => {
-          if (!postReactionPicker.postId) return
-          const pos = { clientX: window.innerWidth / 2, clientY: window.innerHeight / 2 }
-          if (postReactionPicker.anchorRect) {
-            pos.clientX = postReactionPicker.anchorRect.x + postReactionPicker.anchorRect.width / 2
-            pos.clientY = postReactionPicker.anchorRect.y
+        onReact={(key, emoji, from) => {
+          const pid = postReactionPicker.postId
+          if (!pid) return
+          const now = Date.now()
+          if (now - reactLockRef.current < 700) return
+          reactLockRef.current = now
+          setPostReactionPicker((p) => ({ ...p, open: false }))
+          const cur = (findPost(pid) as any)?.reactions?.[user.uid]
+          const tgt = document.querySelector(`[data-like-btn="${pid}"] .rx-btn-ico`) as HTMLElement | null
+          if (tgt && cur !== key) {
+            const r = tgt.getBoundingClientRect()
+            const id = ++jumpIdRef.current
+            setRxJumps((p) => [
+              ...p,
+              { id, postId: pid, k: key, fx: from.x, fy: from.y, tx: r.left + r.width / 2, ty: r.top + r.height / 2 },
+            ])
           }
-          handlePostReact(postReactionPicker.postId, key, emoji, pos)
+          try { if (navigator.vibrate) navigator.vibrate(10) } catch {}
+          handlePostReact(pid, key, emoji)
         }}
       />
+
+      {/* Reaction jump into Like button */}
+      {rxJumps.map((j) => (
+        <RxJump
+          key={j.id}
+          k={j.k}
+          fx={j.fx}
+          fy={j.fy}
+          tx={j.tx}
+          ty={j.ty}
+          onDone={() => {
+            setRxJumps((p) => p.filter((x) => x.id !== j.id))
+            setRxLand({ postId: j.postId })
+            setTimeout(() => setRxLand((p) => (p.postId === j.postId ? { postId: null } : p)), 1600)
+          }}
+        />
+      ))}
+
+      {/* Reactors + comments sheet */}
+      {engageSheet && (() => {
+        const sp: any = findPost(engageSheet.postId)
+        if (!sp) return null
+        return (
+          <EngageSheet
+            key={engageSheet.postId}
+            post={sp}
+            mode={engageSheet.mode}
+            tab={engageSheet.tab}
+            onMode={(m) => setEngageSheet((s) => (s ? { ...s, mode: m } : s))}
+            onTab={(t) => setEngageSheet((s) => (s ? { ...s, tab: t } : s))}
+            onClose={() => {
+              setEngageSheet(null)
+              setReplyTo(null)
+              setCommentText("")
+            }}
+            me={user}
+            profile={profile}
+            allUsers={allUsers}
+            myFriends={myFriends}
+            sentRequests={sentRequests}
+            sentFriendRequests={sentFriendRequests}
+            onAddFriend={(uid) => handleSendRequest(uid)}
+            onOpenProfile={(uid) => {
+              setEngageSheet(null)
+              openUserProfile(uid)
+            }}
+            commentText={commentText}
+            setCommentText={setCommentText}
+            commentBusy={commentBusy}
+            replyTo={replyTo}
+            setReplyTo={setReplyTo}
+            onSend={() => handleAddComment(sp.id)}
+            onQuickEmoji={(em) => handleQuickComment(sp.id, em)}
+            onLikeComment={(cid) => handleReactToComment(sp.id, cid, "like", "👍")}
+            isVerifiedUid={isVerifiedUid}
+          />
+        )
+      })()}
 
       {/* Notification options sheet */}
       {notifMenu && (() => {

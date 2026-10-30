@@ -2025,6 +2025,9 @@ text-shadow:0 0 15px rgba(34,197,94,.35);
 .mebook-root .mb-yt-stage{position:relative;background:#000;overflow:hidden;}
 .mebook-root .mb-yt.short .mb-yt-stage{height:100%;aspect-ratio:9/16;max-width:100%;}
 .mebook-root .mb-yt.video .mb-yt-stage{width:100%;aspect-ratio:16/9;}
+.mebook-root .mb-yt-frame{position:absolute;left:0;right:0;top:0;bottom:0;}
+.mebook-root .mb-yt.short.cropped{height:auto;}
+.mebook-root .mb-yt.short.cropped .mb-yt-stage{height:auto;width:min(100%,calc(min(560px,78vh) / var(--yt-r,1.7778)));}
 .mebook-root .mb-yt-stage iframe{position:absolute;inset:0;width:100%;height:100%;border:0;pointer-events:none;}
 .mebook-root .mb-yt-thumb{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
 .mebook-root .mb-yt-shade{position:absolute;inset:0;background:linear-gradient(to bottom,rgba(0,0,0,.25),rgba(0,0,0,.05) 40%,rgba(0,0,0,.35));}
@@ -2086,6 +2089,7 @@ display:inline-block;margin-top:2px;padding:0;
 font-size:14.5px;font-weight:700;color:var(--text-muted);
 }
 .mebook-root .mb-see-more:hover{text-decoration:underline;}
+.mebook-root .mb-cap-text.expanded{cursor:pointer;}
 .mebook-root .mb-post-media img{cursor:zoom-in;}
 .mebook-root .mb-edited-tag{font-size:12px;color:var(--text-muted);}
 
@@ -2696,12 +2700,26 @@ function PostCaption({ text }: { text: string }) {
 
   return (
     <div className="mb-post-caption">
-      <div ref={ref} className={`mb-cap-text${expanded ? "" : " clamp"}`}>
+      <div
+        ref={ref}
+        className={`mb-cap-text${expanded ? " expanded" : " clamp"}`}
+        onClick={() => {
+          if (!expanded || !clamped) return
+          const sel = typeof window !== "undefined" ? window.getSelection()?.toString() : ""
+          if (sel) return
+          setExpanded(false)
+        }}
+      >
         {text}
       </div>
       {!expanded && clamped && (
         <button className="mb-see-more" onClick={() => setExpanded(true)}>
           See more
+        </button>
+      )}
+      {expanded && clamped && (
+        <button className="mb-see-more" onClick={() => setExpanded(false)}>
+          See less
         </button>
       )}
     </div>
@@ -2887,6 +2905,54 @@ function fmtYT(sec: number) {
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`
 }
 
+// Detects black bars (top/bottom) baked into a Short's thumbnail so we can crop them away
+const ytCropCache = new Map<string, { t: number; b: number } | null>()
+function detectShortCrop(src: string): Promise<{ t: number; b: number } | null> {
+  return new Promise((resolve) => {
+    try {
+      const img = new Image()
+      img.crossOrigin = "anonymous"
+      img.onload = () => {
+        try {
+          const w = 200
+          const h = Math.max(1, Math.round((w * img.naturalHeight) / img.naturalWidth))
+          const c = document.createElement("canvas")
+          c.width = w
+          c.height = h
+          const ctx = c.getContext("2d")
+          if (!ctx) return resolve(null)
+          ctx.drawImage(img, 0, 0, w, h)
+          const d = ctx.getImageData(0, 0, w, h).data
+          const rowLit = (y: number) => {
+            let lit = 0
+            for (let x = 0; x < w; x++) {
+              const i = (y * w + x) * 4
+              if (0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2] > 38) lit++
+            }
+            return lit / w > 0.03
+          }
+          let t = 0
+          while (t < h && !rowLit(t)) t++
+          if (t >= h) return resolve(null)
+          let b = h - 1
+          while (b > t && !rowLit(b)) b--
+          const ft = Math.max(0, (t - 1) / h)
+          const fb = Math.min(1, (b + 2) / h)
+          if (ft < 0.02 && fb > 0.98) return resolve(null)
+          if (fb - ft < 0.2) return resolve(null)
+          resolve({ t: ft, b: fb })
+        } catch {
+          resolve(null)
+        }
+      }
+      img.onerror = () => resolve(null)
+      img.src = src
+    } catch {
+      resolve(null)
+    }
+  })
+}
+
 function YouTubePost({
   videoId,
   isShort,
@@ -2907,6 +2973,14 @@ function YouTubePost({
   const [err, setErr] = useState(false)
   const [canFs, setCanFs] = useState(false)
   const [flash, setFlash] = useState<{ label: string; n: number } | null>(null)
+  const [crop, setCrop] = useState<{ t: number; b: number } | null>(
+    isShort ? ytCropCache.get(videoId) ?? null : null
+  )
+
+  const activeRef = useRef(false)
+  const errRef = useRef(false)
+  const userPausedRef = useRef(false)
+  const wantMutedRef = useRef(true)
 
   const rootRef = useRef<HTMLDivElement>(null)
   const mountRef = useRef<HTMLDivElement>(null)
@@ -2920,6 +2994,54 @@ function YouTubePost({
 
   const thumbUrl = thumb || `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`
   const watchUrl = url || `https://www.youtube.com/watch?v=${videoId}`
+
+  activeRef.current = active
+  errRef.current = err
+
+  // Short: find & crop the black bars (top/bottom)
+  useEffect(() => {
+    if (!isShort) {
+      setCrop(null)
+      return
+    }
+    if (ytCropCache.has(videoId)) {
+      setCrop(ytCropCache.get(videoId) ?? null)
+      return
+    }
+    let cancelled = false
+    detectShortCrop(`https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`).then((c) => {
+      ytCropCache.set(videoId, c)
+      if (!cancelled) setCrop(c)
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [isShort, videoId])
+
+  // Auto play (muted) when the post is mostly visible, pause when it leaves the screen
+  useEffect(() => {
+    const el = rootRef.current
+    if (!el || typeof IntersectionObserver === "undefined") return
+    const io = new IntersectionObserver(
+      (entries) => {
+        const e = entries[0]
+        const ratio = e.intersectionRatio
+        if (e.isIntersecting && ratio >= 0.6) {
+          if (errRef.current) return
+          if (!activeRef.current) {
+            setActive(true)
+          } else if (!userPausedRef.current) {
+            try { playerRef.current?.playVideo() } catch {}
+          }
+        } else if (ratio < 0.25) {
+          pauseSelf()
+        }
+      },
+      { threshold: [0, 0.25, 0.6, 0.8] }
+    )
+    io.observe(el)
+    return () => io.disconnect()
+  }, [pauseSelf])
 
   useEffect(() => {
     setCanFs(!isShort && typeof document !== "undefined" && !!document.fullscreenEnabled)
@@ -2950,6 +3072,7 @@ function YouTubePost({
             fs: 0,
             iv_load_policy: 3,
             disablekb: 1,
+            mute: 1,
             origin: window.location.origin,
           },
           events: {
@@ -2965,6 +3088,9 @@ function YouTubePost({
               if (st === YT.PlayerState.PLAYING) {
                 setPlaying(true)
                 setStarted(true)
+                if (!wantMutedRef.current) {
+                  try { player?.unMute?.() } catch {}
+                }
                 setMuted(!!player?.isMuted?.())
                 setDur(player?.getDuration?.() || 0)
                 if (activeYTPause && activeYTPause !== pauseSelf) activeYTPause()
@@ -3048,9 +3174,11 @@ function YouTubePost({
     if (!p) return
     try {
       if (p.getPlayerState() === 1) {
+        userPausedRef.current = true
         p.pauseVideo()
         showFlash("❚❚")
       } else {
+        userPausedRef.current = false
         p.playVideo()
         showFlash("▶")
       }
@@ -3074,8 +3202,8 @@ function YouTubePost({
     const p = playerRef.current
     if (!p) return
     try {
-      if (p.isMuted()) { p.unMute(); setMuted(false) }
-      else { p.mute(); setMuted(true) }
+      if (p.isMuted()) { p.unMute(); setMuted(false); wantMutedRef.current = false }
+      else { p.mute(); setMuted(true); wantMutedRef.current = true }
     } catch {}
   }
 
@@ -3089,16 +3217,39 @@ function YouTubePost({
   }
 
   return (
-    <div ref={rootRef} className={`mb-yt ${isShort ? "short" : "video"}`}>
-      <div className="mb-yt-stage">
-        <div ref={mountRef} style={{ position: "absolute", inset: 0 }} />
+    <div ref={rootRef} className={`mb-yt ${isShort ? "short" : "video"}${isShort && crop ? " cropped" : ""}`}>
+      <div
+        className="mb-yt-stage"
+        style={
+          isShort && crop
+            ? ({
+                ["--yt-r" as any]: ((crop.b - crop.t) * 16) / 9,
+                aspectRatio: String(9 / 16 / (crop.b - crop.t)),
+              } as React.CSSProperties)
+            : undefined
+        }
+      >
+        <div
+          className="mb-yt-frame"
+          style={
+            isShort && crop
+              ? {
+                  height: `${100 / (crop.b - crop.t)}%`,
+                  top: `${-(crop.t / (crop.b - crop.t)) * 100}%`,
+                  bottom: "auto",
+                }
+              : undefined
+          }
+        >
+          <div ref={mountRef} style={{ position: "absolute", inset: 0 }} />
 
-        {!started && (
-          <>
-            <img className="mb-yt-thumb" src={thumbUrl} alt="" loading="lazy" />
-            <div className="mb-yt-shade" />
-          </>
-        )}
+          {!started && (
+            <>
+              <img className="mb-yt-thumb" src={thumbUrl} alt="" loading="lazy" />
+              <div className="mb-yt-shade" />
+            </>
+          )}
+        </div>
 
         <span className="mb-yt-badge">
           <i />
@@ -3106,7 +3257,15 @@ function YouTubePost({
         </span>
 
         {!active && (
-          <button className="mb-yt-bigplay" onClick={() => setActive(true)} title="Play">
+          <button
+            className="mb-yt-bigplay"
+            onClick={() => {
+              wantMutedRef.current = false
+              userPausedRef.current = false
+              setActive(true)
+            }}
+            title="Play"
+          >
             <svg viewBox="0 0 24 24">
               <path d="M8 5v14l11-7z" />
             </svg>
@@ -9520,4 +9679,4 @@ function SideItem({
       {badge && badge > 0 ? <span className="mb-side-badge">{badge}</span> : null}
     </button>
   )
-                }
+    }

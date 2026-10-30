@@ -231,19 +231,21 @@ async function pushAfterAddDoc(ref: any, data: any, fsMod: any) {
   if (m && _fb) {
     const chatSnap = await fsMod.getDoc(fsMod.doc(_fb.db, "chats", m[1]))
     const members: string[] = chatSnap.exists() ? chatSnap.data()?.members || [] : []
-    const to = members.find((x) => x !== data.from)
-    if (!to) return
+    const tos = members.filter((x) => x !== data.from)
+    if (!tos.length) return
     const message =
       data.type === "image" ? "📷 Photo"
       : data.type === "voice" ? "🎤 Voice message"
       : data.text || "👍"
-    await sendPush({
-      uid: to,
-      title: _pushSenderName,
-      message,
-      type: "chat",
-      url: `${pushBaseUrl()}?mb=messages`,
-    })
+    for (const to of tos) {
+      await sendPush({
+        uid: to,
+        title: _pushSenderName,
+        message,
+        type: "chat",
+        url: `${pushBaseUrl()}?mb=messages`,
+      })
+    }
   }
 }
 
@@ -2258,6 +2260,66 @@ opacity:0;transition:opacity .15s,background .15s;
 .mebook-root .mechat-bubble-wrap.mc-flash .mechat-bubble{animation:mcFlash 1.4s ease;}
 @keyframes mcFlash{0%,60%{box-shadow:0 0 0 3px rgba(34,197,94,.75);}100%{box-shadow:0 0 0 3px rgba(34,197,94,0);}}
 .mebook-root .mechat-bubble-image img{cursor:zoom-in;}
+
+/* ============================================================
+   MECHAT — LIST SCROLL FIX + LONG-PRESS MENU + CHAT HEAD
+   ============================================================ */
+.mebook-root .msgr-wrap.mc-plain{height:auto;min-height:0;display:block;overflow:visible;padding-bottom:110px;}
+.mebook-root .msgr-wrap.mc-plain .msgr-list{width:100%;overflow:visible;border:none;flex:none;}
+.mebook-root .mc-pressable{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;}
+.mebook-root .mc-pressable img{-webkit-user-drag:none;}
+.mebook-root .mc-pressable:active{background:var(--hover);}
+.mebook-root .mc-item-meta{display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0;min-width:34px;}
+.mebook-root .mc-item-flags{display:flex;align-items:center;gap:6px;min-height:14px;color:var(--text-muted);}
+.mebook-root .mc-flag{display:flex;}
+.mebook-root .mc-flag svg{width:14px;height:14px;fill:currentColor;}
+.mebook-root .mc-unread-dot{width:10px;height:10px;border-radius:50%;background:#0084ff;display:block;}
+.mebook-root .msgr-item-name.mc-unread{font-weight:800;}
+.mebook-root .mc-folder-row{display:flex;align-items:center;gap:14px;padding:12px 16px;cursor:pointer;color:var(--text);font-weight:600;font-size:14.5px;}
+.mebook-root .mc-folder-row span{flex:1;}
+.mebook-root .mc-folder-row b{font-size:12px;color:var(--text-muted);font-weight:700;}
+.mebook-root .mc-folder-row:hover{background:var(--hover);}
+.mebook-root .mc-folder-row svg{fill:currentColor;}
+
+.mebook-root .mc-sheet-overlay{position:fixed;inset:0;z-index:3000;background:rgba(0,0,0,.55);display:flex;align-items:flex-end;justify-content:center;animation:mcFade .18s ease;}
+.mebook-root .mc-sheet-overlay.mc-center{align-items:center;padding:20px;}
+.mebook-root .mc-sheet{width:100%;max-width:520px;background:var(--card);color:var(--text);border-radius:22px 22px 0 0;padding:8px 0 calc(14px + env(safe-area-inset-bottom,0px));max-height:92vh;max-height:92dvh;overflow-y:auto;animation:mcSlide .24s cubic-bezier(.2,.8,.2,1);}
+.mebook-root .mc-sheet-handle{width:44px;height:5px;border-radius:3px;background:var(--border);margin:4px auto 8px;}
+.mebook-root .mc-sheet-head{display:flex;align-items:center;gap:12px;padding:6px 22px 12px;border-bottom:1px solid var(--border);margin-bottom:4px;}
+.mebook-root .mc-sheet-head img{width:40px;height:40px;border-radius:50%;object-fit:cover;}
+.mebook-root .mc-sheet-head b{font-size:15.5px;}
+.mebook-root .mc-sheet-row{display:flex;align-items:center;gap:22px;width:100%;padding:14px 24px;font-size:16.5px;font-weight:500;font-family:inherit;text-align:left;color:var(--text);cursor:pointer;background:none;border:none;}
+.mebook-root .mc-sheet-row:hover,.mebook-root .mc-sheet-row:active{background:var(--hover);}
+.mebook-root .mc-sheet-row svg{width:26px;height:26px;fill:currentColor;flex-shrink:0;}
+.mebook-root .mc-sheet-row.danger{color:#ef4444;}
+@keyframes mcFade{from{opacity:0;}to{opacity:1;}}
+@keyframes mcSlide{from{transform:translateY(100%);}to{transform:translateY(0);}}
+
+.mebook-root .mc-dialog{width:100%;max-width:340px;background:var(--card);color:var(--text);border-radius:16px;padding:20px;animation:mcFade .18s ease;}
+.mebook-root .mc-dialog h3{font-size:18px;font-weight:800;margin:0 0 8px;}
+.mebook-root .mc-dialog p{font-size:14px;color:var(--text-muted);margin:0 0 16px;line-height:1.45;}
+.mebook-root .mc-dialog-actions{display:flex;justify-content:flex-end;gap:8px;}
+.mebook-root .mc-dialog-actions button{padding:9px 16px;border-radius:10px;font-weight:700;font-size:14px;font-family:inherit;color:var(--text);background:var(--hover);border:none;cursor:pointer;}
+.mebook-root .mc-dialog-actions button.danger{background:#ef4444;color:#fff;}
+
+.mebook-root .mc-add{padding-left:16px;padding-right:16px;}
+.mebook-root .mc-add-title{font-size:17px;font-weight:800;padding:4px 4px 10px;}
+.mebook-root .mc-add-search{width:100%;padding:11px 14px;border-radius:12px;border:1px solid var(--border);background:var(--input-bg);color:var(--text);font-size:14.5px;font-family:inherit;outline:none;margin-bottom:8px;}
+.mebook-root .mc-add-list{max-height:44vh;overflow-y:auto;}
+.mebook-root .mc-add-row{display:flex;align-items:center;gap:12px;padding:9px 4px;cursor:pointer;border-radius:10px;}
+.mebook-root .mc-add-row:hover{background:var(--hover);}
+.mebook-root .mc-add-row img{width:40px;height:40px;border-radius:50%;object-fit:cover;}
+.mebook-root .mc-add-row span{flex:1;font-weight:600;font-size:14.5px;}
+.mebook-root .mc-add-row i{width:22px;height:22px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;}
+.mebook-root .mc-add-row i.on{background:#0084ff;border-color:#0084ff;color:#fff;}
+.mebook-root .mc-add-empty{padding:20px;text-align:center;color:var(--text-muted);font-size:14px;}
+.mebook-root .mc-add-confirm{width:100%;margin-top:10px;padding:12px;border-radius:12px;background:#0084ff;color:#fff;font-weight:700;font-size:15px;font-family:inherit;border:none;cursor:pointer;}
+.mebook-root .mc-add-confirm:disabled{opacity:.45;cursor:default;}
+
+.mebook-root .mc-head{position:fixed;z-index:3200;width:58px;height:58px;border-radius:50%;box-shadow:0 6px 20px rgba(0,0,0,.45);touch-action:none;cursor:grab;background:var(--card);transition:left .18s ease;}
+.mebook-root .mc-head img{width:100%;height:100%;border-radius:50%;object-fit:cover;border:2px solid #fff;pointer-events:none;}
+.mebook-root .mc-head-x{position:absolute;top:-6px;right:-6px;width:20px;height:20px;border-radius:50%;background:#333;color:#fff;font-size:14px;line-height:1;display:flex;align-items:center;justify-content:center;border:none;cursor:pointer;padding:0;}
+.mebook-root .mc-sender-name{font-size:11.5px;font-weight:700;opacity:.75;margin-bottom:2px;}
 `
 
 /* ============================================================
@@ -3187,6 +3249,177 @@ interface MeBookPageProps {
   onExit: () => void
 }
 
+/* ============================================================
+MECHAT — CHAT LIST EXTRAS (long-press menu, pin/archive/ignore/mute/
+unread/chat-head/delete, groups: add members + leave)
+============================================================ */
+const MC_IC: any = {
+  pin: "M16 9V4h1c.55 0 1-.45 1-1s-.45-1-1-1H7c-.55 0-1 .45-1 1s.45 1 1 1h1v5c0 1.66-1.34 3-3 3v2h5.97v7l1 1 1-1v-7H19v-2c-1.66 0-3-1.34-3-3z",
+  archive: "M20.54 5.23l-1.39-1.68C18.88 3.21 18.47 3 18 3H6c-.47 0-.88.21-1.16.55L3.46 5.23C3.17 5.57 3 6.02 3 6.5V19c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6.5c0-.48-.17-.93-.46-1.27zM12 17.5L6.5 12H10v-2h4v2h3.5L12 17.5zM5.12 5l.81-1h12l.94 1H5.12z",
+  ignore: "M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z",
+  addUser: "M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z",
+  bell: "M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z",
+  bellOff: "M20 18.69L7.84 6.14 5.27 3.49 4 4.76l2.8 2.8v.01c-.52.99-.8 2.16-.8 3.42v5l-2 2v1h13.73l2 2L21 19.72l-1-1.03zM12 22c1.11 0 2-.89 2-2h-4c0 1.11.89 2 2 2zm6-7.32V11c0-3.08-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68c-.15.03-.29.08-.42.12L18 14.68z",
+  head: "M9 3a6 6 0 100 12A6 6 0 009 3zm8.5 6.2A7.97 7.97 0 0117 12.9 8 8 0 019.1 20c-.3 0-.6 0-.9-.1A6 6 0 0018 15.9a6 6 0 00-.5-6.7z",
+  unread: "M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z",
+  leave: "M10.09 15.59L11.5 17l5-5-5-5-1.41 1.41L12.67 11H3v2h9.67l-2.58 2.59zM19 3H5c-1.11 0-2 .9-2 2v4h2V5h14v14H5v-4H3v4c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z",
+  trash: "M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z",
+  back: "M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z",
+  folder: "M20 6h-8l-2-2H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2z",
+  check: "M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z",
+}
+
+function mcIcon(d: any, size: any) {
+  return React.createElement("svg", { viewBox: "0 0 24 24", width: size, height: size, fill: "currentColor" },
+    React.createElement("path", { d: d }))
+}
+
+const mcEmptyPrefs = (): any => ({ pinned: {}, archived: {}, ignored: {}, muted: {}, unread: {}, deleted: {} })
+
+function mcLoadPrefs(uid: any): any {
+  try {
+    const raw = localStorage.getItem("mebook-chatprefs-" + uid)
+    if (!raw) return mcEmptyPrefs()
+    return Object.assign(mcEmptyPrefs(), JSON.parse(raw))
+  } catch (e) {
+    return mcEmptyPrefs()
+  }
+}
+
+function mcSavePrefs(uid: any, p: any) {
+  try { localStorage.setItem("mebook-chatprefs-" + uid, JSON.stringify(p)) } catch (e) {}
+}
+
+function mcDropDeleted(arr: any, del: any) {
+  if (!del) return
+  for (let i = arr.length - 1; i >= 0; i--) {
+    const s = arr[i].at && arr[i].at.seconds
+    if (s && s <= del) arr.splice(i, 1)
+  }
+}
+
+/* ---- Bottom sheet (long press menu) ---- */
+function McChatSheet(props: any) {
+  const chat = props.chat
+  const prefs = props.prefs
+  const mountedAt = React.useRef(Date.now())
+  const id = chat.id
+  const isGroup = !!chat.isGroup
+  const rows: any[] = [
+    { k: "pin", icon: MC_IC.pin, label: prefs.pinned[id] ? "Unpin" : "Pin" },
+    { k: "archive", icon: MC_IC.archive, label: prefs.archived[id] ? "Unarchive" : "Archive" },
+    { k: "ignore", icon: MC_IC.ignore, label: prefs.ignored[id] ? "Unignore" : "Ignore" },
+    { k: "addMembers", icon: MC_IC.addUser, label: "Add members" },
+    { k: "mute", icon: prefs.muted[id] ? MC_IC.bellOff : MC_IC.bell, label: prefs.muted[id] ? "Unmute" : "Mute" },
+    { k: "chatHead", icon: MC_IC.head, label: "Open chat head" },
+    { k: "unread", icon: MC_IC.unread, label: prefs.unread[id] ? "Mark as read" : "Mark as unread" },
+  ]
+  if (isGroup) rows.push({ k: "leave", icon: MC_IC.leave, label: "Leave group", danger: true })
+  rows.push({ k: "delete", icon: MC_IC.trash, label: "Delete", danger: true })
+  const guard = () => Date.now() - mountedAt.current < 450
+  return React.createElement("div", { className: "mc-sheet-overlay", onClick: () => { if (!guard()) props.onClose() } },
+    React.createElement("div", { className: "mc-sheet", onClick: (e: any) => e.stopPropagation() },
+      React.createElement("div", { className: "mc-sheet-handle" }),
+      React.createElement("div", { className: "mc-sheet-head" },
+        React.createElement("img", { src: props.avatar, alt: "" }),
+        React.createElement("b", null, chat.other.name)),
+      rows.map((r: any) =>
+        React.createElement("button", {
+          key: r.k,
+          className: "mc-sheet-row" + (r.danger ? " danger" : ""),
+          onClick: () => { if (!guard()) props.onAction(r.k) },
+        }, mcIcon(r.icon, 26), React.createElement("span", null, r.label)))))
+}
+
+/* ---- Confirm dialog ---- */
+function McConfirm(props: any) {
+  return React.createElement("div", { className: "mc-sheet-overlay mc-center", onClick: props.onNo },
+    React.createElement("div", { className: "mc-dialog", onClick: (e: any) => e.stopPropagation() },
+      React.createElement("h3", null, props.title),
+      React.createElement("p", null, props.text),
+      React.createElement("div", { className: "mc-dialog-actions" },
+        React.createElement("button", { onClick: props.onNo }, "Cancel"),
+        React.createElement("button", { className: "danger", onClick: props.onYes }, props.label))))
+}
+
+/* ---- Add members picker ---- */
+function McAddMembers(props: any) {
+  const chat = props.chat
+  const [q, setQ] = React.useState("")
+  const [sel, setSel] = React.useState([] as any)
+  const exclude: any = {}
+  exclude[props.me] = 1
+  ;(chat.members || [chat.otherId]).forEach((m: any) => { exclude[m] = 1 })
+  const ql = q.trim().toLowerCase()
+  const list = props.users
+    .filter((u: any) => u && u.uid && !exclude[u.uid] && (!ql || (u.name || "").toLowerCase().includes(ql)))
+    .slice(0, 60)
+  const toggle = (uid: any) => setSel((s: any) => s.includes(uid) ? s.filter((x: any) => x !== uid) : s.concat([uid]))
+  return React.createElement("div", { className: "mc-sheet-overlay", onClick: props.onClose },
+    React.createElement("div", { className: "mc-sheet mc-add", onClick: (e: any) => e.stopPropagation() },
+      React.createElement("div", { className: "mc-sheet-handle" }),
+      React.createElement("div", { className: "mc-add-title" }, chat.isGroup ? "Add members" : "Create group with " + chat.other.name),
+      React.createElement("input", { className: "mc-add-search", placeholder: "Search people", value: q, onChange: (e: any) => setQ(e.target.value) }),
+      React.createElement("div", { className: "mc-add-list" },
+        list.length === 0
+          ? React.createElement("div", { className: "mc-add-empty" }, "No people found")
+          : list.map((u: any) => {
+              const on = sel.includes(u.uid)
+              return React.createElement("div", { key: u.uid, className: "mc-add-row", onClick: () => toggle(u.uid) },
+                React.createElement("img", { src: props.avatarOf(u), alt: "" }),
+                React.createElement("span", null, u.name),
+                React.createElement("i", { className: on ? "on" : "" }, on ? mcIcon(MC_IC.check, 16) : null))
+            })),
+      React.createElement("button", {
+        className: "mc-add-confirm",
+        disabled: sel.length === 0,
+        onClick: () => props.onConfirm(sel),
+      }, (chat.isGroup ? "Add" : "Create group") + (sel.length ? " (" + sel.length + ")" : ""))))
+}
+
+/* ---- Floating chat head ---- */
+function McChatHead(props: any) {
+  const [pos, setPos] = React.useState({
+    x: Math.max(0, window.innerWidth - 70),
+    y: Math.max(90, Math.round(window.innerHeight * 0.55) - props.index * 72),
+  })
+  const st = React.useRef({ down: false, moved: false, sx: 0, sy: 0, ox: 0, oy: 0 })
+  const onDown = (e: any) => {
+    const s = st.current
+    s.down = true; s.moved = false; s.sx = e.clientX; s.sy = e.clientY; s.ox = pos.x; s.oy = pos.y
+    try { e.currentTarget.setPointerCapture(e.pointerId) } catch (er) {}
+  }
+  const onMove = (e: any) => {
+    const s = st.current
+    if (!s.down) return
+    const dx = e.clientX - s.sx
+    const dy = e.clientY - s.sy
+    if (Math.abs(dx) + Math.abs(dy) > 6) s.moved = true
+    if (s.moved) setPos({
+      x: Math.min(window.innerWidth - 58, Math.max(0, s.ox + dx)),
+      y: Math.min(window.innerHeight - 70, Math.max(0, s.oy + dy)),
+    })
+  }
+  const onUp = () => {
+    const s = st.current
+    if (!s.down) return
+    s.down = false
+    if (!s.moved) { props.onOpen(props.head); return }
+    setPos((p: any) => ({ x: p.x + 29 < window.innerWidth / 2 ? 6 : window.innerWidth - 64, y: p.y }))
+  }
+  return React.createElement("div", {
+    className: "mc-head",
+    style: { left: pos.x, top: pos.y },
+    onPointerDown: onDown, onPointerMove: onMove, onPointerUp: onUp, onPointerCancel: onUp,
+  },
+    React.createElement("img", { src: props.avatar, alt: "", draggable: false }),
+    React.createElement("button", {
+      className: "mc-head-x",
+      onPointerDown: (e: any) => e.stopPropagation(),
+      onClick: (e: any) => { e.stopPropagation(); props.onClose(props.head) },
+    }, "\u00d7"))
+}
+
 export default function MeBookPage({ onExit }: MeBookPageProps) {
   const rootRef = useRef<HTMLDivElement>(null)
   const [ready, setReady] = useState(false)
@@ -3240,6 +3473,160 @@ const [friends, setFriends] = useState<any[]>([])
   const [mobileChatWindow, setMobileChatWindow] = useState(false)
   const [chatView, setChatView] = useState<"list" | "window">("list")
   const [allUsers, setAllUsers] = useState<any[]>([])
+
+  /* ===== MeChat list extras: state, prefs & actions ===== */
+  const [chatPrefs, setChatPrefs] = useState(mcEmptyPrefs() as any)
+  const chatPrefsRef = useRef(mcEmptyPrefs() as any)
+  const [chatMenu, setChatMenu] = useState(null as any)
+  const [chatConfirm, setChatConfirm] = useState(null as any)
+  const [addMembersFor, setAddMembersFor] = useState(null as any)
+  const [chatHeads, setChatHeads] = useState([] as any)
+  const [chatListMode, setChatListMode] = useState("main")
+  const lpTimerRef = useRef(null as any)
+  const lpFiredRef = useRef(false)
+  const lpStartRef = useRef({ x: 0, y: 0 })
+
+  useEffect(() => {
+    if (!user || !user.uid) return
+    const p = mcLoadPrefs(user.uid)
+    chatPrefsRef.current = p
+    setChatPrefs(p)
+  }, [user?.uid])
+
+  const updateChatPrefs = (fn: any) => {
+    const next = fn(JSON.parse(JSON.stringify(chatPrefsRef.current)))
+    chatPrefsRef.current = next
+    setChatPrefs(next)
+    if (user && user.uid) mcSavePrefs(user.uid, next)
+  }
+
+  const chatAction = async (key: any, c: any) => {
+    setChatMenu(null)
+    const id = c.id
+    const pr = chatPrefsRef.current
+    const nm = c.other && c.other.name ? c.other.name : "Chat"
+    if (key === "pin") {
+      const was = !!pr.pinned[id]
+      if (!was && Object.keys(pr.pinned).length >= 5) {
+        showToast("Pin limit", "You can pin up to 5 chats", "info")
+        return
+      }
+      updateChatPrefs((p: any) => { if (was) delete p.pinned[id]; else p.pinned[id] = Date.now(); return p })
+      showToast(was ? "Unpinned" : "Pinned", nm, "success")
+    } else if (key === "archive") {
+      const was = !!pr.archived[id]
+      updateChatPrefs((p: any) => { if (was) delete p.archived[id]; else { p.archived[id] = 1; delete p.pinned[id]; delete p.ignored[id] } return p })
+      if (!was && activeChat === id) closeChat()
+      showToast(was ? "Unarchived" : "Chat archived", nm, "success")
+    } else if (key === "ignore") {
+      const was = !!pr.ignored[id]
+      updateChatPrefs((p: any) => { if (was) delete p.ignored[id]; else { p.ignored[id] = 1; delete p.pinned[id]; delete p.archived[id] } return p })
+      if (!was && activeChat === id) closeChat()
+      showToast(was ? "Chat un-ignored" : "Chat ignored", nm, "success")
+    } else if (key === "mute") {
+      const was = !!pr.muted[id]
+      updateChatPrefs((p: any) => { if (was) delete p.muted[id]; else p.muted[id] = 1; return p })
+      showToast(was ? "Unmuted" : "Muted", nm, "success")
+    } else if (key === "unread") {
+      const was = !!pr.unread[id]
+      updateChatPrefs((p: any) => { if (was) delete p.unread[id]; else p.unread[id] = 1; return p })
+      if (!was && activeChat === id) closeChat()
+    } else if (key === "chatHead") {
+      setChatHeads((hs: any) => (hs.some((h: any) => h.id === id) ? hs : hs.concat([c]).slice(-3)))
+      showToast("Chat head added", "Tap the bubble to open " + nm, "success")
+    } else if (key === "addMembers") {
+      setAddMembersFor(c)
+    } else if (key === "leave") {
+      setChatConfirm({ kind: "leave", chat: c })
+    } else if (key === "delete") {
+      setChatConfirm({ kind: "delete", chat: c })
+    }
+  }
+
+  const runChatConfirm = async () => {
+    const cf = chatConfirm
+    setChatConfirm(null)
+    if (!cf) return
+    const c = cf.chat
+    if (cf.kind === "delete") {
+      const sec = c.lastAt && c.lastAt.seconds ? c.lastAt.seconds : Math.floor(Date.now() / 1000)
+      updateChatPrefs((p: any) => {
+        p.deleted[c.id] = sec
+        delete p.pinned[c.id]; delete p.archived[c.id]; delete p.ignored[c.id]; delete p.muted[c.id]; delete p.unread[c.id]
+        return p
+      })
+      setChatHeads((hs: any) => hs.filter((h: any) => h.id !== c.id))
+      if (activeChat === c.id) closeChat()
+      showToast("Chat deleted", "", "success")
+    } else if (cf.kind === "leave") {
+      try {
+        const fb = await getFirebase()
+        await fb.updateDoc(fb.doc(fb.db, "chats", c.id), { members: fb.arrayRemove(user.uid) })
+        setChatHeads((hs: any) => hs.filter((h: any) => h.id !== c.id))
+        if (activeChat === c.id) closeChat()
+        showToast("You left the group", c.other.name, "success")
+      } catch (e: any) {
+        showToast("Error", e.message, "error")
+      }
+    }
+  }
+
+  const confirmAddMembers = async (c: any, uids: any) => {
+    setAddMembersFor(null)
+    if (!uids || !uids.length) return
+    try {
+      const fb = await getFirebase()
+      if (c.isGroup) {
+        await fb.updateDoc(fb.doc(fb.db, "chats", c.id), { members: fb.arrayUnion(...uids) })
+        showToast("Members added", uids.length + " added to " + c.other.name, "success")
+      } else {
+        const names = [c.other.name].concat(uids.map((u: any) => {
+          const f = allUsers.find((x: any) => x.uid === u)
+          return f && f.name ? f.name.split(" ")[0] : "User"
+        }))
+        const gname = names.join(", ").slice(0, 60)
+        const members = [user.uid, c.otherId].concat(uids)
+        const ref = await fb.addDoc(fb.collection(fb.db, "chats"), {
+          members: members,
+          isGroup: true,
+          name: gname,
+          createdBy: user.uid,
+          createdAt: fb.serverTimestamp(),
+          lastMessage: null,
+          lastAt: fb.serverTimestamp(),
+        })
+        showToast("Group created", gname, "success")
+        goTo("messages")
+        setTimeout(() => {
+          openChat(ref.id, ref.id, { uid: ref.id, name: gname, photoURL: "", isGroup: true })
+        }, 120)
+      }
+    } catch (e: any) {
+      showToast("Error", e.message, "error")
+    }
+  }
+
+  const openPartnerOrGroup = () => {
+    if (!chatPartner) return
+    if (chatPartner.isGroup) {
+      const gc = chats.find((x: any) => x.id === activeChat)
+      if (gc) setAddMembersFor(gc)
+      return
+    }
+    openUserProfile(chatPartner.uid)
+  }
+
+  const mcSenderAvatar = (m: any) => {
+    if (chatPartner && chatPartner.isGroup) {
+      const f = allUsers.find((u: any) => u.uid === m.from)
+      return avatarUrl(f || { name: "User" })
+    }
+    return chatPartner ? avatarUrl(chatPartner) : ""
+  }
+  const mcSenderName = (m: any) => {
+    const f = allUsers.find((u: any) => u.uid === m.from)
+    return f && f.name ? f.name : "User"
+  }
 
   const [sentRequests, setSentRequests] = useState<Record<string, "sending" | "sent">>({})
 
@@ -3823,6 +4210,18 @@ const handleChatTyping = (value: string) => {
           const arr: any[] = []
           for (const d of snap.docs) {
             const data = d.data()
+            if (data.isGroup || (data.members && data.members.length > 2)) {
+              arr.push({
+                id: d.id,
+                otherId: d.id,
+                other: { uid: d.id, name: data.name || "Group chat", photoURL: data.photoURL || "", isGroup: true },
+                last: data.lastMessage || "",
+                lastAt: data.lastAt,
+                isGroup: true,
+                members: data.members,
+              })
+              continue
+            }
             const otherId = data.members.find((m: string) => m !== uid)
             if (!otherId) continue
             const s = await fb.getDoc(fb.doc(fb.db, "users", otherId))
@@ -3833,6 +4232,7 @@ const handleChatTyping = (value: string) => {
               other: s.data(),
               last: data.lastMessage || "",
               lastAt: data.lastAt,
+              members: data.members,
             })
           }
           arr.sort((a, b) => (b.lastAt?.seconds || 0) - (a.lastAt?.seconds || 0))
@@ -5241,6 +5641,9 @@ const handleChatTyping = (value: string) => {
   }
 
   const openChat = async (chatId: string, otherId: string, other: any) => {
+    if (chatPrefsRef.current.unread[chatId]) {
+      updateChatPrefs((p: any) => { delete p.unread[chatId]; return p })
+    }
     // If another chat was open, stop its typing state before switching.
     if (activeChat && activeChat !== chatId) {
       void updateTypingState(activeChat, false)
@@ -5281,6 +5684,7 @@ const handleChatTyping = (value: string) => {
     chatUnsubRef.current = fb.onSnapshot(q, (snap: any) => {
       const arr: any[] = []
       snap.forEach((d: any) => arr.push({ id: d.id, ...d.data() }))
+      mcDropDeleted(arr, chatPrefsRef.current.deleted[chatId])
       const el = chatBodyRef.current
       const near = !el || el.scrollHeight - el.scrollTop - el.clientHeight < 180
       const lastM = arr[arr.length - 1]
@@ -6095,11 +6499,24 @@ const handleChatTyping = (value: string) => {
     )
   })
 
-  const filteredChats = chats.filter((c) => {
-    const q = chatSearch.trim().toLowerCase()
-    if (!q) return true
-    return (c.other?.name || "").toLowerCase().includes(q)
-  })
+  const mcPrefs: any = chatPrefs
+  const mcIsDeleted = (c: any) => {
+    const d = mcPrefs.deleted[c.id]
+    return !!d && (c.lastAt && c.lastAt.seconds ? c.lastAt.seconds : 0) <= d
+  }
+  const mcBase = chats.filter((c: any) => !mcIsDeleted(c))
+  const mcArchivedList = mcBase.filter((c: any) => mcPrefs.archived[c.id])
+  const mcIgnoredList = mcBase.filter((c: any) => mcPrefs.ignored[c.id] && !mcPrefs.archived[c.id])
+  const mcMainList = mcBase.filter((c: any) => !mcPrefs.archived[c.id] && !mcPrefs.ignored[c.id])
+  const mcModeList = chatListMode === "archived" ? mcArchivedList : chatListMode === "ignored" ? mcIgnoredList : mcMainList
+  const filteredChats = mcModeList
+    .filter((c: any) => {
+      const q = chatSearch.trim().toLowerCase()
+      if (!q) return true
+      return ((c.other && c.other.name) || "").toLowerCase().includes(q)
+    })
+    .slice()
+    .sort((a: any, b: any) => (mcPrefs.pinned[b.id] || 0) - (mcPrefs.pinned[a.id] || 0))
 
   const searchedUsersForChat = chatSearch.trim()
     ? allUsers
@@ -6117,6 +6534,106 @@ const handleChatTyping = (value: string) => {
   /* ============================================================
   renderProfilePage
   ============================================================ */
+  /* ===== MeChat list extras: long-press + rows + overlays ===== */
+  const mcPress = (c: any) => ({
+    onTouchStart: (e: any) => {
+      lpFiredRef.current = false
+      const t = e.touches[0]
+      lpStartRef.current = { x: t.clientX, y: t.clientY }
+      clearTimeout(lpTimerRef.current)
+      lpTimerRef.current = setTimeout(() => {
+        lpFiredRef.current = true
+        try { if (navigator.vibrate) navigator.vibrate(18) } catch (er) {}
+        setChatMenu(c)
+      }, 450)
+    },
+    onTouchMove: (e: any) => {
+      const t = e.touches[0]
+      if (Math.abs(t.clientX - lpStartRef.current.x) > 10 || Math.abs(t.clientY - lpStartRef.current.y) > 10) {
+        clearTimeout(lpTimerRef.current)
+      }
+    },
+    onTouchEnd: () => clearTimeout(lpTimerRef.current),
+    onTouchCancel: () => clearTimeout(lpTimerRef.current),
+    onContextMenu: (e: any) => {
+      e.preventDefault()
+      clearTimeout(lpTimerRef.current)
+      lpFiredRef.current = true
+      setChatMenu(c)
+    },
+    onClick: () => {
+      if (lpFiredRef.current) { lpFiredRef.current = false; return }
+      openChat(c.id, c.otherId, c.other)
+    },
+  })
+
+  const mcRenderChatRow = (c: any) => {
+    const photo = avatarUrl(c.other)
+    const pr: any = chatPrefs
+    const lastObj: any = c.last
+    const unread = !!pr.unread[c.id] || (!!lastObj && lastObj.read === false && lastObj.from !== user.uid)
+    const flags: any[] = []
+    if (pr.pinned[c.id]) flags.push(React.createElement("span", { key: "p", className: "mc-flag" }, mcIcon(MC_IC.pin, 14)))
+    if (pr.muted[c.id]) flags.push(React.createElement("span", { key: "m", className: "mc-flag" }, mcIcon(MC_IC.bellOff, 14)))
+    if (unread) flags.push(React.createElement("span", { key: "u", className: "mc-unread-dot" }))
+    return React.createElement("div", Object.assign({
+      key: c.id,
+      className: "msgr-item mc-pressable" + (c.id === activeChat ? " active" : ""),
+    }, mcPress(c)),
+      React.createElement("div", { className: "msgr-item-avatar-wrap" },
+        React.createElement("img", { src: photo, alt: "", draggable: false }),
+        c.isGroup ? null : React.createElement("span", { className: "msgr-item-dot" })),
+      React.createElement("div", { className: "msgr-item-body" },
+        React.createElement("div", { className: "msgr-item-name" + (unread ? " mc-unread" : "") }, c.other.name),
+        React.createElement("div", { className: "msgr-item-last" + (unread ? " unread" : "") }, (lastObj && lastObj.text) || "Say hi 👋")),
+      React.createElement("div", { className: "mc-item-meta" },
+        React.createElement("div", { className: "msgr-item-time" }, c.lastAt ? timeShort(c.lastAt) : ""),
+        React.createElement("div", { className: "mc-item-flags" }, flags)))
+  }
+
+  const mcFolderRow = (mode: any, label: any, count: any, icon: any) =>
+    React.createElement("div", { key: mode, className: "mc-folder-row", onClick: () => setChatListMode(mode) },
+      mcIcon(icon, 22), React.createElement("span", null, label), React.createElement("b", null, count))
+
+  const mcFolderRows = chatListMode === "main"
+    ? React.createElement(React.Fragment, null,
+        mcArchivedList.length > 0 ? mcFolderRow("archived", "Archived chats", mcArchivedList.length, MC_IC.archive) : null,
+        mcIgnoredList.length > 0 ? mcFolderRow("ignored", "Ignored chats", mcIgnoredList.length, MC_IC.ignore) : null)
+    : React.createElement("div", { className: "mc-folder-row", onClick: () => setChatListMode("main") },
+        mcIcon(MC_IC.back, 22),
+        React.createElement("span", null, chatListMode === "archived" ? "Archived chats" : "Ignored chats"),
+        React.createElement("b", null, "Back"))
+  const recentTitle = chatListMode === "main" ? "Recent" : (chatListMode === "archived" ? "Archived" : "Ignored")
+
+  const mcOverlays = React.createElement(React.Fragment, null,
+    chatMenu ? React.createElement(McChatSheet, {
+      chat: chatMenu, prefs: chatPrefs, avatar: avatarUrl(chatMenu.other),
+      onClose: () => setChatMenu(null), onAction: (k: any) => chatAction(k, chatMenu),
+    }) : null,
+    chatConfirm ? React.createElement(McConfirm, {
+      title: chatConfirm.kind === "delete" ? "Delete chat?" : "Leave group?",
+      text: chatConfirm.kind === "delete"
+        ? "This chat will be removed from your list. It comes back only if someone sends a new message."
+        : "You will no longer get messages from " + chatConfirm.chat.other.name + ".",
+      label: chatConfirm.kind === "delete" ? "Delete" : "Leave",
+      onNo: () => setChatConfirm(null), onYes: runChatConfirm,
+    }) : null,
+    addMembersFor ? React.createElement(McAddMembers, {
+      chat: addMembersFor, users: allUsers, me: user.uid, avatarOf: avatarUrl,
+      onClose: () => setAddMembersFor(null),
+      onConfirm: (ids: any) => confirmAddMembers(addMembersFor, ids),
+    }) : null,
+    chatHeads
+      .filter((h: any) => !(currentView === "messages" && activeChat === h.id))
+      .map((h: any, i: any) => React.createElement(McChatHead, {
+        key: h.id, head: h, index: i, avatar: avatarUrl(h.other),
+        onOpen: (hh: any) => {
+          goTo("messages")
+          setTimeout(() => openChat(hh.id, hh.otherId, hh.other), 80)
+        },
+        onClose: (hh: any) => setChatHeads((hs: any) => hs.filter((x: any) => x.id !== hh.id)),
+      })))
+
   const renderChatListPanel = (inShell: boolean) => (
     <>
                   <div className="mb-search-box">
@@ -6154,7 +6671,7 @@ const handleChatTyping = (value: string) => {
                     </div>
                   )}
 
-                  <div className={inShell ? "mc-list" : "msgr-wrap"}>
+                  <div className={inShell ? "mc-list" : "msgr-wrap mc-plain"}>
                     <div className="msgr-list" style={{ width: "100%", borderRight: "none" }}>
                       {onlineList.length > 0 && (
                         <>
@@ -6175,30 +6692,14 @@ const handleChatTyping = (value: string) => {
                           </div>
                         </>
                       )}
-                      <div className="msgr-section">Recent</div>
+                      {mcFolderRows}
+                      <div className="msgr-section">{recentTitle}</div>
                       {filteredChats.length === 0 ? (
                         <div style={{ padding: 20, color: "var(--text-muted)", fontSize: 14, textAlign: "center" }}>
                           No conversations yet. Start one!
                         </div>
                       ) : (
-                        filteredChats.map((c) => {
-                          const photo = avatarUrl(c.other)
-                          return (
-                            <div className={`msgr-item${c.id === activeChat ? " active" : ""}`} key={c.id} onClick={() => openChat(c.id, c.otherId, c.other)}>
-                              <div className="msgr-item-avatar-wrap">
-                                <img src={photo} alt="" />
-                                <span className="msgr-item-dot" />
-                              </div>
-                              <div className="msgr-item-body">
-                                <div className="msgr-item-name">{c.other.name}</div>
-                                <div className="msgr-item-last">
-                                  {(c.last as any)?.text || "Say hi 👋"}
-                                </div>
-                              </div>
-                              <div className="msgr-item-time">{c.lastAt ? timeShort(c.lastAt) : ""}</div>
-                            </div>
-                          )
-                        })
+                        filteredChats.map((c: any) => mcRenderChatRow(c))
                       )}
                     </div>
                   </div>
@@ -6494,6 +6995,7 @@ const handleChatTyping = (value: string) => {
       )}
 
       <ToastStack toasts={toasts} onDone={removeToast} />
+      {mcOverlays}
 
       {/* Flying reactions */}
       {flyingReactions.map((r) => (
@@ -7613,7 +8115,7 @@ const handleChatTyping = (value: string) => {
                         <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" />
                       </svg>
                     </button>
-                    <div className="mechat-head-avatar-wrap" onClick={() => chatPartner && openUserProfile(chatPartner.uid)}>
+                    <div className="mechat-head-avatar-wrap" onClick={openPartnerOrGroup}>
                       <img src={chatPartner ? avatarUrl(chatPartner) : ""} alt="" />
                       <span className="mechat-head-online" />
                     </div>
@@ -7647,7 +8149,7 @@ const handleChatTyping = (value: string) => {
                           <path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z" />
                         </svg>
                       </button>
-                      <button className="mechat-head-btn" title="Info" onClick={() => chatPartner && openUserProfile(chatPartner.uid)}>
+                      <button className="mechat-head-btn" title="Info" onClick={openPartnerOrGroup}>
                         <svg viewBox="0 0 24 24">
                           <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" />
                         </svg>
@@ -7826,7 +8328,7 @@ const handleChatTyping = (value: string) => {
                             }}
                             onDoubleClick={(e) => openChatReactionPicker(e, m.id)}
                           >
-                            {!mine && <img className="mechat-bubble-avatar" src={chatPartner ? avatarUrl(chatPartner) : ""} alt="" />}
+                            {!mine && <img className="mechat-bubble-avatar" src={mcSenderAvatar(m)} alt="" />}
                             {mine && (
                               <button
                                 className="mechat-msg-more"
@@ -7847,6 +8349,7 @@ const handleChatTyping = (value: string) => {
                               className={`mechat-bubble ${mine ? "me" : "them"} ${isImageMsg ? "mechat-bubble-image" : ""}`}
                               style={isImageMsg ? { padding: 3, background: "transparent", maxWidth: "72%" } : undefined}
                             >
+                              {chatPartner?.isGroup && !mine && <div className="mc-sender-name">{mcSenderName(m)}</div>}
                               {bubbleContent}
                             </div>
                             {!mine && !isLikeMsg && (
@@ -8954,4 +9457,4 @@ function SideItem({
       {badge && badge > 0 ? <span className="mb-side-badge">{badge}</span> : null}
     </button>
   )
-        }
+    }

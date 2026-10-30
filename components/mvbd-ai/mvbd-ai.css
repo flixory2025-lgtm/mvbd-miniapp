@@ -7,6 +7,12 @@
   initial-value: 0deg;
 }
 
+@property --mvbd-c {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+
 @property --mvbd-b {
   syntax: "<angle>";
   inherits: false;
@@ -163,19 +169,24 @@
   animation: mvbd-breathe 5s ease-in-out infinite;
 }
 
-/* the orb (hidden in chat mode, shown in welcome mode) */
+/* ---------- THE ORB ----------
+   welcome: big glowing glass orb in the middle
+   after first message: it jumps (slow-motion) into the chat box,
+   shrinks and keeps spinning at the right end of the pill.
+   while typing: it hides and the send icon shows. */
 .mvbd-ai-panel::before {
   content: "";
   position: absolute;
-  z-index: 1;
-  top: 84px;
-  left: 50%;
+  z-index: 3;
+  /* resting place = right end of the input pill */
+  top: calc(100% - 144px);
+  left: calc(100% - 45px);
   width: 124px;
   height: 124px;
   margin-left: -62px;
   border-radius: 50%;
   pointer-events: none;
-  opacity: 0;
+  opacity: 1;
   transform: scale(0.3);
   background:
     radial-gradient(circle at 31% 23%, rgba(230, 255, 240, 0.95) 0 2.5%, rgba(150, 255, 200, 0.35) 9%, transparent 27%),
@@ -183,10 +194,33 @@
     conic-gradient(from var(--mvbd-a), #021a0e, #0f9d57, #6dffb4, #0a5c34, #021a0e 58%, #1fe07f, #021a0e);
   box-shadow:
     inset 0 0 24px rgba(93, 242, 154, 0.7),
-    inset 0 0 2px rgba(255, 255, 255, 0.55),
+    inset 0 0 3px rgba(255, 255, 255, 0.6),
+    inset 9px -9px 26px rgba(40, 210, 130, 0.35),
+    inset -10px 6px 24px rgba(18, 200, 160, 0.25),
     0 0 44px rgba(47, 216, 106, 0.55),
     0 0 120px rgba(18, 160, 96, 0.35);
-  transition: opacity 0.6s ease, transform 0.7s var(--ease);
+  transition:
+    left 1.7s cubic-bezier(0.45, 0, 0.2, 1),
+    top 1.7s cubic-bezier(0.4, -0.22, 0.3, 1.07),
+    transform 1.7s cubic-bezier(0.5, 0, 0.2, 1),
+    opacity 0.4s ease;
+  animation: mvbd-spin 9s linear infinite, mvbd-spin2 13s linear infinite;
+}
+
+/* glass sphere with orbiting light ribbons (like the reference orb) */
+@supports (top: calc(1px * cos(1deg))) {
+  .mvbd-ai-panel::before {
+    background:
+      radial-gradient(ellipse 34px 20px at 30% 20%, rgba(240, 255, 248, 0.9), rgba(180, 255, 215, 0.25) 60%, transparent 100%),
+      radial-gradient(circle at 50% 50%, transparent 0 54px, rgba(93, 242, 154, 0.28) 58px, rgba(200, 255, 225, 0.9) 61.5px, transparent 62px),
+      radial-gradient(circle 80px at calc(62px + 52px * cos(var(--mvbd-a))) calc(62px + 52px * sin(var(--mvbd-a))),
+        transparent 0 64px, rgba(93, 255, 170, 0.16) 67px, rgba(140, 255, 195, 0.95) 70px, rgba(93, 255, 170, 0.16) 73px, transparent 77px),
+      radial-gradient(circle 70px at calc(62px + 46px * cos(var(--mvbd-c))) calc(62px + 46px * sin(var(--mvbd-c))),
+        transparent 0 52px, rgba(198, 245, 66, 0.12) 55px, rgba(198, 245, 66, 0.8) 58px, rgba(198, 245, 66, 0.12) 61px, transparent 65px),
+      radial-gradient(circle 92px at calc(62px + 58px * cos(calc(var(--mvbd-c) + 140deg))) calc(62px + 58px * sin(calc(var(--mvbd-c) + 140deg))),
+        transparent 0 78px, rgba(31, 224, 176, 0.12) 81px, rgba(70, 240, 205, 0.85) 84px, rgba(31, 224, 176, 0.12) 87px, transparent 91px),
+      radial-gradient(circle at 50% 58%, #02140b 0%, #010a05 60%, #000604 100%);
+  }
 }
 
 /* ===== WELCOME MODE (no user message yet) ===== */
@@ -197,9 +231,22 @@
 }
 
 .mvbd-ai-panel:not(:has(.mvbd-ai-stub))::before {
-  opacity: 1;
+  z-index: 1;
+  top: 84px;
+  left: 50%;
   transform: scale(1);
-  animation: mvbd-spin 9s linear infinite, mvbd-float 6s ease-in-out infinite;
+  animation:
+    mvbd-spin 9s linear infinite,
+    mvbd-spin2 13s linear infinite,
+    mvbd-float 6s ease-in-out infinite,
+    mvbd-orb-in 1.1s var(--ease) both;
+}
+
+/* typing → orb hides, send icon takes its place */
+.mvbd-ai-panel:has(.mvbd-ai-stub):has(.mvbd-ai-input-wrap button:not(:disabled))::before {
+  opacity: 0;
+  transform: scale(0.08);
+  transition-duration: 1.7s, 1.7s, 0.35s, 0.3s;
 }
 
 .mvbd-ai-panel:not(:has(.mvbd-ai-stub))::after {
@@ -775,7 +822,7 @@ a.mvbd-ai-movie:hover .mvbd-ai-poster {
 }
 
 .mvbd-ai-input-wrap button svg {
-  transition: opacity 0.2s;
+  transition: opacity 0.25s ease, transform 0.5s var(--ease);
 }
 
 .mvbd-ai-input-wrap button::after {
@@ -818,15 +865,23 @@ a.mvbd-ai-movie:hover .mvbd-ai-poster {
 
 .mvbd-ai-input-wrap button:disabled svg {
   opacity: 0;
+  transform: scale(0.4) rotate(-35deg);
 }
 
 .mvbd-ai-input-wrap button:disabled::after {
   opacity: 1;
 }
 
+/* in chat mode the little orb replaces the waveform */
+.mvbd-ai-panel:has(.mvbd-ai-stub) .mvbd-ai-input-wrap button:disabled::after {
+  opacity: 0;
+}
+
 .mvbd-ai-note {
+  height: 52px; /* fixed: the orb lands on the send button using this */
   margin: 0;
-  padding: 8px 16px 14px;
+  overflow: hidden;
+  padding: 8px 16px 0;
   color: rgba(205, 240, 220, 0.42);
   font-size: 11.5px;
   line-height: 1.4;
@@ -865,6 +920,16 @@ a.mvbd-ai-movie:hover .mvbd-ai-poster {
 
 @keyframes mvbd-spin {
   to { --mvbd-a: 360deg; }
+}
+
+@keyframes mvbd-spin2 {
+  from { --mvbd-c: 360deg; }
+  to   { --mvbd-c: 0deg; }
+}
+
+@keyframes mvbd-orb-in {
+  from { opacity: 0; filter: blur(14px); }
+  to   { opacity: 1; filter: blur(0); }
 }
 
 @keyframes mvbd-float {
@@ -928,17 +993,14 @@ a.mvbd-ai-movie:hover .mvbd-ai-poster {
   }
 }
 
-/* short screens: smaller orb */
+/* short screens: move orb up a bit */
 @media (max-height: 640px) {
-  .mvbd-ai-panel::before {
-    top: 70px;
-    width: 92px;
-    height: 92px;
-    margin-left: -46px;
+  .mvbd-ai-panel:not(:has(.mvbd-ai-stub))::before {
+    top: 62px;
   }
 
   .mvbd-ai-panel:not(:has(.mvbd-ai-stub)) .mvbd-ai-messages {
-    padding-top: 128px;
+    padding-top: 150px;
   }
 
   .mvbd-ai-panel:not(:has(.mvbd-ai-stub)) .mvbd-ai-messages::after {

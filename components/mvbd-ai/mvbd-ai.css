@@ -992,3 +992,110 @@ a.mvbd-ai-movie:hover .mvbd-ai-poster {
     transition: none !important;
   }
   }
+
+/* =========================================================
+   Thinking steps · typing caret · copy/share icons
+========================================================= */
+.mvbd-ai-thinking {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 190px;
+  padding: 11px 15px;
+}
+
+.mvbd-ai-step {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 13.5px;
+  line-height: 1.4;
+  animation: mvbd-msg 0.4s var(--ease) both;
+}
+
+.mvbd-ai-step.is-done {
+  color: var(--mute);
+}
+
+.mvbd-ai-step.is-done svg {
+  flex: 0 0 auto;
+  color: var(--mint);
+}
+
+.mvbd-ai-step.is-current .mvbd-ai-step-text {
+  background: linear-gradient(90deg, rgba(234, 255, 241, 0.45) 0%, #fff 45%, rgba(234, 255, 241, 0.45) 90%);
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  animation: mvbd-shimmer 1.8s linear infinite;
+}
+
+.mvbd-ai-pulse {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  flex: 0 0 auto;
+}
+
+.mvbd-ai-pulse i {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--mint);
+  box-shadow: 0 0 8px rgba(93, 242, 154, 0.6);
+  animation: mvbd-dot 1.1s infinite ease-in-out;
+}
+
+.mvbd-ai-pulse i:nth-child(2) { animation-delay: 0.15s; }
+.mvbd-ai-pulse i:nth-child(3) { animation-delay: 0.3s; }
+
+/* typing caret */
+.mvbd-ai-caret {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  margin-left: 3px;
+  vertical-align: middle;
+  border-radius: 50%;
+  background: var(--mint);
+  box-shadow: 0 0 8px rgba(93, 242, 154, 0.7);
+  animation: mvbd-blink 0.8s ease-in-out infinite;
+}
+
+/* copy / share row */
+.mvbd-ai-actions-row {
+  display: flex;
+  gap: 4px;
+  margin-top: 8px;
+  animation: mvbd-msg 0.4s var(--ease) both;
+}
+
+.mvbd-ai-actions-row button {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  color: var(--mute);
+  background: transparent;
+  cursor: pointer;
+  transition: color 0.2s, background 0.2s, transform 0.2s var(--ease);
+}
+
+.mvbd-ai-actions-row button:hover {
+  color: var(--mint);
+  background: rgba(93, 242, 154, 0.12);
+}
+
+.mvbd-ai-actions-row button:active {
+  transform: scale(0.88);
+}
+
+@keyframes mvbd-shimmer {
+  from { background-position: 200% 0; }
+  to   { background-position: -200% 0; }
+  }

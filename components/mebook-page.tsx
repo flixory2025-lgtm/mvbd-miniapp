@@ -645,66 +645,79 @@ animation:betaPulse 1.6s ease-in-out infinite;
 .mebook-root .mb-avatar-btn:active{transform:scale(.93);}
 .mebook-root .mb-avatar-btn img{width:100%;height:100%;object-fit:cover;}
 
-/* ============ FACEBOOK-STYLE NAV BAR (below header, always visible) ============ */
+/* ============ LIQUID GLASS NAV BAR (iOS-style floating pill + sliding glass lens) ============ */
 .mebook-root .mb-navbar{
 position:fixed;top:60px;left:0;right:0;height:48px;z-index:999;
-display:flex;align-items:stretch;justify-content:center;
-background:var(--header-bg);
-border-top:1px solid rgba(255,255,255,.06);
-box-shadow:0 2px 12px rgba(0,0,0,.25);
+display:flex;align-items:center;justify-content:center;
+background:transparent;border:none;box-shadow:none;
+padding:0 12px;pointer-events:none;
 transition:transform .35s ease;will-change:transform;
 }
-.mebook-root.dark-mode .mb-navbar{background:#000000;border-top-color:#151515;border-bottom:1px solid #151515;box-shadow:0 2px 16px rgba(0,0,0,.9);}
-.mebook-root .mb-navbar-inner{display:flex;align-items:stretch;width:100%;max-width:640px;}
+.mebook-root .mb-navbar-inner{
+position:relative;display:flex;align-items:stretch;width:100%;max-width:560px;height:44px;
+border-radius:999px;pointer-events:auto;
+background:rgba(255,255,255,.58);
+-webkit-backdrop-filter:blur(22px) saturate(190%);backdrop-filter:blur(22px) saturate(190%);
+box-shadow:
+inset 0 0 0 1px rgba(255,255,255,.75),
+inset 0 1.5px 2px rgba(255,255,255,.95),
+inset 0 -1px 2px rgba(0,0,0,.05),
+0 6px 20px rgba(0,0,0,.12),0 1px 3px rgba(0,0,0,.08);
+}
+.mebook-root.dark-mode .mb-navbar-inner{
+background:rgba(38,38,42,.55);
+box-shadow:
+inset 0 0 0 1px rgba(255,255,255,.12),
+inset 0 1.5px 2px rgba(255,255,255,.18),
+inset 0 -1px 2px rgba(0,0,0,.4),
+0 6px 22px rgba(0,0,0,.6),0 1px 3px rgba(0,0,0,.5);
+}
+/* sliding glass lens */
+.mebook-root .mb-glass-lens{
+position:absolute;left:0;top:3px;bottom:3px;width:0;border-radius:999px;pointer-events:none;z-index:1;
+opacity:0;transition:opacity .25s ease;will-change:transform,width;
+background:linear-gradient(180deg,rgba(255,255,255,.55) 0%,rgba(255,255,255,.18) 100%);
+-webkit-backdrop-filter:blur(3px) saturate(200%) brightness(1.06);backdrop-filter:blur(3px) saturate(200%) brightness(1.06);
+box-shadow:
+inset 0 0 0 1px rgba(255,255,255,.9),
+inset 2px 3px 6px rgba(255,255,255,.95),
+inset -2px -3px 7px rgba(0,0,0,.10),
+0 5px 14px rgba(0,0,0,.20),0 1px 2px rgba(0,0,0,.15);
+}
+.mebook-root .mb-glass-lens.on{opacity:1;}
+.mebook-root .mb-glass-lens::after{
+content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+opacity:var(--mv,0);
+box-shadow:inset 5px 0 7px -2px rgba(70,140,255,.75),inset -5px 0 7px -2px rgba(255,80,110,.55),inset 0 3px 5px -2px rgba(255,255,255,.9);
+}
+.mebook-root.dark-mode .mb-glass-lens{
+background:linear-gradient(180deg,rgba(255,255,255,.26) 0%,rgba(255,255,255,.08) 100%);
+box-shadow:
+inset 0 0 0 1px rgba(255,255,255,.28),
+inset 2px 3px 6px rgba(255,255,255,.28),
+inset -2px -3px 7px rgba(0,0,0,.45),
+0 6px 16px rgba(0,0,0,.65),0 1px 2px rgba(0,0,0,.6);
+}
+/* tabs: icons are black in light mode, white in dark mode */
 .mebook-root .mb-nav-tab{
-flex:1;position:relative;display:flex;align-items:center;justify-content:center;
-color:#b0b3b8;background:transparent;border:none;cursor:pointer;padding:0;
+flex:1;min-width:0;position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;
+color:#000;background:transparent;border:none;cursor:pointer;padding:0;border-radius:999px;
 -webkit-tap-highlight-color:transparent;
-transition:color .2s,background .2s;
 }
-.mebook-root .mb-nav-tab:hover{background:rgba(255,255,255,.06);}
-.mebook-root .mb-nav-tab:active{background:rgba(255,255,255,.1);}
-.mebook-root .mb-nav-tab svg{width:26px;height:26px;fill:currentColor;}
-.mebook-root .mb-nav-tab.active{color:#22c55e;}
-.mebook-root .mb-nav-tab::after{
-content:"";position:absolute;left:14%;right:14%;bottom:0;height:3px;border-radius:3px 3px 0 0;
-background:#22c55e;transform:scaleX(0);transition:transform .22s ease;
-}
-.mebook-root .mb-nav-tab.active::after{transform:scaleX(1);}
-.mebook-root .mb-nav-tab .mb-badge-dot{top:4px;right:calc(50% - 22px);}
+.mebook-root.dark-mode .mb-nav-tab{color:#fff;}
+.mebook-root .mb-nav-tab svg{width:20px;height:20px;fill:currentColor;display:block;transition:transform .35s cubic-bezier(.3,1.4,.5,1);}
+.mebook-root .mb-nav-tab .mb-nav-label{font-size:9px;line-height:10px;font-weight:600;letter-spacing:.1px;color:inherit;}
+.mebook-root .mb-nav-tab.active svg{transform:scale(1.1);}
+.mebook-root .mb-nav-tab.active .mb-nav-label{font-weight:700;}
+.mebook-root .mb-nav-tab:active svg{transform:scale(.9);}
+.mebook-root .mb-nav-tab .mb-badge-dot{top:2px;right:calc(50% - 19px);min-width:15px;height:15px;font-size:9px;border:1.5px solid #fff;padding:0 3px;}
+.mebook-root.dark-mode .mb-nav-tab .mb-badge-dot{border-color:#1c1c1e;}
 .mebook-root .mb-nav-tab .mb-nav-avatar{
-width:28px;height:28px;border-radius:50%;overflow:hidden;
-border:2px solid transparent;background:#334155;display:block;
-transition:border-color .2s;
+width:20px;height:20px;border-radius:50%;overflow:hidden;display:block;background:#334155;
+border:1.5px solid currentColor;box-sizing:border-box;transition:transform .35s cubic-bezier(.3,1.4,.5,1);
 }
+.mebook-root .mb-nav-tab.active .mb-nav-avatar{transform:scale(1.1);}
 .mebook-root .mb-nav-tab .mb-nav-avatar img{width:100%;height:100%;object-fit:cover;display:block;}
-.mebook-root .mb-nav-tab.active .mb-nav-avatar{border-color:#22c55e;}
-.mebook-root .mb-nav-tab.mb-nav-tab-avatar::after{display:block;}
-
-/* ============ NAV BAR v3: glowing green line that follows the active page ============ */
-.mebook-root .mb-navbar{background:linear-gradient(180deg,#ffffff 0%,#f3f5f4 100%);border-top:none;border-bottom:1px solid #e4e6eb;box-shadow:0 3px 12px rgba(0,0,0,.08);}
-.mebook-root.dark-mode .mb-navbar{background:linear-gradient(180deg,#242526 0%,#0c0c0d 100%);border-bottom:1px solid #1a1a1b;box-shadow:0 3px 16px rgba(0,0,0,.85);}
-.mebook-root .mb-navbar-inner{position:relative;}
-.mebook-root .mb-nav-line-wrap{position:absolute;left:0;top:0;right:0;bottom:0;pointer-events:none;z-index:1;}
-.mebook-root .mb-nav-line-wrap svg{display:block;overflow:visible;}
-.mebook-root .mb-nav-line-wrap .fill{fill:rgba(34,197,94,.10);}
-.mebook-root .mb-nav-line-wrap .stroke{fill:none;stroke:#22c55e;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 0 3px rgba(34,197,94,.7));}
-.mebook-root .mb-nav-tab{z-index:2;color:#9a9da3;}
-.mebook-root .mb-nav-tab:hover{background:transparent;}
-.mebook-root .mb-nav-tab:active{background:rgba(0,0,0,.05);}
-.mebook-root.dark-mode .mb-nav-tab{color:#7b7e84;}
-.mebook-root.dark-mode .mb-nav-tab:active{background:rgba(255,255,255,.07);}
-.mebook-root .mb-nav-tab svg{width:22px;height:22px;transition:transform .3s cubic-bezier(.3,1.4,.5,1),filter .3s ease;}
-.mebook-root .mb-nav-tab.active{color:#16a34a;}
-.mebook-root.dark-mode .mb-nav-tab.active{color:#22c55e;}
-.mebook-root .mb-nav-tab.active svg{transform:translateY(-3px) scale(1.08);}
-.mebook-root.dark-mode .mb-nav-tab.active svg{filter:drop-shadow(0 0 5px rgba(34,197,94,.55));}
-.mebook-root .mb-nav-tab::after{left:50%;right:auto;bottom:10px;width:4px;height:4px;margin-left:-2px;border-radius:50%;background:#22c55e;box-shadow:0 0 6px rgba(34,197,94,.85);transform:scale(0);opacity:0;transition:transform .3s cubic-bezier(.3,1.4,.5,1),opacity .2s ease;}
-.mebook-root .mb-nav-tab.active::after{transform:scale(1);opacity:1;}
-.mebook-root .mb-nav-tab .mb-badge-dot{border-color:#ffffff;}
-.mebook-root.dark-mode .mb-nav-tab .mb-badge-dot{border-color:#0c0c0d;}
-.mebook-root .mb-nav-tab .mb-nav-avatar{width:24px;height:24px;opacity:.8;transition:border-color .2s,opacity .2s,transform .3s cubic-bezier(.3,1.4,.5,1);}
-.mebook-root .mb-nav-tab.active .mb-nav-avatar{border-color:#22c55e;opacity:1;transform:translateY(-3px) scale(1.08);}
 
 /* ============ SHORTS PAGE (Facebook Reels style) ============ */
 .mebook-root .shp-root{position:fixed;left:0;right:0;top:108px;bottom:0;z-index:900;background:#000;color:#fff;overflow:hidden;}
@@ -6543,94 +6556,105 @@ function ShortsPage(props: {
 }
 
 /* ============================================================
-NAV LINE: glowing green line that bends around the active tab and slides smoothly
+NAV GLASS: iOS-style liquid glass lens that slides (spring + stretch) behind the active tab
 ============================================================ */
-function NavLine({ index, count }: { index: number; count: number }) {
-  const wrapRef = useRef<HTMLDivElement>(null)
-  const [size, setSize] = useState({ w: 0, h: 0 })
-  const posRef = useRef(index < 0 ? 0 : index)
-  const ampRef = useRef(index < 0 ? 0 : 1)
-  const [anim, setAnim] = useState({ pos: posRef.current, amp: ampRef.current })
+function NavGlass({ index, count }: { index: number; count: number }) {
+  const lensRef = useRef<HTMLDivElement>(null)
+  const st = useRef({ x: 0, v: 0, w: 0, ready: false, raf: 0, last: 0, target: 0 })
+  const indexRef = useRef(index)
+  indexRef.current = index
 
-  useEffect(() => {
-    const el = wrapRef.current
+  const paint = useCallback(() => {
+    const el = lensRef.current
     if (!el) return
-    const upd = () => setSize({ w: el.clientWidth, h: el.clientHeight })
-    upd()
-    let ro: any = null
-    if (typeof ResizeObserver !== "undefined") {
-      ro = new ResizeObserver(upd)
-      ro.observe(el)
-    }
-    window.addEventListener("resize", upd)
-    return () => {
-      if (ro) ro.disconnect()
-      window.removeEventListener("resize", upd)
-    }
+    const s = st.current
+    const tw = s.w
+    const inset = 3
+    const speed = tw > 0 ? Math.abs(s.v) / tw : 0 // tabs per second
+    const sx = 1 + Math.min(0.5, speed * 0.07)
+    const sy = 1 + Math.min(0.14, speed * 0.02)
+    const lw = Math.max(0, tw - inset * 2)
+    el.style.width = lw + "px"
+    el.style.transform = `translate3d(${s.x + inset}px,0,0) scale(${sx.toFixed(3)},${sy.toFixed(3)})`
+    el.style.setProperty("--mv", Math.min(1, speed / 5).toFixed(3))
   }, [])
 
-  useEffect(() => {
-    const toPos = index < 0 ? posRef.current : index
-    const toAmp = index < 0 ? 0 : 1
-    const fromAmp = ampRef.current
-    const fromPos = posRef.current
-    if (fromPos === toPos && fromAmp === toAmp) return
-    const startPos = fromAmp < 0.05 ? toPos : fromPos
-    const t0 = performance.now()
-    const dur = 520
-    let raf = 0
+  const run = useCallback(() => {
+    const s = st.current
+    cancelAnimationFrame(s.raf)
+    s.last = performance.now()
+    const K = 190
+    const D = 19
     const step = (now: number) => {
-      const t = Math.min(1, (now - t0) / dur)
-      const c1 = 1.1
-      const back = 1 + (c1 + 1) * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2)
-      const cubic = 1 - Math.pow(1 - t, 3)
-      posRef.current = startPos + (toPos - startPos) * back
-      ampRef.current = fromAmp + (toAmp - fromAmp) * cubic
-      if (t >= 1) {
-        posRef.current = toPos
-        ampRef.current = toAmp
+      let dt = Math.min(0.032, (now - s.last) / 1000)
+      s.last = now
+      const n = 4
+      const h = dt / n
+      for (let i = 0; i < n; i++) {
+        const a = -K * (s.x - s.target) - D * s.v
+        s.v += a * h
+        s.x += s.v * h
       }
-      setAnim({ pos: posRef.current, amp: ampRef.current })
-      if (t < 1) raf = requestAnimationFrame(step)
+      paint()
+      if (Math.abs(s.x - s.target) < 0.15 && Math.abs(s.v) < 4) {
+        s.x = s.target
+        s.v = 0
+        paint()
+        return
+      }
+      s.raf = requestAnimationFrame(step)
     }
-    raf = requestAnimationFrame(step)
-    return () => cancelAnimationFrame(raf)
-  }, [index])
+    s.raf = requestAnimationFrame(step)
+  }, [paint])
 
-  const W = size.w
-  const H = size.h
-  let content: React.ReactNode = null
-  if (W > 0 && H > 0 && count > 0) {
-    const tw = W / count
-    const cx = Math.max(tw / 2, Math.min(W - tw / 2, (anim.pos + 0.5) * tw))
-    const B = H - 2
-    const T = B - (B - 3) * anim.amp
-    const f = 10
-    const k = f * 1.3
-    const hw = Math.max(2, tw / 2 - 2 * f)
-    const x1 = cx - hw - 2 * f
-    const x2 = cx - hw
-    const x3 = cx + hw
-    const x4 = cx + hw + 2 * f
-    const n = (v: number) => v.toFixed(2)
-    const bump =
-      `C${n(x1 + k)} ${n(B)} ${n(x2 - k)} ${n(T)} ${n(x2)} ${n(T)} ` +
-      `H${n(x3)} ` +
-      `C${n(x3 + k)} ${n(T)} ${n(x4 - k)} ${n(B)} ${n(x4)} ${n(B)}`
-    const line = `M0 ${n(B)} H${n(x1)} ${bump} H${n(W)}`
-    const area = `M${n(x1)} ${n(B)} ${bump} Z`
-    content = (
-      <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`}>
-        <path className="fill" d={area} />
-        <path className="stroke" d={line} />
-      </svg>
-    )
-  }
-  return (
-    <div className="mb-nav-line-wrap" ref={wrapRef} aria-hidden="true">
-      {content}
-    </div>
-  )
+  useEffect(() => {
+    const el = lensRef.current
+    const wrap = el ? (el.parentElement as HTMLElement | null) : null
+    if (!el || !wrap) return
+    const measure = () => {
+      const s = st.current
+      s.w = count > 0 ? wrap.clientWidth / count : 0
+      s.target = Math.max(0, indexRef.current) * s.w
+      s.x = s.target
+      s.v = 0
+      s.ready = true
+      paint()
+    }
+    measure()
+    let ro: any = null
+    if (typeof ResizeObserver !== "undefined") {
+      ro = new ResizeObserver(measure)
+      ro.observe(wrap)
+    }
+    window.addEventListener("resize", measure)
+    return () => {
+      cancelAnimationFrame(st.current.raf)
+      if (ro) ro.disconnect()
+      window.removeEventListener("resize", measure)
+    }
+  }, [count, paint])
+
+  useEffect(() => {
+    const el = lensRef.current
+    const s = st.current
+    if (!el || !s.ready) return
+    if (index < 0) {
+      el.classList.remove("on")
+      return
+    }
+    const wasHidden = !el.classList.contains("on")
+    s.target = index * s.w
+    el.classList.add("on")
+    if (wasHidden) {
+      s.x = s.target
+      s.v = 0
+      paint()
+    } else {
+      run()
+    }
+  }, [index, run, paint])
+
+  return <div className={`mb-glass-lens${index >= 0 ? " on" : ""}`} ref={lensRef} aria-hidden="true" />
 }
 
 function MeBookSplash() {
@@ -16120,7 +16144,7 @@ const handleChatTyping = (value: string) => {
 
       <nav className="mb-navbar" aria-label="Main navigation">
         <div className="mb-navbar-inner">
-          <NavLine
+          <NavGlass
             index={
               currentView === "home" ? 0
               : currentView === "shorts" ? 1
@@ -16141,6 +16165,7 @@ const handleChatTyping = (value: string) => {
             <svg viewBox="0 0 24 24">
               <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
             </svg>
+            <span className="mb-nav-label">Home</span>
           </button>
           <button
             className={`mb-nav-tab${currentView === "shorts" ? " active" : ""}`}
@@ -16151,6 +16176,7 @@ const handleChatTyping = (value: string) => {
             <svg viewBox="0 0 24 24">
               <path fillRule="evenodd" d="M7 2h10a3 3 0 0 1 3 3v14a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3V5a3 3 0 0 1 3-3zm3 5.5v9l7.5-4.5L10 7.5z" />
             </svg>
+            <span className="mb-nav-label">Shorts</span>
           </button>
           <button
             className={`mb-nav-tab${currentView === "friends" || currentView === "friends-list" ? " active" : ""}`}
@@ -16161,6 +16187,7 @@ const handleChatTyping = (value: string) => {
             <svg viewBox="0 0 24 24">
               <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" />
             </svg>
+            <span className="mb-nav-label">Friends</span>
             {requests.length > 0 && (
               <span className="mb-badge-dot">{requests.length}</span>
             )}
@@ -16174,6 +16201,7 @@ const handleChatTyping = (value: string) => {
             <svg viewBox="0 0 24 24">
               <path d="M12 2C6.5 2 2 6.14 2 11.25c0 2.88 1.41 5.45 3.62 7.16.12 1.1-.28 2.62-1.05 3.59-.13.16-.02.4.18.38 2.34-.19 4.05-1.25 4.85-1.85.77.16 1.58.25 2.4.25 5.5 0 10-4.14 10-9.25S17.5 2 12 2z" />
             </svg>
+            <span className="mb-nav-label">MeChat</span>
             {unreadCount > 0 && <span className="mb-badge-dot">{unreadCount}</span>}
           </button>
           <button
@@ -16185,6 +16213,7 @@ const handleChatTyping = (value: string) => {
             <svg viewBox="0 0 24 24">
               <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z" />
             </svg>
+            <span className="mb-nav-label">Alerts</span>
             {unreadNotifCount > 0 && (
               <span className="mb-badge-dot">
                 {unreadNotifCount > 99 ? "99+" : unreadNotifCount}
@@ -16200,6 +16229,7 @@ const handleChatTyping = (value: string) => {
             <span className="mb-nav-avatar">
               <img src={avatarUrl(profile)} alt="Profile" />
             </span>
+            <span className="mb-nav-label">Profile</span>
           </button>
         </div>
       </nav>

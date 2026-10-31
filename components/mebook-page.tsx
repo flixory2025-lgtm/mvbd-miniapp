@@ -409,6 +409,20 @@ font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-seri
 -webkit-font-smoothing:antialiased;
 }
 
+.mebook-root .mb-exit-overlay{position:fixed;inset:0;z-index:100000;background:rgba(0,0,0,.55);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;padding:20px;animation:mbExitFade .18s ease;}
+.mebook-root .mb-exit-dialog{width:min(88vw,340px);background:var(--card);color:var(--text);border-radius:20px;padding:26px 20px 18px;text-align:center;box-shadow:0 20px 50px rgba(0,0,0,.35);animation:mbExitPop .22s cubic-bezier(.2,.9,.3,1.2);}
+.mebook-root .mb-exit-icon{width:62px;height:62px;border-radius:50%;margin:0 auto 14px;display:flex;align-items:center;justify-content:center;background:rgba(239,68,68,.12);color:#ef4444;}
+.mebook-root .mb-exit-title{font-size:19px;font-weight:800;margin-bottom:6px;}
+.mebook-root .mb-exit-text{font-size:14px;color:var(--text-muted);line-height:1.45;margin-bottom:20px;}
+.mebook-root .mb-exit-actions{display:flex;gap:10px;}
+.mebook-root .mb-exit-btn{flex:1;padding:12px 10px;border-radius:12px;font-size:15px;font-weight:700;border:none;cursor:pointer;transition:filter .15s,transform .1s;}
+.mebook-root .mb-exit-btn:active{transform:scale(.96);}
+.mebook-root .mb-exit-btn.cancel{background:var(--input-bg);color:var(--text);}
+.mebook-root .mb-exit-btn.exit{background:#ef4444;color:#fff;}
+.mebook-root.dark-mode .mb-exit-dialog{background:#111;border:1px solid #1d1d1d;}
+.mebook-root.dark-mode .mb-exit-btn.cancel{background:#1c1c1c;color:#fff;}
+@keyframes mbExitFade{from{opacity:0}to{opacity:1}}
+@keyframes mbExitPop{from{opacity:0;transform:scale(.88) translateY(10px)}to{opacity:1;transform:none}}
 .mebook-root.dark-mode{
 --green:#22c55e;--green-dark:#4ade80;--green-light:#86efac;
 --bg:#000000;--card:#0a0a0a;--text:#f5f5f5;--text-muted:#8a8a8a;
@@ -5842,6 +5856,7 @@ export default function MeBookPage({ onExit }: MeBookPageProps) {
   const [themeRipple, setThemeRipple] = useState<{ x: number; y: number; color: string } | null>(null)
 
   const [menuOpen, setMenuOpen] = useState(false)
+  const [exitConfirmOpen, setExitConfirmOpen] = useState(false)
   const [srQuery, setSrQuery] = useState("")
 
   const [toasts, setToasts] = useState<ToastItem[]>([])
@@ -8695,6 +8710,88 @@ const handleChatTyping = (value: string) => {
     }
   }
 
+  /* ============================================================
+     PHONE BACK BUTTON (Facebook style)
+     - overlay/sheet/drawer খোলা থাকলে -> সেটা বন্ধ হবে
+     - অন্য page এ থাকলে -> আগের page এ যাবে (শেষে Home)
+     - Home এ নিচে scroll করা থাকলে -> আগে top এ যাবে
+     - Home এর top এ থাকলে -> "Exit MeBook?" popup
+     ============================================================ */
+  const exitingRef = useRef(false)
+  const backRef = useRef<any>({})
+  backRef.current = {
+    exitConfirmOpen,
+    drawerOpen,
+    menuOpen,
+    mcOpen,
+    currentView,
+    stackLen: pageStack.length,
+    hasPhotoViewer: !!photoViewer,
+    hasEngageSheet: !!engageSheet,
+    hasShareSheet: !!shareSheetPostId,
+    hasFriendSheet: !!actionSheetFriend,
+    goBack,
+    closeChat,
+  }
+
+  const doExit = () => {
+    exitingRef.current = true
+    setExitConfirmOpen(false)
+    try {
+      // আমাদের বসানো guard history entry টা সরিয়ে দেওয়া
+      if (window.history.state && window.history.state.mebookGuard) window.history.back()
+    } catch {}
+    onExit()
+    setTimeout(() => { exitingRef.current = false }, 600)
+  }
+
+  useEffect(() => {
+    if (typeof window === "undefined") return
+    const GUARD = { mebookGuard: true }
+
+    // guard entry: phone back চাপলে আসল page ছেড়ে না গিয়ে এই entry টা pop হবে
+    if (!(window.history.state && window.history.state.mebookGuard)) {
+      window.history.pushState(GUARD, "")
+    }
+
+    const onPop = () => {
+      if (exitingRef.current) return
+
+      // guard আবার বসিয়ে দিই, যাতে পরের back ও ধরা যায়
+      window.history.pushState(GUARD, "")
+
+      const s = backRef.current
+
+      if (s.exitConfirmOpen) { setExitConfirmOpen(false); return }
+      if (s.hasPhotoViewer) { setPhotoViewer(null); return }
+      if (s.hasEngageSheet) { setEngageSheet(null); return }
+      if (s.hasShareSheet) { setShareSheetPostId(null); return }
+      if (s.hasFriendSheet) { setActionSheetFriend(null); return }
+      if (s.drawerOpen) { setDrawerOpen(false); return }
+      if (s.menuOpen) { setMenuOpen(false); return }
+      if (s.mcOpen) { s.closeChat(); return }
+
+      // অন্য page এ থাকলে আগের page এ
+      if (s.currentView !== "home" || s.stackLen > 1) {
+        s.goBack()
+        return
+      }
+
+      // Home এ কিন্তু নিচে scroll করা -> আগে top এ
+      const y = Math.max(window.scrollY || 0, document.documentElement.scrollTop || 0)
+      if (y > 80) {
+        window.scrollTo({ top: 0, behavior: "smooth" })
+        return
+      }
+
+      // Home এর top এ -> exit popup
+      setExitConfirmOpen(true)
+    }
+
+    window.addEventListener("popstate", onPop)
+    return () => window.removeEventListener("popstate", onPop)
+  }, [])
+
   useEffect(() => {
     if (!mcOpen) return
     const onKey = (e: KeyboardEvent) => {
@@ -10027,6 +10124,33 @@ const handleChatTyping = (value: string) => {
       )}
 
       <ToastStack toasts={toasts} onDone={removeToast} />
+
+      {exitConfirmOpen && (
+        <div className="mb-exit-overlay" onClick={() => setExitConfirmOpen(false)}>
+          <div
+            className="mb-exit-dialog"
+            role="dialog"
+            aria-modal="true"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="mb-exit-icon">
+              <svg viewBox="0 0 24 24" width="30" height="30" fill="currentColor">
+                <path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z" />
+              </svg>
+            </div>
+            <div className="mb-exit-title">Exit MeBook?</div>
+            <div className="mb-exit-text">Are you sure you want to exit MeBook?</div>
+            <div className="mb-exit-actions">
+              <button type="button" className="mb-exit-btn cancel" onClick={() => setExitConfirmOpen(false)}>
+                Cancel
+              </button>
+              <button type="button" className="mb-exit-btn exit" onClick={doExit}>
+                Exit
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       {mcOverlays}
 
       {/* Flying reactions */}
@@ -10782,7 +10906,7 @@ const handleChatTyping = (value: string) => {
 
     {/* Exit MeBook */}
     <button
-      onClick={onExit}
+      onClick={doExit}
       style={{
         display: "inline-flex",
         alignItems: "center",

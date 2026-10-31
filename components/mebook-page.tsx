@@ -2128,7 +2128,7 @@ background:var(--hover);
 .mebook-root .cp-actions .mb-btn{flex:1;padding:11px;}
 
 /* ============ TOAST ============ */
-.mebook-root .mb-toast-container{position:fixed;top:80px;right:20px;z-index:6000;display:flex;flex-direction:column;gap:10px;pointer-events:none;max-width:360px;}
+.mebook-root .mb-toast-container{position:fixed;top:80px;right:20px;z-index:10050;display:flex;flex-direction:column;gap:10px;pointer-events:none;max-width:360px;}
 .mebook-root .mb-toast{padding:12px 16px;border-radius:12px;font-size:14px;font-weight:500;box-shadow:0 8px 32px rgba(0,0,0,.18),0 0 0 1px rgba(0,0,0,.04);display:flex;align-items:center;gap:10px;pointer-events:auto;animation:toastIn .4s cubic-bezier(.2,.8,.3,1);min-width:240px;position:relative;overflow:hidden;background:var(--card);color:var(--text);}
 .mebook-root .mb-toast.removing{animation:toastOut .35s cubic-bezier(.4,0,1,1) forwards;}
 @keyframes toastIn{0%{opacity:0;transform:translateX(120%) scale(.9);}60%{opacity:1;transform:translateX(-6px) scale(1.02);}100%{opacity:1;transform:translateX(0) scale(1);}}
@@ -2438,36 +2438,34 @@ background:var(--green);color:#fff;font-size:15px;font-weight:700;
 }
 .mebook-root .mb-modal-save:disabled{opacity:.5;cursor:not-allowed;}
 
-/* Photo viewer */
-.mebook-root .mb-viewer{
-position:fixed;inset:0;z-index:10001;background:rgba(0,0,0,.96);
-display:flex;flex-direction:column;animation:sheetFade .18s ease;
-}
-.mebook-root .mb-viewer-top{
-display:flex;align-items:center;justify-content:space-between;gap:10px;
-padding:calc(10px + env(safe-area-inset-top,0px)) 12px 10px;color:#fff;
-}
-.mebook-root .mb-viewer-btn{
-width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.14);color:#fff;
-display:flex;align-items:center;justify-content:center;flex-shrink:0;
-}
-.mebook-root .mb-viewer-btn:hover{background:rgba(255,255,255,.26);}
-.mebook-root .mb-viewer-btn svg{width:22px;height:22px;fill:currentColor;}
-.mebook-root .mb-viewer-author{display:flex;align-items:center;gap:10px;min-width:0;flex:1;}
-.mebook-root .mb-viewer-author img{width:36px;height:36px;border-radius:50%;object-fit:cover;background:#334155;}
-.mebook-root .mb-viewer-author b{font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.mebook-root .mb-viewer-stage{
-flex:1;min-height:0;display:flex;align-items:center;justify-content:center;overflow:auto;
-}
-.mebook-root .mb-viewer-stage img{
-max-width:100%;max-height:100%;object-fit:contain;display:block;
-transition:transform .22s ease;user-select:none;-webkit-user-drag:none;
-}
-.mebook-root .mb-viewer-caption{
-max-height:28vh;overflow-y:auto;padding:12px 16px calc(14px + env(safe-area-inset-bottom,0px));
-color:#f1f5f9;font-size:14.5px;line-height:1.5;white-space:pre-wrap;word-wrap:break-word;
-background:linear-gradient(to top,rgba(0,0,0,.85),rgba(0,0,0,0));
-}
+/* Photo viewer (Facebook style) */
+.mebook-root .mb-pv{position:fixed;inset:0;z-index:10001;background:#000;overflow:hidden;animation:sheetFade .18s ease;-webkit-tap-highlight-color:transparent;}
+.mebook-root .mb-pv-stage{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;overflow:hidden;}
+.mebook-root .mb-pv-stage img{max-width:100%;max-height:100%;object-fit:contain;display:block;transition:transform .22s ease;user-select:none;-webkit-user-drag:none;}
+.mebook-root .mb-pv-top{position:absolute;top:0;left:0;right:0;z-index:2;display:flex;align-items:center;justify-content:space-between;padding:calc(12px + env(safe-area-inset-top,0px)) 12px 24px;background:linear-gradient(to bottom,rgba(0,0,0,.55),rgba(0,0,0,0));transition:opacity .2s ease,transform .2s ease;}
+.mebook-root .mb-pv-icon{width:46px;height:46px;display:flex;align-items:center;justify-content:center;color:#fff;background:transparent;border-radius:50%;}
+.mebook-root .mb-pv-icon:active{background:rgba(255,255,255,.14);}
+.mebook-root .mb-pv-icon svg{width:30px;height:30px;}
+.mebook-root .mb-pv-bottom{position:absolute;left:0;right:0;bottom:0;z-index:2;max-height:58vh;overflow-y:auto;padding:46px 18px calc(16px + env(safe-area-inset-bottom,0px));background:linear-gradient(to top,rgba(0,0,0,.88) 60%,rgba(0,0,0,0));color:#fff;transition:opacity .2s ease,transform .2s ease;}
+.mebook-root .mb-pv.hide .mb-pv-top{opacity:0;pointer-events:none;transform:translateY(-14px);}
+.mebook-root .mb-pv.hide .mb-pv-bottom{opacity:0;pointer-events:none;transform:translateY(14px);}
+.mebook-root .mb-pv-name{font-size:17px;font-weight:700;letter-spacing:.2px;}
+.mebook-root .mb-pv-time{display:flex;align-items:center;gap:6px;margin-top:4px;font-size:14px;color:#c4c8ce;}
+.mebook-root .mb-pv-time svg{width:14px;height:14px;}
+.mebook-root .mb-pv-caption{margin-top:14px;font-size:16px;line-height:1.55;color:#f1f2f4;white-space:pre-wrap;word-wrap:break-word;}
+.mebook-root .mb-pv-more{color:#fff;font-weight:700;font-size:16px;padding:0;background:none;margin-left:2px;}
+.mebook-root .mb-pv-stats{display:flex;align-items:center;justify-content:space-between;margin-top:18px;}
+.mebook-root .mb-pv-stats-left{display:flex;align-items:center;gap:26px;}
+.mebook-root .mb-pv-stat{display:inline-flex;align-items:center;gap:9px;color:#e4e6eb;font-size:16px;font-weight:600;background:none;padding:4px 0;}
+.mebook-root .mb-pv-stat svg{width:30px;height:30px;}
+.mebook-root .mb-pv-rx{display:flex;align-items:center;}
+.mebook-root .mb-pv-rx>span{display:inline-flex;}
+.mebook-root .mb-pv-dim{position:absolute;inset:0;z-index:3;background:rgba(0,0,0,.55);animation:sheetFade .18s ease;}
+.mebook-root .mb-pv-sheet{position:absolute;left:0;right:0;bottom:0;z-index:4;background:#242526;border-radius:18px 18px 0 0;padding:10px 0 calc(14px + env(safe-area-inset-bottom,0px));animation:mbPvSlide .24s cubic-bezier(.2,.8,.2,1);}
+.mebook-root .mb-pv-sheet-item{width:100%;display:flex;align-items:center;gap:22px;padding:22px 24px;color:#e4e6eb;font-size:18px;font-weight:500;background:none;text-align:left;}
+.mebook-root .mb-pv-sheet-item:active{background:rgba(255,255,255,.07);}
+.mebook-root .mb-pv-sheet-item svg{width:30px;height:30px;flex-shrink:0;}
+@keyframes mbPvSlide{from{transform:translateY(100%)}to{transform:none}}
 
 /* Comment edit / menu */
 .mebook-root .cmt-more-btn{padding:2px 6px;letter-spacing:1px;font-weight:800;}
@@ -4268,81 +4266,259 @@ function PostCaption({ text }: { text: string }) {
   )
 }
 
+/* ===== Facebook-style time text: "Yesterday at 4:50 PM" ===== */
+function fbPhotoTime(ts: any): string {
+  if (!ts) return ""
+  const d = ts.toDate ? ts.toDate() : new Date(ts)
+  if (isNaN(d.getTime())) return ""
+  const t = d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })
+  const now = new Date()
+  const dayStart = (x: Date) => new Date(x.getFullYear(), x.getMonth(), x.getDate()).getTime()
+  const days = Math.round((dayStart(now) - dayStart(d)) / 86400000)
+  if (days === 0) return `Today at ${t}`
+  if (days === 1) return `Yesterday at ${t}`
+  const opts: any = { month: "short", day: "numeric" }
+  if (d.getFullYear() !== now.getFullYear()) opts.year = "numeric"
+  return `${d.toLocaleDateString([], opts)} at ${t}`
+}
+
+type PhotoStats = { likes: number; comments: number; shares: number; reactionKeys: string[] }
+
 function PhotoViewer({
   src,
   caption,
   authorName,
   authorAvatar,
+  time,
+  stats,
+  onLike,
+  onComment,
+  onShare,
+  onReport,
+  onToast,
   onClose,
 }: {
   src: string
   caption?: string
   authorName?: string
   authorAvatar?: string
+  time?: string
+  stats?: PhotoStats
+  onLike?: () => void
+  onComment?: () => void
+  onShare?: () => void
+  onReport?: () => void
+  onToast?: (title: string, msg?: string, type?: "success" | "error" | "info") => void
   onClose: () => void
 }) {
   const [zoom, setZoom] = useState(false)
-  const [origin, setOrigin] = useState("50% 50%")
+  const [uiHidden, setUiHidden] = useState(false)
+  const [sheet, setSheet] = useState(false)
+  const [expanded, setExpanded] = useState(false)
+
   const closeRef = useRef(onClose)
   closeRef.current = onClose
+  const sheetRef = useRef(false)
+  sheetRef.current = sheet
 
   useEffect(() => {
+    // Escape key ও phone back button — দুটোতেই: sheet খোলা থাকলে sheet বন্ধ, নাহলে viewer বন্ধ
+    const back = () => {
+      if (sheetRef.current) setSheet(false)
+      else closeRef.current()
+    }
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") closeRef.current()
+      if (e.key === "Escape") back()
     }
     window.addEventListener("keydown", onKey)
+    window.addEventListener("mb-viewer-back", back)
     const prevOverflow = document.body.style.overflow
     document.body.style.overflow = "hidden"
     return () => {
       window.removeEventListener("keydown", onKey)
+      window.removeEventListener("mb-viewer-back", back)
       document.body.style.overflow = prevOverflow
     }
   }, [])
 
-  return (
-    <div className="mb-viewer" role="dialog" aria-modal="true">
-      <div className="mb-viewer-top">
-        <div className="mb-viewer-author">
-          {authorAvatar ? <img src={authorAvatar} alt="" /> : null}
-          <b>{authorName || ""}</b>
-        </div>
-        <button className="mb-viewer-btn" onClick={() => setZoom((z) => !z)} title={zoom ? "Zoom out" : "Zoom in"}>
-          <svg viewBox="0 0 24 24">
-            {zoom ? (
-              <path d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14zM7 9h5v1H7z" />
-            ) : (
-              <path d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14zm2.5-4h-2v2H9v-2H7V9h2V7h1v2h2v1z" />
-            )}
-          </svg>
-        </button>
-        <button className="mb-viewer-btn" onClick={onClose} title="Close">
-          <svg viewBox="0 0 24 24">
-            <path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
-          </svg>
-        </button>
-      </div>
+  const savePhoto = async () => {
+    setSheet(false)
+    try {
+      const r = await fetch(src, { mode: "cors" })
+      if (!r.ok) throw new Error("fetch failed")
+      const b = await r.blob()
+      const ext = (b.type.split("/")[1] || "jpg").split("+")[0]
+      const url = URL.createObjectURL(b)
+      const a = document.createElement("a")
+      a.href = url
+      a.download = `mebook-${Date.now()}.${ext}`
+      document.body.appendChild(a)
+      a.click()
+      a.remove()
+      setTimeout(() => URL.revokeObjectURL(url), 4000)
+      onToast?.("Saved", "Photo saved to your phone", "success")
+    } catch {
+      try {
+        const a = document.createElement("a")
+        a.href = src
+        a.download = `mebook-${Date.now()}.jpg`
+        a.target = "_blank"
+        a.rel = "noopener"
+        document.body.appendChild(a)
+        a.click()
+        a.remove()
+        onToast?.("Downloading", "If it doesn't start, long-press the photo to save", "info")
+      } catch {
+        onToast?.("Error", "Could not save this photo", "error")
+      }
+    }
+  }
 
-      <div className="mb-viewer-stage" onClick={(e) => { if (e.target === e.currentTarget) onClose() }}>
+  const shareExternal = async () => {
+    setSheet(false)
+    try {
+      if (typeof navigator !== "undefined" && (navigator as any).share) {
+        await (navigator as any).share({
+          title: authorName ? `${authorName} on MeBook` : "MeBook photo",
+          text: caption ? caption.slice(0, 120) : undefined,
+          url: src,
+        })
+        return
+      }
+    } catch (e: any) {
+      if (e && e.name === "AbortError") return
+    }
+    try {
+      await navigator.clipboard.writeText(src)
+      onToast?.("Link copied", "Photo link copied to clipboard", "success")
+    } catch {
+      onToast?.("Error", "Sharing is not supported on this device", "error")
+    }
+  }
+
+  const reportPhoto = () => {
+    setSheet(false)
+    if (onReport) onReport()
+    else onToast?.("Reported", "Thanks! We'll review this photo", "success")
+  }
+
+  const cap = caption || ""
+  const longCap = cap.length > 90 || (cap.match(/\n/g) || []).length >= 2
+  const shownCap = !longCap || expanded ? cap : cap.slice(0, 90).split("\n")[0] + "… "
+
+  return (
+    <div className={"mb-pv" + (uiHidden ? " hide" : "")} role="dialog" aria-modal="true">
+      <div className="mb-pv-stage" onClick={() => { if (!sheet) setUiHidden((h) => !h) }}>
         <img
           src={src}
           alt=""
           draggable={false}
-          style={{
-            transform: zoom ? "scale(2.2)" : "none",
-            transformOrigin: origin,
-            cursor: zoom ? "zoom-out" : "zoom-in",
-          }}
-          onClick={(e) => {
-            const r = (e.currentTarget as HTMLElement).getBoundingClientRect()
-            const x = ((e.clientX - r.left) / r.width) * 100
-            const y = ((e.clientY - r.top) / r.height) * 100
-            if (!zoom) setOrigin(`${x}% ${y}%`)
-            setZoom((z) => !z)
-          }}
+          style={{ transform: zoom ? "scale(2.2)" : "none" }}
+          onDoubleClick={(e) => { e.stopPropagation(); setZoom((z) => !z) }}
         />
       </div>
 
-      {caption ? <div className="mb-viewer-caption">{caption}</div> : null}
+      {/* top bar: X (left) + 3 dots (right) */}
+      <div className="mb-pv-top">
+        <button className="mb-pv-icon" onClick={onClose} aria-label="Close">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
+          </svg>
+        </button>
+        <button className="mb-pv-icon" onClick={() => setSheet(true)} aria-label="More">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <circle cx="12" cy="4.5" r="2" />
+            <circle cx="12" cy="12" r="2" />
+            <circle cx="12" cy="19.5" r="2" />
+          </svg>
+        </button>
+      </div>
+
+      {/* bottom info: name, time, caption, like/comment/share */}
+      {(authorName || cap || stats) && (
+        <div className="mb-pv-bottom">
+          {authorName ? <div className="mb-pv-name">{authorName}</div> : null}
+          {time ? (
+            <div className="mb-pv-time">
+              <span>{time}</span>
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54A1.99 1.99 0 0 0 16 16h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z" />
+              </svg>
+            </div>
+          ) : null}
+          {cap ? (
+            <div className="mb-pv-caption">
+              {shownCap}
+              {longCap && !expanded ? (
+                <button className="mb-pv-more" onClick={() => setExpanded(true)}>See more</button>
+              ) : null}
+            </div>
+          ) : null}
+
+          {stats ? (
+            <div className="mb-pv-stats">
+              <div className="mb-pv-stats-left">
+                <button className="mb-pv-stat" onClick={onLike}>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" strokeLinecap="round">
+                    <path d="M7 11v9H4a1 1 0 0 1-1-1v-7a1 1 0 0 1 1-1h3zm0 0 4-7a2 2 0 0 1 2 2v3.5h5.2a2 2 0 0 1 1.96 2.4l-1.2 6A2 2 0 0 1 17 20H7" />
+                  </svg>
+                  <span>{stats.likes}</span>
+                </button>
+                <button className="mb-pv-stat" onClick={onComment}>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" strokeLinecap="round">
+                    <path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 9 9 0 0 1-3.6-.8L3 21l1.9-5.1A8.4 8.4 0 0 1 3.5 11.5 8.5 8.5 0 0 1 12 3a8.5 8.5 0 0 1 9 8.5z" />
+                  </svg>
+                  <span>{stats.comments}</span>
+                </button>
+                <button className="mb-pv-stat" onClick={onShare}>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" strokeLinecap="round">
+                    <path d="M14 9V5l7 7-7 7v-4.1c-5 0-8.5 1.6-11 5.1 1-5 4-10 11-11z" />
+                  </svg>
+                  <span>{stats.shares}</span>
+                </button>
+              </div>
+              {stats.likes > 0 && stats.reactionKeys.length > 0 ? (
+                <div className="mb-pv-rx" onClick={onLike}>
+                  {stats.reactionKeys.slice(0, 3).map((k, i) => (
+                    <span key={k} style={{ marginLeft: i ? -6 : 0, zIndex: 5 - i }}>
+                      <ReactionIcon k={k} size={24} ring />
+                    </span>
+                  ))}
+                </div>
+              ) : null}
+            </div>
+          ) : null}
+        </div>
+      )}
+
+      {/* 3-dot bottom sheet: Save to phone / Share external / Report photo */}
+      {sheet && (
+        <>
+          <div className="mb-pv-dim" onClick={() => setSheet(false)} />
+          <div className="mb-pv-sheet" role="menu">
+            <button className="mb-pv-sheet-item" onClick={savePhoto}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 3v12m0 0-4.5-4.5M12 15l4.5-4.5M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3" />
+              </svg>
+              <span>Save to phone</span>
+            </button>
+            <button className="mb-pv-sheet-item" onClick={shareExternal}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" strokeLinecap="round">
+                <path d="M14 9V5l7 7-7 7v-4.1c-5 0-8.5 1.6-11 5.1 1-5 4-10 11-11z" />
+              </svg>
+              <span>Share external</span>
+            </button>
+            <button className="mb-pv-sheet-item" onClick={reportPhoto}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" strokeLinecap="round">
+                <path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 9 9 0 0 1-3.6-.8L3 21l1.9-5.1A8.4 8.4 0 0 1 3.5 11.5 8.5 8.5 0 0 1 12 3a8.5 8.5 0 0 1 9 8.5z" />
+                <path d="M12 8v4" />
+                <circle cx="12" cy="15.2" r=".6" fill="currentColor" />
+              </svg>
+              <span>Report photo</span>
+            </button>
+          </div>
+        </>
+      )}
     </div>
   )
 }
@@ -6172,6 +6348,9 @@ const lastMarkedSeenRef = useRef<string | null>(null)
     caption?: string
     name?: string
     avatar?: string
+    time?: string
+    postId?: string
+    stats?: PhotoStats
   } | null>(null)
   const [editPostId, setEditPostId] = useState<string | null>(null)
   const [editPostText, setEditPostText] = useState("")
@@ -8573,6 +8752,22 @@ const handleChatTyping = (value: string) => {
     }
   }
 
+  const reportPhoto = async (pv: any) => {
+    try {
+      const fb = await getFirebase()
+      await fb.addDoc(fb.collection(fb.db, "photo_reports"), {
+        uid: user?.uid || "",
+        postId: pv?.postId || "",
+        src: pv?.src || "",
+        authorName: pv?.name || "",
+        createdAt: fb.serverTimestamp(),
+      })
+      showToast("Reported", "Thanks! We'll review this photo", "success")
+    } catch (e: any) {
+      showToast("Error", e.message || "Report failed", "error")
+    }
+  }
+
   const reportNotificationIssue = async (n: any) => {
     try {
       const fb = await getFirebase()
@@ -8763,7 +8958,7 @@ const handleChatTyping = (value: string) => {
       const s = backRef.current
 
       if (s.exitConfirmOpen) { setExitConfirmOpen(false); return }
-      if (s.hasPhotoViewer) { setPhotoViewer(null); return }
+      if (s.hasPhotoViewer) { window.dispatchEvent(new Event("mb-viewer-back")); return }
       if (s.hasEngageSheet) { setEngageSheet(null); return }
       if (s.hasShareSheet) { setShareSheetPostId(null); return }
       if (s.hasFriendSheet) { setActionSheetFriend(null); return }
@@ -9388,6 +9583,7 @@ const handleChatTyping = (value: string) => {
                   caption: sp.caption || "",
                   name: sp.authorName || "User",
                   avatar: av,
+                  time: fbPhotoTime(sp.createdMs),
                 })
               }
             />
@@ -9513,6 +9709,14 @@ const handleChatTyping = (value: string) => {
                   caption: post.caption || "",
                   name: post.authorName || "User",
                   avatar: authorAvatar,
+                  time: post.timeText || fbPhotoTime(post.createdAt),
+                  postId: post.id,
+                  stats: {
+                    likes: likesCount,
+                    comments: commentsCount,
+                    shares: sharesCount,
+                    reactionKeys: sortedReactionKeys.length ? sortedReactionKeys : [],
+                  },
                 })
               }
             />
@@ -10576,6 +10780,25 @@ const handleChatTyping = (value: string) => {
           caption={photoViewer.caption}
           authorName={photoViewer.name}
           authorAvatar={photoViewer.avatar}
+          time={photoViewer.time}
+          stats={photoViewer.stats}
+          onLike={() => {
+            const id = photoViewer.postId
+            setPhotoViewer(null)
+            if (id) setEngageSheet({ postId: id, mode: "reactions", tab: "all" })
+          }}
+          onComment={() => {
+            const id = photoViewer.postId
+            setPhotoViewer(null)
+            if (id) setEngageSheet({ postId: id, mode: "comments", tab: "all" })
+          }}
+          onShare={() => {
+            const id = photoViewer.postId
+            setPhotoViewer(null)
+            if (id) setShareSheetPostId(id)
+          }}
+          onReport={() => reportPhoto(photoViewer)}
+          onToast={showToast}
           onClose={() => setPhotoViewer(null)}
         />
       )}
@@ -11717,6 +11940,7 @@ const handleChatTyping = (value: string) => {
                                   setPhotoViewer({
                                     src: m.imageUrl,
                                     name: mine ? profile.name : chatPartner?.name,
+                                    time: fbPhotoTime(m.at),
                                     avatar: mine ? avatarUrl(profile) : chatPartner ? avatarUrl(chatPartner) : "",
                                   })
                                 }}

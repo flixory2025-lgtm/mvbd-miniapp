@@ -681,6 +681,61 @@ transition:border-color .2s;
 .mebook-root .mb-nav-tab.active .mb-nav-avatar{border-color:#22c55e;}
 .mebook-root .mb-nav-tab.mb-nav-tab-avatar::after{display:block;}
 
+/* ============ NAV BAR v2: clean filled icons (light = white bar + black active, dark = black bar + white active) ============ */
+.mebook-root .mb-navbar{background:#ffffff;border-top:none;border-bottom:1px solid #e4e6eb;box-shadow:0 2px 10px rgba(0,0,0,.06);}
+.mebook-root.dark-mode .mb-navbar{background:#000000;border-bottom:1px solid #1c1c1c;box-shadow:0 2px 14px rgba(0,0,0,.8);}
+.mebook-root .mb-nav-tab{color:#a6a9ae;}
+.mebook-root .mb-nav-tab:hover{background:rgba(0,0,0,.04);}
+.mebook-root .mb-nav-tab:active{background:rgba(0,0,0,.08);}
+.mebook-root.dark-mode .mb-nav-tab{color:#6b6f75;}
+.mebook-root.dark-mode .mb-nav-tab:hover{background:rgba(255,255,255,.06);}
+.mebook-root.dark-mode .mb-nav-tab:active{background:rgba(255,255,255,.1);}
+.mebook-root .mb-nav-tab svg{width:24px;height:24px;transition:transform .2s ease,fill .2s ease;}
+.mebook-root .mb-nav-tab.active{color:#0b0b0c;}
+.mebook-root.dark-mode .mb-nav-tab.active{color:#ffffff;}
+.mebook-root .mb-nav-tab.active svg{transform:scale(1.08);}
+.mebook-root .mb-nav-tab::after{left:50%;right:auto;width:18px;margin-left:-9px;height:3px;bottom:3px;border-radius:3px;background:currentColor;transform:scaleX(0);opacity:0;transition:transform .22s ease,opacity .22s ease;}
+.mebook-root .mb-nav-tab.active::after{transform:scaleX(1);opacity:1;}
+.mebook-root .mb-nav-tab .mb-badge-dot{border-color:#ffffff;}
+.mebook-root.dark-mode .mb-nav-tab .mb-badge-dot{border-color:#000000;}
+.mebook-root .mb-nav-tab .mb-nav-avatar{width:26px;height:26px;opacity:.8;transition:border-color .2s,opacity .2s;}
+.mebook-root .mb-nav-tab.active .mb-nav-avatar{border-color:currentColor;opacity:1;}
+
+/* ============ SHORTS PAGE (Facebook Reels style) ============ */
+.mebook-root .shp-root{position:fixed;left:0;right:0;top:108px;bottom:0;z-index:900;background:#000;color:#fff;overflow:hidden;}
+.mebook-root .shp-wrap{position:absolute;inset:0;overflow-y:scroll;scroll-snap-type:y mandatory;overscroll-behavior:contain;scrollbar-width:none;-webkit-overflow-scrolling:touch;}
+.mebook-root .shp-wrap::-webkit-scrollbar{display:none;}
+.mebook-root .shp-item{position:relative;height:100%;scroll-snap-align:start;scroll-snap-stop:always;overflow:hidden;background:#000;}
+.mebook-root .shp-box{position:absolute;inset:0;container-type:size;display:flex;align-items:center;justify-content:center;}
+.mebook-root .shp-stage{position:relative;overflow:hidden;background:#000;width:min(100cqw,calc(100cqh * var(--ar,.5625)));height:min(100cqh,calc(100cqw / var(--ar,.5625)));}
+.mebook-root .shp-frame{position:absolute;left:0;right:0;top:0;bottom:0;}
+.mebook-root .shp-mount{position:absolute;inset:0;}
+.mebook-root .shp-mount iframe{position:absolute;inset:0;width:100%;height:100%;border:0;pointer-events:none;}
+.mebook-root .shp-thumb{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
+.mebook-root .shp-tap{position:absolute;inset:0;z-index:3;cursor:pointer;}
+.mebook-root .shp-shade{position:absolute;left:0;right:0;bottom:0;height:48%;background:linear-gradient(to top,rgba(0,0,0,.78),rgba(0,0,0,0));pointer-events:none;z-index:4;}
+.mebook-root .shp-top{position:absolute;top:0;left:0;right:0;z-index:20;display:flex;align-items:center;justify-content:space-between;padding:10px 12px;pointer-events:none;background:linear-gradient(to bottom,rgba(0,0,0,.55),rgba(0,0,0,0));}
+.mebook-root .shp-title{font-size:21px;font-weight:800;color:#fff;letter-spacing:-.3px;display:flex;align-items:center;gap:7px;text-shadow:0 1px 4px rgba(0,0,0,.6);}
+.mebook-root .shp-title i{display:inline-block;width:0;height:0;border-left:9px solid #ff3b3b;border-top:6px solid transparent;border-bottom:6px solid transparent;}
+.mebook-root .shp-mute{pointer-events:auto;width:38px;height:38px;border-radius:50%;background:rgba(0,0,0,.45);color:#fff;display:flex;align-items:center;justify-content:center;border:none;cursor:pointer;}
+.mebook-root .shp-mute svg{width:22px;height:22px;fill:currentColor;}
+.mebook-root .shp-acts{position:absolute;right:8px;bottom:calc(22px + env(safe-area-inset-bottom,0px));z-index:6;display:flex;flex-direction:column;align-items:center;gap:16px;}
+.mebook-root .shp-act{display:flex;flex-direction:column;align-items:center;gap:3px;min-width:46px;color:#fff;background:none;border:none;padding:0;cursor:pointer;font-size:12.5px;font-weight:700;text-shadow:0 1px 4px rgba(0,0,0,.75);-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;}
+.mebook-root .shp-act svg{width:30px;height:30px;fill:currentColor;filter:drop-shadow(0 1px 3px rgba(0,0,0,.6));}
+.mebook-root .shp-act:active{transform:scale(.92);}
+.mebook-root .shp-act.on{color:#22c55e;}
+.mebook-root .shp-info{position:absolute;left:12px;right:74px;bottom:calc(24px + env(safe-area-inset-bottom,0px));z-index:6;display:flex;flex-direction:column;gap:8px;text-shadow:0 1px 4px rgba(0,0,0,.75);}
+.mebook-root .shp-user{display:flex;align-items:center;gap:10px;min-width:0;}
+.mebook-root .shp-user img{width:38px;height:38px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,.9);flex-shrink:0;background:#334155;cursor:pointer;}
+.mebook-root .shp-uname{font-size:15px;font-weight:800;display:flex;align-items:center;gap:5px;min-width:0;cursor:pointer;}
+.mebook-root .shp-uname span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.mebook-root .shp-utime{font-size:12px;opacity:.85;font-weight:600;}
+.mebook-root .shp-cap{font-size:14px;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;word-break:break-word;white-space:pre-wrap;}
+.mebook-root .shp-cap.open{display:block;max-height:32vh;overflow-y:auto;-webkit-line-clamp:unset;}
+.mebook-root .shp-seek{position:absolute;left:0;right:0;bottom:0;width:100%;height:14px;margin:0;z-index:7;accent-color:#ffffff;cursor:pointer;opacity:.95;}
+.mebook-root .shp-empty{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:#b0b3b8;text-align:center;padding:24px;font-size:15px;}
+.mebook-root .shp-empty b{color:#fff;font-size:18px;}
+
 /* ============ 3-DOTS MENU ============ */
 .mebook-root .mb-menu-backdrop{
 position:fixed;inset:0;z-index:1050;
@@ -5811,6 +5866,597 @@ function YouTubePost({
   )
 }
 
+/* ============================================================
+SHORTS PAGE (Facebook Reels style: YouTube Shorts shared on MeBook)
+============================================================ */
+
+let shActivePlayer: any = null // sync mute/unmute from the click handler (browser autoplay rules)
+
+function shFmt(n: number) {
+  if (!n || n < 0) return "0"
+  if (n >= 1000000) return (n / 1000000).toFixed(n >= 10000000 ? 0 : 1).replace(/\.0$/, "") + "M"
+  if (n >= 1000) return (n / 1000).toFixed(n >= 10000 ? 0 : 1).replace(/\.0$/, "") + "k"
+  return String(n)
+}
+
+function ShortItem(props: {
+  post: any
+  active: boolean
+  paused: boolean
+  muted: boolean
+  setMuted: (m: boolean) => void
+  myReaction?: string
+  likesCount: number
+  commentsCount: number
+  sharesCount: number
+  saved: boolean
+  verified: boolean
+  likeProps: any
+  onComment: () => void
+  onShare: () => void
+  onSave: () => void
+  onMore: () => void
+  onOpenProfile: () => void
+}) {
+  const { post, active } = props
+  const videoId: string = post.youtube?.videoId || ""
+
+  const [started, setStarted] = useState(false)
+  const [playing, setPlaying] = useState(false)
+  const [cur, setCur] = useState(0)
+  const [dur, setDur] = useState(0)
+  const [err, setErr] = useState(false)
+  const [expanded, setExpanded] = useState(false)
+  const [flash, setFlash] = useState<{ label: string; n: number } | null>(null)
+  const [crop, setCrop] = useState<{ t: number; b: number } | null>(ytCropCache.get(videoId) ?? null)
+
+  const mountRef = useRef<HTMLDivElement>(null)
+  const playerRef = useRef<any>(null)
+  const userPausedRef = useRef(false)
+  const pausedRef = useRef(props.paused)
+  const mutedRef = useRef(props.muted)
+  const setMutedRef = useRef(props.setMuted)
+  const flashTimer = useRef<any>(null)
+  pausedRef.current = props.paused
+  mutedRef.current = props.muted
+  setMutedRef.current = props.setMuted
+  const pauseSelf = useRef(() => {
+    try { playerRef.current?.pauseVideo() } catch {}
+  }).current
+
+  const thumbUrl: string = post.image || `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`
+
+  // black bars (top/bottom) baked into the video are cropped away
+  useEffect(() => {
+    if (!videoId) return
+    if (ytCropCache.has(videoId)) {
+      setCrop(ytCropCache.get(videoId) ?? null)
+      return
+    }
+    let cancelled = false
+    detectShortCrop(`https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`).then((c) => {
+      ytCropCache.set(videoId, c)
+      if (!cancelled) setCrop(c)
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [videoId])
+
+  // create the player only for the visible short, destroy it when scrolled away
+  useEffect(() => {
+    if (!active || !videoId) return
+    let cancelled = false
+    let player: any = null
+    let tick: any = null
+    userPausedRef.current = false
+    setErr(false)
+
+    loadYouTubeApi()
+      .then((YT) => {
+        if (cancelled || !mountRef.current) return
+        const host = document.createElement("div")
+        mountRef.current.appendChild(host)
+        player = new YT.Player(host, {
+          width: "100%",
+          height: "100%",
+          videoId,
+          playerVars: {
+            autoplay: 1,
+            controls: 0,
+            playsinline: 1,
+            rel: 0,
+            modestbranding: 1,
+            fs: 0,
+            iv_load_policy: 3,
+            disablekb: 1,
+            mute: mutedRef.current ? 1 : 0,
+            origin: window.location.origin,
+          },
+          events: {
+            onReady: (e: any) => {
+              if (cancelled) return
+              playerRef.current = e.target
+              shActivePlayer = e.target
+              setDur(e.target.getDuration() || 0)
+              if (!pausedRef.current) {
+                try { e.target.playVideo() } catch {}
+              }
+              setTimeout(() => {
+                if (cancelled || userPausedRef.current || pausedRef.current) return
+                try {
+                  const stt = e.target.getPlayerState()
+                  if (stt !== 1 && stt !== 3) {
+                    e.target.mute()
+                    setMutedRef.current(true)
+                    e.target.playVideo()
+                  }
+                } catch {}
+              }, 1200)
+            },
+            onAutoplayBlocked: () => {
+              if (cancelled) return
+              try {
+                player.mute()
+                setMutedRef.current(true)
+                player.playVideo()
+              } catch {}
+            },
+            onStateChange: (e: any) => {
+              if (cancelled) return
+              const st = e.data
+              if (st === YT.PlayerState.PLAYING) {
+                setPlaying(true)
+                setStarted(true)
+                setMutedRef.current(!!player?.isMuted?.())
+                setDur(player?.getDuration?.() || 0)
+                if (activeYTPause && activeYTPause !== pauseSelf) activeYTPause()
+                activeYTPause = pauseSelf
+              } else if (st === YT.PlayerState.PAUSED) {
+                setPlaying(false)
+              } else if (st === YT.PlayerState.ENDED) {
+                try { player.seekTo(0, true); player.playVideo() } catch {}
+              }
+            },
+            onError: () => {
+              if (!cancelled) setErr(true)
+            },
+          },
+        })
+        tick = setInterval(() => {
+          const p = playerRef.current
+          if (!p || !p.getCurrentTime) return
+          try {
+            setCur(p.getCurrentTime() || 0)
+            const d = p.getDuration()
+            if (d) setDur(d)
+          } catch {}
+        }, 250)
+      })
+      .catch(() => {
+        if (!cancelled) setErr(true)
+      })
+
+    return () => {
+      cancelled = true
+      if (tick) clearInterval(tick)
+      try { player?.destroy() } catch {}
+      if (shActivePlayer === playerRef.current) shActivePlayer = null
+      playerRef.current = null
+      if (activeYTPause === pauseSelf) activeYTPause = null
+      if (mountRef.current) mountRef.current.innerHTML = ""
+      setStarted(false)
+      setPlaying(false)
+      setCur(0)
+    }
+  }, [active, videoId, pauseSelf])
+
+  // pause while a popup (comments / share / menu) is open
+  useEffect(() => {
+    const p = playerRef.current
+    if (!p) return
+    try {
+      if (props.paused) p.pauseVideo()
+      else if (active && !userPausedRef.current) p.playVideo()
+    } catch {}
+  }, [props.paused, active])
+
+  useEffect(() => {
+    const p = playerRef.current
+    if (!p) return
+    try {
+      if (props.muted) p.mute()
+      else p.unMute()
+    } catch {}
+  }, [props.muted])
+
+  // pause when the browser tab is hidden
+  useEffect(() => {
+    if (!active) return
+    const onVis = () => {
+      const p = playerRef.current
+      if (!p) return
+      try {
+        if (document.hidden) p.pauseVideo()
+        else if (!userPausedRef.current && !pausedRef.current) p.playVideo()
+      } catch {}
+    }
+    document.addEventListener("visibilitychange", onVis)
+    return () => document.removeEventListener("visibilitychange", onVis)
+  }, [active])
+
+  useEffect(() => () => { if (flashTimer.current) clearTimeout(flashTimer.current) }, [])
+
+  const showFlash = (label: string) => {
+    setFlash((f) => ({ label, n: (f?.n || 0) + 1 }))
+    if (flashTimer.current) clearTimeout(flashTimer.current)
+    flashTimer.current = setTimeout(() => setFlash(null), 650)
+  }
+
+  const togglePlay = () => {
+    const p = playerRef.current
+    if (!p) return
+    try {
+      if (p.getPlayerState() === 1) {
+        userPausedRef.current = true
+        p.pauseVideo()
+        showFlash("❚❚")
+      } else {
+        userPausedRef.current = false
+        p.playVideo()
+        showFlash("▶")
+      }
+    } catch {}
+  }
+
+  const ar = crop ? 9 / 16 / (crop.b - crop.t) : 9 / 16
+  const frameStyle: React.CSSProperties | undefined = crop
+    ? {
+        height: `${100 / (crop.b - crop.t)}%`,
+        top: `${-(crop.t / (crop.b - crop.t)) * 100}%`,
+        bottom: "auto",
+      }
+    : undefined
+
+  const isOfficial = post.isOfficial === true
+  const avatar: string = isOfficial
+    ? LOGO_URL
+    : post.authorAvatar ||
+      `https://ui-avatars.com/api/?background=16a34a&color=fff&name=${encodeURIComponent(post.authorName || "User")}`
+  const cap: string = post.caption || ""
+  const longCap = cap.length > 70 || cap.indexOf("\n") >= 0
+  const reactColor = props.myReaction ? REACTIONS.find((r) => r.key === props.myReaction)?.color : undefined
+
+  return (
+    <div className="shp-box">
+      <div className="shp-stage" style={{ ["--ar" as any]: ar } as React.CSSProperties}>
+        <div className="shp-frame" style={frameStyle}>
+          <div ref={mountRef} className="shp-mount" />
+          {!started && <img className="shp-thumb" src={thumbUrl} alt="" />}
+        </div>
+
+        {active && !err && <div className="shp-tap" onClick={togglePlay} />}
+        {active && !started && !err && <div className="mb-yt-spinner" />}
+        {flash && (
+          <div className="mb-yt-flash" key={flash.n}>
+            {flash.label}
+          </div>
+        )}
+        {err && (
+          <div className="mb-yt-err">
+            <span>This video can’t be played here.</span>
+            <a href={post.youtube?.url || `https://www.youtube.com/watch?v=${videoId}`} target="_blank" rel="noopener noreferrer">
+              Watch on YouTube
+            </a>
+          </div>
+        )}
+
+        <div className="shp-shade" />
+
+        <div className="shp-info">
+          <div className="shp-user">
+            <img src={avatar} alt="" onClick={props.onOpenProfile} />
+            <div style={{ minWidth: 0 }}>
+              <div className="shp-uname" onClick={props.onOpenProfile}>
+                <span>{post.authorName || "User"}</span>
+                {props.verified && (
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="#22c55e" style={{ flexShrink: 0 }}>
+                    <path d="M23 12l-2.44-2.79.34-3.69-3.61-.82-1.89-3.2L12 2.96 8.6 1.5 6.71 4.69l-3.61.82.34 3.69L1 12l2.44 2.79-.34 3.7 3.61.82L8.6 22.5l3.4-1.47 3.4 1.46 1.89-3.19 3.61-.82-.34-3.69L23 12zm-12.91 4.72l-3.8-3.81 1.48-1.48 2.32 2.33 5.85-5.87 1.48 1.48-7.33 7.35z" />
+                  </svg>
+                )}
+              </div>
+              <div className="shp-utime">{post.timeText || timeAgo(post.createdAt)}</div>
+            </div>
+          </div>
+          {cap && (
+            <div className={`shp-cap${expanded ? " open" : ""}`} onClick={() => longCap && setExpanded((v) => !v)}>
+              {cap}
+            </div>
+          )}
+        </div>
+
+        <div className="shp-acts">
+          <button
+            className="shp-act"
+            data-like-btn={post.id}
+            style={reactColor ? { color: reactColor } : undefined}
+            title="Tap to like, hold for reactions"
+            {...(props.likeProps as any)}
+          >
+            {props.myReaction ? (
+              <ReactionIcon k={props.myReaction} size={30} />
+            ) : (
+              <svg viewBox="0 0 24 24">
+                <path d="M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-1.91z" />
+              </svg>
+            )}
+            <span>{shFmt(props.likesCount)}</span>
+          </button>
+          <button className="shp-act" onClick={props.onComment} title="Comments">
+            <svg viewBox="0 0 24 24">
+              <path d="M21.99 4c0-1.1-.89-2-1.99-2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14l4 4-.01-18z" />
+            </svg>
+            <span>{shFmt(props.commentsCount)}</span>
+          </button>
+          <button className="shp-act" onClick={props.onShare} title="Share">
+            <svg viewBox="0 0 24 24">
+              <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z" />
+            </svg>
+            <span>{shFmt(props.sharesCount)}</span>
+          </button>
+          <button className={`shp-act${props.saved ? " on" : ""}`} onClick={props.onSave} title={props.saved ? "Unsave" : "Save"}>
+            <svg viewBox="0 0 24 24">
+              {props.saved ? (
+                <path d="M17 3H7c-1.1 0-1.99.9-1.99 2L5 21l7-3 7 3V5c0-1.1-.9-2-2-2z" />
+              ) : (
+                <path d="M17 3H7c-1.1 0-2 .9-2 2v16l7-3 7 3V5c0-1.1-.9-2-2-2zm0 15l-5-2.18L7 18V5h10v13z" />
+              )}
+            </svg>
+            <span>{props.saved ? "Saved" : "Save"}</span>
+          </button>
+          <button className="shp-act" onClick={props.onMore} title="More">
+            <svg viewBox="0 0 24 24">
+              <path d="M6 10c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm12 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-6 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
+            </svg>
+          </button>
+        </div>
+
+        {active && started && !err && (
+          <input
+            className="shp-seek"
+            type="range"
+            min={0}
+            max={dur || 1}
+            step={0.1}
+            value={Math.min(cur, dur || 1)}
+            onChange={(e) => {
+              const t = Number(e.target.value)
+              setCur(t)
+              try { playerRef.current?.seekTo(t, true) } catch {}
+            }}
+          />
+        )}
+      </div>
+    </div>
+  )
+}
+
+function ShortsPage(props: {
+  posts: any[]
+  me: any
+  postReactions: Record<string, Record<string, string>>
+  savedIds: string[]
+  paused: boolean
+  startPostId?: string
+  likeBtnProps: (postId: string) => any
+  isVerifiedPost: (p: any) => boolean
+  onComment: (postId: string) => void
+  onShare: (postId: string) => void
+  onSave: (postId: string) => void
+  onCopy: (post: any) => void
+  onOpenProfile: (uid: string) => void
+}) {
+  const wrapRef = useRef<HTMLDivElement>(null)
+  const [order, setOrder] = useState<string[]>([])
+  const [active, setActive] = useState(0)
+  const [muted, setMutedState] = useState<boolean>(ytMutePref)
+  const [moreFor, setMoreFor] = useState<any>(null)
+  const rafRef = useRef(0)
+  const commitRef = useRef<any>(null)
+  const initRef = useRef(false)
+  const pausedRef = useRef(props.paused)
+  pausedRef.current = props.paused
+
+  // the order is frozen when the page opens so new posts never shuffle what you are watching
+  useEffect(() => {
+    if (order.length === 0 && props.posts.length > 0) setOrder(props.posts.map((p: any) => p.id))
+  }, [props.posts, order.length])
+
+  const byId: Record<string, any> = {}
+  props.posts.forEach((p: any) => { byId[p.id] = p })
+  const list = order.map((id) => byId[id]).filter(Boolean)
+
+  useEffect(() => {
+    if (initRef.current || list.length === 0) return
+    initRef.current = true
+    const i = props.startPostId ? list.findIndex((p: any) => p.id === props.startPostId) : -1
+    if (i > 0) {
+      requestAnimationFrame(() => {
+        const el = wrapRef.current
+        if (el) {
+          el.scrollTop = i * el.clientHeight
+          setActive(i)
+        }
+      })
+    }
+  }, [list.length, props.startPostId])
+
+  // lock page scroll behind the shorts
+  useEffect(() => {
+    const prevBody = document.body.style.overflow
+    const prevHtml = document.documentElement.style.overflow
+    document.body.style.overflow = "hidden"
+    document.documentElement.style.overflow = "hidden"
+    return () => {
+      document.body.style.overflow = prevBody
+      document.documentElement.style.overflow = prevHtml
+    }
+  }, [])
+
+  // keyboard: arrow up / down
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== "ArrowDown" && e.key !== "ArrowUp") return
+      if (pausedRef.current) return
+      const t = e.target as HTMLElement | null
+      if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable)) return
+      const el = wrapRef.current
+      if (!el) return
+      e.preventDefault()
+      el.scrollBy({ top: (e.key === "ArrowDown" ? 1 : -1) * el.clientHeight, behavior: "smooth" })
+    }
+    window.addEventListener("keydown", onKey)
+    return () => window.removeEventListener("keydown", onKey)
+  }, [])
+
+  useEffect(() => () => {
+    if (rafRef.current) cancelAnimationFrame(rafRef.current)
+    if (commitRef.current) clearTimeout(commitRef.current)
+  }, [])
+
+  const onScroll = () => {
+    if (rafRef.current) return
+    rafRef.current = requestAnimationFrame(() => {
+      rafRef.current = 0
+      const el = wrapRef.current
+      if (!el) return
+      const h = el.clientHeight || 1
+      const i = Math.max(0, Math.min(Math.max(0, list.length - 1), Math.round(el.scrollTop / h)))
+      if (commitRef.current) clearTimeout(commitRef.current)
+      commitRef.current = setTimeout(() => setActive(i), 110)
+    })
+  }
+
+  const userToggleMute = () => {
+    const m = !muted
+    ytMutePref = m
+    try {
+      if (m) shActivePlayer?.mute()
+      else shActivePlayer?.unMute()
+    } catch {}
+    setMutedState(m)
+  }
+
+  const anyPaused = props.paused || !!moreFor
+
+  return (
+    <div className="shp-root">
+      <div className="shp-top">
+        <div className="shp-title">
+          <i />
+          Shorts
+        </div>
+        <button className="shp-mute" onClick={userToggleMute} title={muted ? "Unmute" : "Mute"} aria-label={muted ? "Unmute" : "Mute"}>
+          <svg viewBox="0 0 24 24">
+            {muted ? (
+              <path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51A8.8 8.8 0 0 0 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06a8.99 8.99 0 0 0 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z" />
+            ) : (
+              <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" />
+            )}
+          </svg>
+        </button>
+      </div>
+
+      <div className="shp-wrap" ref={wrapRef} onScroll={onScroll}>
+        {list.length === 0 ? (
+          <div className="shp-empty">
+            <b>No shorts yet</b>
+            <span>YouTube Shorts shared on MeBook will show up here.</span>
+          </div>
+        ) : (
+          list.map((p: any, i: number) => {
+            const reacts: Record<string, string> = p.reactions || props.postReactions[p.id] || {}
+            const myReaction = props.me?.uid ? reacts[props.me.uid] : undefined
+            const likesCount = Object.keys(reacts).length || (Array.isArray(p.likes) ? p.likes.length : 0)
+            return (
+              <div className="shp-item" key={p.id}>
+                {Math.abs(i - active) <= 1 && (
+                  <ShortItem
+                    post={p}
+                    active={i === active}
+                    paused={anyPaused}
+                    muted={muted}
+                    setMuted={setMutedState}
+                    myReaction={myReaction}
+                    likesCount={likesCount}
+                    commentsCount={Array.isArray(p.comments) ? p.comments.length : 0}
+                    sharesCount={p.shares || 0}
+                    saved={props.savedIds.includes(p.id)}
+                    verified={props.isVerifiedPost(p)}
+                    likeProps={props.likeBtnProps(p.id)}
+                    onComment={() => props.onComment(p.id)}
+                    onShare={() => props.onShare(p.id)}
+                    onSave={() => props.onSave(p.id)}
+                    onMore={() => setMoreFor(p)}
+                    onOpenProfile={() => p.authorId && props.onOpenProfile(p.authorId)}
+                  />
+                )}
+              </div>
+            )
+          })
+        )}
+      </div>
+
+      {moreFor && (
+        <div className="mb-sheet-backdrop" onClick={() => setMoreFor(null)}>
+          <div className="mb-sheet" onClick={(e) => e.stopPropagation()}>
+            <div className="mb-sheet-grip" />
+            <button className="mb-sheet-item" onClick={() => { props.onSave(moreFor.id); setMoreFor(null) }}>
+              <svg viewBox="0 0 24 24">
+                <path d="M17 3H7c-1.1 0-2 .9-2 2v16l7-3 7 3V5c0-1.1-.9-2-2-2zm0 15l-5-2.18L7 18V5h10v13z" />
+              </svg>
+              {props.savedIds.includes(moreFor.id) ? "Unsave video" : "Save video"}
+            </button>
+            <button className="mb-sheet-item" onClick={() => { const id = moreFor.id; setMoreFor(null); props.onShare(id) }}>
+              <svg viewBox="0 0 24 24">
+                <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z" />
+              </svg>
+              Share
+            </button>
+            <button className="mb-sheet-item" onClick={() => { props.onCopy(moreFor); setMoreFor(null) }}>
+              <svg viewBox="0 0 24 24">
+                <path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z" />
+              </svg>
+              Copy link
+            </button>
+            <a
+              className="mb-sheet-item"
+              style={{ textDecoration: "none", color: "inherit" }}
+              href={moreFor.youtube?.url || `https://www.youtube.com/watch?v=${moreFor.youtube?.videoId}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => setMoreFor(null)}
+            >
+              <svg viewBox="0 0 24 24">
+                <path d="M19 19H5V5h7V3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z" />
+              </svg>
+              Open on YouTube
+            </a>
+            {moreFor.authorId && (
+              <button className="mb-sheet-item" onClick={() => { const uid = moreFor.authorId; setMoreFor(null); props.onOpenProfile(uid) }}>
+                <svg viewBox="0 0 24 24">
+                  <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                </svg>
+                View profile
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
 function MeBookSplash() {
   return (
     <div className="mebook-splash">
@@ -10323,7 +10969,7 @@ const handleChatTyping = (value: string) => {
                 window.history.replaceState({}, "", window.location.pathname)
               }
               const target = sp.get("mb")
-              const allowed = ["home", "notifications", "messages", "friends", "profile"]
+              const allowed = ["home", "shorts", "notifications", "messages", "friends", "profile"]
               if (target && allowed.includes(target) && !pendingProfileRef.current) {
                 setPageStack([{ view: target }])
                 window.history.replaceState({}, "", window.location.pathname)
@@ -15224,6 +15870,16 @@ const handleChatTyping = (value: string) => {
             </svg>
           </button>
           <button
+            className={`mb-nav-tab${currentView === "shorts" ? " active" : ""}`}
+            title="Shorts"
+            aria-label="Shorts"
+            onClick={() => handleNavClick("shorts")}
+          >
+            <svg viewBox="0 0 24 24">
+              <path fillRule="evenodd" d="M7 2h10a3 3 0 0 1 3 3v14a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3V5a3 3 0 0 1 3-3zm3 5.5v9l7.5-4.5L10 7.5z" />
+            </svg>
+          </button>
+          <button
             className={`mb-nav-tab${currentView === "friends" || currentView === "friends-list" ? " active" : ""}`}
             title="Friends"
             aria-label="Friends"
@@ -15407,6 +16063,17 @@ const handleChatTyping = (value: string) => {
       <div className="mb-layout">
         <aside className="mb-sidebar">
           <SideItem id="home" label="Home" active={currentView === "home"} onClick={handleNavClick} />
+          <SideItem
+            id="shorts"
+            label="Shorts"
+            active={currentView === "shorts"}
+            onClick={handleNavClick}
+            icon={
+              <svg viewBox="0 0 24 24">
+                <path fillRule="evenodd" d="M7 2h10a3 3 0 0 1 3 3v14a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3V5a3 3 0 0 1 3-3zm3 5.5v9l7.5-4.5L10 7.5z" />
+              </svg>
+            }
+          />
           <SideItem id="friends" label="Friends" active={currentView === "friends"} onClick={handleNavClick} badge={requests.length} />
           <SideItem id="messages" label="MeChat" active={currentView === "messages"} onClick={handleNavClick} badge={unreadCount} />
           <SideItem id="notifications" label="Notifications" active={currentView === "notifications"} onClick={handleNavClick} badge={unreadNotifCount} />
@@ -15625,6 +16292,32 @@ const handleChatTyping = (value: string) => {
                 </div>
               </div>
             </div>
+          )}
+
+          {currentView === "shorts" && (
+            <ShortsPage
+              posts={feed.filter(
+                (p: any) =>
+                  p &&
+                  p.type === "youtube" &&
+                  p.youtube?.videoId &&
+                  p.youtube.isShort === true &&
+                  !p.sharedPost &&
+                  canSeePost(p, false)
+              )}
+              me={user}
+              postReactions={postReactions}
+              savedIds={savedIds}
+              paused={!!engageSheet || !!shareSheetPostId || menuOpen || !!actionMenu}
+              startPostId={currentParams.postId}
+              likeBtnProps={likeBtnProps}
+              isVerifiedPost={(p: any) => isVerified(p)}
+              onComment={(id: string) => setEngageSheet({ postId: id, mode: "comments", tab: "all" })}
+              onShare={(id: string) => setShareSheetPostId(id)}
+              onSave={(id: string) => handlePostMenuAction("save", id)}
+              onCopy={(p: any) => copyLink(p)}
+              onOpenProfile={(uid: string) => openUserProfile(uid)}
+            />
           )}
 
           {currentView === "friends" && (

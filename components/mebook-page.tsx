@@ -2717,8 +2717,13 @@ transition:transform .15s ease,box-shadow .15s ease;-webkit-tap-highlight-color:
 .mebook-root .fbp-cover{position:relative;height:210px;background:#111;overflow:hidden;cursor:pointer;}
 .mebook-root .fbp-cover img{width:100%;height:100%;object-fit:cover;display:block;}
 .mebook-root .fbp-cover-ph{width:100%;height:100%;background:linear-gradient(135deg,#0f172a,#1e293b 60%,#14532d);}
-.mebook-root .fbp-top{position:absolute;top:0;left:0;right:0;display:flex;justify-content:space-between;align-items:center;padding:10px;background:linear-gradient(rgba(0,0,0,.55),transparent);}
-.mebook-root .fbp-top-right{display:flex;gap:4px;}
+.mebook-root .fbp-top{position:relative;z-index:6;height:62px;margin-bottom:-62px;display:flex;align-items:center;gap:4px;padding:10px;background:linear-gradient(rgba(0,0,0,.55),transparent);transition:background .2s;}
+.mebook-root .fbp-top-title{flex:1;min-width:0;text-align:center;font-size:18px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;opacity:0;transition:opacity .2s;}
+.mebook-root .fbp-top.solid{background:var(--fbp-bg);border-bottom:1px solid var(--border);}
+.mebook-root .fbp-top.solid .fbp-top-btn{color:var(--text);}
+.mebook-root .fbp-top.solid .fbp-top-title{opacity:1;}
+.mebook-root .fbp-top:not(.solid) .fbp-top-title{pointer-events:none;}
+.mebook-root .fbp-top-right{display:flex;gap:2px;flex-shrink:0;}
 .mebook-root .fbp-top-btn{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;background:transparent;border:none;cursor:pointer;}
 .mebook-root .fbp-top-btn:active{background:rgba(255,255,255,.2);}
 .mebook-root .fbp-body{position:relative;margin-top:-26px;background:var(--fbp-bg);border-radius:26px 26px 0 0;padding:0 14px 14px;text-align:center;}
@@ -2803,6 +2808,22 @@ transition:transform .15s ease,box-shadow .15s ease;-webkit-tap-highlight-color:
 .mebook-root .fbp-info-avs img{width:72px;height:72px;border-radius:50%;object-fit:cover;border:3px solid var(--fbp-bg);margin:0 -6px;}
 .mebook-root .fbp-info-sub{text-align:center;color:var(--fbp-sub);font-size:15px;margin-bottom:8px;}
 .mebook-root .fbp-info-line{text-align:center;font-size:15px;padding:4px 0;}
+
+@media(max-width:820px){
+.mebook-root.fbp-full .mb-header,.mebook-root.fbp-full .mb-navbar{display:none !important;}
+.mebook-root.fbp-full .mb-layout{padding:0 0 24px;}
+.mebook-root.fbp-full .mb-view .mb-profile-actions{padding-left:14px;padding-right:14px;}
+.mebook-root .fbp{border-radius:0;overflow:visible;border:none;box-shadow:none;}
+.mebook-root .fbp-prof{display:contents;}
+.mebook-root.fbp-full .mb-view > :not(.fbp-prof){position:relative;z-index:2;}
+.mebook-root.fbp-full .mb-view > div:not(.fbp-prof):not(.fbp-viewas):not(.mb-card){background:var(--bg);}
+.mebook-root .fbp-top{position:sticky;top:0;}
+.mebook-root .fbp-cover{position:sticky;top:0;z-index:0;border-radius:0;}
+.mebook-root .fbp > :not(.fbp-cover):not(.fbp-top){position:relative;z-index:2;}
+.mebook-root .fbp-photos{background:var(--fbp-bg);padding-top:4px;}
+.mebook-root .fbp-posts{padding:8px 10px 0;}
+.mebook-root .fbp-viewas{margin:8px 10px;}
+}
 `
 
 /* ============================================================
@@ -7043,6 +7064,21 @@ const handleChatTyping = (value: string) => {
   const [fbSheetUser, setFbSheetUser] = useState<any>(null)
   const [fbInfo, setFbInfo] = useState<FbInfo | null>(null)
   const [fbHlOpen, setFbHlOpen] = useState(false)
+  const [fbpScrolled, setFbpScrolled] = useState(false)
+
+  // profile page: scroll করলে top bar solid হবে (cover জায়গায় থাকে, content উপরে উঠে)
+  useEffect(() => {
+    const onScroll = () => {
+      const y = window.scrollY || document.documentElement.scrollTop || 0
+      setFbpScrolled((p) => {
+        const n = y > 150
+        return p === n ? p : n
+      })
+    }
+    onScroll()
+    window.addEventListener("scroll", onScroll, { passive: true })
+    return () => window.removeEventListener("scroll", onScroll)
+  }, [])
   const [fbPhotoSub, setFbPhotoSub] = useState<"" | "profile" | "cover" | "albums">("")
   const pendingProfileRef = useRef<string | null>(null)
 
@@ -10397,7 +10433,8 @@ const handleChatTyping = (value: string) => {
         .slice(0, 6)
     : []
 
-  const rootClass = `mebook-root ${theme === "dark" ? "dark-mode" : ""}${currentView === "messages" ? " mc-open" : ""}${currentView === "search" ? " sr-open" : ""}`
+  const fbFull = ["profile", "user-profile", "fb-profile-menu", "fb-own-menu", "fb-view-as", "fb-activity"].includes(currentView)
+  const rootClass = `mebook-root ${theme === "dark" ? "dark-mode" : ""}${fbFull ? " fbp-full" : ""}${currentView === "messages" ? " mc-open" : ""}${currentView === "search" ? " sr-open" : ""}`
 
   const findPost = (postId: string) =>
     feed.find((p) => p.id === postId) ||
@@ -10963,20 +11000,18 @@ const handleChatTyping = (value: string) => {
             <button onClick={goBack}>Exit</button>
           </div>
         )}
-        <div className="fbp">
-          <div className="fbp-cover" onClick={openCoverPic}>
-            {u.coverURL ? <img src={u.coverURL} alt="Cover" /> : <div className="fbp-cover-ph" />}
-            <div className="fbp-top" onClick={(e) => e.stopPropagation()}>
-              {isOwnMode ? (
-                <button className="fbp-top-btn" onClick={() => setDrawerOpen(true)} aria-label="Menu">
-                  <FbIco d={FBP_ICON.menu} size={28} />
-                </button>
-              ) : (
-                <button className="fbp-top-btn" onClick={goBack} aria-label="Back">
-                  <FbIco d={FBP_ICON.back} size={26} />
-                </button>
-              )}
+        <div className="fbp fbp-prof">
+            <div className={`fbp-top${fbpScrolled ? " solid" : ""}`} onClick={(e) => e.stopPropagation()}>
+              <button className="fbp-top-btn" onClick={goBack} aria-label="Back">
+                <FbIco d={FBP_ICON.back} size={26} />
+              </button>
+              <div className="fbp-top-title">{u.name}</div>
               <div className="fbp-top-right">
+                {isOwnMode && (
+                  <button className="fbp-top-btn" onClick={() => setDrawerOpen(true)} aria-label="Menu">
+                    <FbIco d={FBP_ICON.menu} size={26} />
+                  </button>
+                )}
                 {isOwnMode && (
                   <button className="fbp-top-btn" onClick={openEditProfile} aria-label="Edit">
                     <FbIco d={FBP_ICON.edit} size={24} />
@@ -11005,6 +11040,8 @@ const handleChatTyping = (value: string) => {
                 )}
               </div>
             </div>
+          <div className="fbp-cover" onClick={openCoverPic}>
+            {u.coverURL ? <img src={u.coverURL} alt="Cover" /> : <div className="fbp-cover-ph" />}
             {isOwnMode && (
               <button
                 className="fbp-cam fbp-cam-cover"

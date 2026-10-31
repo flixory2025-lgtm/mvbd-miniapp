@@ -219,6 +219,7 @@ export default function Page() {
   ========================================================= */
 
   // Latest state gulo ref e rakha — popstate handler (jeta ekbar-i bind hoy) ei ref theke porhe
+  const activeTabRef = useRef<TabId>("home")
   const movieOpenRef = useRef(false)
   const animeOpenRef = useRef(false)
   const profileSubRef = useRef<ProfileSub>("main")
@@ -231,6 +232,7 @@ export default function Page() {
     (t: string, addHistory?: boolean, skipUnwind?: boolean) => void
   >(() => {})
 
+  activeTabRef.current = activeTab
   movieOpenRef.current = showDetailPage && !!selectedMovie
   animeOpenRef.current = showAnimeDetailPage && !!selectedAnime
   profileSubRef.current = profileSubPage
@@ -601,6 +603,20 @@ export default function Page() {
       if (profileSubRef.current !== "main") {
         setProfileSubPage("main")
         return
+      }
+
+      // 5.5) MeBook tab e achi — MeBook nijer bhitorer back handle kore
+      //      (sheet/drawer bondho, ager page, scroll top, "Exit MeBook?" popup).
+      //      Handle hole MeBook tab ei thake, tai je history entry ta popstate e kheye felechi seta ferot push kori.
+      if (activeTabRef.current === "mebook") {
+        let handled = false
+        try {
+          handled = !!(window as any).__mebookBack?.()
+        } catch {}
+        if (handled) {
+          window.history.pushState(null, "", "")
+          return
+        }
       }
 
       // 6) Ager tab e fire jao. Home e achi mane ar entry nei — browser nijei site/app theke ber kore dey
@@ -1384,4 +1400,4 @@ export default function Page() {
       )}
     </div>
   )
-      }
+                }

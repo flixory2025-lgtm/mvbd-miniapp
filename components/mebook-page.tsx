@@ -3001,6 +3001,49 @@ transition:transform .15s ease,box-shadow .15s ease;-webkit-tap-highlight-color:
 .mebook-root .st-abtns{display:flex;gap:6px;margin-top:6px;}
 .mebook-root .st-abtns button{flex:1;border:none;border-radius:8px;background:#3a3b3c;color:#e4e6eb;font-size:13px;font-weight:700;padding:7px 0;cursor:pointer;font-family:inherit;}
 @media(max-width:480px){.mebook-root .st-card{width:104px;height:186px;}}
+
+/* ===================== MINI COMPOSER + NEW POST ===================== */
+.mebook-root .mb-mini{display:flex;align-items:center;gap:10px;padding:10px 12px;margin-bottom:10px;background:var(--card);border-radius:12px;box-shadow:var(--shadow);}
+.mebook-root .mb-mini-av{width:40px;height:40px;border-radius:50%;object-fit:cover;cursor:pointer;flex:0 0 auto;background:#cbd5e1;}
+.mebook-root .mb-mini-input{flex:1;min-width:0;height:40px;border-radius:999px;border:1px solid var(--border);background:transparent;color:var(--text);text-align:left;padding:0 16px;font-size:15px;cursor:pointer;}
+.mebook-root .mb-mini-ph{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex:0 0 auto;color:#22c55e;background:none;border:none;cursor:pointer;}
+.mebook-root.dark-mode .mb-mini{background:#0a0a0a;border:1px solid #151515;}
+.mebook-root.dark-mode .mb-mini-input{border-color:#2a2b2d;}
+
+.mebook-root .cp2{position:fixed;inset:0;z-index:10001;background:#000;color:#fff;display:flex;flex-direction:column;font-family:inherit;}
+.mebook-root .cp2-top{flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:calc(10px + env(safe-area-inset-top,0px)) 12px 10px;}
+.mebook-root .cp2-top b{font-size:18px;font-weight:800;}
+.mebook-root .cp2-x{width:44px;height:44px;border-radius:50%;background:none;border:none;color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;}
+.mebook-root .cp2-next{min-width:84px;height:44px;border-radius:12px;border:none;background:#0866ff;color:#fff;font-size:16px;font-weight:800;padding:0 20px;cursor:pointer;font-family:inherit;}
+.mebook-root .cp2-next:disabled{background:#2a2b2d;color:#6b6e72;cursor:default;}
+.mebook-root .cp2-body{flex:1;min-height:0;overflow-y:auto;padding:6px 14px 14px;}
+.mebook-root .cp2-user{display:flex;align-items:center;gap:12px;margin-bottom:14px;}
+.mebook-root .cp2-user img{width:56px;height:56px;border-radius:50%;object-fit:cover;background:#333;flex:0 0 auto;}
+.mebook-root .cp2-user div{font-size:16px;line-height:1.35;min-width:0;}
+.mebook-root .cp2-user div b{font-size:19px;font-weight:700;}
+.mebook-root .cp2-user div span{color:#c3c6cb;}
+.mebook-root .cp2-chips{display:flex;gap:10px;overflow-x:auto;padding-bottom:12px;scrollbar-width:none;}
+.mebook-root .cp2-chips::-webkit-scrollbar{display:none;}
+.mebook-root .cp2-chip{flex:0 0 auto;display:inline-flex;align-items:center;gap:8px;height:46px;padding:0 18px;border-radius:999px;background:#242526;color:#fff;border:1px solid transparent;font-size:16px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;}
+.mebook-root .cp2-chip.on{border-color:#22c55e;}
+.mebook-root .cp2-text{width:100%;min-height:200px;border:none;outline:none;resize:none;background:transparent;color:#fff;font-size:21px;line-height:1.4;padding:10px 0;font-family:inherit;}
+.mebook-root .cp2-text::placeholder{color:#8a8d91;}
+.mebook-root .cp2-movie{display:flex;align-items:center;gap:10px;background:#16241b;border:1px solid rgba(34,197,94,.35);border-radius:12px;padding:10px 14px;margin:8px 0;color:#22c55e;}
+.mebook-root .cp2-movie input{flex:1;min-width:0;border:none;outline:none;background:transparent;color:#fff;font-size:15px;font-family:inherit;}
+.mebook-root .cp2-musicline,.mebook-root .mb-view .cp2-musicline{display:flex;align-items:center;gap:8px;background:#242526;color:#e4e6eb;border-radius:999px;padding:8px 8px 8px 14px;margin:8px 0;font-size:14px;}
+.mebook-root .cp2-musicline span{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.mebook-root .cp2-musicline button{background:none;border:none;color:#6aa8ff;font-weight:800;font-size:14px;cursor:pointer;padding:6px 10px;font-family:inherit;}
+.mebook-root .mb-post-music{padding:0 16px 8px;}
+.mebook-root .cp2-preview{position:relative;border-radius:14px;overflow:hidden;margin-top:10px;background:#111;}
+.mebook-root .cp2-preview img{width:100%;max-height:360px;object-fit:contain;}
+.mebook-root .cp2-preview button{position:absolute;top:8px;right:8px;width:34px;height:34px;border-radius:50%;background:rgba(0,0,0,.7);border:none;color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;}
+.mebook-root .cp2-prog{height:6px;border-radius:3px;background:#2a2b2d;overflow:hidden;}
+.mebook-root .cp2-prog i{display:block;height:100%;background:#22c55e;transition:width .3s ease;}
+.mebook-root .cp2-tiles{flex:0 0 auto;display:flex;gap:12px;overflow-x:auto;padding:10px 14px 14px;scrollbar-width:none;}
+.mebook-root .cp2-tiles::-webkit-scrollbar{display:none;}
+.mebook-root .cp2-tiles button{flex:0 0 auto;width:86px;height:88px;border-radius:14px;background:#242526;border:none;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;}
+.mebook-root .cp2-gif{display:inline-flex;align-items:center;justify-content:center;width:34px;height:30px;border:3px solid #fff;border-radius:8px;font-size:13px;font-weight:900;}
+.mebook-root .cp2-foot{flex:0 0 auto;display:flex;gap:10px;padding:12px 14px calc(14px + env(safe-area-inset-bottom,0px));border-top:1px solid #1f2022;}
 `
 
 /* ============================================================
@@ -6195,6 +6238,7 @@ function StUserPicker(props: {
   empty: string
   action: string
   doneIds?: string[]
+  doneLabel?: string
   onPick: (u: any) => void
 }) {
   const [q, setQ] = useState("")
@@ -6215,7 +6259,7 @@ function StUserPicker(props: {
               avatarUrl={props.avatarUrl}
               right={
                 <button className={`st-sbtn${done ? " ghost" : ""}`} disabled={done} onClick={() => props.onPick(u)}>
-                  {done ? "Sent" : props.action}
+                  {done ? props.doneLabel || "Sent" : props.action}
                 </button>
               }
             />
@@ -8086,6 +8130,348 @@ function StoriesSection(props: {
   )
 }
 
+/* ============================================================
+CREATE POST SCREEN (dark, Facebook-style "New post")
+============================================================ */
+
+const CP_FEELINGS: string[][] = [
+  ["😀", "Happy"], ["🥰", "Loved"], ["😍", "Excited"], ["😎", "Cool"], ["🤩", "Amazing"], ["🥳", "Celebrating"],
+  ["😭", "Sad"], ["😡", "Angry"], ["🤔", "Thoughtful"], ["😴", "Tired"], ["🙏", "Blessed"], ["💪", "Motivated"],
+  ["🍿", "Watching a movie"], ["🎬", "Inspired"],
+]
+
+function PostMusicChip({ music }: { music: any }) {
+  const a = useRef<HTMLAudioElement | null>(null)
+  const [on, setOn] = useState(false)
+  useEffect(() => {
+    return () => {
+      try { if (a.current) a.current.pause() } catch {}
+    }
+  }, [])
+  const toggle = () => {
+    const el = a.current
+    if (!el) return
+    if (on) {
+      el.pause()
+      setOn(false)
+    } else {
+      el.play().then(() => setOn(true)).catch(() => setOn(false))
+    }
+  }
+  return (
+    <div className="cp2-musicline">
+      <StIco d={ST_IC.music} size={18} />
+      <span>
+        {music.title}
+        {music.artist ? " · " + music.artist : ""}
+      </span>
+      <button onClick={toggle}>{on ? "Pause" : "Play"}</button>
+      <audio ref={a} src={music.url} onEnded={() => setOn(false)} />
+    </div>
+  )
+}
+
+function CreatePostScreen(props: {
+  profile: any
+  avatarUrl: (u: any) => string
+  allUsers: any[]
+  text: string
+  setText: (v: string) => void
+  movie: string
+  setMovie: (v: string) => void
+  previewUrl: string
+  hasFile: boolean
+  onPickFile: (e: any) => void
+  onRemove: () => void
+  progress: number | null
+  busy: boolean
+  onClose: () => void
+  onSubmit: () => void
+  audience: string
+  setAudience: (v: string) => void
+  feeling: string
+  setFeeling: (v: string) => void
+  location: string
+  setLocation: (v: string) => void
+  music: any
+  setMusic: (m: any) => void
+  tagged: any[]
+  setTagged: (t: any[]) => void
+  showToast: (title: string, msg?: string, type?: "success" | "error" | "info") => void
+}) {
+  const [sheet, setSheet] = useState<string | null>(null)
+  const [locDraft, setLocDraft] = useState(props.location)
+  const [movieOpen, setMovieOpen] = useState(!!props.movie)
+  const fileInput = useRef<HTMLInputElement>(null)
+  const canPost = !!(props.text.trim() || props.hasFile) && !props.busy
+
+  const audMeta: Record<string, { t: string; s: string; ic: string }> = {
+    public: { t: "Public", s: "Anyone on MeBook", ic: ST_IC.globe },
+    friends: { t: "Friends", s: "Only your friends", ic: ST_IC.friends },
+    only_me: { t: "Only me", s: "Only you can see this post", ic: ST_IC.lock },
+  }
+  const am = audMeta[props.audience] || audMeta.public
+  const soon = (w: string) => props.showToast(w + " isn't available yet", "", "info")
+
+  const sub: string[] = []
+  if (props.feeling) sub.push("is feeling " + props.feeling)
+  if (props.tagged.length) sub.push("with " + props.tagged.map((t: any) => t.name || "user").join(", "))
+  if (props.location) sub.push("at " + props.location)
+
+  const pinPath = "M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 0 1 0-5 2.5 2.5 0 0 1 0 5z"
+  const filmPath = "M18 4l2 4h-3l-2-4h-2l2 4h-3l-2-4H8l2 4H7L5 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4h-4z"
+  const camPath = "M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"
+
+  return (
+    <div className="cp2">
+      <input ref={fileInput} type="file" accept="image/*" style={{ display: "none" }} onChange={props.onPickFile} />
+
+      <div className="cp2-top">
+        <button className="cp2-x" onClick={props.onClose} aria-label="Close">
+          <StIco d={ST_IC.close} size={28} />
+        </button>
+        <b>New post</b>
+        <button className="cp2-next" disabled={!canPost} onClick={props.onSubmit}>
+          {props.busy ? "Posting..." : "Post"}
+        </button>
+      </div>
+
+      <div className="cp2-body">
+        <div className="cp2-user">
+          <img src={props.avatarUrl(props.profile)} alt="" />
+          <div>
+            <b>{props.profile.name}</b>
+            {sub.length > 0 && <span> {sub.join(" · ")}</span>}
+          </div>
+        </div>
+
+        <div className="cp2-chips">
+          <button className={`cp2-chip${props.music ? " on" : ""}`} onClick={() => setSheet("music")}>
+            <StIco d={ST_IC.music} size={22} />
+            Music
+          </button>
+          <button className={`cp2-chip${props.tagged.length ? " on" : ""}`} onClick={() => setSheet("tag")}>
+            <StIco d={ST_IC.friends} size={22} />
+            Tag/collaborate
+          </button>
+          <button className={`cp2-chip${props.location ? " on" : ""}`} onClick={() => { setLocDraft(props.location); setSheet("loc") }}>
+            <StIco d={pinPath} size={22} />
+            Location
+          </button>
+          <button className={`cp2-chip${props.feeling ? " on" : ""}`} onClick={() => setSheet("feel")}>
+            <StIco d={ST_IC.sticker} size={22} />
+            Feeling
+          </button>
+          <button className={`cp2-chip${movieOpen || props.movie ? " on" : ""}`} onClick={() => setMovieOpen((v) => !v)}>
+            <StIco d={filmPath} size={22} />
+            Movie
+          </button>
+        </div>
+
+        <textarea
+          className="cp2-text"
+          placeholder="What's on your mind?"
+          value={props.text}
+          onChange={(e) => props.setText(e.target.value)}
+          autoFocus
+        />
+
+        {movieOpen && (
+          <div className="cp2-movie">
+            <StIco d={filmPath} size={20} />
+            <input
+              type="text"
+              placeholder="Movie name (e.g. Interstellar)"
+              value={props.movie}
+              onChange={(e) => props.setMovie(e.target.value)}
+            />
+          </div>
+        )}
+
+        {props.music && (
+          <div className="cp2-musicline">
+            <StIco d={ST_IC.music} size={18} />
+            <span>
+              {props.music.title}
+              {props.music.artist ? " · " + props.music.artist : ""}
+            </span>
+            <button onClick={() => props.setMusic(null)}>Remove</button>
+          </div>
+        )}
+
+        {props.previewUrl && (
+          <div className="cp2-preview">
+            <img src={props.previewUrl} alt="preview" />
+            <button onClick={props.onRemove} aria-label="Remove photo">
+              <StIco d={ST_IC.close} size={18} />
+            </button>
+          </div>
+        )}
+
+        {props.progress !== null && (
+          <div style={{ marginTop: 12 }}>
+            <div className="cp2-prog">
+              <i style={{ width: props.progress + "%" }} />
+            </div>
+            <div style={{ fontSize: 12, color: "#9a9da1", marginTop: 4 }}>Uploading... {props.progress}%</div>
+          </div>
+        )}
+      </div>
+
+      <div className="cp2-tiles">
+        <button onClick={() => fileInput.current && fileInput.current.click()}>
+          <StIco d={ST_IC.image} size={34} />
+          Gallery
+        </button>
+        <button onClick={() => soon("GIF")}>
+          <span className="cp2-gif">GIF</span>
+          GIF
+        </button>
+        <button onClick={() => soon("Live")}>
+          <StIco d={camPath} size={34} />
+          Live
+        </button>
+        <button onClick={() => soon("Background")}>
+          <StIco d={ST_IC.sparkle} size={34} />
+          Background
+        </button>
+      </div>
+
+      <div className="cp2-foot">
+        <button className="cp2-chip" onClick={() => setSheet("aud")}>
+          <StIco d={am.ic} size={22} />
+          {am.t}
+        </button>
+        <button className="cp2-chip" onClick={() => soon("Cross-posting")}>
+          <StIco d={ST_IC.share} size={22} />
+          Off
+        </button>
+      </div>
+
+      {sheet === "music" && (
+        <StoryMusicSheet
+          onClose={() => setSheet(null)}
+          onError={(m) => props.showToast("Music", m, "error")}
+          onPick={(m) => {
+            props.setMusic(m)
+            setSheet(null)
+          }}
+        />
+      )}
+
+      {sheet === "tag" && (
+        <StSheet title="Tag people" onClose={() => setSheet(null)} tall>
+          {props.tagged.length > 0 && (
+            <button className="st-sbtn ghost" style={{ marginBottom: 10, alignSelf: "flex-start" }} onClick={() => props.setTagged([])}>
+              Clear tags ({props.tagged.length})
+            </button>
+          )}
+          <StUserPicker
+            users={props.allUsers}
+            avatarUrl={props.avatarUrl}
+            empty="No people found"
+            action="Tag"
+            doneLabel="Tagged"
+            doneIds={props.tagged.map((t: any) => t.uid)}
+            onPick={(u) => props.setTagged([...props.tagged, { uid: u.uid, name: u.name || "user" }])}
+          />
+        </StSheet>
+      )}
+
+      {sheet === "loc" && (
+        <StSheet title="Add location" onClose={() => setSheet(null)}>
+          <input
+            className="st-search"
+            placeholder="Where are you? (e.g. Dhaka)"
+            value={locDraft}
+            maxLength={60}
+            autoFocus
+            onChange={(e) => setLocDraft(e.target.value)}
+          />
+          <div style={{ display: "flex", gap: 10 }}>
+            <button
+              className="st-sbtn ghost"
+              style={{ flex: 1, padding: "11px 10px" }}
+              onClick={() => {
+                props.setLocation("")
+                setSheet(null)
+              }}
+            >
+              Remove
+            </button>
+            <button
+              className="st-sbtn"
+              style={{ flex: 1, padding: "11px 10px" }}
+              onClick={() => {
+                props.setLocation(locDraft.trim())
+                setSheet(null)
+              }}
+            >
+              Done
+            </button>
+          </div>
+        </StSheet>
+      )}
+
+      {sheet === "feel" && (
+        <StSheet title="How are you feeling?" onClose={() => setSheet(null)} tall>
+          <div className="st-musicscroll">
+            {props.feeling && (
+              <button
+                className="st-row"
+                onClick={() => {
+                  props.setFeeling("")
+                  setSheet(null)
+                }}
+              >
+                <StIco d={ST_IC.close} />
+                Remove feeling
+              </button>
+            )}
+            {CP_FEELINGS.map((f) => (
+              <button
+                key={f[1]}
+                className="st-row"
+                onClick={() => {
+                  props.setFeeling(f[0] + " " + f[1])
+                  setSheet(null)
+                }}
+              >
+                <span style={{ fontSize: 26 }}>{f[0]}</span>
+                {f[1]}
+              </button>
+            ))}
+          </div>
+        </StSheet>
+      )}
+
+      {sheet === "aud" && (
+        <StSheet title="Who can see your post?" onClose={() => setSheet(null)}>
+          <div className="st-group">
+            {Object.keys(audMeta).map((k) => (
+              <button
+                key={k}
+                className="st-row"
+                onClick={() => {
+                  props.setAudience(k)
+                  setSheet(null)
+                }}
+              >
+                <StIco d={audMeta[k].ic} />
+                <span style={{ flex: 1 }}>
+                  {audMeta[k].t}
+                  <small>{audMeta[k].s}</small>
+                </span>
+                {props.audience === k && <StIco d={ST_IC.check} />}
+              </button>
+            ))}
+          </div>
+        </StSheet>
+      )}
+    </div>
+  )
+}
+
 interface MeBookPageProps {
   onExit: () => void
 }
@@ -9168,6 +9554,11 @@ const [friends, setFriends] = useState<any[]>([])
   const [previewUrl, setPreviewUrl] = useState("")
   const [uploadProgress, setUploadProgress] = useState<number | null>(null)
   const [postBusy, setPostBusy] = useState(false)
+  const [postAudience, setPostAudience] = useState("public")
+  const [postFeeling, setPostFeeling] = useState("")
+  const [postLocation, setPostLocation] = useState("")
+  const [postMusic, setPostMusic] = useState<any>(null)
+  const [postTagged, setPostTagged] = useState<any[]>([])
 
   const [editName, setEditName] = useState("")
   const [editBio, setEditBio] = useState("")
@@ -11552,6 +11943,11 @@ const handleChatTyping = (value: string) => {
     setSelectedFile(null)
     setPreviewUrl("")
     setUploadProgress(null)
+    setPostAudience("public")
+    setPostFeeling("")
+    setPostLocation("")
+    setPostMusic(null)
+    setPostTagged([])
     pushPage("create-post")
   }
 
@@ -11583,6 +11979,12 @@ const handleChatTyping = (value: string) => {
         setUploadProgress(0)
         imageUrl = await cloudinaryUpload(selectedFile, (pct) => setUploadProgress(pct))
       }
+      let musicData: any = null
+      if (postMusic) {
+        let mu = postMusic.url
+        if (postMusic.file) mu = await cloudinaryUpload(postMusic.file, undefined, "video")
+        musicData = { title: postMusic.title || "", artist: postMusic.artist || "", cover: postMusic.cover || "", url: mu }
+      }
       await fb.addDoc(fb.collection(fb.db, "posts"), {
         authorId: user.uid,
         authorName: profile.name,
@@ -11591,6 +11993,11 @@ const handleChatTyping = (value: string) => {
         caption: text,
         movie,
         image: imageUrl,
+        audience: postAudience,
+        ...(postFeeling ? { feeling: postFeeling } : {}),
+        ...(postLocation ? { location: postLocation } : {}),
+        ...(postTagged.length ? { tagged: postTagged.map((t: any) => t.uid), taggedNames: postTagged.map((t: any) => t.name) } : {}),
+        ...(musicData ? { music: musicData } : {}),
         likes: [],
         reactions: {},
         comments: [],
@@ -11601,6 +12008,11 @@ const handleChatTyping = (value: string) => {
       setPostMovie("")
       removePreview()
       setUploadProgress(null)
+      setPostAudience("public")
+      setPostFeeling("")
+      setPostLocation("")
+      setPostMusic(null)
+      setPostTagged([])
       showToast("Post published!", "Your post is now live", "success")
       goTo("home")
     } catch (err: any) {
@@ -12754,6 +13166,15 @@ const handleChatTyping = (value: string) => {
                 </svg>
               )}
             </div>
+            {(post.feeling || post.location || (Array.isArray(post.taggedNames) && post.taggedNames.length > 0)) && (
+              <div className="mb-post-meta" style={{ marginBottom: 1 }}>
+                {[
+                  post.feeling ? "feeling " + post.feeling : "",
+                  Array.isArray(post.taggedNames) && post.taggedNames.length ? "with " + post.taggedNames.join(", ") : "",
+                  post.location ? "at " + post.location : "",
+                ].filter(Boolean).join(" · ")}
+              </div>
+            )}
             <div className="mb-post-meta">
               {timeText}
               {post.edited && <span className="mb-edited-tag">{" · Edited"}</span>}
@@ -12783,6 +13204,11 @@ const handleChatTyping = (value: string) => {
         {post.pinned && <div className="rx-post-tag">📌 Pinned post</div>}
         {post.archived && isMine && <div className="rx-post-tag">🗄 Archived · only you can see this</div>}
         {post.caption && <PostCaption text={post.caption} />}
+        {post.music && post.music.url && (
+          <div className="mb-post-music">
+            <PostMusicChip music={post.music} />
+          </div>
+        )}
         {post.sharedPost && renderSharedEmbed(post.sharedPost)}
         {post.productLink && (
           <a className="rx-product" href={post.productLink} target="_blank" rel="noopener noreferrer nofollow">
@@ -15026,34 +15452,17 @@ const handleChatTyping = (value: string) => {
       Exit MeBook
     </button>
 
-    <div className="mb-composer">
-                <div className="mb-composer-top">
-                  <img className="mb-composer-avatar" src={avatarUrl(profile)} alt="You" />
-                  <button className="mb-composer-input" onClick={openCreatePost}>
-                    Share a movie screenshot or review...
-                  </button>
-                </div>
-                <div className="mb-composer-actions">
-                  <button className="mb-comp-action" onClick={openCreatePost}>
-                    <svg viewBox="0 0 24 24" fill="#16a34a">
-                      <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z" />
-                    </svg>
-                    Photo
-                  </button>
-                  <button className="mb-comp-action" onClick={openCreatePost}>
-                    <svg viewBox="0 0 24 24" fill="#f59e0b">
-                      <path d="M18 4l2 4h-3l-2-4h-2l2 4h-3l-2-4H8l2 4H7L5 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4h-4z" />
-                    </svg>
-                    Movie Tag
-                  </button>
-                  <button className="mb-comp-action" onClick={openCreatePost}>
-                    <svg viewBox="0 0 24 24" fill="#8b5cf6">
-                      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z" />
-                    </svg>
-                    Review
-                  </button>
-                </div>
-              </div>
+    <div className="mb-mini">
+      <img className="mb-mini-av" src={avatarUrl(profile)} alt="You" onClick={() => openUserProfile(user.uid)} />
+      <button className="mb-mini-input" onClick={openCreatePost}>
+        What&apos;s on your mind?
+      </button>
+      <button className="mb-mini-ph" onClick={openCreatePost} aria-label="Add photo">
+        <svg viewBox="0 0 24 24" width="30" height="30" fill="currentColor">
+          <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z" />
+        </svg>
+      </button>
+    </div>
               <StoriesSection
                 user={user}
                 profile={profile}
@@ -16161,85 +16570,34 @@ const handleChatTyping = (value: string) => {
           )}
 
           {currentView === "create-post" && (
-            <div className="mb-view active">
-              <button className="mb-back-btn" onClick={goBack}>
-                <svg viewBox="0 0 24 24">
-                  <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" />
-                </svg>
-                Back
-              </button>
-              <div className="cp-page">
-                <h1 className="mb-page-title">Create Post</h1>
-                <div className="cp-card">
-                  <div className="cp-user">
-                    <img src={avatarUrl(profile)} alt="You" />
-                    <div>
-                      <b>{profile.name}</b>
-                      <small style={{ display: "block" }}>Public</small>
-                    </div>
-                  </div>
-                  <textarea
-                    className="cp-textarea"
-                    placeholder="What's your take on this movie? Share your review..."
-                    value={postText}
-                    onChange={(e) => setPostText(e.target.value)}
-                    autoFocus
-                  />
-                  <div className="cp-movie-tag">
-                    <svg viewBox="0 0 24 24">
-                      <path d="M18 4l2 4h-3l-2-4h-2l2 4h-3l-2-4H8l2 4H7L5 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4h-4z" />
-                    </svg>
-                    <input
-                      type="text"
-                      placeholder="Movie name (e.g. Interstellar)"
-                      value={postMovie}
-                      onChange={(e) => setPostMovie(e.target.value)}
-                    />
-                  </div>
-                  {!previewUrl ? (
-                    <div>
-                      <div className="cp-upload-box" onClick={() => document.getElementById("mebook-file-input")?.click()}>
-                        <svg viewBox="0 0 24 24">
-                          <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z" />
-                        </svg>
-                        <b>Add movie screenshot / photo</b>
-                        <small>PNG, JPG up to 10MB</small>
-                      </div>
-                      <input
-                        type="file"
-                        id="mebook-file-input"
-                        accept="image/*"
-                        style={{ display: "none" }}
-                        onChange={handlePreviewFile}
-                      />
-                    </div>
-                  ) : (
-                    <div className="cp-preview">
-                      <img src={previewUrl} alt="preview" />
-                      <button className="cp-preview-remove" onClick={removePreview}>
-                        <svg viewBox="0 0 24 24">
-                          <path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
-                        </svg>
-                      </button>
-                    </div>
-                  )}
-                  {uploadProgress !== null && (
-                    <div style={{ marginTop: 10 }}>
-                      <div style={{ height: 6, background: "var(--border)", borderRadius: 3, overflow: "hidden" }}>
-                        <div style={{ height: "100%", width: `${uploadProgress}%`, background: "var(--green)", transition: "width .3s ease" }} />
-                      </div>
-                      <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 4 }}>Uploading... {uploadProgress}%</div>
-                    </div>
-                  )}
-                  <div className="cp-actions">
-                    <button className="mb-btn mb-btn-secondary" onClick={goBack}>Cancel</button>
-                    <button className="mb-btn mb-btn-primary" onClick={handleSubmitPost} disabled={postBusy}>
-                      {postBusy ? "Posting..." : "Post"}
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <CreatePostScreen
+              profile={profile}
+              avatarUrl={avatarUrl}
+              allUsers={allUsers.filter((u: any) => u.uid !== user.uid)}
+              text={postText}
+              setText={setPostText}
+              movie={postMovie}
+              setMovie={setPostMovie}
+              previewUrl={previewUrl}
+              hasFile={!!selectedFile}
+              onPickFile={handlePreviewFile}
+              onRemove={removePreview}
+              progress={uploadProgress}
+              busy={postBusy}
+              onClose={goBack}
+              onSubmit={handleSubmitPost}
+              audience={postAudience}
+              setAudience={setPostAudience}
+              feeling={postFeeling}
+              setFeeling={setPostFeeling}
+              location={postLocation}
+              setLocation={setPostLocation}
+              music={postMusic}
+              setMusic={setPostMusic}
+              tagged={postTagged}
+              setTagged={setPostTagged}
+              showToast={showToast}
+            />
           )}
 
           {currentView === "comments" && (() => {

@@ -681,60 +681,94 @@ transition:border-color .2s;
 .mebook-root .mb-nav-tab.active .mb-nav-avatar{border-color:#22c55e;}
 .mebook-root .mb-nav-tab.mb-nav-tab-avatar::after{display:block;}
 
-/* ============ NAV BAR v2: clean filled icons (light = white bar + black active, dark = black bar + white active) ============ */
-.mebook-root .mb-navbar{background:#ffffff;border-top:none;border-bottom:1px solid #e4e6eb;box-shadow:0 2px 10px rgba(0,0,0,.06);}
-.mebook-root.dark-mode .mb-navbar{background:#000000;border-bottom:1px solid #1c1c1c;box-shadow:0 2px 14px rgba(0,0,0,.8);}
-.mebook-root .mb-nav-tab{color:#a6a9ae;}
-.mebook-root .mb-nav-tab:hover{background:rgba(0,0,0,.04);}
-.mebook-root .mb-nav-tab:active{background:rgba(0,0,0,.08);}
-.mebook-root.dark-mode .mb-nav-tab{color:#6b6f75;}
-.mebook-root.dark-mode .mb-nav-tab:hover{background:rgba(255,255,255,.06);}
-.mebook-root.dark-mode .mb-nav-tab:active{background:rgba(255,255,255,.1);}
-.mebook-root .mb-nav-tab svg{width:24px;height:24px;transition:transform .2s ease,fill .2s ease;}
-.mebook-root .mb-nav-tab.active{color:#0b0b0c;}
-.mebook-root.dark-mode .mb-nav-tab.active{color:#ffffff;}
-.mebook-root .mb-nav-tab.active svg{transform:scale(1.08);}
-.mebook-root .mb-nav-tab::after{left:50%;right:auto;width:18px;margin-left:-9px;height:3px;bottom:3px;border-radius:3px;background:currentColor;transform:scaleX(0);opacity:0;transition:transform .22s ease,opacity .22s ease;}
-.mebook-root .mb-nav-tab.active::after{transform:scaleX(1);opacity:1;}
+/* ============ NAV BAR v3: glowing green line that follows the active page ============ */
+.mebook-root .mb-navbar{background:linear-gradient(180deg,#ffffff 0%,#f3f5f4 100%);border-top:none;border-bottom:1px solid #e4e6eb;box-shadow:0 3px 12px rgba(0,0,0,.08);}
+.mebook-root.dark-mode .mb-navbar{background:linear-gradient(180deg,#242526 0%,#0c0c0d 100%);border-bottom:1px solid #1a1a1b;box-shadow:0 3px 16px rgba(0,0,0,.85);}
+.mebook-root .mb-navbar-inner{position:relative;}
+.mebook-root .mb-nav-line-wrap{position:absolute;left:0;top:0;right:0;bottom:0;pointer-events:none;z-index:1;}
+.mebook-root .mb-nav-line-wrap svg{display:block;overflow:visible;}
+.mebook-root .mb-nav-line-wrap .fill{fill:rgba(34,197,94,.10);}
+.mebook-root .mb-nav-line-wrap .stroke{fill:none;stroke:#22c55e;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 0 3px rgba(34,197,94,.7));}
+.mebook-root .mb-nav-tab{z-index:2;color:#9a9da3;}
+.mebook-root .mb-nav-tab:hover{background:transparent;}
+.mebook-root .mb-nav-tab:active{background:rgba(0,0,0,.05);}
+.mebook-root.dark-mode .mb-nav-tab{color:#7b7e84;}
+.mebook-root.dark-mode .mb-nav-tab:active{background:rgba(255,255,255,.07);}
+.mebook-root .mb-nav-tab svg{width:22px;height:22px;transition:transform .3s cubic-bezier(.3,1.4,.5,1),filter .3s ease;}
+.mebook-root .mb-nav-tab.active{color:#16a34a;}
+.mebook-root.dark-mode .mb-nav-tab.active{color:#22c55e;}
+.mebook-root .mb-nav-tab.active svg{transform:translateY(-3px) scale(1.08);}
+.mebook-root.dark-mode .mb-nav-tab.active svg{filter:drop-shadow(0 0 5px rgba(34,197,94,.55));}
+.mebook-root .mb-nav-tab::after{left:50%;right:auto;bottom:10px;width:4px;height:4px;margin-left:-2px;border-radius:50%;background:#22c55e;box-shadow:0 0 6px rgba(34,197,94,.85);transform:scale(0);opacity:0;transition:transform .3s cubic-bezier(.3,1.4,.5,1),opacity .2s ease;}
+.mebook-root .mb-nav-tab.active::after{transform:scale(1);opacity:1;}
 .mebook-root .mb-nav-tab .mb-badge-dot{border-color:#ffffff;}
-.mebook-root.dark-mode .mb-nav-tab .mb-badge-dot{border-color:#000000;}
-.mebook-root .mb-nav-tab .mb-nav-avatar{width:26px;height:26px;opacity:.8;transition:border-color .2s,opacity .2s;}
-.mebook-root .mb-nav-tab.active .mb-nav-avatar{border-color:currentColor;opacity:1;}
+.mebook-root.dark-mode .mb-nav-tab .mb-badge-dot{border-color:#0c0c0d;}
+.mebook-root .mb-nav-tab .mb-nav-avatar{width:24px;height:24px;opacity:.8;transition:border-color .2s,opacity .2s,transform .3s cubic-bezier(.3,1.4,.5,1);}
+.mebook-root .mb-nav-tab.active .mb-nav-avatar{border-color:#22c55e;opacity:1;transform:translateY(-3px) scale(1.08);}
 
 /* ============ SHORTS PAGE (Facebook Reels style) ============ */
 .mebook-root .shp-root{position:fixed;left:0;right:0;top:108px;bottom:0;z-index:900;background:#000;color:#fff;overflow:hidden;}
 .mebook-root .shp-wrap{position:absolute;inset:0;overflow-y:scroll;scroll-snap-type:y mandatory;overscroll-behavior:contain;scrollbar-width:none;-webkit-overflow-scrolling:touch;}
 .mebook-root .shp-wrap::-webkit-scrollbar{display:none;}
 .mebook-root .shp-item{position:relative;height:100%;scroll-snap-align:start;scroll-snap-stop:always;overflow:hidden;background:#000;}
-.mebook-root .shp-box{position:absolute;inset:0;container-type:size;display:flex;align-items:center;justify-content:center;}
-.mebook-root .shp-stage{position:relative;overflow:hidden;background:#000;width:min(100cqw,calc(100cqh * var(--ar,.5625)));height:min(100cqh,calc(100cqw / var(--ar,.5625)));}
-.mebook-root .shp-frame{position:absolute;left:0;right:0;top:0;bottom:0;}
+.mebook-root .shp-col{position:absolute;inset:0;display:flex;flex-direction:column;background:#000;}
+.mebook-root .shp-media{flex:1;min-height:0;container-type:size;display:flex;align-items:center;justify-content:center;}
+.mebook-root .shp-stage{position:relative;overflow:hidden;background:#000;container-type:inline-size;width:min(100cqw,calc(100cqh * .6875));height:100cqh;}
+.mebook-root .shp-frame{position:absolute;left:0;width:100%;height:177.78cqw;top:50%;transform:translateY(-50%);}
 .mebook-root .shp-mount{position:absolute;inset:0;}
 .mebook-root .shp-mount iframe{position:absolute;inset:0;width:100%;height:100%;border:0;pointer-events:none;}
 .mebook-root .shp-thumb{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
 .mebook-root .shp-tap{position:absolute;inset:0;z-index:3;cursor:pointer;}
-.mebook-root .shp-shade{position:absolute;left:0;right:0;bottom:0;height:48%;background:linear-gradient(to top,rgba(0,0,0,.78),rgba(0,0,0,0));pointer-events:none;z-index:4;}
+.mebook-root .shp-shade{position:absolute;left:0;right:0;bottom:0;height:42%;background:linear-gradient(to top,rgba(0,0,0,.7),rgba(0,0,0,0));pointer-events:none;z-index:4;}
 .mebook-root .shp-top{position:absolute;top:0;left:0;right:0;z-index:20;display:flex;align-items:center;justify-content:space-between;padding:10px 12px;pointer-events:none;background:linear-gradient(to bottom,rgba(0,0,0,.55),rgba(0,0,0,0));}
 .mebook-root .shp-title{font-size:21px;font-weight:800;color:#fff;letter-spacing:-.3px;display:flex;align-items:center;gap:7px;text-shadow:0 1px 4px rgba(0,0,0,.6);}
 .mebook-root .shp-title i{display:inline-block;width:0;height:0;border-left:9px solid #ff3b3b;border-top:6px solid transparent;border-bottom:6px solid transparent;}
 .mebook-root .shp-mute{pointer-events:auto;width:38px;height:38px;border-radius:50%;background:rgba(0,0,0,.45);color:#fff;display:flex;align-items:center;justify-content:center;border:none;cursor:pointer;}
 .mebook-root .shp-mute svg{width:22px;height:22px;fill:currentColor;}
-.mebook-root .shp-acts{position:absolute;right:8px;bottom:calc(22px + env(safe-area-inset-bottom,0px));z-index:6;display:flex;flex-direction:column;align-items:center;gap:16px;}
+.mebook-root .shp-acts{position:absolute;right:8px;bottom:12px;z-index:6;display:flex;flex-direction:column;align-items:center;gap:16px;}
 .mebook-root .shp-act{display:flex;flex-direction:column;align-items:center;gap:3px;min-width:46px;color:#fff;background:none;border:none;padding:0;cursor:pointer;font-size:12.5px;font-weight:700;text-shadow:0 1px 4px rgba(0,0,0,.75);-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;}
 .mebook-root .shp-act svg{width:30px;height:30px;fill:currentColor;filter:drop-shadow(0 1px 3px rgba(0,0,0,.6));}
 .mebook-root .shp-act:active{transform:scale(.92);}
 .mebook-root .shp-act.on{color:#22c55e;}
-.mebook-root .shp-info{position:absolute;left:12px;right:74px;bottom:calc(24px + env(safe-area-inset-bottom,0px));z-index:6;display:flex;flex-direction:column;gap:8px;text-shadow:0 1px 4px rgba(0,0,0,.75);}
-.mebook-root .shp-user{display:flex;align-items:center;gap:10px;min-width:0;}
-.mebook-root .shp-user img{width:38px;height:38px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,.9);flex-shrink:0;background:#334155;cursor:pointer;}
-.mebook-root .shp-uname{font-size:15px;font-weight:800;display:flex;align-items:center;gap:5px;min-width:0;cursor:pointer;}
+.mebook-root .shp-info{position:absolute;left:10px;right:66px;bottom:10px;z-index:6;display:flex;align-items:center;gap:10px;text-shadow:0 1px 4px rgba(0,0,0,.75);}
+.mebook-root .shp-info>img{width:44px;height:44px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,.9);flex-shrink:0;background:#334155;cursor:pointer;}
+.mebook-root .shp-itxt{flex:1;min-width:0;line-height:1.25;}
+.mebook-root .shp-uname{font-size:16px;font-weight:800;display:flex;align-items:center;gap:6px;min-width:0;cursor:pointer;}
 .mebook-root .shp-uname span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.mebook-root .shp-utime{font-size:12px;opacity:.85;font-weight:600;}
-.mebook-root .shp-cap{font-size:14px;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;word-break:break-word;white-space:pre-wrap;}
-.mebook-root .shp-cap.open{display:block;max-height:32vh;overflow-y:auto;-webkit-line-clamp:unset;}
-.mebook-root .shp-seek{position:absolute;left:0;right:0;bottom:0;width:100%;height:14px;margin:0;z-index:7;accent-color:#ffffff;cursor:pointer;opacity:.95;}
+.mebook-root .shp-uname svg{flex-shrink:0;fill:#fff;}
+.mebook-root .shp-audio{font-size:13px;opacity:.92;display:flex;align-items:center;gap:5px;min-width:0;}
+.mebook-root .shp-audio span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.mebook-root .shp-audio svg{width:15px;height:15px;fill:currentColor;flex-shrink:0;}
+.mebook-root .shp-follow{flex-shrink:0;padding:7px 18px;border-radius:999px;border:1.5px solid rgba(255,255,255,.65);background:rgba(255,255,255,.14);color:#fff;font-weight:700;font-size:14px;cursor:pointer;text-shadow:none;-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);}
+.mebook-root .shp-follow.on{background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.35);}
+.mebook-root .shp-foot{flex:0 0 auto;background:#000;}
+.mebook-root .shp-caprow{display:flex;align-items:flex-start;gap:8px;padding:6px 8px 0 12px;min-height:34px;}
+.mebook-root .shp-capwrap{flex:1;min-width:0;display:flex;gap:6px;font-size:14.5px;line-height:1.4;padding-top:4px;cursor:pointer;}
+.mebook-root .shp-captext{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.mebook-root .shp-capwrap.open{max-height:30vh;overflow-y:auto;}
+.mebook-root .shp-capwrap.open .shp-captext{white-space:pre-wrap;word-break:break-word;overflow:visible;}
+.mebook-root .shp-more{flex-shrink:0;color:#b0b3b8;font-style:italic;font-weight:600;}
+.mebook-root .shp-dots{flex-shrink:0;width:36px;height:36px;border-radius:50%;background:none;border:none;color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;}
+.mebook-root .shp-dots svg{width:26px;height:26px;fill:currentColor;}
+.mebook-root .shp-prog{position:relative;height:3px;margin:6px 0 8px;background:rgba(255,255,255,.28);opacity:0;transition:opacity .2s ease;pointer-events:none;}
+.mebook-root .shp-prog.show{opacity:1;pointer-events:auto;}
+.mebook-root .shp-prog i{position:absolute;left:0;top:0;bottom:0;background:#fff;}
+.mebook-root .shp-seek{position:absolute;left:0;right:0;top:-10px;width:100%;height:24px;margin:0;opacity:0;cursor:pointer;}
+.mebook-root .shp-cbar{display:flex;align-items:center;justify-content:space-between;gap:10px;width:calc(100% - 24px);margin:0 12px calc(10px + env(safe-area-inset-bottom,0px));height:46px;padding:0 16px;border-radius:999px;border:1.5px solid rgba(255,255,255,.85);background:transparent;color:#b8bbc0;font-size:16px;font-style:italic;font-family:inherit;cursor:pointer;text-align:left;}
+.mebook-root .shp-cbar .ic{display:flex;align-items:center;gap:14px;color:#fff;font-style:normal;}
+.mebook-root .shp-cbar .ic svg{width:24px;height:24px;fill:currentColor;}
+.mebook-root .shp-cbar .gif{font-size:11px;font-weight:800;border:1.8px solid #fff;border-radius:6px;padding:1px 4px;line-height:1.1;}
 .mebook-root .shp-empty{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:#b0b3b8;text-align:center;padding:24px;font-size:15px;}
 .mebook-root .shp-empty b{color:#fff;font-size:18px;}
+
+/* ============ STORY CUBE (swipe between people) ============ */
+.mebook-root .st-stagewrap{overflow:hidden;}
+.mebook-root .st-frame{--fw:min(100cqw,56.25cqh);perspective:1100px;}
+.mebook-root .st-cube{position:absolute;inset:0;transform-style:preserve-3d;will-change:transform;}
+.mebook-root .st-face{position:absolute;inset:0;-webkit-backface-visibility:hidden;backface-visibility:hidden;}
+.mebook-root .st-face.cur{transform:translateZ(calc(var(--fw) / 2));}
+.mebook-root .st-face.nxt{transform:rotateY(90deg) translateZ(calc(var(--fw) / 2));pointer-events:none;}
+.mebook-root .st-face.prv{transform:rotateY(-90deg) translateZ(calc(var(--fw) / 2));pointer-events:none;}
 
 /* ============ 3-DOTS MENU ============ */
 .mebook-root .mb-menu-backdrop{
@@ -5891,6 +5925,9 @@ function ShortItem(props: {
   sharesCount: number
   saved: boolean
   verified: boolean
+  showFollow: boolean
+  following: boolean
+  onFollow: () => void
   likeProps: any
   onComment: () => void
   onShare: () => void
@@ -6109,12 +6146,10 @@ function ShortItem(props: {
     } catch {}
   }
 
-  const ar = crop ? 9 / 16 / (crop.b - crop.t) : 9 / 16
   const frameStyle: React.CSSProperties | undefined = crop
     ? {
-        height: `${100 / (crop.b - crop.t)}%`,
-        top: `${-(crop.t / (crop.b - crop.t)) * 100}%`,
-        bottom: "auto",
+        top: `calc(50% - ${((crop.t + crop.b) / 2).toFixed(4)} * 177.78cqw)`,
+        transform: "none",
       }
     : undefined
 
@@ -6124,118 +6159,163 @@ function ShortItem(props: {
     : post.authorAvatar ||
       `https://ui-avatars.com/api/?background=16a34a&color=fff&name=${encodeURIComponent(post.authorName || "User")}`
   const cap: string = post.caption || ""
-  const longCap = cap.length > 70 || cap.indexOf("\n") >= 0
+  const longCap = cap.length > 40 || cap.indexOf("\n") >= 0
   const reactColor = props.myReaction ? REACTIONS.find((r) => r.key === props.myReaction)?.color : undefined
+  const audioText: string =
+    post.music && post.music.title
+      ? `${post.music.title}${post.music.artist ? " · " + post.music.artist : ""}`
+      : `${post.authorName || "User"} · Original audio`
+  const showProg = started && !playing && !err
+  const pct = dur ? Math.min(100, (cur / dur) * 100) : 0
 
   return (
-    <div className="shp-box">
-      <div className="shp-stage" style={{ ["--ar" as any]: ar } as React.CSSProperties}>
-        <div className="shp-frame" style={frameStyle}>
-          <div ref={mountRef} className="shp-mount" />
-          {!started && <img className="shp-thumb" src={thumbUrl} alt="" />}
-        </div>
-
-        {active && !err && <div className="shp-tap" onClick={togglePlay} />}
-        {active && !started && !err && <div className="mb-yt-spinner" />}
-        {flash && (
-          <div className="mb-yt-flash" key={flash.n}>
-            {flash.label}
+    <div className="shp-col">
+      <div className="shp-media">
+        <div className="shp-stage">
+          <div className="shp-frame" style={frameStyle}>
+            <div ref={mountRef} className="shp-mount" />
+            {!started && <img className="shp-thumb" src={thumbUrl} alt="" />}
           </div>
-        )}
-        {err && (
-          <div className="mb-yt-err">
-            <span>This video can’t be played here.</span>
-            <a href={post.youtube?.url || `https://www.youtube.com/watch?v=${videoId}`} target="_blank" rel="noopener noreferrer">
-              Watch on YouTube
-            </a>
-          </div>
-        )}
 
-        <div className="shp-shade" />
+          {active && !err && <div className="shp-tap" onClick={togglePlay} />}
+          {active && !started && !err && <div className="mb-yt-spinner" />}
+          {flash && (
+            <div className="mb-yt-flash" key={flash.n}>
+              {flash.label}
+            </div>
+          )}
+          {err && (
+            <div className="mb-yt-err">
+              <span>This video can’t be played here.</span>
+              <a href={post.youtube?.url || `https://www.youtube.com/watch?v=${videoId}`} target="_blank" rel="noopener noreferrer">
+                Watch on YouTube
+              </a>
+            </div>
+          )}
 
-        <div className="shp-info">
-          <div className="shp-user">
+          <div className="shp-shade" />
+
+          <div className="shp-info">
             <img src={avatar} alt="" onClick={props.onOpenProfile} />
-            <div style={{ minWidth: 0 }}>
+            <div className="shp-itxt">
               <div className="shp-uname" onClick={props.onOpenProfile}>
                 <span>{post.authorName || "User"}</span>
-                {props.verified && (
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="#22c55e" style={{ flexShrink: 0 }}>
+                {props.verified ? (
+                  <svg width="15" height="15" viewBox="0 0 24 24" style={{ fill: "#22c55e" }}>
                     <path d="M23 12l-2.44-2.79.34-3.69-3.61-.82-1.89-3.2L12 2.96 8.6 1.5 6.71 4.69l-3.61.82.34 3.69L1 12l2.44 2.79-.34 3.7 3.61.82L8.6 22.5l3.4-1.47 3.4 1.46 1.89-3.19 3.61-.82-.34-3.69L23 12zm-12.91 4.72l-3.8-3.81 1.48-1.48 2.32 2.33 5.85-5.87 1.48 1.48-7.33 7.35z" />
+                  </svg>
+                ) : (
+                  <svg width="15" height="15" viewBox="0 0 24 24">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z" />
                   </svg>
                 )}
               </div>
-              <div className="shp-utime">{post.timeText || timeAgo(post.createdAt)}</div>
+              <div className="shp-audio">
+                <svg viewBox="0 0 24 24">
+                  <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" />
+                </svg>
+                <span>{audioText}</span>
+              </div>
             </div>
-          </div>
-          {cap && (
-            <div className={`shp-cap${expanded ? " open" : ""}`} onClick={() => longCap && setExpanded((v) => !v)}>
-              {cap}
-            </div>
-          )}
-        </div>
-
-        <div className="shp-acts">
-          <button
-            className="shp-act"
-            data-like-btn={post.id}
-            style={reactColor ? { color: reactColor } : undefined}
-            title="Tap to like, hold for reactions"
-            {...(props.likeProps as any)}
-          >
-            {props.myReaction ? (
-              <ReactionIcon k={props.myReaction} size={30} />
-            ) : (
-              <svg viewBox="0 0 24 24">
-                <path d="M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-1.91z" />
-              </svg>
+            {props.showFollow && (
+              <button className={`shp-follow${props.following ? " on" : ""}`} onClick={props.onFollow}>
+                {props.following ? "Following" : "Follow"}
+              </button>
             )}
-            <span>{shFmt(props.likesCount)}</span>
-          </button>
-          <button className="shp-act" onClick={props.onComment} title="Comments">
-            <svg viewBox="0 0 24 24">
-              <path d="M21.99 4c0-1.1-.89-2-1.99-2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14l4 4-.01-18z" />
-            </svg>
-            <span>{shFmt(props.commentsCount)}</span>
-          </button>
-          <button className="shp-act" onClick={props.onShare} title="Share">
-            <svg viewBox="0 0 24 24">
-              <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z" />
-            </svg>
-            <span>{shFmt(props.sharesCount)}</span>
-          </button>
-          <button className={`shp-act${props.saved ? " on" : ""}`} onClick={props.onSave} title={props.saved ? "Unsave" : "Save"}>
-            <svg viewBox="0 0 24 24">
-              {props.saved ? (
-                <path d="M17 3H7c-1.1 0-1.99.9-1.99 2L5 21l7-3 7 3V5c0-1.1-.9-2-2-2z" />
+          </div>
+
+          <div className="shp-acts">
+            <button
+              className="shp-act"
+              data-like-btn={post.id}
+              style={reactColor ? { color: reactColor } : undefined}
+              title="Tap to like, hold for reactions"
+              {...(props.likeProps as any)}
+            >
+              {props.myReaction ? (
+                <ReactionIcon k={props.myReaction} size={30} />
               ) : (
-                <path d="M17 3H7c-1.1 0-2 .9-2 2v16l7-3 7 3V5c0-1.1-.9-2-2-2zm0 15l-5-2.18L7 18V5h10v13z" />
+                <svg viewBox="0 0 24 24">
+                  <path d="M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-1.91z" />
+                </svg>
               )}
-            </svg>
-            <span>{props.saved ? "Saved" : "Save"}</span>
-          </button>
-          <button className="shp-act" onClick={props.onMore} title="More">
+              <span>{shFmt(props.likesCount)}</span>
+            </button>
+            <button className="shp-act" onClick={props.onComment} title="Comments">
+              <svg viewBox="0 0 24 24">
+                <path d="M21.99 4c0-1.1-.89-2-1.99-2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14l4 4-.01-18z" />
+              </svg>
+              <span>{shFmt(props.commentsCount)}</span>
+            </button>
+            <button className="shp-act" onClick={props.onShare} title="Share">
+              <svg viewBox="0 0 24 24">
+                <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z" />
+              </svg>
+              <span>{shFmt(props.sharesCount)}</span>
+            </button>
+            <button className={`shp-act${props.saved ? " on" : ""}`} onClick={props.onSave} title={props.saved ? "Unsave" : "Save"}>
+              <svg viewBox="0 0 24 24">
+                {props.saved ? (
+                  <path d="M17 3H7c-1.1 0-1.99.9-1.99 2L5 21l7-3 7 3V5c0-1.1-.9-2-2-2z" />
+                ) : (
+                  <path d="M17 3H7c-1.1 0-2 .9-2 2v16l7-3 7 3V5c0-1.1-.9-2-2-2zm0 15l-5-2.18L7 18V5h10v13z" />
+                )}
+              </svg>
+              <span>{props.saved ? "Saved" : "Save"}</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div className="shp-foot">
+        <div className="shp-caprow">
+          {cap ? (
+            <div className={`shp-capwrap${expanded ? " open" : ""}`} onClick={() => longCap && setExpanded((v) => !v)}>
+              <span className="shp-captext">{cap}</span>
+              {longCap && !expanded && <span className="shp-more">more</span>}
+            </div>
+          ) : (
+            <div className="shp-capwrap" />
+          )}
+          <button className="shp-dots" onClick={props.onMore} title="More" aria-label="More">
             <svg viewBox="0 0 24 24">
               <path d="M6 10c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm12 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-6 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
             </svg>
           </button>
         </div>
 
-        {active && started && !err && (
-          <input
-            className="shp-seek"
-            type="range"
-            min={0}
-            max={dur || 1}
-            step={0.1}
-            value={Math.min(cur, dur || 1)}
-            onChange={(e) => {
-              const t = Number(e.target.value)
-              setCur(t)
-              try { playerRef.current?.seekTo(t, true) } catch {}
-            }}
-          />
-        )}
+        {/* time line: only visible while the video is paused */}
+        <div className={`shp-prog${showProg ? " show" : ""}`}>
+          <i style={{ width: pct + "%" }} />
+          {showProg && (
+            <input
+              className="shp-seek"
+              type="range"
+              min={0}
+              max={dur || 1}
+              step={0.1}
+              value={Math.min(cur, dur || 1)}
+              onChange={(e) => {
+                const t = Number(e.target.value)
+                setCur(t)
+                try { playerRef.current?.seekTo(t, true) } catch {}
+              }}
+            />
+          )}
+        </div>
+
+        <button className="shp-cbar" onClick={props.onComment}>
+          <span>Add a comment</span>
+          <span className="ic">
+            <svg viewBox="0 0 24 24">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10h5v-2h-5c-4.34 0-8-3.66-8-8s3.66-8 8-8 8 3.66 8 8v1.43c0 .79-.71 1.57-1.5 1.57s-1.5-.78-1.5-1.57V12c0-2.76-2.24-5-5-5s-5 2.24-5 5 2.24 5 5 5c1.38 0 2.64-.56 3.54-1.47.65.89 1.77 1.47 2.96 1.47 1.97 0 3.5-1.6 3.5-3.57V12c0-5.52-4.48-10-10-10zm0 13c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3z" />
+            </svg>
+            <svg viewBox="0 0 24 24">
+              <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm3.5-9c.83 0 1.5-.67 1.5-1.5S16.33 8 15.5 8 14 8.67 14 9.5s.67 1.5 1.5 1.5zm-7 0c.83 0 1.5-.67 1.5-1.5S9.33 8 8.5 8 7 8.67 7 9.5 7.67 11 8.5 11zm3.5 6.5c2.33 0 4.31-1.46 5.11-3.5H6.89c.8 2.04 2.78 3.5 5.11 3.5z" />
+            </svg>
+            <span className="gif">GIF</span>
+          </span>
+        </button>
       </div>
     </div>
   )
@@ -6250,6 +6330,8 @@ function ShortsPage(props: {
   startPostId?: string
   likeBtnProps: (postId: string) => any
   isVerifiedPost: (p: any) => boolean
+  isFollowing: (uid: string) => boolean
+  onToggleFollow: (uid: string) => void
   onComment: (postId: string) => void
   onShare: (postId: string) => void
   onSave: (postId: string) => void
@@ -6393,6 +6475,9 @@ function ShortsPage(props: {
                     sharesCount={p.shares || 0}
                     saved={props.savedIds.includes(p.id)}
                     verified={props.isVerifiedPost(p)}
+                    showFollow={!!p.authorId && p.authorId !== "admin" && !p.isOfficial && p.authorId !== props.me?.uid}
+                    following={props.isFollowing(p.authorId)}
+                    onFollow={() => props.onToggleFollow(p.authorId)}
                     likeProps={props.likeBtnProps(p.id)}
                     onComment={() => props.onComment(p.id)}
                     onShare={() => props.onShare(p.id)}
@@ -6453,6 +6538,97 @@ function ShortsPage(props: {
           </div>
         </div>
       )}
+    </div>
+  )
+}
+
+/* ============================================================
+NAV LINE: glowing green line that bends around the active tab and slides smoothly
+============================================================ */
+function NavLine({ index, count }: { index: number; count: number }) {
+  const wrapRef = useRef<HTMLDivElement>(null)
+  const [size, setSize] = useState({ w: 0, h: 0 })
+  const posRef = useRef(index < 0 ? 0 : index)
+  const ampRef = useRef(index < 0 ? 0 : 1)
+  const [anim, setAnim] = useState({ pos: posRef.current, amp: ampRef.current })
+
+  useEffect(() => {
+    const el = wrapRef.current
+    if (!el) return
+    const upd = () => setSize({ w: el.clientWidth, h: el.clientHeight })
+    upd()
+    let ro: any = null
+    if (typeof ResizeObserver !== "undefined") {
+      ro = new ResizeObserver(upd)
+      ro.observe(el)
+    }
+    window.addEventListener("resize", upd)
+    return () => {
+      if (ro) ro.disconnect()
+      window.removeEventListener("resize", upd)
+    }
+  }, [])
+
+  useEffect(() => {
+    const toPos = index < 0 ? posRef.current : index
+    const toAmp = index < 0 ? 0 : 1
+    const fromAmp = ampRef.current
+    const fromPos = posRef.current
+    if (fromPos === toPos && fromAmp === toAmp) return
+    const startPos = fromAmp < 0.05 ? toPos : fromPos
+    const t0 = performance.now()
+    const dur = 520
+    let raf = 0
+    const step = (now: number) => {
+      const t = Math.min(1, (now - t0) / dur)
+      const c1 = 1.1
+      const back = 1 + (c1 + 1) * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2)
+      const cubic = 1 - Math.pow(1 - t, 3)
+      posRef.current = startPos + (toPos - startPos) * back
+      ampRef.current = fromAmp + (toAmp - fromAmp) * cubic
+      if (t >= 1) {
+        posRef.current = toPos
+        ampRef.current = toAmp
+      }
+      setAnim({ pos: posRef.current, amp: ampRef.current })
+      if (t < 1) raf = requestAnimationFrame(step)
+    }
+    raf = requestAnimationFrame(step)
+    return () => cancelAnimationFrame(raf)
+  }, [index])
+
+  const W = size.w
+  const H = size.h
+  let content: React.ReactNode = null
+  if (W > 0 && H > 0 && count > 0) {
+    const tw = W / count
+    const cx = Math.max(tw / 2, Math.min(W - tw / 2, (anim.pos + 0.5) * tw))
+    const B = H - 2
+    const T = B - (B - 3) * anim.amp
+    const f = 10
+    const k = f * 1.3
+    const hw = Math.max(2, tw / 2 - 2 * f)
+    const x1 = cx - hw - 2 * f
+    const x2 = cx - hw
+    const x3 = cx + hw
+    const x4 = cx + hw + 2 * f
+    const n = (v: number) => v.toFixed(2)
+    const bump =
+      `C${n(x1 + k)} ${n(B)} ${n(x2 - k)} ${n(T)} ${n(x2)} ${n(T)} ` +
+      `H${n(x3)} ` +
+      `C${n(x3 + k)} ${n(T)} ${n(x4 - k)} ${n(B)} ${n(x4)} ${n(B)}`
+    const line = `M0 ${n(B)} H${n(x1)} ${bump} H${n(W)}`
+    const area = `M${n(x1)} ${n(B)} ${bump} Z`
+    content = (
+      <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`}>
+        <path className="fill" d={area} />
+        <path className="stroke" d={line} />
+      </svg>
+    )
+  }
+  return (
+    <div className="mb-nav-line-wrap" ref={wrapRef} aria-hidden="true">
+      {content}
     </div>
   )
 }
@@ -7626,6 +7802,8 @@ function StoryViewer(props: {
   const [sheet, setSheet] = useState<string | null>(null)
   const [replyText, setReplyText] = useState("")
   const [replyFocus, setReplyFocus] = useState(false)
+  const [cube, setCube] = useState<{ rot: number; anim: boolean }>({ rot: 0, anim: false })
+  const busyRef = useRef(false)
   const [flash, setFlash] = useState<any>(null)
   const [sentTo, setSentTo] = useState<string[]>([])
   const audioRef = useRef<HTMLAudioElement | null>(null)
@@ -7647,17 +7825,34 @@ function StoryViewer(props: {
     return i < 0 ? 0 : i
   }
 
-  const nextGroup = () => {
+  const findGroup = (dir: number) => {
     const s = sRef.current
     const ord = P.current.order
-    for (let i = ord.indexOf(s.uid) + 1; i < ord.length; i++) {
-      const ng = P.current.getGroup(ord[i])
-      if (ng && ng.stories.length) {
-        setUid(ng.uid)
-        setSi(startOf(ng))
-        return
-      }
+    for (let i = ord.indexOf(s.uid) + dir; i >= 0 && i < ord.length; i += dir) {
+      const gr = P.current.getGroup(ord[i])
+      if (gr && gr.stories.length) return gr
     }
+    return null
+  }
+
+  // cube turn to the next (dir 1) / previous (dir -1) person's stories
+  const goGroup = (dir: number, toLast = false): boolean => {
+    if (busyRef.current) return true
+    const tg = findGroup(dir)
+    if (!tg) return false
+    busyRef.current = true
+    setCube({ rot: dir > 0 ? -90 : 90, anim: true })
+    setTimeout(() => {
+      setUid(tg.uid)
+      setSi(toLast ? tg.stories.length - 1 : startOf(tg))
+      setCube({ rot: 0, anim: false })
+      busyRef.current = false
+    }, 320)
+    return true
+  }
+
+  const nextGroup = () => {
+    if (goGroup(1)) return
     P.current.onClose()
   }
 
@@ -7677,15 +7872,7 @@ function StoryViewer(props: {
       setSi(s.si - 1)
       return
     }
-    const ord = P.current.order
-    for (let i = ord.indexOf(s.uid) - 1; i >= 0; i--) {
-      const pg = P.current.getGroup(ord[i])
-      if (pg && pg.stories.length) {
-        setUid(pg.uid)
-        setSi(pg.stories.length - 1)
-        return
-      }
-    }
+    if (goGroup(-1, true)) return
     progRef.current = 0
     setProg(0)
   }
@@ -7715,7 +7902,7 @@ function StoryViewer(props: {
     prevRef.current = cur ? { id: cur.id, uid, i: idx } : null
   })
 
-  const paused = hold || !!menu || !!sheet || replyFocus || !loaded
+  const paused = hold || !!menu || !!sheet || replyFocus || !loaded || cube.anim
 
   useEffect(() => {
     if (paused || !curId) return
@@ -7778,19 +7965,53 @@ function StoryViewer(props: {
   }, [])
 
   const onPD = (e: any) => {
+    if (busyRef.current) return
     if (e.target && e.target.closest && e.target.closest("[data-nav-stop]")) return
-    const gs: any = { x: e.clientX, y: e.clientY, hold: false, timer: null }
+    const r = (e.currentTarget as HTMLElement).getBoundingClientRect()
+    const gs: any = { x: e.clientX, y: e.clientY, t: Date.now(), w: r.width || 1, hold: false, drag: false, timer: null }
     gs.timer = setTimeout(() => {
       gs.hold = true
       setHold(true)
     }, 220)
     gest.current = gs
   }
+  const onPM = (e: any) => {
+    const gs = gest.current
+    if (!gs) return
+    const dx = e.clientX - gs.x
+    const dy = e.clientY - gs.y
+    if (!gs.drag) {
+      if (Math.abs(dx) > 14 && Math.abs(dx) > Math.abs(dy) * 1.2) {
+        gs.drag = true
+        clearTimeout(gs.timer)
+        setHold(true)
+        try { e.currentTarget.setPointerCapture(e.pointerId) } catch {}
+      } else return
+    }
+    let rot = (dx / gs.w) * 90
+    if (dx < 0 && !findGroup(1)) rot = Math.max(rot, -8)
+    if (dx > 0 && !findGroup(-1)) rot = Math.min(rot, 8)
+    rot = Math.max(-90, Math.min(90, rot))
+    setCube({ rot, anim: false })
+  }
+  const settleCube = () => {
+    setCube({ rot: 0, anim: true })
+    setTimeout(() => setCube((c) => (c.rot === 0 ? { rot: 0, anim: false } : c)), 320)
+  }
   const onPU = (e: any) => {
     const gs = gest.current
     if (!gs) return
     clearTimeout(gs.timer)
     gest.current = null
+    if (gs.drag) {
+      const dx = e.clientX - gs.x
+      const fast = Date.now() - gs.t < 280 && Math.abs(dx) > 40
+      const far = Math.abs(dx) > gs.w * 0.25
+      setHold(false)
+      if ((far || fast) && goGroup(dx < 0 ? 1 : -1)) return
+      settleCube()
+      return
+    }
     if (gs.hold) {
       setHold(false)
       return
@@ -7810,7 +8031,8 @@ function StoryViewer(props: {
     const gs = gest.current
     if (!gs) return
     clearTimeout(gs.timer)
-    if (gs.hold) setHold(false)
+    if (gs.hold || gs.drag) setHold(false)
+    if (gs.drag) settleCube()
     gest.current = null
   }
 
@@ -7880,6 +8102,33 @@ function StoryViewer(props: {
       </button>
     ))
 
+  const nextG = findGroup(1)
+  const prevG = findGroup(-1)
+  const ghost = (gr: any, cls: string) => {
+    const st0 = startOf(gr)
+    const gs0 = gr.stories[st0] || gr.stories[0]
+    if (!gs0) return null
+    return (
+      <div className={`st-face ${cls}`} key={cls + gr.uid}>
+        <StoryStage key={gs0.id} image={gs0.image} filter={gs0.filter} overlays={gs0.overlays} />
+        <div className="st-progress">
+          {gr.stories.map((s: any, i: number) => (
+            <div className="st-seg" key={s.id}>
+              <i style={{ width: (i < st0 ? 100 : 0) + "%" }} />
+            </div>
+          ))}
+        </div>
+        <div className="st-vhead">
+          <img className="st-vav" src={props.avatarUrl({ photoURL: gr.photoURL, name: gr.name })} alt="" />
+          <div className="st-vname">
+            {gr.uid === me.uid ? "Your story" : gr.name}
+            <span className="st-vtime">{stAgo(gs0.createdMs)}</span>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   const viewerCount = cur ? Object.keys(cur.viewers || {}).length : 0
   const myRx = cur && cur.reactions ? cur.reactions[me.uid] : ""
 
@@ -7889,7 +8138,16 @@ function StoryViewer(props: {
       <div className="st-col">
         <div className="st-stagewrap">
           {cur && (
-            <div className="st-frame" style={{ touchAction: "none" }} onPointerDown={onPD} onPointerUp={onPU} onPointerCancel={onPC}>
+            <div className="st-frame" style={{ touchAction: "none" }} onPointerDown={onPD} onPointerMove={onPM} onPointerUp={onPU} onPointerCancel={onPC}>
+              <div
+                className="st-cube"
+                style={{
+                  transform: `translateZ(calc(var(--fw) / -2)) rotateY(${cube.rot}deg)`,
+                  transition: cube.anim ? "transform .32s cubic-bezier(.22,.8,.3,1)" : "none",
+                }}
+              >
+              {prevG && ghost(prevG, "prv")}
+              <div className="st-face cur">
               <StoryStage
                 key={cur.id}
                 image={cur.image}
@@ -7930,11 +8188,11 @@ function StoryViewer(props: {
                   {isMine ? "Your story" : g.name}
                   <span className="st-vtime">{stAgo(cur.createdMs)}</span>
                 </div>
-                <button className="st-ibtn" onClick={props.onClose}>
-                  <StIco d={ST_IC.down} size={28} />
-                </button>
                 <button className="st-ibtn" onClick={() => setMenu(isMine ? "own" : "other")}>
                   <StIco d={ST_IC.more} size={26} />
+                </button>
+                <button className="st-ibtn" onClick={props.onClose} aria-label="Close story" title="Close">
+                  <StIco d={ST_IC.close} size={28} />
                 </button>
               </div>
 
@@ -7951,6 +8209,9 @@ function StoryViewer(props: {
                 </div>
               )}
               {cur.aiLabel && <div className="st-aipill">AI info</div>}
+              </div>
+              {nextG && ghost(nextG, "nxt")}
+              </div>
             </div>
           )}
         </div>
@@ -15859,6 +16120,18 @@ const handleChatTyping = (value: string) => {
 
       <nav className="mb-navbar" aria-label="Main navigation">
         <div className="mb-navbar-inner">
+          <NavLine
+            index={
+              currentView === "home" ? 0
+              : currentView === "shorts" ? 1
+              : currentView === "friends" || currentView === "friends-list" ? 2
+              : currentView === "messages" ? 3
+              : currentView === "notifications" ? 4
+              : currentView === "profile" ? 5
+              : -1
+            }
+            count={6}
+          />
           <button
             className={`mb-nav-tab${currentView === "home" ? " active" : ""}`}
             title="Home"
@@ -16312,6 +16585,8 @@ const handleChatTyping = (value: string) => {
               startPostId={currentParams.postId}
               likeBtnProps={likeBtnProps}
               isVerifiedPost={(p: any) => isVerified(p)}
+              isFollowing={(uid: string) => !unfollowedSet.has(uid)}
+              onToggleFollow={(uid: string) => handleUnfollow(uid)}
               onComment={(id: string) => setEngageSheet({ postId: id, mode: "comments", tab: "all" })}
               onShare={(id: string) => setShareSheetPostId(id)}
               onSave={(id: string) => handlePostMenuAction("save", id)}

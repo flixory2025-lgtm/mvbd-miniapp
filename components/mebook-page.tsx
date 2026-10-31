@@ -1877,7 +1877,7 @@ background:var(--hover);
 
 /* ============ NOTIFICATIONS PAGE ============ */
 .mebook-root .notif-page-wrap{border-radius:12px;box-shadow:var(--shadow);overflow:hidden;margin-bottom:16px;}
-.mebook-root .notif-page-head{padding:16px;border-bottom:1px solid var(--border);font-size:18px;font-weight:800;display:flex;align-items:center;justify-content:space-between;}
+.mebook-root .notif-page-head{padding:12px 16px;border-bottom:1px solid var(--border);font-size:17px;font-weight:800;display:flex;align-items:center;justify-content:space-between;}
 .mebook-root .notif-mark-all{padding:6px 12px;border-radius:8px;font-size:12.5px;font-weight:600;background:var(--input-bg);color:var(--text-muted);transition:background .18s;}
 .mebook-root .notif-list{padding:0;}
 .mebook-root .notif-item{display:flex;gap:12px;padding:14px 16px;border-bottom:1px solid var(--border);transition:background .18s;cursor:pointer;position:relative;}
@@ -1949,7 +1949,7 @@ background:var(--hover);
 .mebook-root .fl-head-back{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:transparent;color:var(--text);flex-shrink:0;transition:background .15s;}
 .mebook-root .fl-head-back:hover{background:var(--hover);}
 .mebook-root .fl-head-back svg{width:24px;height:24px;fill:currentColor;}
-.mebook-root .fl-head-title{font-size:22px;font-weight:800;color:var(--text);flex:1;letter-spacing:-.4px;}
+.mebook-root .fl-head-title{font-size:19px;font-weight:800;color:var(--text);flex:1;letter-spacing:-.4px;}
 .mebook-root .fl-head-icon{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--text);flex-shrink:0;}
 .mebook-root .fl-head-icon svg{width:22px;height:22px;fill:currentColor;}
 .mebook-root .fl-search{display:flex;align-items:center;gap:10px;background:var(--input-bg);border-radius:22px;padding:11px 16px;margin-bottom:16px;}
@@ -1957,7 +1957,7 @@ background:var(--hover);
 .mebook-root .fl-search input{border:none;outline:none;background:transparent;flex:1;font-size:15px;color:var(--text);}
 .mebook-root .fl-search input::placeholder{color:var(--text-muted);}
 .mebook-root .fl-stats-row{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px;padding:0 4px;}
-.mebook-root .fl-stats-title{font-size:20px;font-weight:800;color:var(--text);letter-spacing:-.3px;}
+.mebook-root .fl-stats-title{font-size:17px;font-weight:800;color:var(--text);letter-spacing:-.3px;}
 .mebook-root .fl-stats-sub{font-size:14px;color:var(--text-muted);margin-top:2px;font-weight:500;}
 .mebook-root .fl-sort{font-size:14.5px;font-weight:700;color:#3b82f6;padding:6px 4px;flex-shrink:0;}
 .mebook-root.dark-mode .fl-sort{color:#60a5fa;}
@@ -2013,7 +2013,7 @@ background:var(--hover);
 .mebook-root .mb-profile-avatar-wrap:hover .mb-profile-avatar-add{opacity:1;}
 .mebook-root .mb-profile-avatar-add svg{width:32px;height:32px;fill:#fff;}
 .mebook-root .mb-profile-name-center{text-align:center;padding:16px 20px 4px;}
-.mebook-root .mb-profile-name{font-size:32px;font-weight:800;line-height:1.2;color:var(--text);display:inline-flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:center;}
+.mebook-root .mb-profile-name{font-size:24px;font-weight:800;line-height:1.2;color:var(--text);display:inline-flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:center;}
 .mebook-root .mb-profile-sub{text-align:center;font-size:15px;color:var(--text-muted);margin-top:6px;font-weight:500;letter-spacing:.2px;}
 .mebook-root .mb-profile-sub b{color:var(--text);font-weight:700;}
 .mebook-root .mb-profile-meta-row{display:flex;justify-content:center;align-items:center;gap:18px;flex-wrap:wrap;padding:10px 20px 4px;font-size:14px;color:var(--text-muted);}
@@ -2070,8 +2070,8 @@ background:var(--hover);
 .mebook-root .mb-contact img{width:36px;height:36px;border-radius:50%;object-fit:cover;background:#cbd5e1;}
 .mebook-root .mb-contact-name{font-size:14.5px;font-weight:600;}
 .mebook-root .mb-online{position:absolute;bottom:7px;left:34px;width:11px;height:11px;border-radius:50%;background:var(--green-light);border:2px solid var(--card);}
-.mebook-root .mb-page-title{font-size:24px;font-weight:800;margin-bottom:16px;display:flex;align-items:center;gap:10px;color:var(--text);}
-.mebook-root .mb-page-title svg{width:26px;height:26px;fill:var(--green);}
+.mebook-root .mb-page-title{font-size:20px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:10px;color:var(--text);}
+.mebook-root .mb-page-title svg{width:22px;height:22px;fill:var(--green);}
 .mebook-root .mb-search-box{display:flex;align-items:center;gap:10px;border-radius:24px;padding:10px 16px;box-shadow:var(--shadow);margin-bottom:18px;background:var(--card);}
 .mebook-root .mb-search-box svg{width:20px;height:20px;fill:var(--text-muted);flex-shrink:0;}
 .mebook-root .mb-search-box input{border:none;outline:none;flex:1;font-size:15px;background:transparent;color:var(--text);}
@@ -2088,7 +2088,7 @@ background:var(--hover);
 .mebook-root .mb-switch input:checked+.mb-slider{background:var(--green);}
 .mebook-root .mb-switch input:checked+.mb-slider::before{transform:translateX(20px);}
 .mebook-root .mb-settings-group{margin-bottom:16px;}
-.mebook-root .mb-setting-row{display:flex;align-items:center;gap:14px;padding:14px 4px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .18s;border-radius:8px;color:var(--text);}
+.mebook-root .mb-setting-row{display:flex;align-items:center;gap:12px;padding:10px 4px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .18s;border-radius:8px;color:var(--text);}
 .mebook-root .mb-setting-row:last-child{border-bottom:none;}
 .mebook-root .mb-setting-ico{width:40px;height:40px;border-radius:50%;background:var(--input-bg);flex-shrink:0;display:flex;align-items:center;justify-content:center;}
 .mebook-root .mb-setting-ico svg{width:20px;height:20px;fill:var(--text);}
@@ -2098,10 +2098,10 @@ background:var(--hover);
 .mebook-root .mb-setting-row .chev{width:18px;height:18px;fill:var(--text-muted);flex-shrink:0;}
 .mebook-root .mb-theme-row{display:flex;align-items:center;justify-content:space-between;padding:14px 4px;color:var(--text);}
 .mebook-root .mb-community-hero{background:linear-gradient(135deg,#0f172a 0%,#16a34a 100%);border-radius:12px;padding:26px 22px;color:#fff;margin-bottom:18px;box-shadow:var(--shadow);}
-.mebook-root .mb-community-hero h2{font-size:23px;font-weight:800;}
+.mebook-root .mb-community-hero h2{font-size:20px;font-weight:800;}
 .mebook-root .mb-community-hero p{font-size:14px;opacity:.85;margin-top:5px;}
 .mebook-root .mb-mebook-hero{background:linear-gradient(135deg,#16a34a 0%,#0f172a 100%);border-radius:12px;padding:28px 22px;color:#fff;margin-bottom:18px;box-shadow:var(--shadow);position:relative;overflow:hidden;}
-.mebook-root .mb-mebook-hero h2{font-size:24px;font-weight:800;position:relative;z-index:1;}
+.mebook-root .mb-mebook-hero h2{font-size:20px;font-weight:800;position:relative;z-index:1;}
 .mebook-root .mb-mebook-hero p{font-size:14px;opacity:.9;margin-top:6px;position:relative;z-index:1;}
 .mebook-root .mb-mebook-badge{display:inline-block;background:rgba(255,255,255,.2);color:#fff;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;margin-top:12px;position:relative;z-index:1;backdrop-filter:blur(6px);}
 .mebook-root .mb-mebook-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px;}
@@ -2476,7 +2476,7 @@ background:var(--green);color:#fff;font-size:15px;font-weight:700;
 .mebook-root .mb-pv-rx>span{display:inline-flex;}
 .mebook-root .mb-pv-dim{position:absolute;inset:0;z-index:3;background:rgba(0,0,0,.55);animation:sheetFade .18s ease;}
 .mebook-root .mb-pv-sheet{position:absolute;left:0;right:0;bottom:0;z-index:4;background:#242526;border-radius:18px 18px 0 0;padding:10px 0 calc(14px + env(safe-area-inset-bottom,0px));animation:mbPvSlide .24s cubic-bezier(.2,.8,.2,1);}
-.mebook-root .mb-pv-sheet-item{width:100%;display:flex;align-items:center;gap:22px;padding:22px 24px;color:#e4e6eb;font-size:18px;font-weight:500;background:none;text-align:left;}
+.mebook-root .mb-pv-sheet-item{width:100%;display:flex;align-items:center;gap:16px;padding:14px 20px;color:#e4e6eb;font-size:15px;font-weight:500;background:none;text-align:left;}
 .mebook-root .mb-pv-sheet-item:active{background:rgba(255,255,255,.07);}
 .mebook-root .mb-pv-sheet-item svg{width:30px;height:30px;flex-shrink:0;}
 @keyframes mbPvSlide{from{transform:translateY(100%)}to{transform:none}}
@@ -2523,7 +2523,7 @@ opacity:0;transition:opacity .15s,background .15s;
 .mebook-root .mc-shell{position:fixed;left:0;top:0;right:0;height:100vh;height:100dvh;z-index:1200;display:flex;background:var(--card);overflow:hidden;}
 .mebook-root .mc-side{display:none;width:380px;max-width:38vw;min-width:300px;border-right:1px solid var(--border);flex-direction:column;background:var(--card);height:100%;}
 .mebook-root .mc-side-head{display:flex;align-items:center;gap:8px;padding:12px 14px 6px;flex-shrink:0;}
-.mebook-root .mc-side-head h2{font-size:22px;font-weight:800;flex:1;color:var(--text);}
+.mebook-root .mc-side-head h2{font-size:20px;font-weight:800;flex:1;color:var(--text);}
 .mebook-root .mc-side-back{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--text);}
 .mebook-root .mc-side-back:hover{background:var(--hover);}
 .mebook-root .mc-side-back svg{width:22px;height:22px;fill:currentColor;}
@@ -2622,7 +2622,7 @@ opacity:0;transition:opacity .15s,background .15s;
 /* ============================================================
    MECHAT — FULL SCREEN LIST PAGE, GLASS BACK BUTTON, TITLE
    ============================================================ */
-.mebook-root .mc-title{font-size:24px;font-weight:800;color:#fff;margin:0;letter-spacing:.2px;line-height:1.1;}
+.mebook-root .mc-title{font-size:20px;font-weight:800;color:#fff;margin:0;letter-spacing:.2px;line-height:1.1;}
 .mebook-root .mc-title span{color:#22c55e;}
 .mebook-root .mc-listpage{position:fixed;left:0;top:0;right:0;height:100vh;height:100dvh;z-index:1200;display:flex;flex-direction:column;background:var(--bg);}
 .mebook-root .mc-listpage-head{display:flex;align-items:center;gap:10px;padding:14px 16px 12px;padding-top:calc(14px + env(safe-area-inset-top,0px));background:var(--header-bg);flex-shrink:0;box-shadow:0 2px 12px rgba(0,0,0,.25);}
@@ -2684,7 +2684,7 @@ transition:transform .15s ease,box-shadow .15s ease;-webkit-tap-highlight-color:
 .mebook-root .sr-more{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--text-muted);flex-shrink:0;}
 .mebook-root .sr-more:hover{background:var(--hover);}
 .mebook-root .sr-more svg{width:22px;height:22px;fill:currentColor;}
-.mebook-root .sr-sec{display:flex;align-items:center;justify-content:space-between;padding:14px 14px 4px;font-size:17px;font-weight:700;color:var(--text);}
+.mebook-root .sr-sec{display:flex;align-items:center;justify-content:space-between;padding:12px 14px 4px;font-size:15px;font-weight:700;color:var(--text);}
 .mebook-root .sr-sec button{font-size:14px;font-weight:600;color:var(--green);}
 .mebook-root .sr-post{display:flex;gap:12px;padding:10px 14px;cursor:pointer;transition:background .12s;}
 .mebook-root .sr-post:hover{background:var(--hover);}
@@ -2708,7 +2708,7 @@ transition:transform .15s ease,box-shadow .15s ease;-webkit-tap-highlight-color:
 .mebook-root .sr-opt:disabled{opacity:.5;cursor:not-allowed;}
 .mebook-root .sr-opt-ico{width:50px;height:50px;border-radius:50%;background:var(--input-bg);color:var(--text);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
 .mebook-root .sr-opt-ico svg{width:24px;height:24px;fill:currentColor;}
-.mebook-root .sr-opt b{display:block;font-size:17px;font-weight:600;color:var(--text);}
+.mebook-root .sr-opt b{display:block;font-size:15px;font-weight:600;color:var(--text);}
 .mebook-root .sr-opt small{display:block;font-size:14px;color:var(--text-muted);margin-top:1px;}
 @keyframes srFade{from{opacity:0}to{opacity:1}}
 @keyframes srUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
@@ -2718,7 +2718,7 @@ transition:transform .15s ease,box-shadow .15s ease;-webkit-tap-highlight-color:
 .mebook-root .fbp-cover img{width:100%;height:100%;object-fit:cover;display:block;}
 .mebook-root .fbp-cover-ph{width:100%;height:100%;background:linear-gradient(135deg,#0f172a,#1e293b 60%,#14532d);}
 .mebook-root .fbp-top{position:relative;z-index:6;height:62px;margin-bottom:-62px;display:flex;align-items:center;gap:4px;padding:10px;background:linear-gradient(rgba(0,0,0,.55),transparent);transition:background .2s;}
-.mebook-root .fbp-top-title{flex:1;min-width:0;text-align:center;font-size:18px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;opacity:0;transition:opacity .2s;}
+.mebook-root .fbp-top-title{flex:1;min-width:0;text-align:center;font-size:16px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;opacity:0;transition:opacity .2s;}
 .mebook-root .fbp-top.solid{background:var(--fbp-bg);border-bottom:1px solid var(--border);}
 .mebook-root .fbp-top.solid .fbp-top-btn{color:var(--text);}
 .mebook-root .fbp-top.solid .fbp-top-title{opacity:1;}
@@ -2738,7 +2738,7 @@ transition:transform .15s ease,box-shadow .15s ease;-webkit-tap-highlight-color:
 .mebook-root .fbp-pen{background:none;border:none;color:var(--fbp-sub);cursor:pointer;padding:4px;}
 .mebook-root .fbp-viewas{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px;margin-bottom:10px;border-radius:12px;background:rgba(8,102,255,.16);color:#2d88ff;font-weight:600;font-size:14px;}
 .mebook-root .fbp-viewas button{background:#0866ff;color:#fff;border:none;border-radius:10px;padding:7px 16px;font-weight:700;cursor:pointer;}
-.mebook-root .fbp-name{display:flex;align-items:center;justify-content:center;gap:7px;flex-wrap:nowrap;font-size:25px;font-weight:800;margin-top:10px;line-height:1.2;}
+.mebook-root .fbp-name{display:flex;align-items:center;justify-content:center;gap:6px;flex-wrap:nowrap;font-size:22px;font-weight:800;margin-top:10px;line-height:1.2;}
 .mebook-root .fbp-name span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .mebook-root .fbp-name .fbp-tick{display:block;flex:none;}
 .mebook-root .fbp-stats{font-size:14.5px;color:var(--fbp-sub);margin-top:4px;}
@@ -2755,10 +2755,10 @@ transition:transform .15s ease,box-shadow .15s ease;-webkit-tap-highlight-color:
 .mebook-root .fbp-tab{padding:10px 20px;border-radius:24px;font-weight:700;font-size:15.5px;color:var(--fbp-sub);background:transparent;border:none;cursor:pointer;}
 .mebook-root .fbp-tab.active{background:rgba(8,102,255,.16);color:#2d88ff;}
 .mebook-root .fbp-left{text-align:left;}
-.mebook-root .fbp-sec-title{font-size:21px;font-weight:800;margin:18px 0 8px;}
+.mebook-root .fbp-sec-title{font-size:17px;font-weight:800;margin:18px 0 8px;}
 .mebook-root .fbp-sec-head{display:flex;align-items:center;justify-content:space-between;margin:22px 0 10px;}
 .mebook-root .fbp-seeall{color:#2d88ff;font-weight:600;font-size:16px;cursor:pointer;}
-.mebook-root .fbp-row{display:flex;align-items:center;gap:20px;padding:12px 8px;font-size:17px;}
+.mebook-root .fbp-row{display:flex;align-items:center;gap:14px;padding:9px 8px;font-size:15px;}
 .mebook-root .fbp-fstrip{display:flex;gap:12px;overflow-x:auto;padding-bottom:6px;}
 .mebook-root .fbp-fcard{flex:0 0 84px;text-align:center;cursor:pointer;font-size:13px;}
 .mebook-root .fbp-fcard img{width:84px;height:84px;border-radius:50%;object-fit:cover;display:block;margin-bottom:6px;}
@@ -2780,12 +2780,12 @@ transition:transform .15s ease,box-shadow .15s ease;-webkit-tap-highlight-color:
 .mebook-root .fbp-album small{color:var(--fbp-sub);font-size:13px;}
 .mebook-root .fbp-menu-head{display:flex;align-items:center;gap:6px;padding:10px 8px;border-bottom:1px solid var(--border);}
 .mebook-root .fbp-menu-back{width:42px;height:42px;display:flex;align-items:center;justify-content:center;border-radius:50%;background:none;border:none;color:var(--text);cursor:pointer;}
-.mebook-root .fbp-menu-title{flex:1;text-align:center;font-size:19px;font-weight:700;padding-right:42px;}
-.mebook-root .fbp-mi{display:flex;align-items:center;gap:18px;width:100%;text-align:left;padding:18px 16px;border:none;border-bottom:1px solid var(--border);background:none;color:var(--text);font-size:18px;font-weight:500;cursor:pointer;}
+.mebook-root .fbp-menu-title{flex:1;text-align:center;font-size:17px;font-weight:700;padding-right:42px;}
+.mebook-root .fbp-mi{display:flex;align-items:center;gap:14px;width:100%;text-align:left;padding:12px 16px;border:none;border-bottom:1px solid var(--border);background:none;color:var(--text);font-size:15px;font-weight:500;cursor:pointer;}
 .mebook-root .fbp-mi:active{background:var(--hover);}
 .mebook-root .fbp-mi.blue{color:#2d88ff;}
 .mebook-root .fbp-linkcard{padding:20px 16px 22px;border-top:10px solid var(--bg);}
-.mebook-root .fbp-link-title{font-size:23px;font-weight:800;}
+.mebook-root .fbp-link-title{font-size:19px;font-weight:800;}
 .mebook-root .fbp-link-sub{color:var(--fbp-sub);font-size:16px;margin:4px 0 16px;padding-bottom:16px;border-bottom:1px solid var(--border);}
 .mebook-root .fbp-link-url{font-size:16px;font-weight:600;word-break:break-all;margin-bottom:16px;}
 .mebook-root .fbp-copy{width:100%;height:50px;border-radius:12px;background:var(--fbp-chip);color:var(--text);font-weight:700;font-size:16px;border:none;cursor:pointer;}
@@ -2793,17 +2793,17 @@ transition:transform .15s ease,box-shadow .15s ease;-webkit-tap-highlight-color:
 .mebook-root .fbp-sheet{--fbp-bg:#ffffff;--fbp-chip:#e4e6eb;--fbp-sub:#65676b;width:100%;max-width:640px;background:var(--fbp-bg);color:var(--text);border-radius:22px 22px 0 0;padding:10px 16px calc(22px + env(safe-area-inset-bottom,0px));animation:srUp .25s ease;max-height:86vh;overflow-y:auto;}
 .mebook-root.dark-mode .fbp-sheet{--fbp-bg:#0f0f0f;--fbp-chip:#1f1f1f;--fbp-sub:#9a9a9a;border-top:1px solid #1a1a1a;}
 .mebook-root .fbp-sheet-handle{width:56px;height:5px;border-radius:3px;background:var(--fbp-chip);margin:2px auto 14px;}
-.mebook-root .fbp-sheet-title{font-size:19px;font-weight:800;margin:4px 0 12px;}
-.mebook-root .fbp-srow{display:flex;align-items:center;gap:16px;width:100%;text-align:left;padding:11px 4px;background:none;border:none;color:var(--text);cursor:pointer;border-radius:12px;}
+.mebook-root .fbp-sheet-title{font-size:17px;font-weight:800;margin:4px 0 12px;}
+.mebook-root .fbp-srow{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:8px 4px;background:none;border:none;color:var(--text);cursor:pointer;border-radius:12px;}
 .mebook-root .fbp-srow:active{background:var(--hover);}
 .mebook-root .fbp-srow.danger b{color:#ef4444;}
-.mebook-root .fbp-srow-ico{width:56px;height:56px;border-radius:50%;background:var(--fbp-chip);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.mebook-root .fbp-srow-ico{width:40px;height:40px;border-radius:50%;background:var(--fbp-chip);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
 .mebook-root .fbp-srow-txt{flex:1;display:block;}
-.mebook-root .fbp-srow-txt b{display:block;font-size:18px;font-weight:700;}
-.mebook-root .fbp-srow-txt small{display:block;font-size:13.5px;color:var(--fbp-sub);margin-top:1px;}
+.mebook-root .fbp-srow-txt b{display:block;font-size:15px;font-weight:700;}
+.mebook-root .fbp-srow-txt small{display:block;font-size:12.5px;color:var(--fbp-sub);margin-top:1px;}
 .mebook-root .fbp-check{width:26px;height:26px;border-radius:50%;border:2px solid var(--fbp-sub);display:flex;align-items:center;justify-content:center;color:#fff;flex-shrink:0;}
 .mebook-root .fbp-check.on{background:#0866ff;border-color:#0866ff;}
-.mebook-root .fbp-save{width:100%;height:50px;margin-top:12px;border-radius:12px;background:#0866ff;color:#fff;font-weight:700;font-size:16px;border:none;cursor:pointer;}
+.mebook-root .fbp-save{width:100%;height:42px;margin-top:10px;border-radius:8px;background:#0866ff;color:#fff;font-weight:600;font-size:15px;border:none;cursor:pointer;}
 .mebook-root .fbp-save.secondary{background:var(--fbp-chip);color:var(--text);}
 .mebook-root .fbp-info-avs{display:flex;justify-content:center;gap:-10px;margin:6px 0 10px;}
 .mebook-root .fbp-info-avs img{width:72px;height:72px;border-radius:50%;object-fit:cover;border:3px solid var(--fbp-bg);margin:0 -6px;}
@@ -3115,6 +3115,7 @@ const FBP_ICON = {
   list: "M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z",
   review: "M3 5v14h18V5H3zm16 12H5V7h14v10zM7 9h10v2H7V9zm0 4h7v2H7v-2z",
   lock: "M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z",
+  gallery: "M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z",
   undo: "M12.5 8c-2.65 0-5.05.99-6.9 2.6L2 7v9h9l-3.62-3.62c1.39-1.16 3.16-1.88 5.12-1.88 3.54 0 6.55 2.31 7.6 5.5l2.37-.78C21.08 11.03 17.15 8 12.5 8z",
 }
 
@@ -3258,6 +3259,70 @@ function FbHighlightPicker({
         )}
         <button className="fbp-save" onClick={() => onSave(sel)}>Save</button>
         <button className="fbp-save secondary" onClick={onClose}>Cancel</button>
+      </div>
+    </div>
+  )
+}
+
+function FbPhotoSheet({
+  kind,
+  hasCurrent,
+  photos,
+  busy,
+  onSee,
+  onUpload,
+  onPick,
+  onClose,
+}: {
+  kind: "cover" | "profile"
+  hasCurrent: boolean
+  photos: string[]
+  busy: boolean
+  onSee: () => void
+  onUpload: () => void
+  onPick: (url: string) => void
+  onClose: () => void
+}) {
+  const [choosing, setChoosing] = useState(false)
+  const label = kind === "cover" ? "cover photo" : "profile picture"
+  return (
+    <div className="fbp-sheet-bg" onClick={onClose}>
+      <div className="fbp-sheet" onClick={(e) => e.stopPropagation()}>
+        <div className="fbp-sheet-handle" />
+        {!choosing ? (
+          <>
+            {hasCurrent && (
+              <button className="fbp-srow" onClick={onSee}>
+                <span className="fbp-srow-ico"><FbIco d={FBP_ICON.eye} size={20} /></span>
+                <span className="fbp-srow-txt"><b>See {label}</b></span>
+              </button>
+            )}
+            <button className="fbp-srow" onClick={onUpload} disabled={busy}>
+              <span className="fbp-srow-ico"><FbIco d={FBP_ICON.camera} size={20} /></span>
+              <span className="fbp-srow-txt"><b>Upload Photo</b></span>
+            </button>
+            <button className="fbp-srow" onClick={() => setChoosing(true)}>
+              <span className="fbp-srow-ico"><FbIco d={FBP_ICON.gallery} size={20} /></span>
+              <span className="fbp-srow-txt"><b>Choose {kind === "cover" ? "cover photo" : "profile picture"}</b></span>
+            </button>
+          </>
+        ) : (
+          <>
+            <div className="fbp-sheet-title">Choose from your photos</div>
+            {photos.length === 0 ? (
+              <div className="fbp-empty">Post a photo first, then you can choose it here</div>
+            ) : (
+              <div className="fbp-grid" style={{ margin: "10px 0" }}>
+                {photos.map((p, i) => (
+                  <div key={i} className="fbp-gi" onClick={() => onPick(p)}>
+                    <img src={p} alt="" />
+                  </div>
+                ))}
+              </div>
+            )}
+            <button className="fbp-save secondary" onClick={() => setChoosing(false)}>Back</button>
+          </>
+        )}
       </div>
     </div>
   )
@@ -7112,6 +7177,8 @@ const handleChatTyping = (value: string) => {
   const [fbSheetUser, setFbSheetUser] = useState<any>(null)
   const [fbInfo, setFbInfo] = useState<FbInfo | null>(null)
   const [fbHlOpen, setFbHlOpen] = useState(false)
+  const [photoSheet, setPhotoSheet] = useState<"" | "cover" | "profile">("")
+  const [photoBusy, setPhotoBusy] = useState(false)
   const [fbpScrolled, setFbpScrolled] = useState(false)
 
   // profile page: scroll করলে top bar solid হবে (cover জায়গায় থাকে, content উপরে উঠে)
@@ -9551,7 +9618,7 @@ const handleChatTyping = (value: string) => {
     hasEngageSheet: !!engageSheet,
     hasShareSheet: !!shareSheetPostId,
     hasFriendSheet: !!actionSheetFriend,
-    hasFbSheet: !!fbSheetUser || !!fbInfo || fbHlOpen,
+    hasFbSheet: !!fbSheetUser || !!fbInfo || fbHlOpen || !!photoSheet,
     goBack,
     closeChat,
   }
@@ -9581,7 +9648,7 @@ const handleChatTyping = (value: string) => {
       if (s.hasPhotoViewer) { window.dispatchEvent(new Event("mb-viewer-back")); return true }
       if (s.hasEngageSheet) { setEngageSheet(null); return true }
       if (s.hasShareSheet) { setShareSheetPostId(null); return true }
-      if (s.hasFbSheet) { setFbSheetUser(null); setFbInfo(null); setFbHlOpen(false); return true }
+      if (s.hasFbSheet) { setFbSheetUser(null); setFbInfo(null); setFbHlOpen(false); setPhotoSheet(""); return true }
       if (s.hasFriendSheet) { setActionSheetFriend(null); return true }
       if (s.drawerOpen) { setDrawerOpen(false); return true }
       if (s.menuOpen) { setMenuOpen(false); return true }
@@ -9851,46 +9918,47 @@ const handleChatTyping = (value: string) => {
     }
   }
 
-  const handleChangeProfilePhoto = () => {
+  const applyProfileImage = async (kind: "cover" | "profile", url: string) => {
+    const field = kind === "cover" ? "coverURL" : "photoURL"
+    const fb = await getFirebase()
+    await fb.updateDoc(fb.doc(fb.db, "users", user.uid), { [field]: url })
+    setProfile((p: any) => ({ ...(p || {}), [field]: url }))
+    if (kind === "cover") showToast("Cover photo updated!", "Your cover has been changed", "success")
+    else showToast("Profile photo updated!", "Looking great", "success")
+  }
+
+  const pickAndUploadImage = (kind: "cover" | "profile") => {
+    setPhotoSheet("")
     const inp = document.createElement("input")
     inp.type = "file"
     inp.accept = "image/*"
     inp.onchange = async () => {
       const f = inp.files?.[0]
       if (!f) return
+      setPhotoBusy(true)
       showToast("Uploading...", "Please wait", "info")
       try {
-        const fb = await getFirebase()
         const url = await cloudinaryUpload(f)
-        await fb.updateDoc(fb.doc(fb.db, "users", user.uid), { photoURL: url })
-        setProfile({ ...profile, photoURL: url })
-        showToast("Profile photo updated!", "Looking great", "success")
+        await applyProfileImage(kind, url)
       } catch (e: any) {
-        showToast("Upload failed", e.message, "error")
+        showToast("Upload failed", e?.message || "Try again", "error")
+      } finally {
+        setPhotoBusy(false)
       }
     }
     inp.click()
   }
 
-  const handleChangeCover = () => {
-    const inp = document.createElement("input")
-    inp.type = "file"
-    inp.accept = "image/*"
-    inp.onchange = async () => {
-      const f = inp.files?.[0]
-      if (!f) return
-      showToast("Uploading...", "Please wait", "info")
-      try {
-        const fb = await getFirebase()
-        const url = await cloudinaryUpload(f)
-        await fb.updateDoc(fb.doc(fb.db, "users", user.uid), { coverURL: url })
-        setProfile({ ...profile, coverURL: url })
-        showToast("Cover photo updated!", "Your cover has been changed", "success")
-      } catch (e: any) {
-        showToast("Upload failed", e.message, "error")
-      }
+  const handleChangeProfilePhoto = () => pickAndUploadImage("profile")
+  const handleChangeCover = () => pickAndUploadImage("cover")
+
+  const handlePickOwnPhoto = async (kind: "cover" | "profile", url: string) => {
+    setPhotoSheet("")
+    try {
+      await applyProfileImage(kind, url)
+    } catch (e: any) {
+      showToast("Error", e?.message || "Try again", "error")
     }
-    inp.click()
   }
 
   const handleSavePrivacy = async () => {
@@ -11088,14 +11156,14 @@ const handleChatTyping = (value: string) => {
                 )}
               </div>
             </div>
-          <div className="fbp-cover" onClick={openCoverPic}>
+          <div className="fbp-cover" onClick={() => (isOwnMode ? setPhotoSheet("cover") : openCoverPic())}>
             {u.coverURL ? <img src={u.coverURL} alt="Cover" /> : <div className="fbp-cover-ph" />}
             {isOwnMode && (
               <button
                 className="fbp-cam fbp-cam-cover"
                 onClick={(e) => {
                   e.stopPropagation()
-                  handleChangeCover()
+                  setPhotoSheet("cover")
                 }}
                 aria-label="Change cover"
               >
@@ -11106,9 +11174,9 @@ const handleChatTyping = (value: string) => {
 
           <div className="fbp-body">
             <div className="fbp-av-wrap">
-              <img className="fbp-av" src={photo} alt="Profile" onClick={openProfilePic} />
+              <img className="fbp-av" src={photo} alt="Profile" onClick={() => (isOwnMode ? setPhotoSheet("profile") : openProfilePic())} />
               {isOwnMode && (
-                <button className="fbp-cam fbp-cam-av" onClick={handleChangeProfilePhoto} aria-label="Change photo">
+                <button className="fbp-cam fbp-cam-av" onClick={() => setPhotoSheet("profile")} aria-label="Change photo">
                   <FbIco d={FBP_ICON.camera} size={22} />
                 </button>
               )}
@@ -12208,6 +12276,31 @@ const handleChatTyping = (value: string) => {
         />
       )}
       <FbInfoSheet info={fbInfo} onClose={() => setFbInfo(null)} />
+      {photoSheet && (
+        <FbPhotoSheet
+          kind={photoSheet}
+          hasCurrent={photoSheet === "cover" ? !!profile?.coverURL : true}
+          photos={myPosts.filter((p: any) => p.image && !p.youtube && !p.binnedAt).map((p: any) => p.image)}
+          busy={photoBusy}
+          onClose={() => setPhotoSheet("")}
+          onSee={() => {
+            const myAv = avatarUrl(profile)
+            const src = photoSheet === "cover" ? profile?.coverURL : myAv
+            setPhotoSheet("")
+            if (src)
+              setPhotoViewer({
+                src,
+                caption: "",
+                name: profile?.name || "User",
+                avatar: myAv,
+                time: "",
+                stats: { likes: 0, comments: 0, shares: 0, reactionKeys: [] },
+              })
+          }}
+          onUpload={() => pickAndUploadImage(photoSheet)}
+          onPick={(url) => handlePickOwnPhoto(photoSheet, url)}
+        />
+      )}
 
       {/* Friend action sheet */}
       {actionSheetFriend && (
@@ -14173,7 +14266,7 @@ const handleChatTyping = (value: string) => {
 
               <div
                 className="mb-card-title"
-                style={{ fontSize: 18, marginBottom: 10, padding: "0 4px", display: "flex", alignItems: "center" }}
+                style={{ fontSize: 16, marginBottom: 10, padding: "0 4px", display: "flex", alignItems: "center" }}
               >
                 My Posts
                 <button className="rx-manage-open" onClick={() => setManageOpen(true)}>

@@ -2731,7 +2731,8 @@ transition:transform .15s ease,box-shadow .15s ease;-webkit-tap-highlight-color:
 .mebook-root .fbp-av{width:150px;height:150px;border-radius:50%;object-fit:cover;border:4px solid var(--fbp-chip);position:relative;cursor:pointer;background:#222;display:block;}
 .mebook-root .fbp-cam{position:absolute;display:flex;align-items:center;justify-content:center;border:none;cursor:pointer;color:#fff;}
 .mebook-root .fbp-cam-av{right:2px;bottom:6px;width:38px;height:38px;border-radius:50%;background:#2a2a2a;border:2px solid var(--fbp-bg);}
-.mebook-root .fbp-cam-cover{right:14px;bottom:36px;width:auto;height:auto;background:transparent;}
+.mebook-root .fbp-cam svg{display:block;width:22px;height:22px;fill:currentColor;flex:none;}
+.mebook-root .fbp-cam-cover{z-index:4;right:14px;bottom:42px;width:44px;height:44px;border-radius:50%;background:rgba(0,0,0,.6);color:#fff;border:2px solid rgba(255,255,255,.85);box-shadow:0 2px 8px rgba(0,0,0,.4);}
 .mebook-root .fbp-status{display:inline-block;margin-top:8px;padding:5px 14px;border-radius:16px;background:var(--fbp-chip);font-size:13.5px;font-weight:600;}
 .mebook-root .fbp-btn-action{width:100%;margin-bottom:12px;}
 .mebook-root .fbp-pen{background:none;border:none;color:var(--fbp-sub);cursor:pointer;padding:4px;}
@@ -2861,6 +2862,11 @@ function ToastRow({
   onDone: (id: number) => void
 }) {
   const [removing, setRemoving] = useState(false)
+  const [dx, setDx] = useState(0)
+  const [drag, setDrag] = useState(false)
+  const [gone, setGone] = useState(false)
+  const startXRef = useRef<number | null>(null)
+
   useEffect(() => {
     const timer = setTimeout(() => {
       setRemoving(true)
@@ -2869,8 +2875,50 @@ function ToastRow({
     return () => clearTimeout(timer)
   }, [toast.id, onDone])
 
+  // বাম/ডানে swipe করলে toast সরে যাবে
+  const dismiss = (dir: number) => {
+    setGone(true)
+    setDrag(false)
+    setDx(dir * (typeof window !== "undefined" ? window.innerWidth : 600))
+    setTimeout(() => onDone(toast.id), 220)
+  }
+
+  const onPD = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (gone) return
+    startXRef.current = e.clientX
+    setDrag(true)
+    try { e.currentTarget.setPointerCapture(e.pointerId) } catch {}
+  }
+  const onPM = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (startXRef.current === null || gone) return
+    setDx(e.clientX - startXRef.current)
+  }
+  const onPU = () => {
+    if (startXRef.current === null || gone) return
+    startXRef.current = null
+    if (Math.abs(dx) > 70) dismiss(dx > 0 ? 1 : -1)
+    else {
+      setDrag(false)
+      setDx(0)
+    }
+  }
+
   return (
-    <div className={`mb-toast ${toast.type}${removing ? " removing" : ""}`}>
+    <div
+      className={`mb-toast ${toast.type}${removing && !gone ? " removing" : ""}`}
+      onPointerDown={onPD}
+      onPointerMove={onPM}
+      onPointerUp={onPU}
+      onPointerCancel={onPU}
+      style={{
+        touchAction: "pan-y",
+        cursor: "grab",
+        userSelect: "none",
+        transform: dx ? `translateX(${dx}px)` : undefined,
+        opacity: gone ? 0 : dx ? Math.max(0.35, 1 - Math.abs(dx) / 320) : undefined,
+        transition: drag ? "none" : "transform .22s ease, opacity .22s ease",
+      }}
+    >
       <span className="mb-toast-icon">
         {toast.type === "success" && (
           <svg viewBox="0 0 24 24">
@@ -11051,7 +11099,7 @@ const handleChatTyping = (value: string) => {
                 }}
                 aria-label="Change cover"
               >
-                <FbIco d={FBP_ICON.camera} size={26} />
+                <FbIco d={FBP_ICON.camera} size={22} />
               </button>
             )}
           </div>

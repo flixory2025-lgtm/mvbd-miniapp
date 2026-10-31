@@ -8911,6 +8911,7 @@ const handleChatTyping = (value: string) => {
      - অন্য page এ থাকলে -> আগের page এ যাবে (শেষে Home)
      - Home এ নিচে scroll করা থাকলে -> আগে top এ যাবে
      - Home এর top এ থাকলে -> "Exit MeBook?" popup
+     (history entry site এর page.tsx manage করে, MeBook শুধু window.__mebookBack দেয়)
      ============================================================ */
   const exitingRef = useRef(false)
   const backRef = useRef<any>({})
@@ -8929,62 +8930,58 @@ const handleChatTyping = (value: string) => {
     closeChat,
   }
 
+  // MeBook থেকে বের হওয়া: site এর history model এ MeBook tab এর entry টা pop করা,
+  // site এর popstate handler তখন আগের tab এ ফিরিয়ে দেবে
   const doExit = () => {
     exitingRef.current = true
     setExitConfirmOpen(false)
-    try {
-      // আমাদের বসানো guard history entry টা সরিয়ে দেওয়া
-      if (window.history.state && window.history.state.mebookGuard) window.history.back()
-    } catch {}
-    onExit()
-    setTimeout(() => { exitingRef.current = false }, 600)
+    try { window.history.back() } catch { onExit() }
+    setTimeout(() => { exitingRef.current = false }, 800)
   }
 
+  // Site (page.tsx) এর popstate handler এটাকে ডাকে (window.__mebookBack).
+  // return true  = MeBook নিজেই back handle করেছে, MeBook এই tab এই থাকবে
+  // return false = MeBook ছেড়ে আগের tab এ যেতে হবে
   useEffect(() => {
     if (typeof window === "undefined") return
-    const GUARD = { mebookGuard: true }
+    const w = window as any
 
-    // guard entry: phone back চাপলে আসল page ছেড়ে না গিয়ে এই entry টা pop হবে
-    if (!(window.history.state && window.history.state.mebookGuard)) {
-      window.history.pushState(GUARD, "")
-    }
-
-    const onPop = () => {
-      if (exitingRef.current) return
-
-      // guard আবার বসিয়ে দিই, যাতে পরের back ও ধরা যায়
-      window.history.pushState(GUARD, "")
+    const handler = (): boolean => {
+      if (exitingRef.current) return false
 
       const s = backRef.current
 
-      if (s.exitConfirmOpen) { setExitConfirmOpen(false); return }
-      if (s.hasPhotoViewer) { window.dispatchEvent(new Event("mb-viewer-back")); return }
-      if (s.hasEngageSheet) { setEngageSheet(null); return }
-      if (s.hasShareSheet) { setShareSheetPostId(null); return }
-      if (s.hasFriendSheet) { setActionSheetFriend(null); return }
-      if (s.drawerOpen) { setDrawerOpen(false); return }
-      if (s.menuOpen) { setMenuOpen(false); return }
-      if (s.mcOpen) { s.closeChat(); return }
+      if (s.exitConfirmOpen) { setExitConfirmOpen(false); return true }
+      if (s.hasPhotoViewer) { window.dispatchEvent(new Event("mb-viewer-back")); return true }
+      if (s.hasEngageSheet) { setEngageSheet(null); return true }
+      if (s.hasShareSheet) { setShareSheetPostId(null); return true }
+      if (s.hasFriendSheet) { setActionSheetFriend(null); return true }
+      if (s.drawerOpen) { setDrawerOpen(false); return true }
+      if (s.menuOpen) { setMenuOpen(false); return true }
+      if (s.mcOpen) { s.closeChat(); return true }
 
-      // অন্য page এ থাকলে আগের page এ
+      // অন্য page এ থাকলে আগের page এ (শেষে Home)
       if (s.currentView !== "home" || s.stackLen > 1) {
         s.goBack()
-        return
+        return true
       }
 
       // Home এ কিন্তু নিচে scroll করা -> আগে top এ
       const y = Math.max(window.scrollY || 0, document.documentElement.scrollTop || 0)
       if (y > 80) {
         window.scrollTo({ top: 0, behavior: "smooth" })
-        return
+        return true
       }
 
       // Home এর top এ -> exit popup
       setExitConfirmOpen(true)
+      return true
     }
 
-    window.addEventListener("popstate", onPop)
-    return () => window.removeEventListener("popstate", onPop)
+    w.__mebookBack = handler
+    return () => {
+      if (w.__mebookBack === handler) delete w.__mebookBack
+    }
   }, [])
 
   useEffect(() => {

@@ -53,7 +53,21 @@ async function getFirebase() {
       collection: fsMod.collection,
       doc: fsMod.doc,
       setDoc: fsMod.setDoc,
-      getDoc: fsMod.getDoc,
+      getDoc: async (ref: any) => {
+        const snap = await fsMod.getDoc(ref)
+        try {
+          if (String(ref?.path || "").startsWith("users/")) {
+            return {
+              id: snap.id,
+              ref: snap.ref,
+              exists: () => snap.exists(),
+              raw: () => snap.data(),
+              data: () => normalizeUserData(snap.data()),
+            }
+          }
+        } catch {}
+        return snap
+      },
       getDocs: fsMod.getDocs,
       // addDoc wrapper: নতুন notification / chat message তৈরি হলেই push পাঠায়
       addDoc: async (ref: any, data: any) => {
@@ -2698,6 +2712,86 @@ transition:transform .15s ease,box-shadow .15s ease;-webkit-tap-highlight-color:
 .mebook-root .sr-opt small{display:block;font-size:14px;color:var(--text-muted);margin-top:1px;}
 @keyframes srFade{from{opacity:0}to{opacity:1}}
 @keyframes srUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.mebook-root .fbp{--fbp-bg:#ffffff;--fbp-chip:#e4e6eb;--fbp-sub:#65676b;background:var(--fbp-bg);color:var(--text);border-radius:14px;overflow:hidden;box-shadow:var(--shadow);}
+.mebook-root.dark-mode .fbp{--fbp-bg:#242526;--fbp-chip:#3a3b3c;--fbp-sub:#b0b3b8;}
+.mebook-root .fbp-cover{position:relative;height:210px;background:#111;overflow:hidden;cursor:pointer;}
+.mebook-root .fbp-cover img{width:100%;height:100%;object-fit:cover;display:block;}
+.mebook-root .fbp-cover-ph{width:100%;height:100%;background:linear-gradient(135deg,#0f172a,#1e293b 60%,#14532d);}
+.mebook-root .fbp-top{position:absolute;top:0;left:0;right:0;display:flex;justify-content:space-between;align-items:center;padding:10px;background:linear-gradient(rgba(0,0,0,.55),transparent);}
+.mebook-root .fbp-top-right{display:flex;gap:4px;}
+.mebook-root .fbp-top-btn{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;background:transparent;border:none;cursor:pointer;}
+.mebook-root .fbp-top-btn:active{background:rgba(255,255,255,.2);}
+.mebook-root .fbp-body{position:relative;margin-top:-26px;background:var(--fbp-bg);border-radius:26px 26px 0 0;padding:0 14px 14px;text-align:center;}
+.mebook-root .fbp-av{width:150px;height:150px;border-radius:50%;object-fit:cover;border:4px solid var(--fbp-chip);margin-top:-96px;position:relative;cursor:pointer;background:#222;display:inline-block;}
+.mebook-root .fbp-name{font-size:25px;font-weight:800;margin-top:10px;line-height:1.2;}
+.mebook-root .fbp-stats{font-size:14.5px;color:var(--fbp-sub);margin-top:4px;}
+.mebook-root .fbp-stats b{color:var(--text);}
+.mebook-root .fbp-bio{margin:14px 6px 4px;font-size:15.5px;line-height:1.45;}
+.mebook-root .fbp-actions{display:flex;gap:10px;margin:16px 0 14px;}
+.mebook-root .fbp-btn{height:46px;border-radius:12px;background:var(--fbp-chip);color:var(--text);font-weight:700;font-size:15.5px;display:flex;align-items:center;justify-content:center;gap:8px;border:none;cursor:pointer;transition:transform .1s,filter .15s;}
+.mebook-root .fbp-btn:active{transform:scale(.97);}
+.mebook-root .fbp-btn:disabled{opacity:.6;}
+.mebook-root .fbp-btn-friends{flex:1;}
+.mebook-root .fbp-btn-msg{flex:1.3;background:#0866ff;color:#fff;}
+.mebook-root .fbp-btn-poke{flex:.6;}
+.mebook-root .fbp-tabs{display:flex;gap:6px;margin:4px 0 8px;}
+.mebook-root .fbp-tab{padding:10px 20px;border-radius:24px;font-weight:700;font-size:15.5px;color:var(--fbp-sub);background:transparent;border:none;cursor:pointer;}
+.mebook-root .fbp-tab.active{background:rgba(8,102,255,.16);color:#2d88ff;}
+.mebook-root .fbp-left{text-align:left;}
+.mebook-root .fbp-sec-title{font-size:21px;font-weight:800;margin:18px 0 8px;}
+.mebook-root .fbp-sec-head{display:flex;align-items:center;justify-content:space-between;margin:22px 0 10px;}
+.mebook-root .fbp-seeall{color:#2d88ff;font-weight:600;font-size:16px;cursor:pointer;}
+.mebook-root .fbp-row{display:flex;align-items:center;gap:20px;padding:12px 8px;font-size:17px;}
+.mebook-root .fbp-fstrip{display:flex;gap:12px;overflow-x:auto;padding-bottom:6px;}
+.mebook-root .fbp-fcard{flex:0 0 84px;text-align:center;cursor:pointer;font-size:13px;}
+.mebook-root .fbp-fcard img{width:84px;height:84px;border-radius:50%;object-fit:cover;display:block;margin-bottom:6px;}
+.mebook-root .fbp-empty{padding:22px 8px;text-align:center;color:var(--fbp-sub);font-size:15px;}
+.mebook-root .fbp-posts{padding:8px 0 0;background:var(--bg);}
+.mebook-root .fbp-photos{padding:0 0 14px;}
+.mebook-root .fbp-chips{display:flex;gap:10px;overflow-x:auto;padding:6px 14px 12px;}
+.mebook-root .fbp-chip{padding:11px 20px;border-radius:24px;background:var(--fbp-chip);color:var(--text);white-space:nowrap;font-weight:600;font-size:15.5px;border:2px solid transparent;cursor:pointer;}
+.mebook-root .fbp-chip.on{border-color:#2d88ff;color:#2d88ff;}
+.mebook-root .fbp-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:3px;}
+.mebook-root .fbp-gi{aspect-ratio:1/1;overflow:hidden;background:#111;cursor:pointer;}
+.mebook-root .fbp-gi.big{grid-column:span 2;grid-row:span 2;}
+.mebook-root .fbp-gi img{width:100%;height:100%;object-fit:cover;display:block;}
+.mebook-root .fbp-albums{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;padding:4px 14px;}
+.mebook-root .fbp-album{cursor:pointer;}
+.mebook-root .fbp-album-th{aspect-ratio:1/1;border-radius:12px;background:var(--fbp-chip);overflow:hidden;margin-bottom:6px;}
+.mebook-root .fbp-album-th img{width:100%;height:100%;object-fit:cover;display:block;}
+.mebook-root .fbp-album b{display:block;font-size:15px;}
+.mebook-root .fbp-album small{color:var(--fbp-sub);font-size:13px;}
+.mebook-root .fbp-menu-head{display:flex;align-items:center;gap:6px;padding:10px 8px;border-bottom:1px solid var(--border);}
+.mebook-root .fbp-menu-back{width:42px;height:42px;display:flex;align-items:center;justify-content:center;border-radius:50%;background:none;border:none;color:var(--text);cursor:pointer;}
+.mebook-root .fbp-menu-title{flex:1;text-align:center;font-size:19px;font-weight:700;padding-right:42px;}
+.mebook-root .fbp-mi{display:flex;align-items:center;gap:18px;width:100%;text-align:left;padding:18px 16px;border:none;border-bottom:1px solid var(--border);background:none;color:var(--text);font-size:18px;font-weight:500;cursor:pointer;}
+.mebook-root .fbp-mi:active{background:var(--hover);}
+.mebook-root .fbp-mi.blue{color:#2d88ff;}
+.mebook-root .fbp-linkcard{padding:20px 16px 22px;border-top:10px solid var(--bg);}
+.mebook-root .fbp-link-title{font-size:23px;font-weight:800;}
+.mebook-root .fbp-link-sub{color:var(--fbp-sub);font-size:16px;margin:4px 0 16px;padding-bottom:16px;border-bottom:1px solid var(--border);}
+.mebook-root .fbp-link-url{font-size:16px;font-weight:600;word-break:break-all;margin-bottom:16px;}
+.mebook-root .fbp-copy{width:100%;height:50px;border-radius:12px;background:var(--fbp-chip);color:var(--text);font-weight:700;font-size:16px;border:none;cursor:pointer;}
+.mebook-root .fbp-sheet-bg{position:fixed;inset:0;z-index:3000;background:rgba(0,0,0,.55);display:flex;align-items:flex-end;justify-content:center;animation:srFade .2s ease;}
+.mebook-root .fbp-sheet{--fbp-bg:#ffffff;--fbp-chip:#e4e6eb;--fbp-sub:#65676b;width:100%;max-width:640px;background:var(--fbp-bg);color:var(--text);border-radius:22px 22px 0 0;padding:10px 16px calc(22px + env(safe-area-inset-bottom,0px));animation:srUp .25s ease;max-height:86vh;overflow-y:auto;}
+.mebook-root.dark-mode .fbp-sheet{--fbp-bg:#242526;--fbp-chip:#3a3b3c;--fbp-sub:#b0b3b8;}
+.mebook-root .fbp-sheet-handle{width:56px;height:5px;border-radius:3px;background:var(--fbp-chip);margin:2px auto 14px;}
+.mebook-root .fbp-sheet-title{font-size:19px;font-weight:800;margin:4px 0 12px;}
+.mebook-root .fbp-srow{display:flex;align-items:center;gap:16px;width:100%;text-align:left;padding:11px 4px;background:none;border:none;color:var(--text);cursor:pointer;border-radius:12px;}
+.mebook-root .fbp-srow:active{background:var(--hover);}
+.mebook-root .fbp-srow.danger b{color:#ef4444;}
+.mebook-root .fbp-srow-ico{width:56px;height:56px;border-radius:50%;background:var(--fbp-chip);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.mebook-root .fbp-srow-txt{flex:1;display:block;}
+.mebook-root .fbp-srow-txt b{display:block;font-size:18px;font-weight:700;}
+.mebook-root .fbp-srow-txt small{display:block;font-size:13.5px;color:var(--fbp-sub);margin-top:1px;}
+.mebook-root .fbp-check{width:26px;height:26px;border-radius:50%;border:2px solid var(--fbp-sub);display:flex;align-items:center;justify-content:center;color:#fff;flex-shrink:0;}
+.mebook-root .fbp-check.on{background:#0866ff;border-color:#0866ff;}
+.mebook-root .fbp-save{width:100%;height:50px;margin-top:12px;border-radius:12px;background:#0866ff;color:#fff;font-weight:700;font-size:16px;border:none;cursor:pointer;}
+.mebook-root .fbp-save.secondary{background:var(--fbp-chip);color:var(--text);}
+.mebook-root .fbp-info-avs{display:flex;justify-content:center;gap:-10px;margin:6px 0 10px;}
+.mebook-root .fbp-info-avs img{width:72px;height:72px;border-radius:50%;object-fit:cover;border:3px solid var(--fbp-bg);margin:0 -6px;}
+.mebook-root .fbp-info-sub{text-align:center;color:var(--fbp-sub);font-size:15px;margin-bottom:8px;}
+.mebook-root .fbp-info-line{text-align:center;font-size:15px;padding:4px 0;}
 `
 
 /* ============================================================
@@ -2861,6 +2955,215 @@ function FriendActionSheet({
             </div>
           </button>
         </div>
+      </div>
+    </div>
+  )
+}
+
+/* ============================================================
+USER NAME RESOLVER
+Mvbd mini app এ signup এর সময় দেওয়া full name যেকোনো field এ থাকলে
+(name / fullName / displayName / username ...) MeBook এ name হিসেবে দেখাবে
+============================================================ */
+
+function pickUserName(d: any, email?: string): string {
+  if (!d) return ""
+  const first = typeof d.firstName === "string" ? d.firstName.trim() : ""
+  const last = typeof d.lastName === "string" ? d.lastName.trim() : ""
+  const cands: any[] = [
+    d.name,
+    d.fullName,
+    d.fullname,
+    d.full_name,
+    d.FullName,
+    d.displayName,
+    d.display_name,
+    d.userName,
+    d.username,
+    d.signupName,
+    d.profile?.name,
+    d.profile?.fullName,
+    d.profile?.displayName,
+    first || last ? `${first} ${last}`.trim() : "",
+  ]
+  for (const c of cands) {
+    if (typeof c === "string" && c.trim() && c.trim() !== "User") return c.trim()
+  }
+  const em = String(email || d.email || "")
+  if (em.includes("@")) return em.split("@")[0]
+  return typeof d.name === "string" ? d.name.trim() : ""
+}
+
+function normalizeUserData(d: any, fallbackEmail?: string) {
+  if (!d) return d
+  const n = pickUserName(d, d.email || fallbackEmail)
+  if (n && d.name !== n) return { ...d, name: n }
+  return d
+}
+
+/* ============================================================
+FACEBOOK-STYLE PROFILE — friend sheet / info sheet
+============================================================ */
+
+const FBP_ICON = {
+  back: "M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z",
+  search: "M15.5 14h-.79l-.28-.27A6.47 6.47 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z",
+  dots: "M6 10c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm12 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-6 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z",
+  share: "M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z",
+  people: "M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z",
+  report: "M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-7 11h-2V7h2v6zm0 4h-2v-2h2v2z",
+  heart: "M16.5 3c-1.74 0-3.41.81-4.5 2.09C10.91 3.81 9.24 3 7.5 3 4.42 3 2 5.42 2 8.5c0 3.78 3.4 6.86 8.55 11.54L12 21.35l1.45-1.32C18.6 15.36 22 12.28 22 8.5 22 5.42 19.58 3 16.5 3zm-4.4 15.55l-.1.1-.1-.1C7.14 14.24 4 11.39 4 8.5 4 6.5 5.5 5 7.5 5c1.54 0 3.04.99 3.57 2.36h1.87C13.46 5.99 14.96 5 16.5 5c2 0 3.5 1.5 3.5 3.5 0 2.89-3.14 5.74-7.9 10.05z",
+  block: "M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8 0-1.85.63-3.55 1.69-4.9L16.9 18.31C15.55 19.37 13.85 20 12 20zm6.31-3.1L7.1 5.69C8.45 4.63 10.15 4 12 4c4.42 0 8 3.58 8 8 0 1.85-.63 3.55-1.69 4.9z",
+  invite: "M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z",
+  following: "M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z",
+  poke: "M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-2z",
+  star: "M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z",
+  personCheck: "M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5z",
+  personRemove: "M14 8c0-2.21-1.79-4-4-4S6 5.79 6 8s1.79 4 4 4 4-1.79 4-4zm3 2v2h6v-2h-6zM2 18v2h16v-2c0-2.66-5.33-4-8-4s-8 1.34-8 4z",
+  personEdit: "M10 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h10v-2.5l4-4c-1.5-.9-4.2-1.5-6-1.5zm10.7-.3l-1.4-1.4a1 1 0 0 0-1.4 0L16 14.2V17h2.8l1.9-1.9a1 1 0 0 0 0-1.4z",
+  pause: "M6 19h4V5H6v14zm8-14v14h4V5h-4z",
+  check: "M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z",
+}
+
+function FbIco({ d, size = 24 }: { d: string; size?: number }) {
+  return (
+    <svg viewBox="0 0 24 24" width={size} height={size} fill="currentColor">
+      <path d={d} />
+    </svg>
+  )
+}
+
+function FbFriendSheet({
+  friend,
+  following,
+  favourite,
+  breakActive,
+  lists,
+  onClose,
+  onUnfollow,
+  onBreakToggle,
+  onFavourite,
+  onSaveLists,
+  onUnfriend,
+}: {
+  friend: any
+  following: boolean
+  favourite: boolean
+  breakActive: boolean
+  lists: string[]
+  onClose: () => void
+  onUnfollow: () => void
+  onBreakToggle: () => void
+  onFavourite: () => void
+  onSaveLists: (l: string[]) => void
+  onUnfriend: () => void
+}) {
+  const [view, setView] = useState<"main" | "lists">("main")
+  const [sel, setSel] = useState<string[]>(lists || [])
+  if (!friend) return null
+
+  const LISTS = ["Close Friends", "Family", "Acquaintances", "Restricted"]
+
+  const Row = ({ icon, label, sub, onClick }: { icon: string; label: string; sub?: string; onClick: () => void }) => (
+    <button className="fbp-srow" onClick={onClick}>
+      <span className="fbp-srow-ico"><FbIco d={icon} size={26} /></span>
+      <span className="fbp-srow-txt">
+        <b>{label}</b>
+        {sub ? <small>{sub}</small> : null}
+      </span>
+    </button>
+  )
+
+  return (
+    <div className="fbp-sheet-bg" onClick={onClose}>
+      <div className="fbp-sheet" onClick={(e) => e.stopPropagation()}>
+        <div className="fbp-sheet-handle" />
+        {view === "main" ? (
+          <>
+            <Row
+              icon={FBP_ICON.following}
+              label={following ? "Unfollow" : "Follow"}
+              sub={following ? "Stop seeing posts but stay friends" : "See their posts in your feed again"}
+              onClick={onUnfollow}
+            />
+            <Row
+              icon={FBP_ICON.pause}
+              label={breakActive ? "End break" : "Take a break"}
+              sub={breakActive ? "Posts are hidden for now" : "Hide their posts for 30 days"}
+              onClick={onBreakToggle}
+            />
+            <Row icon={FBP_ICON.personEdit} label="Edit Friend List" onClick={() => setView("lists")} />
+            <Row
+              icon={FBP_ICON.star}
+              label={favourite ? "Remove from Favourites" : "Favourites"}
+              onClick={onFavourite}
+            />
+            <Row icon={FBP_ICON.personRemove} label="Unfriend" onClick={onUnfriend} />
+          </>
+        ) : (
+          <>
+            <div className="fbp-sheet-title">Edit Friend List</div>
+            {LISTS.map((l) => {
+              const on = sel.includes(l)
+              return (
+                <button
+                  key={l}
+                  className="fbp-srow"
+                  onClick={() => setSel((p) => (p.includes(l) ? p.filter((x) => x !== l) : [...p, l]))}
+                >
+                  <span className="fbp-srow-ico"><FbIco d={FBP_ICON.people} size={24} /></span>
+                  <span className="fbp-srow-txt"><b>{l}</b></span>
+                  <span className={`fbp-check${on ? " on" : ""}`}>{on && <FbIco d={FBP_ICON.check} size={18} />}</span>
+                </button>
+              )
+            })}
+            <button className="fbp-save" onClick={() => onSaveLists(sel)}>Save</button>
+          </>
+        )}
+      </div>
+    </div>
+  )
+}
+
+type FbInfo = {
+  title: string
+  subtitle?: string
+  avatars?: string[]
+  lines?: string[]
+  actions?: { label: string; danger?: boolean; onClick: () => void }[]
+}
+
+function FbInfoSheet({ info, onClose }: { info: FbInfo | null; onClose: () => void }) {
+  if (!info) return null
+  return (
+    <div className="fbp-sheet-bg" onClick={onClose}>
+      <div className="fbp-sheet" onClick={(e) => e.stopPropagation()}>
+        <div className="fbp-sheet-handle" />
+        {info.avatars && info.avatars.length > 0 && (
+          <div className="fbp-info-avs">
+            {info.avatars.map((a, i) => (
+              <img key={i} src={a} alt="" />
+            ))}
+          </div>
+        )}
+        <div className="fbp-sheet-title" style={{ textAlign: "center" }}>{info.title}</div>
+        {info.subtitle && <div className="fbp-info-sub">{info.subtitle}</div>}
+        {(info.lines || []).map((l, i) => (
+          <div key={i} className="fbp-info-line">{l}</div>
+        ))}
+        {(info.actions || []).map((a, i) => (
+          <button
+            key={i}
+            className={`fbp-srow${a.danger ? " danger" : ""}`}
+            onClick={() => {
+              onClose()
+              a.onClick()
+            }}
+          >
+            <span className="fbp-srow-txt"><b>{a.label}</b></span>
+          </button>
+        ))}
+        <button className="fbp-save secondary" onClick={onClose}>Close</button>
       </div>
     </div>
   )
@@ -6668,6 +6971,15 @@ const handleChatTyping = (value: string) => {
 
   const [actionSheetFriend, setActionSheetFriend] = useState<any>(null)
   const [unfollowedSet, setUnfollowedSet] = useState<Set<string>>(new Set())
+  const [fbSheetUser, setFbSheetUser] = useState<any>(null)
+  const [fbInfo, setFbInfo] = useState<FbInfo | null>(null)
+  const [fbPhotoSub, setFbPhotoSub] = useState<"" | "profile" | "cover" | "albums">("")
+  const pendingProfileRef = useRef<string | null>(null)
+
+  // unfollow list Firestore (own user doc) থেকে sync
+  useEffect(() => {
+    setUnfollowedSet(new Set<string>(Array.isArray(profile?.unfollowed) ? profile.unfollowed : []))
+  }, [profile?.unfollowed])
 
   const unsubscribersRef = useRef<Array<() => void>>([])
   const chatUnsubRef = useRef<(() => void) | null>(null)
@@ -6762,7 +7074,7 @@ const handleChatTyping = (value: string) => {
         fb.onSnapshot(usersQ, (snap: any) => {
           const arr: any[] = []
           snap.forEach((d: any) => {
-            if (d.id !== uid) arr.push({ uid: d.id, ...d.data() })
+            if (d.id !== uid) arr.push({ uid: d.id, ...normalizeUserData(d.data()) })
           })
           setFriends(arr)
           setAllUsers(arr)
@@ -6943,6 +7255,23 @@ const handleChatTyping = (value: string) => {
               })
               snap = await fb.getDoc(userRef)
             }
+            // Mvbd mini app signup এর full name খালি থাকলে এখানে ঠিক করে Firestore এ save করা হবে
+            try {
+              const rawD = typeof snap.raw === "function" ? snap.raw() : snap.data()
+              const rawName = String(rawD?.name || "").trim()
+              if (!rawName || (rawName === "User" && u.displayName)) {
+                const fixed = pickUserName(
+                  { ...rawD, name: "", displayName: rawD?.displayName || u.displayName },
+                  u.email
+                )
+                if (fixed) {
+                  await fb.updateDoc(userRef, { name: fixed })
+                  snap = await fb.getDoc(userRef)
+                }
+              }
+            } catch (e) {
+              console.warn("name sync failed", e)
+            }
             setUser(u)
             const p = snap.data()
             setProfile(p)
@@ -6952,8 +7281,9 @@ const handleChatTyping = (value: string) => {
             setPushSenderName(p.name || u.displayName || "Someone")
             const profileUnsub = fb.onSnapshot(userRef, (s: any) => {
               if (s.exists()) {
-                setProfile(s.data())
-                setPushSenderName(s.data().name)
+                const nd = normalizeUserData(s.data(), u.email)
+                setProfile(nd)
+                setPushSenderName(nd.name)
               }
             })
             unsubscribersRef.current.push(profileUnsub)
@@ -6965,9 +7295,15 @@ const handleChatTyping = (value: string) => {
 
             // notification এ click করে এলে সঠিক page খোলা (?mb=notifications ইত্যাদি)
             try {
-              const target = new URLSearchParams(window.location.search).get("mb")
+              const sp = new URLSearchParams(window.location.search)
+              const pu = sp.get("u")
+              if (sp.get("mb") === "profile" && pu) {
+                pendingProfileRef.current = pu
+                window.history.replaceState({}, "", window.location.pathname)
+              }
+              const target = sp.get("mb")
               const allowed = ["home", "notifications", "messages", "friends", "profile"]
-              if (target && allowed.includes(target)) {
+              if (target && allowed.includes(target) && !pendingProfileRef.current) {
                 setPageStack([{ view: target }])
                 window.history.replaceState({}, "", window.location.pathname)
               }
@@ -7864,17 +8200,23 @@ const handleChatTyping = (value: string) => {
      ============================================================ */
 
   const handleUnfollow = async (friendUid: string) => {
-    setUnfollowedSet((prev) => {
-      const copy = new Set(prev)
-      if (copy.has(friendUid)) {
-        copy.delete(friendUid)
-        showToast("Following again", "You'll see their posts in your feed", "success")
-      } else {
-        copy.add(friendUid)
-        showToast("Unfollowed", "You won't see their posts. They weren't notified.", "info")
-      }
-      return copy
-    })
+    const already = unfollowedSet.has(friendUid)
+    try {
+      const fb = await getFirebase()
+      await fb.updateDoc(fb.doc(fb.db, "users", user.uid), {
+        unfollowed: already ? fb.arrayRemove(friendUid) : fb.arrayUnion(friendUid),
+      })
+      setUnfollowedSet((prev) => {
+        const copy = new Set(prev)
+        if (already) copy.delete(friendUid)
+        else copy.add(friendUid)
+        return copy
+      })
+      if (already) showToast("Following again", "You'll see their posts in your feed", "success")
+      else showToast("Unfollowed", "You won't see their posts. They weren't notified.", "info")
+    } catch (e: any) {
+      showToast("Error", e.message, "error")
+    }
   }
 
   const handleBlockUser = async (friendUid: string) => {
@@ -7906,6 +8248,52 @@ const handleChatTyping = (value: string) => {
       await fb.deleteDoc(fb.doc(fb.db, "friends", fid))
       setMyFriends((prev) => prev.filter((f) => f.uid !== friendUid))
       showToast("Unfriended", `${friendName} has been removed from your friends`, "info")
+    } catch (e: any) {
+      showToast("Error", e.message, "error")
+    }
+  }
+
+  const handleToggleFavourite = async (f: any) => {
+    const isFav = (profile?.favourites || []).includes(f.uid)
+    try {
+      const fb = await getFirebase()
+      await fb.updateDoc(fb.doc(fb.db, "users", user.uid), {
+        favourites: isFav ? fb.arrayRemove(f.uid) : fb.arrayUnion(f.uid),
+      })
+      showToast(
+        isFav ? "Removed" : "Added to Favourites",
+        isFav ? `${f.name} removed from Favourites` : `${f.name} is now in your Favourites`,
+        "success"
+      )
+    } catch (e: any) {
+      showToast("Error", e.message, "error")
+    }
+  }
+
+  const handleTakeBreak = async (f: any) => {
+    const active = Number(profile?.breaks?.[f.uid] || 0) > Date.now()
+    try {
+      const fb = await getFirebase()
+      await fb.updateDoc(fb.doc(fb.db, "users", user.uid), {
+        [`breaks.${f.uid}`]: active ? 0 : Date.now() + 30 * 24 * 60 * 60 * 1000,
+      })
+      showToast(
+        active ? "Break ended" : "Taking a break",
+        active ? `You'll see ${f.name}'s posts again` : `${f.name}'s posts are hidden for 30 days`,
+        "info"
+      )
+    } catch (e: any) {
+      showToast("Error", e.message, "error")
+    }
+  }
+
+  const handleSaveFriendLists = async (f: any, lists: string[]) => {
+    try {
+      const fb = await getFirebase()
+      await fb.updateDoc(fb.doc(fb.db, "users", user.uid), {
+        [`friendLists.${f.uid}`]: lists,
+      })
+      showToast("Saved", "Friend list updated", "success")
     } catch (e: any) {
       showToast("Error", e.message, "error")
     }
@@ -8115,6 +8503,8 @@ const handleChatTyping = (value: string) => {
       }
       const userData = { uid, ...snap.data() }
       setViewingUser(userData)
+      setProfileTab("all")
+      setFbPhotoSub("")
       setViewingUserFriends([])
       setViewingUserFriendsLoading(true)
 
@@ -8171,6 +8561,87 @@ const handleChatTyping = (value: string) => {
 
   const openFriendsList = (uid: string, name: string) => {
     pushPage("friends-list", { uid, name })
+  }
+
+  // profile link (?mb=profile&u=UID) দিয়ে এলে সেই user এর profile খুলবে
+  useEffect(() => {
+    if (!user || !pendingProfileRef.current) return
+    const pu = pendingProfileRef.current
+    pendingProfileRef.current = null
+    void openUserProfile(pu)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user])
+
+  const fbProfileLink = (uid: string) => {
+    try {
+      return `${window.location.origin}${window.location.pathname}?mb=profile&u=${uid}`
+    } catch {
+      return ""
+    }
+  }
+
+  const fbCopyText = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text)
+    } catch {
+      const ta = document.createElement("textarea")
+      ta.value = text
+      ta.style.position = "fixed"
+      ta.style.opacity = "0"
+      document.body.appendChild(ta)
+      ta.select()
+      try { document.execCommand("copy") } catch {}
+      document.body.removeChild(ta)
+    }
+    showToast("Link copied", "Profile link copied to clipboard", "success")
+  }
+
+  const fbShareLink = async (title: string, text: string, url: string) => {
+    try {
+      if ((navigator as any).share) {
+        await (navigator as any).share({ title, text, url })
+        return
+      }
+    } catch (e: any) {
+      if (e?.name === "AbortError") return
+    }
+    await fbCopyText(url)
+  }
+
+  const fbPoke = async (u: any) => {
+    try {
+      const fb = await getFirebase()
+      await fb.addDoc(fb.collection(fb.db, "notifications"), {
+        fromUid: user.uid,
+        fromName: profile?.name || "",
+        fromAvatar: profile?.photoURL || "",
+        uid: u.uid,
+        title: "Poke",
+        message: `${profile?.name || "Someone"} poked you.`,
+        type: "poke",
+        read: false,
+        createdAt: fb.serverTimestamp(),
+      })
+      showToast("Poked", `You poked ${u.name}`, "success")
+    } catch (e: any) {
+      showToast("Error", e.message, "error")
+    }
+  }
+
+  const fbReportProfile = async (u: any, reason: string) => {
+    try {
+      const fb = await getFirebase()
+      await fb.addDoc(fb.collection(fb.db, "profile_reports"), {
+        uid: user.uid,
+        reportedUid: u.uid,
+        reportedName: u.name || "",
+        reason,
+        createdAt: fb.serverTimestamp(),
+      })
+      showToast("Reported", "Thanks! We'll review this profile", "success")
+    } catch (e: any) {
+      showToast("Error", e.message || "Report failed", "error")
+    }
   }
 
   /* ============================================================
@@ -8926,6 +9397,7 @@ const handleChatTyping = (value: string) => {
     hasEngageSheet: !!engageSheet,
     hasShareSheet: !!shareSheetPostId,
     hasFriendSheet: !!actionSheetFriend,
+    hasFbSheet: !!fbSheetUser || !!fbInfo,
     goBack,
     closeChat,
   }
@@ -8955,6 +9427,7 @@ const handleChatTyping = (value: string) => {
       if (s.hasPhotoViewer) { window.dispatchEvent(new Event("mb-viewer-back")); return true }
       if (s.hasEngageSheet) { setEngageSheet(null); return true }
       if (s.hasShareSheet) { setShareSheetPostId(null); return true }
+      if (s.hasFbSheet) { setFbSheetUser(null); setFbInfo(null); return true }
       if (s.hasFriendSheet) { setActionSheetFriend(null); return true }
       if (s.drawerOpen) { setDrawerOpen(false); return true }
       if (s.menuOpen) { setMenuOpen(false); return true }
@@ -9380,6 +9853,14 @@ const handleChatTyping = (value: string) => {
   const avatarUrl = (u: any) =>
     u?.photoURL ||
     `https://ui-avatars.com/api/?background=16a34a&color=fff&name=${encodeURIComponent(u?.name || "User")}`
+
+  // Unfollow / Take a break করা friend দের post feed এ লুকানো থাকবে
+  const hiddenAuthors = new Set<string>([
+    ...(Array.isArray(profile?.unfollowed) ? profile.unfollowed : []),
+    ...Object.entries(profile?.breaks || {})
+      .filter(([, t]: any) => Number(t) > Date.now())
+      .map(([k]) => k),
+  ])
 
   const isVerified = (obj: any) => obj?.verified === true || obj?.isOfficial === true
 
@@ -10303,6 +10784,449 @@ const handleChatTyping = (value: string) => {
   }
 
   /* ============================================================
+  FACEBOOK-STYLE PROFILE (other users)
+  ============================================================ */
+  const fbPostStats = (p: any) => {
+    const r = p.reactions || postReactions[p.id] || {}
+    const vals = Object.values(r) as string[]
+    const counts: Record<string, number> = {}
+    vals.forEach((k) => { counts[k] = (counts[k] || 0) + 1 })
+    const keys = Object.keys(counts).sort((a, b) => counts[b] - counts[a])
+    return {
+      likes: vals.length || (Array.isArray(p.likes) ? p.likes.length : 0),
+      comments: Array.isArray(p.comments) ? p.comments.length : 0,
+      shares: p.shares || 0,
+      reactionKeys: keys,
+    }
+  }
+
+  const renderFbProfile = () => {
+    const u = viewingUser
+    const photo = avatarUrl(u)
+    const isFriend = myFriends.some((f) => f.uid === u.uid)
+    const friendObj = myFriends.find((f) => f.uid === u.uid)
+    const pending = sentFriendRequests.some((r) => r.to === u.uid && r.status === "pending")
+    const sending = sentRequests[u.uid] === "sending"
+    const theirFriends = viewingUserFriends
+    const visiblePosts = viewingUserPosts.filter((p: any) => canSeePost(p, false))
+    const photoPosts = visiblePosts.filter((p: any) => p.image && !p.youtube)
+    const reelPosts = visiblePosts.filter((p: any) => p.youtube?.isShort === true)
+    const showInfo = u.privacy?.info !== false
+
+    const openPostPhoto = (p: any) =>
+      setPhotoViewer({
+        src: p.image,
+        caption: p.caption || "",
+        name: p.authorName || u.name || "User",
+        avatar: photo,
+        time: p.timeText || fbPhotoTime(p.createdAt),
+        postId: p.id,
+        stats: fbPostStats(p),
+      })
+
+    const openProfilePic = () =>
+      setPhotoViewer({
+        src: u.photoURL || photo,
+        caption: "",
+        name: u.name || "User",
+        avatar: photo,
+        time: "",
+        stats: { likes: 0, comments: 0, shares: 0, reactionKeys: [] },
+      })
+
+    const openCoverPic = () => {
+      if (!u.coverURL) return
+      setPhotoViewer({
+        src: u.coverURL,
+        caption: "",
+        name: u.name || "User",
+        avatar: photo,
+        time: "",
+        stats: { likes: 0, comments: 0, shares: 0, reactionKeys: [] },
+      })
+    }
+
+    let bday = ""
+    if (u.birthday) {
+      const d = new Date(u.birthday)
+      bday = isNaN(d.getTime())
+        ? String(u.birthday)
+        : d.toLocaleDateString([], { day: "numeric", month: "long", year: "numeric" })
+    }
+
+    const Grid = ({ items }: { items: { src: string; onClick: () => void }[] }) =>
+      items.length === 0 ? (
+        <div className="fbp-empty">No photos to show</div>
+      ) : (
+        <div className="fbp-grid">
+          {items.map((it, i) => (
+            <div key={i} className={`fbp-gi${i % 9 === 0 ? " big" : ""}`} onClick={it.onClick}>
+              <img src={it.src} alt="" loading="lazy" />
+            </div>
+          ))}
+        </div>
+      )
+
+    return (
+      <div className="mb-view active">
+        <div className="fbp">
+          <div className="fbp-cover" onClick={openCoverPic}>
+            {u.coverURL ? <img src={u.coverURL} alt="Cover" /> : <div className="fbp-cover-ph" />}
+            <div className="fbp-top" onClick={(e) => e.stopPropagation()}>
+              <button className="fbp-top-btn" onClick={goBack} aria-label="Back">
+                <FbIco d={FBP_ICON.back} size={26} />
+              </button>
+              <div className="fbp-top-right">
+                <button className="fbp-top-btn" onClick={openSearch} aria-label="Search">
+                  <FbIco d={FBP_ICON.search} size={26} />
+                </button>
+                <button
+                  className="fbp-top-btn"
+                  onClick={() => pushPage("fb-profile-menu", { uid: u.uid })}
+                  aria-label="More"
+                >
+                  <FbIco d={FBP_ICON.dots} size={26} />
+                </button>
+                <button
+                  className="fbp-top-btn"
+                  onClick={() => fbShareLink(u.name, `${u.name} on MeBook`, fbProfileLink(u.uid))}
+                  aria-label="Share"
+                >
+                  <FbIco d={FBP_ICON.share} size={26} />
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div className="fbp-body">
+            <img className="fbp-av" src={photo} alt="Profile" onClick={openProfilePic} />
+            <div className="fbp-name">
+              {u.name}
+              {isVerified(u) && (
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="#22c55e" style={{ marginLeft: 6, verticalAlign: "-3px" }}>
+                  <path d="M23 12l-2.44-2.79.34-3.69-3.61-.82-1.89-3.2L12 2.96 8.6 1.5 6.71 4.69l-3.61.82.34 3.69L1 12l2.44 2.79-.34 3.7 3.61.82L8.6 22.5l3.4-1.47 3.4 1.46 1.89-3.19 3.61-.82-.34-3.69L23 12zm-12.91 4.72l-3.8-3.81 1.48-1.48 2.32 2.33 5.85-5.87 1.48 1.48-7.33 7.35z" />
+                </svg>
+              )}
+            </div>
+            <div className="fbp-stats">
+              <b>{viewingUserFriendsLoading ? "…" : theirFriends.length}</b> friends · <b>{visiblePosts.length}</b> posts
+            </div>
+            {u.bio ? <div className="fbp-bio">{u.bio}</div> : null}
+
+            <div className="fbp-actions">
+              {isFriend ? (
+                <button className="fbp-btn fbp-btn-friends" onClick={() => setFbSheetUser(friendObj || u)}>
+                  <FbIco d={FBP_ICON.personCheck} size={22} /> Friends
+                </button>
+              ) : sending ? (
+                <button className="fbp-btn fbp-btn-friends" disabled>Sending...</button>
+              ) : pending ? (
+                <button className="fbp-btn fbp-btn-friends" onClick={() => handleCancelRequest(u.uid)}>
+                  Cancel Request
+                </button>
+              ) : (
+                <button className="fbp-btn fbp-btn-friends" onClick={() => handleSendRequest(u.uid)}>
+                  <FbIco d={FBP_ICON.invite} size={22} /> Add friend
+                </button>
+              )}
+              <button className="fbp-btn fbp-btn-msg" onClick={() => startChat(u.uid, u.name, photo)}>
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
+                  <path d="M12 2C6.5 2 2 6.14 2 11.25c0 2.88 1.41 5.45 3.62 7.16.12 1.1-.28 2.62-1.05 3.59-.13.16-.02.4.18.38 2.34-.19 4.05-1.25 4.85-1.85.77.16 1.58.25 2.4.25 5.5 0 10-4.14 10-9.25S17.5 2 12 2z" />
+                </svg>
+                Message
+              </button>
+              <button className="fbp-btn fbp-btn-poke" onClick={() => fbPoke(u)} aria-label="Poke">
+                <FbIco d={FBP_ICON.poke} size={22} />
+              </button>
+            </div>
+
+            <div className="fbp-tabs">
+              {(["all", "reels", "photos"] as const).map((t) => (
+                <button
+                  key={t}
+                  className={`fbp-tab${profileTab === t ? " active" : ""}`}
+                  onClick={() => {
+                    setProfileTab(t)
+                    setFbPhotoSub("")
+                  }}
+                >
+                  {t === "all" ? "All" : t === "reels" ? "Reels" : "Photos"}
+                </button>
+              ))}
+            </div>
+
+            {profileTab === "all" && (
+              <div className="fbp-left">
+                {showInfo && (bday || u.location || u.handle) && (
+                  <>
+                    <div className="fbp-sec-title">Personal details</div>
+                    {bday && (
+                      <div className="fbp-row">
+                        <svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor">
+                          <path d="M12 6c1.11 0 2-.9 2-2 0-.38-.1-.73-.29-1.03L12 0l-1.71 2.97c-.19.3-.29.65-.29 1.03 0 1.1.9 2 2 2zm4.6 9.99l-1.07-1.07-1.08 1.07c-1.3 1.3-3.58 1.31-4.89 0l-1.07-1.07-1.09 1.07C6.75 16.64 5.88 17 4.96 17c-.73 0-1.4-.23-1.96-.61V21c0 .55.45 1 1 1h16c.55 0 1-.45 1-1v-4.61c-.56.38-1.23.61-1.96.61-.92 0-1.79-.36-2.44-1.01zM18 9h-5V7h-2v2H6c-1.66 0-3 1.34-3 3v1.54c0 1.08.88 1.96 1.96 1.96.52 0 1.02-.2 1.38-.57l2.14-2.13 2.13 2.13c.74.74 2.03.74 2.77 0l2.14-2.13 2.13 2.13c.37.37.86.57 1.38.57 1.08 0 1.96-.88 1.96-1.96V12C21 10.34 19.66 9 18 9z" />
+                        </svg>
+                        <span>{bday}</span>
+                      </div>
+                    )}
+                    {u.location && (
+                      <div className="fbp-row">
+                        <svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor">
+                          <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
+                        </svg>
+                        <span>{u.location}</span>
+                      </div>
+                    )}
+                    {u.handle && (
+                      <div className="fbp-row">
+                        <svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor">
+                          <path d="M12 2a10 10 0 1 0 5 18.66l-1-1.73A8 8 0 1 1 20 12v1a2 2 0 0 1-4 0V7h-2v1.1A4 4 0 1 0 14 15a4 4 0 0 0 6-2v-1A10 10 0 0 0 12 2zm0 11a2 2 0 1 1 0-4 2 2 0 0 1 0 4z" />
+                        </svg>
+                        <span>{u.handle}</span>
+                      </div>
+                    )}
+                  </>
+                )}
+
+                <div className="fbp-sec-head">
+                  <div className="fbp-sec-title" style={{ margin: 0 }}>Friends</div>
+                  {theirFriends.length > 0 && (
+                    <span className="fbp-seeall" onClick={() => openFriendsList(u.uid, u.name)}>See all</span>
+                  )}
+                </div>
+                {viewingUserFriendsLoading ? (
+                  <div className="fbp-empty">Loading friends...</div>
+                ) : theirFriends.length === 0 ? (
+                  <div className="fbp-empty">No friends to show</div>
+                ) : (
+                  <div className="fbp-fstrip">
+                    {theirFriends.slice(0, 8).map((f: any) => (
+                      <div className="fbp-fcard" key={f.uid} onClick={() => openUserProfile(f.uid)}>
+                        <img src={avatarUrl(f)} alt={f.name} />
+                        <div>{f.name?.split(" ")[0]}</div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                <div className="fbp-sec-title">Posts ({visiblePosts.length})</div>
+              </div>
+            )}
+          </div>
+
+          {profileTab === "all" && (
+            <div className="fbp-posts">
+              {visiblePosts.length === 0 ? (
+                <div className="mb-empty">
+                  <b>No posts yet</b>
+                  <p style={{ fontSize: 14, marginTop: 4 }}>This user hasn't posted anything</p>
+                </div>
+              ) : (
+                visiblePosts
+                  .slice()
+                  .sort((a: any, b: any) => Number(!!b.pinned) - Number(!!a.pinned))
+                  .map((p: any) => renderPost(p))
+              )}
+            </div>
+          )}
+
+          {profileTab === "reels" && (
+            <div className="fbp-posts">
+              {reelPosts.length === 0 ? (
+                <div className="mb-empty"><b>No reels yet</b></div>
+              ) : (
+                reelPosts.map((p: any) => renderPost(p))
+              )}
+            </div>
+          )}
+
+          {profileTab === "photos" && (
+            <div className="fbp-photos">
+              <div className="fbp-chips">
+                {([
+                  ["profile", "Profile pictures"],
+                  ["cover", "Cover photos"],
+                  ["albums", "All albums"],
+                ] as const).map(([k, label]) => (
+                  <button
+                    key={k}
+                    className={`fbp-chip${fbPhotoSub === k ? " on" : ""}`}
+                    onClick={() => setFbPhotoSub(fbPhotoSub === k ? "" : k)}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+
+              {fbPhotoSub === "profile" ? (
+                u.photoURL ? (
+                  <Grid items={[{ src: u.photoURL, onClick: openProfilePic }]} />
+                ) : (
+                  <div className="fbp-empty">No profile pictures</div>
+                )
+              ) : fbPhotoSub === "cover" ? (
+                u.coverURL ? (
+                  <Grid items={[{ src: u.coverURL, onClick: openCoverPic }]} />
+                ) : (
+                  <div className="fbp-empty">No cover photos</div>
+                )
+              ) : fbPhotoSub === "albums" ? (
+                <div className="fbp-albums">
+                  <div className="fbp-album" onClick={() => setFbPhotoSub("")}>
+                    <div className="fbp-album-th">
+                      {photoPosts[0] ? <img src={photoPosts[0].image} alt="" /> : null}
+                    </div>
+                    <b>Timeline photos</b>
+                    <small>{photoPosts.length} items</small>
+                  </div>
+                  <div className="fbp-album" onClick={() => setFbPhotoSub("profile")}>
+                    <div className="fbp-album-th">{u.photoURL ? <img src={u.photoURL} alt="" /> : null}</div>
+                    <b>Profile pictures</b>
+                    <small>{u.photoURL ? 1 : 0} items</small>
+                  </div>
+                  <div className="fbp-album" onClick={() => setFbPhotoSub("cover")}>
+                    <div className="fbp-album-th">{u.coverURL ? <img src={u.coverURL} alt="" /> : null}</div>
+                    <b>Cover photos</b>
+                    <small>{u.coverURL ? 1 : 0} items</small>
+                  </div>
+                </div>
+              ) : (
+                <Grid items={photoPosts.map((p: any) => ({ src: p.image, onClick: () => openPostPhoto(p) }))} />
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    )
+  }
+
+  const renderFbMenu = () => {
+    const uid = currentParams.uid
+    const u: any =
+      (viewingUser && viewingUser.uid === uid ? viewingUser : null) ||
+      allUsers.find((x: any) => x.uid === uid) ||
+      myFriends.find((x: any) => x.uid === uid)
+    if (!u) {
+      return (
+        <div className="mb-view active">
+          <button className="mb-back-btn" onClick={goBack}>Back</button>
+          <div className="mb-empty"><b>User not found</b></div>
+        </div>
+      )
+    }
+    const first = (u.name || "User").split(" ")[0]
+    const link = fbProfileLink(u.uid)
+    const isFriend = myFriends.some((f) => f.uid === u.uid)
+    const friendObj = myFriends.find((f) => f.uid === u.uid)
+    const following = !unfollowedSet.has(u.uid)
+
+    const Item = ({ icon, label, onClick, blue }: { icon: string; label: string; onClick: () => void; blue?: boolean }) => (
+      <button className={`fbp-mi${blue ? " blue" : ""}`} onClick={onClick}>
+        <FbIco d={icon} size={28} />
+        <span>{label}</span>
+      </button>
+    )
+
+    const mutual = (() => {
+      if (!isFriend) return 0
+      const mine = new Set(myFriends.map((f) => f.uid))
+      return viewingUserFriends.filter((f: any) => mine.has(f.uid)).length
+    })()
+
+    return (
+      <div className="mb-view active">
+        <div className="fbp fbp-menu">
+          <div className="fbp-menu-head">
+            <button className="fbp-menu-back" onClick={goBack} aria-label="Back">
+              <FbIco d={FBP_ICON.back} size={26} />
+            </button>
+            <div className="fbp-menu-title">{u.name}</div>
+          </div>
+
+          <Item
+            icon={FBP_ICON.people}
+            label="See friendship"
+            onClick={() =>
+              setFbInfo({
+                title: `You and ${first}`,
+                avatars: [avatarUrl(profile), avatarUrl(u)],
+                subtitle: isFriend
+                  ? friendObj?.friendsSince
+                    ? `Friends since ${monthYear(friendObj.friendsSince)}`
+                    : "You are friends"
+                  : "You are not friends yet",
+                lines: isFriend ? [`${mutual} mutual friend${mutual === 1 ? "" : "s"}`] : [],
+              })
+            }
+          />
+          <Item
+            icon={FBP_ICON.report}
+            label="Report profile"
+            onClick={() =>
+              setFbInfo({
+                title: `Report ${first}'s profile`,
+                subtitle: "Why are you reporting this profile?",
+                actions: ["Fake account", "Harassment or bullying", "Spam or scam", "Inappropriate content", "Something else"].map(
+                  (r) => ({ label: r, onClick: () => fbReportProfile(u, r) })
+                ),
+              })
+            }
+          />
+          <Item
+            icon={FBP_ICON.heart}
+            label={`Help ${first}.`}
+            onClick={() =>
+              setFbInfo({
+                title: `Help ${first}`,
+                subtitle: "Check in with them or let us know if something is wrong.",
+                actions: [
+                  { label: `Message ${first}`, onClick: () => startChat(u.uid, u.name, avatarUrl(u)) },
+                  { label: "Report a problem", danger: true, onClick: () => fbReportProfile(u, "Needs help") },
+                ],
+              })
+            }
+          />
+          <Item icon={FBP_ICON.block} label="Block" onClick={() => handleBlockUser(u.uid)} />
+          <Item
+            icon={FBP_ICON.search}
+            label="Search"
+            onClick={() => {
+              setSrQuery(u.name || "")
+              pushPage("search")
+            }}
+          />
+          <Item
+            icon={FBP_ICON.invite}
+            label="Invite friends"
+            onClick={() =>
+              fbShareLink("MeBook", "Join me on MeBook!", (() => {
+                try { return window.location.origin + window.location.pathname } catch { return "" }
+              })())
+            }
+          />
+          <Item
+            icon={FBP_ICON.following}
+            label={following ? "Following" : "Follow"}
+            blue={following}
+            onClick={() => handleUnfollow(u.uid)}
+          />
+          <Item
+            icon={FBP_ICON.share}
+            label="Share profile"
+            onClick={() => fbShareLink(u.name, `${u.name} on MeBook`, link)}
+          />
+
+          <div className="fbp-linkcard">
+            <div className="fbp-link-title">{u.name}'s profile link</div>
+            <div className="fbp-link-sub">{u.name}'s personalised link on MeBook.</div>
+            <div className="fbp-link-url">{link}</div>
+            <button className="fbp-copy" onClick={() => fbCopyText(link)}>Copy link</button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  /* ============================================================
   MAIN RENDER
   ============================================================ */
   return (
@@ -10838,6 +11762,44 @@ const handleChatTyping = (value: string) => {
         }}
       />
 
+      {/* Facebook-style friend sheet + info sheet */}
+      {fbSheetUser && (
+        <FbFriendSheet
+          friend={fbSheetUser}
+          following={!unfollowedSet.has(fbSheetUser.uid)}
+          favourite={(profile?.favourites || []).includes(fbSheetUser.uid)}
+          breakActive={Number(profile?.breaks?.[fbSheetUser.uid] || 0) > Date.now()}
+          lists={profile?.friendLists?.[fbSheetUser.uid] || []}
+          onClose={() => setFbSheetUser(null)}
+          onUnfollow={() => {
+            const f = fbSheetUser
+            setFbSheetUser(null)
+            handleUnfollow(f.uid)
+          }}
+          onBreakToggle={() => {
+            const f = fbSheetUser
+            setFbSheetUser(null)
+            handleTakeBreak(f)
+          }}
+          onFavourite={() => {
+            const f = fbSheetUser
+            setFbSheetUser(null)
+            handleToggleFavourite(f)
+          }}
+          onSaveLists={(l) => {
+            const f = fbSheetUser
+            setFbSheetUser(null)
+            handleSaveFriendLists(f, l)
+          }}
+          onUnfriend={() => {
+            const f = fbSheetUser
+            setFbSheetUser(null)
+            handleUnfriend(f.uid, f.name)
+          }}
+        />
+      )}
+      <FbInfoSheet info={fbInfo} onClose={() => setFbInfo(null)} />
+
       {/* Friend action sheet */}
       {actionSheetFriend && (
         <FriendActionSheet
@@ -11185,7 +12147,7 @@ const handleChatTyping = (value: string) => {
                 {feed.length === 0 ? (
                   <div className="mb-loading">Loading feed...</div>
                 ) : (
-                  feed.map((p) => renderPost(p))
+                  feed.filter((p) => !hiddenAuthors.has(p.authorId)).map((p) => renderPost(p))
                 )}
               </div>
             </div>
@@ -11743,37 +12705,9 @@ const handleChatTyping = (value: string) => {
             )
           })()}
 
-          {currentView === "user-profile" && viewingUser && (
-            <div className="mb-view active">
-              <button className="mb-back-btn" onClick={goBack}>
-                <svg viewBox="0 0 24 24">
-                  <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" />
-                </svg>
-                Back
-              </button>
-              {renderProfilePage(
-                viewingUser,
-                viewingUserPosts,
-                false,
-                viewingUserFriends,
-                viewingUserFriendsLoading
-              )}
+          {currentView === "user-profile" && viewingUser && renderFbProfile()}
 
-              <div className="mb-card-title" style={{ fontSize: 18, marginBottom: 10, padding: "0 4px" }}>
-                Posts ({viewingUserPosts.length})
-              </div>
-              <div>
-                {viewingUserPosts.length === 0 ? (
-                  <div className="mb-empty">
-                    <b>No posts yet</b>
-                    <p style={{ fontSize: 14, marginTop: 4 }}>This user hasn't posted anything</p>
-                  </div>
-                ) : (
-                  viewingUserPosts.slice().sort((a: any, b: any) => Number(!!b.pinned) - Number(!!a.pinned)).map((p) => renderPost(p))
-                )}
-              </div>
-            </div>
-          )}
+          {currentView === "fb-profile-menu" && renderFbMenu()}
 
           {/* ============================================================
               MESSAGES — MeChat (screenshot 2 style: own right, other left)

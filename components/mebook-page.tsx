@@ -2713,7 +2713,7 @@ transition:transform .15s ease,box-shadow .15s ease;-webkit-tap-highlight-color:
 @keyframes srFade{from{opacity:0}to{opacity:1}}
 @keyframes srUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
 .mebook-root .fbp{--fbp-bg:#ffffff;--fbp-chip:#e4e6eb;--fbp-sub:#65676b;background:var(--fbp-bg);color:var(--text);border-radius:14px;overflow:hidden;box-shadow:var(--shadow);}
-.mebook-root.dark-mode .fbp{--fbp-bg:#242526;--fbp-chip:#3a3b3c;--fbp-sub:#b0b3b8;}
+.mebook-root.dark-mode .fbp{--fbp-bg:#0a0a0a;--fbp-chip:#1f1f1f;--fbp-sub:#9a9a9a;border:1px solid #151515;}
 .mebook-root .fbp-cover{position:relative;height:210px;background:#111;overflow:hidden;cursor:pointer;}
 .mebook-root .fbp-cover img{width:100%;height:100%;object-fit:cover;display:block;}
 .mebook-root .fbp-cover-ph{width:100%;height:100%;background:linear-gradient(135deg,#0f172a,#1e293b 60%,#14532d);}
@@ -2722,8 +2722,19 @@ transition:transform .15s ease,box-shadow .15s ease;-webkit-tap-highlight-color:
 .mebook-root .fbp-top-btn{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;background:transparent;border:none;cursor:pointer;}
 .mebook-root .fbp-top-btn:active{background:rgba(255,255,255,.2);}
 .mebook-root .fbp-body{position:relative;margin-top:-26px;background:var(--fbp-bg);border-radius:26px 26px 0 0;padding:0 14px 14px;text-align:center;}
-.mebook-root .fbp-av{width:150px;height:150px;border-radius:50%;object-fit:cover;border:4px solid var(--fbp-chip);margin-top:-96px;position:relative;cursor:pointer;background:#222;display:inline-block;}
-.mebook-root .fbp-name{font-size:25px;font-weight:800;margin-top:10px;line-height:1.2;}
+.mebook-root .fbp-av-wrap{position:relative;width:150px;margin:-96px auto 0;}
+.mebook-root .fbp-av{width:150px;height:150px;border-radius:50%;object-fit:cover;border:4px solid var(--fbp-chip);position:relative;cursor:pointer;background:#222;display:block;}
+.mebook-root .fbp-cam{position:absolute;display:flex;align-items:center;justify-content:center;border:none;cursor:pointer;color:#fff;}
+.mebook-root .fbp-cam-av{right:2px;bottom:6px;width:38px;height:38px;border-radius:50%;background:#2a2a2a;border:2px solid var(--fbp-bg);}
+.mebook-root .fbp-cam-cover{right:14px;bottom:36px;width:auto;height:auto;background:transparent;}
+.mebook-root .fbp-status{display:inline-block;margin-top:8px;padding:5px 14px;border-radius:16px;background:var(--fbp-chip);font-size:13.5px;font-weight:600;}
+.mebook-root .fbp-btn-action{width:100%;margin-bottom:12px;}
+.mebook-root .fbp-pen{background:none;border:none;color:var(--fbp-sub);cursor:pointer;padding:4px;}
+.mebook-root .fbp-viewas{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px;margin-bottom:10px;border-radius:12px;background:rgba(8,102,255,.16);color:#2d88ff;font-weight:600;font-size:14px;}
+.mebook-root .fbp-viewas button{background:#0866ff;color:#fff;border:none;border-radius:10px;padding:7px 16px;font-weight:700;cursor:pointer;}
+.mebook-root .fbp-name{display:flex;align-items:center;justify-content:center;gap:7px;flex-wrap:nowrap;font-size:25px;font-weight:800;margin-top:10px;line-height:1.2;}
+.mebook-root .fbp-name span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.mebook-root .fbp-name .fbp-tick{display:block;flex:none;}
 .mebook-root .fbp-stats{font-size:14.5px;color:var(--fbp-sub);margin-top:4px;}
 .mebook-root .fbp-stats b{color:var(--text);}
 .mebook-root .fbp-bio{margin:14px 6px 4px;font-size:15.5px;line-height:1.45;}
@@ -2774,7 +2785,7 @@ transition:transform .15s ease,box-shadow .15s ease;-webkit-tap-highlight-color:
 .mebook-root .fbp-copy{width:100%;height:50px;border-radius:12px;background:var(--fbp-chip);color:var(--text);font-weight:700;font-size:16px;border:none;cursor:pointer;}
 .mebook-root .fbp-sheet-bg{position:fixed;inset:0;z-index:3000;background:rgba(0,0,0,.55);display:flex;align-items:flex-end;justify-content:center;animation:srFade .2s ease;}
 .mebook-root .fbp-sheet{--fbp-bg:#ffffff;--fbp-chip:#e4e6eb;--fbp-sub:#65676b;width:100%;max-width:640px;background:var(--fbp-bg);color:var(--text);border-radius:22px 22px 0 0;padding:10px 16px calc(22px + env(safe-area-inset-bottom,0px));animation:srUp .25s ease;max-height:86vh;overflow-y:auto;}
-.mebook-root.dark-mode .fbp-sheet{--fbp-bg:#242526;--fbp-chip:#3a3b3c;--fbp-sub:#b0b3b8;}
+.mebook-root.dark-mode .fbp-sheet{--fbp-bg:#0f0f0f;--fbp-chip:#1f1f1f;--fbp-sub:#9a9a9a;border-top:1px solid #1a1a1a;}
 .mebook-root .fbp-sheet-handle{width:56px;height:5px;border-radius:3px;background:var(--fbp-chip);margin:2px auto 14px;}
 .mebook-root .fbp-sheet-title{font-size:19px;font-weight:800;margin:4px 0 12px;}
 .mebook-root .fbp-srow{display:flex;align-items:center;gap:16px;width:100%;text-align:left;padding:11px 4px;background:none;border:none;color:var(--text);cursor:pointer;border-radius:12px;}
@@ -3023,6 +3034,19 @@ const FBP_ICON = {
   personEdit: "M10 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h10v-2.5l4-4c-1.5-.9-4.2-1.5-6-1.5zm10.7-.3l-1.4-1.4a1 1 0 0 0-1.4 0L16 14.2V17h2.8l1.9-1.9a1 1 0 0 0 0-1.4z",
   pause: "M6 19h4V5H6v14zm8-14v14h4V5h-4z",
   check: "M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z",
+  menu: "M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z",
+  edit: "M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34a.9959.9959 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z",
+  camera: "M9 2L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-3.17L15 2H9zm3 15c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z",
+  shield: "M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z",
+  action: "M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5.5 14l-.9-2.6H9.4L8.5 17H6.7l3.4-9h1.8l3.4 9h-1.8zm-1.4-4.2L11 9.6l-1.1 3.2h2.2z",
+  archive: "M20.54 5.23l-1.39-1.68C18.88 3.21 18.47 3 18 3H6c-.47 0-.88.21-1.16.55L3.46 5.23C3.17 5.57 3 6.02 3 6.5V19c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6.5c0-.48-.17-.93-.46-1.27zM12 17.5L6.5 12H10v-2h4v2h3.5L12 17.5zM5.12 5l.81-1h12l.94 1H5.12z",
+  eye: "M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z",
+  info: "M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z",
+  mega: "M18 11v2h4v-2h-4zm-2 6.61c.96.71 2.21 1.65 3.2 2.39.4-.53.8-1.07 1.2-1.6-.99-.74-2.24-1.68-3.2-2.4-.4.54-.8 1.08-1.2 1.61zM20.4 5.6c-.4-.53-.8-1.07-1.2-1.6-.99.74-2.24 1.68-3.2 2.4.4.53.8 1.07 1.2 1.6.96-.72 2.21-1.65 3.2-2.4zM4 9c-1.1 0-2 .9-2 2v2c0 1.1.9 2 2 2h1v4h2v-4h1l5 3V6L8 9H4z",
+  list: "M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z",
+  review: "M3 5v14h18V5H3zm16 12H5V7h14v10zM7 9h10v2H7V9zm0 4h7v2H7v-2z",
+  lock: "M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z",
+  undo: "M12.5 8c-2.65 0-5.05.99-6.9 2.6L2 7v9h9l-3.62-3.62c1.39-1.16 3.16-1.88 5.12-1.88 3.54 0 6.55 2.31 7.6 5.5l2.37-.78C21.08 11.03 17.15 8 12.5 8z",
 }
 
 function FbIco({ d, size = 24 }: { d: string; size?: number }) {
@@ -3120,6 +3144,51 @@ function FbFriendSheet({
             <button className="fbp-save" onClick={() => onSaveLists(sel)}>Save</button>
           </>
         )}
+      </div>
+    </div>
+  )
+}
+
+function FbHighlightPicker({
+  photos,
+  selected,
+  onSave,
+  onClose,
+}: {
+  photos: string[]
+  selected: string[]
+  onSave: (l: string[]) => void
+  onClose: () => void
+}) {
+  const [sel, setSel] = useState<string[]>(selected || [])
+  return (
+    <div className="fbp-sheet-bg" onClick={onClose}>
+      <div className="fbp-sheet" onClick={(e) => e.stopPropagation()}>
+        <div className="fbp-sheet-handle" />
+        <div className="fbp-sheet-title">Add highlights</div>
+        <div className="fbp-info-sub" style={{ textAlign: "left" }}>Pick photos to show on your profile.</div>
+        {photos.length === 0 ? (
+          <div className="fbp-empty">Post a photo first to add highlights</div>
+        ) : (
+          <div className="fbp-grid" style={{ margin: "10px 0" }}>
+            {photos.map((p, i) => {
+              const on = sel.includes(p)
+              return (
+                <div
+                  key={i}
+                  className="fbp-gi"
+                  style={{ position: "relative", outline: on ? "3px solid #0866ff" : "none", outlineOffset: -3 }}
+                  onClick={() => setSel((x) => (x.includes(p) ? x.filter((y) => y !== p) : x.length >= 10 ? x : [...x, p]))}
+                >
+                  <img src={p} alt="" />
+                  {on && <span className="fbp-check on" style={{ position: "absolute", top: 6, right: 6 }}><FbIco d={FBP_ICON.check} size={16} /></span>}
+                </div>
+              )
+            })}
+          </div>
+        )}
+        <button className="fbp-save" onClick={() => onSave(sel)}>Save</button>
+        <button className="fbp-save secondary" onClick={onClose}>Cancel</button>
       </div>
     </div>
   )
@@ -6548,7 +6617,7 @@ const [friends, setFriends] = useState<any[]>([])
   }
 
   const [friendsTab, setFriendsTab] = useState<"requests" | "sent" | "all" | "mutual">("requests")
-  const [profileTab, setProfileTab] = useState<"all" | "photos" | "reels">("all")
+  const [profileTab, setProfileTab] = useState<"all" | "photos" | "reels" | "events">("all")
 
   const [postText, setPostText] = useState("")
   const [postMovie, setPostMovie] = useState("")
@@ -6973,6 +7042,7 @@ const handleChatTyping = (value: string) => {
   const [unfollowedSet, setUnfollowedSet] = useState<Set<string>>(new Set())
   const [fbSheetUser, setFbSheetUser] = useState<any>(null)
   const [fbInfo, setFbInfo] = useState<FbInfo | null>(null)
+  const [fbHlOpen, setFbHlOpen] = useState(false)
   const [fbPhotoSub, setFbPhotoSub] = useState<"" | "profile" | "cover" | "albums">("")
   const pendingProfileRef = useRef<string | null>(null)
 
@@ -9397,7 +9467,7 @@ const handleChatTyping = (value: string) => {
     hasEngageSheet: !!engageSheet,
     hasShareSheet: !!shareSheetPostId,
     hasFriendSheet: !!actionSheetFriend,
-    hasFbSheet: !!fbSheetUser || !!fbInfo,
+    hasFbSheet: !!fbSheetUser || !!fbInfo || fbHlOpen,
     goBack,
     closeChat,
   }
@@ -9427,7 +9497,7 @@ const handleChatTyping = (value: string) => {
       if (s.hasPhotoViewer) { window.dispatchEvent(new Event("mb-viewer-back")); return true }
       if (s.hasEngageSheet) { setEngageSheet(null); return true }
       if (s.hasShareSheet) { setShareSheetPostId(null); return true }
-      if (s.hasFbSheet) { setFbSheetUser(null); setFbInfo(null); return true }
+      if (s.hasFbSheet) { setFbSheetUser(null); setFbInfo(null); setFbHlOpen(false); return true }
       if (s.hasFriendSheet) { setActionSheetFriend(null); return true }
       if (s.drawerOpen) { setDrawerOpen(false); return true }
       if (s.menuOpen) { setMenuOpen(false); return true }
@@ -10800,51 +10870,65 @@ const handleChatTyping = (value: string) => {
     }
   }
 
-  const renderFbProfile = () => {
-    const u = viewingUser
+  const fbSaveField = async (patch: any, title: string, msg: string) => {
+    try {
+      const fb = await getFirebase()
+      await fb.updateDoc(fb.doc(fb.db, "users", user.uid), patch)
+      showToast(title, msg, "success")
+    } catch (e: any) {
+      showToast("Error", e.message, "error")
+    }
+  }
+
+  const FB_ACTION_LABELS: Record<string, string> = {
+    message: "Message me",
+    follow: "Follow me",
+    contact: "Contact me",
+    shop: "Shop now",
+  }
+
+  const renderFbProfileCore = (
+    mode: "other" | "own" | "preview",
+    u: any,
+    postsIn: any[],
+    theirFriends: any[],
+    friendsLoading: boolean
+  ) => {
+    const isOwnMode = mode === "own"
+    const isPreview = mode === "preview"
     const photo = avatarUrl(u)
     const isFriend = myFriends.some((f) => f.uid === u.uid)
     const friendObj = myFriends.find((f) => f.uid === u.uid)
     const pending = sentFriendRequests.some((r) => r.to === u.uid && r.status === "pending")
     const sending = sentRequests[u.uid] === "sending"
-    const theirFriends = viewingUserFriends
-    const visiblePosts = viewingUserPosts.filter((p: any) => canSeePost(p, false))
+    const visiblePosts = postsIn.filter((p: any) => canSeePost(p, isOwnMode))
     const photoPosts = visiblePosts.filter((p: any) => p.image && !p.youtube)
     const reelPosts = visiblePosts.filter((p: any) => p.youtube?.isShort === true)
-    const showInfo = u.privacy?.info !== false
+    const showInfo = isOwnMode || isPreview ? true : u.privacy?.info !== false
+    const highlights: string[] = Array.isArray(u.highlights) ? u.highlights : []
+    const proOn = u.proMode !== false
+
+    const viewer = (src: string, extra: any = {}) =>
+      setPhotoViewer({
+        src,
+        caption: "",
+        name: u.name || "User",
+        avatar: photo,
+        time: "",
+        stats: { likes: 0, comments: 0, shares: 0, reactionKeys: [] },
+        ...extra,
+      })
 
     const openPostPhoto = (p: any) =>
-      setPhotoViewer({
-        src: p.image,
+      viewer(p.image, {
         caption: p.caption || "",
         name: p.authorName || u.name || "User",
-        avatar: photo,
         time: p.timeText || fbPhotoTime(p.createdAt),
         postId: p.id,
         stats: fbPostStats(p),
       })
-
-    const openProfilePic = () =>
-      setPhotoViewer({
-        src: u.photoURL || photo,
-        caption: "",
-        name: u.name || "User",
-        avatar: photo,
-        time: "",
-        stats: { likes: 0, comments: 0, shares: 0, reactionKeys: [] },
-      })
-
-    const openCoverPic = () => {
-      if (!u.coverURL) return
-      setPhotoViewer({
-        src: u.coverURL,
-        caption: "",
-        name: u.name || "User",
-        avatar: photo,
-        time: "",
-        stats: { likes: 0, comments: 0, shares: 0, reactionKeys: [] },
-      })
-    }
+    const openProfilePic = () => viewer(u.photoURL || photo)
+    const openCoverPic = () => { if (u.coverURL) viewer(u.coverURL) }
 
     let bday = ""
     if (u.birthday) {
@@ -10867,81 +10951,157 @@ const handleChatTyping = (value: string) => {
         </div>
       )
 
+    const noop = () => {}
+    const tabs: ("all" | "reels" | "photos" | "events")[] = isOwnMode ? ["all", "reels", "photos", "events"] : ["all", "reels", "photos"]
+    const postList = (list: any[]) => list.map((p: any) => renderPost(p, isOwnMode))
+
     return (
       <div className="mb-view active">
+        {isPreview && (
+          <div className="fbp-viewas">
+            <span>Viewing your profile as the public</span>
+            <button onClick={goBack}>Exit</button>
+          </div>
+        )}
         <div className="fbp">
           <div className="fbp-cover" onClick={openCoverPic}>
             {u.coverURL ? <img src={u.coverURL} alt="Cover" /> : <div className="fbp-cover-ph" />}
             <div className="fbp-top" onClick={(e) => e.stopPropagation()}>
-              <button className="fbp-top-btn" onClick={goBack} aria-label="Back">
-                <FbIco d={FBP_ICON.back} size={26} />
-              </button>
+              {isOwnMode ? (
+                <button className="fbp-top-btn" onClick={() => setDrawerOpen(true)} aria-label="Menu">
+                  <FbIco d={FBP_ICON.menu} size={28} />
+                </button>
+              ) : (
+                <button className="fbp-top-btn" onClick={goBack} aria-label="Back">
+                  <FbIco d={FBP_ICON.back} size={26} />
+                </button>
+              )}
               <div className="fbp-top-right">
-                <button className="fbp-top-btn" onClick={openSearch} aria-label="Search">
+                {isOwnMode && (
+                  <button className="fbp-top-btn" onClick={openEditProfile} aria-label="Edit">
+                    <FbIco d={FBP_ICON.edit} size={24} />
+                  </button>
+                )}
+                <button className="fbp-top-btn" onClick={isPreview ? noop : openSearch} aria-label="Search">
                   <FbIco d={FBP_ICON.search} size={26} />
                 </button>
                 <button
                   className="fbp-top-btn"
-                  onClick={() => pushPage("fb-profile-menu", { uid: u.uid })}
+                  onClick={() =>
+                    isPreview ? noop() : isOwnMode ? pushPage("fb-own-menu") : pushPage("fb-profile-menu", { uid: u.uid })
+                  }
                   aria-label="More"
                 >
                   <FbIco d={FBP_ICON.dots} size={26} />
                 </button>
-                <button
-                  className="fbp-top-btn"
-                  onClick={() => fbShareLink(u.name, `${u.name} on MeBook`, fbProfileLink(u.uid))}
-                  aria-label="Share"
-                >
-                  <FbIco d={FBP_ICON.share} size={26} />
-                </button>
+                {!isOwnMode && (
+                  <button
+                    className="fbp-top-btn"
+                    onClick={() => (isPreview ? noop() : fbShareLink(u.name, `${u.name} on MeBook`, fbProfileLink(u.uid)))}
+                    aria-label="Share"
+                  >
+                    <FbIco d={FBP_ICON.share} size={26} />
+                  </button>
+                )}
               </div>
             </div>
+            {isOwnMode && (
+              <button
+                className="fbp-cam fbp-cam-cover"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  handleChangeCover()
+                }}
+                aria-label="Change cover"
+              >
+                <FbIco d={FBP_ICON.camera} size={26} />
+              </button>
+            )}
           </div>
 
           <div className="fbp-body">
-            <img className="fbp-av" src={photo} alt="Profile" onClick={openProfilePic} />
+            <div className="fbp-av-wrap">
+              <img className="fbp-av" src={photo} alt="Profile" onClick={openProfilePic} />
+              {isOwnMode && (
+                <button className="fbp-cam fbp-cam-av" onClick={handleChangeProfilePhoto} aria-label="Change photo">
+                  <FbIco d={FBP_ICON.camera} size={22} />
+                </button>
+              )}
+            </div>
             <div className="fbp-name">
-              {u.name}
+              <span>{u.name}</span>
               {isVerified(u) && (
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="#22c55e" style={{ marginLeft: 6, verticalAlign: "-3px" }}>
+                <svg className="fbp-tick" width="22" height="22" viewBox="0 0 24 24" fill="#22c55e">
                   <path d="M23 12l-2.44-2.79.34-3.69-3.61-.82-1.89-3.2L12 2.96 8.6 1.5 6.71 4.69l-3.61.82.34 3.69L1 12l2.44 2.79-.34 3.7 3.61.82L8.6 22.5l3.4-1.47 3.4 1.46 1.89-3.19 3.61-.82-.34-3.69L23 12zm-12.91 4.72l-3.8-3.81 1.48-1.48 2.32 2.33 5.85-5.87 1.48 1.48-7.33 7.35z" />
                 </svg>
               )}
             </div>
-            <div className="fbp-stats">
-              <b>{viewingUserFriendsLoading ? "…" : theirFriends.length}</b> friends · <b>{visiblePosts.length}</b> posts
-            </div>
+            {(!isOwnMode || proOn) && (
+              <div className="fbp-stats">
+                <b>{friendsLoading ? "…" : theirFriends.length}</b> friends · <b>{visiblePosts.length}</b> posts
+              </div>
+            )}
+            {u.profileStatus ? <div className="fbp-status">{u.profileStatus}</div> : null}
             {u.bio ? <div className="fbp-bio">{u.bio}</div> : null}
 
-            <div className="fbp-actions">
-              {isFriend ? (
-                <button className="fbp-btn fbp-btn-friends" onClick={() => setFbSheetUser(friendObj || u)}>
-                  <FbIco d={FBP_ICON.personCheck} size={22} /> Friends
+            {isOwnMode ? (
+              <div className="mb-profile-actions">
+                <button className="mb-btn mb-btn-primary" onClick={openCreatePost}>
+                  <svg viewBox="0 0 24 24">
+                    <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
+                  </svg>
+                  Create Post
                 </button>
-              ) : sending ? (
-                <button className="fbp-btn fbp-btn-friends" disabled>Sending...</button>
-              ) : pending ? (
-                <button className="fbp-btn fbp-btn-friends" onClick={() => handleCancelRequest(u.uid)}>
-                  Cancel Request
+                <button className="mb-btn mb-btn-secondary" onClick={openEditProfile}>
+                  <svg viewBox="0 0 24 24">
+                    <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34a.9959.9959 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" />
+                  </svg>
+                  Edit Profile
                 </button>
-              ) : (
-                <button className="fbp-btn fbp-btn-friends" onClick={() => handleSendRequest(u.uid)}>
-                  <FbIco d={FBP_ICON.invite} size={22} /> Add friend
+              </div>
+            ) : (
+              <div className="fbp-actions">
+                {isFriend ? (
+                  <button className="fbp-btn fbp-btn-friends" onClick={() => (isPreview ? noop() : setFbSheetUser(friendObj || u))}>
+                    <FbIco d={FBP_ICON.personCheck} size={22} /> Friends
+                  </button>
+                ) : sending ? (
+                  <button className="fbp-btn fbp-btn-friends" disabled>Sending...</button>
+                ) : pending ? (
+                  <button className="fbp-btn fbp-btn-friends" onClick={() => (isPreview ? noop() : handleCancelRequest(u.uid))}>
+                    Cancel Request
+                  </button>
+                ) : (
+                  <button className="fbp-btn fbp-btn-friends" onClick={() => (isPreview ? noop() : handleSendRequest(u.uid))}>
+                    <FbIco d={FBP_ICON.invite} size={22} /> Add friend
+                  </button>
+                )}
+                <button className="fbp-btn fbp-btn-msg" onClick={() => (isPreview ? noop() : startChat(u.uid, u.name, photo))}>
+                  <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
+                    <path d="M12 2C6.5 2 2 6.14 2 11.25c0 2.88 1.41 5.45 3.62 7.16.12 1.1-.28 2.62-1.05 3.59-.13.16-.02.4.18.38 2.34-.19 4.05-1.25 4.85-1.85.77.16 1.58.25 2.4.25 5.5 0 10-4.14 10-9.25S17.5 2 12 2z" />
+                  </svg>
+                  Message
                 </button>
-              )}
-              <button className="fbp-btn fbp-btn-msg" onClick={() => startChat(u.uid, u.name, photo)}>
-                <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
-                  <path d="M12 2C6.5 2 2 6.14 2 11.25c0 2.88 1.41 5.45 3.62 7.16.12 1.1-.28 2.62-1.05 3.59-.13.16-.02.4.18.38 2.34-.19 4.05-1.25 4.85-1.85.77.16 1.58.25 2.4.25 5.5 0 10-4.14 10-9.25S17.5 2 12 2z" />
-                </svg>
-                Message
+                <button className="fbp-btn fbp-btn-poke" onClick={() => (isPreview ? noop() : fbPoke(u))} aria-label="Poke">
+                  <FbIco d={FBP_ICON.poke} size={22} />
+                </button>
+              </div>
+            )}
+
+            {u.actionButton && FB_ACTION_LABELS[u.actionButton] && !isOwnMode && (
+              <button
+                className="fbp-btn fbp-btn-action"
+                onClick={() => (isPreview ? noop() : startChat(u.uid, u.name, photo))}
+              >
+                {FB_ACTION_LABELS[u.actionButton]}
               </button>
-              <button className="fbp-btn fbp-btn-poke" onClick={() => fbPoke(u)} aria-label="Poke">
-                <FbIco d={FBP_ICON.poke} size={22} />
-              </button>
-            </div>
+            )}
+            {u.actionButton && FB_ACTION_LABELS[u.actionButton] && isOwnMode && (
+              <div className="fbp-status">Action button: {FB_ACTION_LABELS[u.actionButton]}</div>
+            )}
 
             <div className="fbp-tabs">
-              {(["all", "reels", "photos"] as const).map((t) => (
+              {tabs.map((t) => (
                 <button
                   key={t}
                   className={`fbp-tab${profileTab === t ? " active" : ""}`}
@@ -10950,16 +11110,36 @@ const handleChatTyping = (value: string) => {
                     setFbPhotoSub("")
                   }}
                 >
-                  {t === "all" ? "All" : t === "reels" ? "Reels" : "Photos"}
+                  {t === "all" ? "All" : t === "reels" ? "Reels" : t === "photos" ? "Photos" : "Events"}
                 </button>
               ))}
             </div>
 
             {profileTab === "all" && (
               <div className="fbp-left">
-                {showInfo && (bday || u.location || u.handle) && (
+                {highlights.length > 0 && (
                   <>
-                    <div className="fbp-sec-title">Personal details</div>
+                    <div className="fbp-sec-title">Highlights</div>
+                    <div className="fbp-fstrip">
+                      {highlights.map((h, i) => (
+                        <div className="fbp-fcard" key={i} onClick={() => viewer(h)}>
+                          <img src={h} alt="" />
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                )}
+
+                {showInfo && (
+                  <>
+                    <div className="fbp-sec-head">
+                      <div className="fbp-sec-title" style={{ margin: 0 }}>Personal details</div>
+                      {isOwnMode && (
+                        <button className="fbp-pen" onClick={openEditProfile} aria-label="Edit details">
+                          <FbIco d={FBP_ICON.edit} size={24} />
+                        </button>
+                      )}
+                    </div>
                     {bday && (
                       <div className="fbp-row">
                         <svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor">
@@ -10984,23 +11164,26 @@ const handleChatTyping = (value: string) => {
                         <span>{u.handle}</span>
                       </div>
                     )}
+                    {!bday && !u.location && !u.handle && (
+                      <div className="fbp-empty">{isOwnMode ? "Add your details with the pencil" : "No details to show"}</div>
+                    )}
                   </>
                 )}
 
                 <div className="fbp-sec-head">
                   <div className="fbp-sec-title" style={{ margin: 0 }}>Friends</div>
                   {theirFriends.length > 0 && (
-                    <span className="fbp-seeall" onClick={() => openFriendsList(u.uid, u.name)}>See all</span>
+                    <span className="fbp-seeall" onClick={() => (isPreview ? noop() : openFriendsList(u.uid, u.name))}>See all</span>
                   )}
                 </div>
-                {viewingUserFriendsLoading ? (
+                {friendsLoading ? (
                   <div className="fbp-empty">Loading friends...</div>
                 ) : theirFriends.length === 0 ? (
-                  <div className="fbp-empty">No friends to show</div>
+                  <div className="fbp-empty">{isOwnMode ? "You don't have any friends yet" : "No friends to show"}</div>
                 ) : (
                   <div className="fbp-fstrip">
                     {theirFriends.slice(0, 8).map((f: any) => (
-                      <div className="fbp-fcard" key={f.uid} onClick={() => openUserProfile(f.uid)}>
+                      <div className="fbp-fcard" key={f.uid} onClick={() => (isPreview ? noop() : openUserProfile(f.uid))}>
                         <img src={avatarUrl(f)} alt={f.name} />
                         <div>{f.name?.split(" ")[0]}</div>
                       </div>
@@ -11008,12 +11191,12 @@ const handleChatTyping = (value: string) => {
                   </div>
                 )}
 
-                <div className="fbp-sec-title">Posts ({visiblePosts.length})</div>
+                {!isOwnMode && <div className="fbp-sec-title">Posts ({visiblePosts.length})</div>}
               </div>
             )}
           </div>
 
-          {profileTab === "all" && (
+          {profileTab === "all" && !isOwnMode && (
             <div className="fbp-posts">
               {visiblePosts.length === 0 ? (
                 <div className="mb-empty">
@@ -11021,21 +11204,20 @@ const handleChatTyping = (value: string) => {
                   <p style={{ fontSize: 14, marginTop: 4 }}>This user hasn't posted anything</p>
                 </div>
               ) : (
-                visiblePosts
-                  .slice()
-                  .sort((a: any, b: any) => Number(!!b.pinned) - Number(!!a.pinned))
-                  .map((p: any) => renderPost(p))
+                postList(visiblePosts.slice().sort((a: any, b: any) => Number(!!b.pinned) - Number(!!a.pinned)))
               )}
             </div>
           )}
 
           {profileTab === "reels" && (
             <div className="fbp-posts">
-              {reelPosts.length === 0 ? (
-                <div className="mb-empty"><b>No reels yet</b></div>
-              ) : (
-                reelPosts.map((p: any) => renderPost(p))
-              )}
+              {reelPosts.length === 0 ? <div className="mb-empty"><b>No reels yet</b></div> : postList(reelPosts)}
+            </div>
+          )}
+
+          {profileTab === "events" && (
+            <div className="fbp-posts">
+              <div className="mb-empty"><b>No events yet</b></div>
             </div>
           )}
 
@@ -11058,23 +11240,13 @@ const handleChatTyping = (value: string) => {
               </div>
 
               {fbPhotoSub === "profile" ? (
-                u.photoURL ? (
-                  <Grid items={[{ src: u.photoURL, onClick: openProfilePic }]} />
-                ) : (
-                  <div className="fbp-empty">No profile pictures</div>
-                )
+                u.photoURL ? <Grid items={[{ src: u.photoURL, onClick: openProfilePic }]} /> : <div className="fbp-empty">No profile pictures</div>
               ) : fbPhotoSub === "cover" ? (
-                u.coverURL ? (
-                  <Grid items={[{ src: u.coverURL, onClick: openCoverPic }]} />
-                ) : (
-                  <div className="fbp-empty">No cover photos</div>
-                )
+                u.coverURL ? <Grid items={[{ src: u.coverURL, onClick: openCoverPic }]} /> : <div className="fbp-empty">No cover photos</div>
               ) : fbPhotoSub === "albums" ? (
                 <div className="fbp-albums">
                   <div className="fbp-album" onClick={() => setFbPhotoSub("")}>
-                    <div className="fbp-album-th">
-                      {photoPosts[0] ? <img src={photoPosts[0].image} alt="" /> : null}
-                    </div>
+                    <div className="fbp-album-th">{photoPosts[0] ? <img src={photoPosts[0].image} alt="" /> : null}</div>
                     <b>Timeline photos</b>
                     <small>{photoPosts.length} items</small>
                   </div>
@@ -11098,6 +11270,158 @@ const handleChatTyping = (value: string) => {
       </div>
     )
   }
+
+  const renderFbProfile = () =>
+    renderFbProfileCore("other", viewingUser, viewingUserPosts, viewingUserFriends, viewingUserFriendsLoading)
+
+  /* ---- Own profile: Profile settings page ---- */
+  const renderFbOwnMenu = () => {
+    const Item = ({ icon, label, onClick }: { icon: string; label: string; onClick: () => void }) => (
+      <button className="fbp-mi" onClick={onClick}>
+        <FbIco d={icon} size={28} />
+        <span>{label}</span>
+      </button>
+    )
+    const photoUrls: string[] = myPosts.filter((p: any) => p.image && !p.youtube && !p.binnedAt).map((p: any) => p.image)
+    const proOn = profile?.proMode !== false
+    const soon = (title: string, line: string) => setFbInfo({ title, lines: [line] })
+
+    return (
+      <div className="mb-view active">
+        <div className="fbp fbp-menu">
+          <div className="fbp-menu-head">
+            <button className="fbp-menu-back" onClick={goBack} aria-label="Back">
+              <FbIco d={FBP_ICON.back} size={26} />
+            </button>
+            <div className="fbp-menu-title">Profile settings</div>
+          </div>
+
+          <Item icon={FBP_ICON.edit} label="Edit" onClick={openEditProfile} />
+          <Item icon={FBP_ICON.heart} label="Add highlights" onClick={() => setFbHlOpen(true)} />
+          <Item
+            icon={FBP_ICON.shield}
+            label="Profile status"
+            onClick={() =>
+              setFbInfo({
+                title: "Profile status",
+                subtitle: profile?.profileStatus ? `Current: ${profile.profileStatus}` : "Show a status on your profile",
+                actions: [
+                  ...["Available", "Busy", "Away", "Do not disturb"].map((st) => ({
+                    label: st,
+                    onClick: () => fbSaveField({ profileStatus: st }, "Status updated", st),
+                  })),
+                  { label: "Clear status", danger: true, onClick: () => fbSaveField({ profileStatus: "" }, "Status cleared", "") },
+                ],
+              })
+            }
+          />
+          <Item
+            icon={FBP_ICON.action}
+            label="Add action button"
+            onClick={() =>
+              setFbInfo({
+                title: "Add action button",
+                subtitle: "Visitors will see this button on your profile.",
+                actions: [
+                  ...Object.entries(FB_ACTION_LABELS).map(([k, label]) => ({
+                    label,
+                    onClick: () => fbSaveField({ actionButton: k }, "Action button added", label),
+                  })),
+                  { label: "Remove button", danger: true, onClick: () => fbSaveField({ actionButton: "" }, "Removed", "") },
+                ],
+              })
+            }
+          />
+          <Item icon={FBP_ICON.archive} label="Archive" onClick={() => setManageOpen(true)} />
+          <Item icon={FBP_ICON.eye} label="View as" onClick={() => pushPage("fb-view-as")} />
+          <Item icon={FBP_ICON.info} label="Meta One" onClick={() => soon("Meta One", "Meta One isn't available in MeBook yet.")} />
+          <Item icon={FBP_ICON.mega} label="Advertise" onClick={() => soon("Advertise", "Ads aren't available in MeBook yet.")} />
+          <Item icon={FBP_ICON.list} label="Activity log" onClick={() => pushPage("fb-activity")} />
+          <Item
+            icon={FBP_ICON.review}
+            label="Review posts and tags"
+            onClick={() => soon("Review posts and tags", "Nothing to review right now.")}
+          />
+          <Item icon={FBP_ICON.lock} label="Privacy Centre" onClick={() => pushPage("settings")} />
+          <Item icon={FBP_ICON.search} label="Search" onClick={openSearch} />
+          <Item
+            icon={FBP_ICON.undo}
+            label={proOn ? "Turn off pro mode" : "Turn on pro mode"}
+            onClick={() =>
+              fbSaveField(
+                { proMode: !proOn },
+                proOn ? "Pro mode off" : "Pro mode on",
+                proOn ? "Friend & post counts are hidden on your profile" : "Friend & post counts are visible again"
+              )
+            }
+          />
+          <Item
+            icon={FBP_ICON.share}
+            label="Share profile"
+            onClick={() => fbShareLink(profile.name, `${profile.name} on MeBook`, fbProfileLink(user.uid))}
+          />
+          <Item
+            icon={FBP_ICON.invite}
+            label="Invite people to connect"
+            onClick={() =>
+              fbShareLink("MeBook", "Join me on MeBook!", (() => {
+                try { return window.location.origin + window.location.pathname } catch { return "" }
+              })())
+            }
+          />
+        </div>
+        {fbHlOpen && (
+          <FbHighlightPicker
+            photos={photoUrls}
+            selected={Array.isArray(profile?.highlights) ? profile.highlights : []}
+            onClose={() => setFbHlOpen(false)}
+            onSave={(l) => {
+              setFbHlOpen(false)
+              fbSaveField({ highlights: l }, "Highlights saved", `${l.length} photo${l.length === 1 ? "" : "s"} on your profile`)
+            }}
+          />
+        )}
+      </div>
+    )
+  }
+
+  const renderFbActivity = () => (
+    <div className="mb-view active">
+      <div className="fbp fbp-menu">
+        <div className="fbp-menu-head">
+          <button className="fbp-menu-back" onClick={goBack} aria-label="Back">
+            <FbIco d={FBP_ICON.back} size={26} />
+          </button>
+          <div className="fbp-menu-title">Activity log</div>
+        </div>
+        {myPosts.length === 0 ? (
+          <div className="fbp-empty">No activity yet</div>
+        ) : (
+          myPosts.map((p: any) => (
+            <div
+              key={p.id}
+              className="fbp-mi"
+              style={{ cursor: "default" }}
+            >
+              {p.image ? (
+                <img src={p.image} alt="" style={{ width: 52, height: 52, borderRadius: 8, objectFit: "cover", flexShrink: 0 }} />
+              ) : (
+                <FbIco d={FBP_ICON.list} size={28} />
+              )}
+              <span style={{ flex: 1, minWidth: 0 }}>
+                <span style={{ display: "block", fontSize: 16, fontWeight: 600 }}>
+                  You posted{p.binnedAt ? " (in bin)" : p.archived ? " (archived)" : ""}
+                </span>
+                <span style={{ display: "block", fontSize: 13.5, opacity: 0.7, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                  {p.caption || p.movie || "Photo"} · {p.timeText || timeAgo(p.createdAt)}
+                </span>
+              </span>
+            </div>
+          ))
+        )}
+      </div>
+    </div>
+  )
 
   const renderFbMenu = () => {
     const uid = currentParams.uid
@@ -12709,6 +13033,12 @@ const handleChatTyping = (value: string) => {
 
           {currentView === "fb-profile-menu" && renderFbMenu()}
 
+          {currentView === "fb-own-menu" && renderFbOwnMenu()}
+
+          {currentView === "fb-view-as" && renderFbProfileCore("preview", profile, myPosts, myFriends, false)}
+
+          {currentView === "fb-activity" && renderFbActivity()}
+
           {/* ============================================================
               MESSAGES — MeChat (screenshot 2 style: own right, other left)
               ============================================================ */}
@@ -13706,7 +14036,9 @@ const handleChatTyping = (value: string) => {
 
           {currentView === "profile" && (
             <div className="mb-view active">
-              {renderProfilePage(profile, myPosts, true)}
+              {renderFbProfileCore("own", profile, myPosts, myFriends, false)}
+
+              {profileTab === "all" && (<>
 
               <div className="mb-card" style={{ marginBottom: 16 }}>
                 <div className="mb-card-title">Privacy</div>
@@ -13776,6 +14108,7 @@ const handleChatTyping = (value: string) => {
                   myPosts.slice().sort((a: any, b: any) => Number(!!b.pinned) - Number(!!a.pinned)).map((p) => renderPost(p, true))
                 )}
               </div>
+              </>)}
             </div>
           )}
 

@@ -6,6 +6,7 @@ import React, {
   useState,
   useCallback,
 } from "react"
+import { createPortal } from "react-dom"
 
 
 /* ============================================================
@@ -2825,6 +2826,181 @@ transition:transform .15s ease,box-shadow .15s ease;-webkit-tap-highlight-color:
 .mebook-root .fbp-posts{padding:8px 10px 0;}
 .mebook-root .fbp-viewas{margin:8px 10px;}
 }
+
+/* ===================== STORIES ===================== */
+.mebook-root .st-bar{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 6px;margin:0 0 14px;scrollbar-width:none;-webkit-overflow-scrolling:touch;}
+.mebook-root .st-bar::-webkit-scrollbar{display:none;}
+.mebook-root .st-card{position:relative;flex:0 0 auto;width:108px;height:192px;border-radius:12px;overflow:hidden;cursor:pointer;background:#222;box-shadow:var(--shadow);transition:transform .15s;-webkit-tap-highlight-color:transparent;}
+.mebook-root .st-card:active{transform:scale(.97);}
+.mebook-root .st-card-bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
+.mebook-root .st-card-shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.3) 0,transparent 32%,transparent 56%,rgba(0,0,0,.65) 100%);}
+.mebook-root .st-ring{position:absolute;top:8px;left:8px;width:38px;height:38px;border-radius:50%;object-fit:cover;border:3px solid #8a8d91;background:#333;box-sizing:border-box;}
+.mebook-root .st-ring.new{border-color:#0866ff;}
+.mebook-root .st-card-name{position:absolute;left:8px;right:8px;bottom:8px;color:#fff;font-size:13px;font-weight:700;line-height:1.2;text-shadow:0 1px 3px rgba(0,0,0,.7);overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;}
+.mebook-root .st-create{background:var(--card);border:1px solid var(--border);}
+.mebook-root .st-create-img{position:absolute;left:0;right:0;top:0;height:72%;background-size:cover;background-position:center;background-color:#333;}
+.mebook-root .st-create-foot{position:absolute;left:0;right:0;bottom:0;height:28%;background:var(--card);display:flex;align-items:flex-end;justify-content:center;padding-bottom:9px;font-size:13px;font-weight:700;color:var(--text);}
+.mebook-root .st-plus{position:absolute;left:50%;top:72%;transform:translate(-50%,-50%);width:38px;height:38px;border-radius:50%;background:#0866ff;color:#fff;border:3px solid var(--card);display:flex;align-items:center;justify-content:center;}
+
+/* layers */
+.mebook-root .st-layer{position:fixed;inset:0;z-index:10002;background:#000;color:#fff;display:flex;flex-direction:column;font-family:inherit;animation:stFade .18s ease;}
+@keyframes stFade{from{opacity:0}to{opacity:1}}
+.mebook-root .st-col{flex:1;min-height:0;display:flex;flex-direction:column;}
+.mebook-root .st-stagewrap{flex:1;min-height:0;container-type:size;display:flex;align-items:center;justify-content:center;}
+.mebook-root .st-frame{position:relative;width:min(100cqw,56.25cqh);height:min(100cqh,177.78cqw);flex:0 0 auto;}
+.mebook-root .st-stage{position:absolute;inset:0;overflow:hidden;background:#000;container-type:inline-size;}
+@media(min-width:700px){.mebook-root .st-stage{border-radius:14px;}}
+.mebook-root .st-bgblur{position:absolute;inset:-20px;background-size:cover;background-position:center;filter:blur(26px) brightness(.55);transform:scale(1.1);}
+.mebook-root .st-img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;user-select:none;-webkit-user-drag:none;pointer-events:none;}
+
+/* overlays on the photo */
+.mebook-root .st-ov{position:absolute;max-width:86%;text-align:center;white-space:pre-wrap;word-break:break-word;user-select:none;-webkit-user-select:none;touch-action:none;line-height:1.15;}
+.mebook-root .st-ov.edit{cursor:grab;outline:1px dashed rgba(255,255,255,.35);outline-offset:4px;}
+.mebook-root .st-ov-text{font-size:7.4cqw;font-weight:800;padding:.1em .35em;border-radius:.3em;text-shadow:0 1px 6px rgba(0,0,0,.45);}
+.mebook-root .st-ov-sticker{font-size:20cqw;}
+.mebook-root .st-ov-mention{font-size:5cqw;font-weight:800;padding:.25em .7em;border-radius:.5em;background:#fff;color:#0866ff;box-shadow:0 2px 10px rgba(0,0,0,.35);cursor:pointer;}
+
+/* creator */
+.mebook-root .st-top{position:absolute;left:0;right:0;top:0;z-index:5;display:flex;align-items:center;gap:8px;padding:calc(10px + env(safe-area-inset-top,0px)) 10px 22px;background:linear-gradient(rgba(0,0,0,.55),transparent);}
+.mebook-root .st-ibtn{width:40px;height:40px;border-radius:50%;border:none;background:transparent;color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;flex:0 0 auto;-webkit-tap-highlight-color:transparent;}
+.mebook-root .st-ibtn:active{background:rgba(255,255,255,.15);}
+.mebook-root .st-musicpill{flex:1;min-width:0;display:flex;align-items:center;gap:8px;background:#5b1119;border-radius:999px;padding:5px 6px 5px 6px;}
+.mebook-root .st-musicpill img,.mebook-root .st-musicpill .st-mcover{width:34px;height:34px;border-radius:50%;object-fit:cover;background:#2a2a2a;display:flex;align-items:center;justify-content:center;flex:0 0 auto;}
+.mebook-root .st-mtxt{flex:1;min-width:0;line-height:1.15;}
+.mebook-root .st-mtxt b,.mebook-root .st-mtxt span{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.mebook-root .st-mtxt b{font-size:13px;font-weight:800;}
+.mebook-root .st-mtxt span{font-size:12px;opacity:.8;}
+.mebook-root .st-tools{position:absolute;left:0;right:0;bottom:10px;z-index:5;display:flex;gap:10px;overflow-x:auto;padding:0 12px;scrollbar-width:none;}
+.mebook-root .st-tools::-webkit-scrollbar{display:none;}
+.mebook-root .st-tool{flex:0 0 auto;width:62px;display:flex;flex-direction:column;align-items:center;gap:5px;background:none;border:none;color:#fff;font-size:12px;cursor:pointer;text-shadow:0 1px 3px rgba(0,0,0,.8);}
+.mebook-root .st-tool i{font-style:normal;width:54px;height:54px;border-radius:50%;background:rgba(40,40,40,.8);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:19px;border:2px solid transparent;}
+.mebook-root .st-tool.on i{border-color:#22c55e;}
+.mebook-root .st-foot{flex:0 0 auto;display:flex;align-items:center;gap:8px;padding:10px 12px calc(12px + env(safe-area-inset-bottom,0px));background:#000;}
+.mebook-root .st-chip{display:inline-flex;align-items:center;gap:8px;height:42px;padding:0 16px;border-radius:999px;background:#2a2b2d;color:#fff;border:none;font-size:15px;font-weight:700;cursor:pointer;}
+.mebook-root .st-share{margin-left:auto;height:46px;padding:0 34px;border-radius:12px;border:none;background:#0866ff;color:#fff;font-size:16px;font-weight:800;cursor:pointer;}
+.mebook-root .st-share:disabled{opacity:.6;}
+.mebook-root .st-trash{position:absolute;left:50%;bottom:18px;transform:translateX(-50%);z-index:6;width:54px;height:54px;border-radius:50%;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;transition:transform .15s,background .15s;}
+.mebook-root .st-trash.over{background:#ef4444;transform:translateX(-50%) scale(1.25);}
+.mebook-root .st-fx{position:absolute;left:0;right:0;bottom:96px;z-index:5;display:flex;gap:10px;overflow-x:auto;padding:0 12px;scrollbar-width:none;}
+.mebook-root .st-fx::-webkit-scrollbar{display:none;}
+.mebook-root .st-fxi{flex:0 0 auto;width:62px;text-align:center;color:#fff;font-size:12px;cursor:pointer;background:none;border:none;text-shadow:0 1px 3px rgba(0,0,0,.8);}
+.mebook-root .st-fxi div{width:62px;height:62px;border-radius:12px;background-size:cover;background-position:center;border:2px solid transparent;margin-bottom:4px;}
+.mebook-root .st-fxi.on div{border-color:#22c55e;}
+.mebook-root .st-busy{position:absolute;inset:0;z-index:20;background:rgba(0,0,0,.65);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;font-weight:800;font-size:16px;}
+.mebook-root .st-bar-p{width:60%;height:6px;border-radius:3px;background:rgba(255,255,255,.25);overflow:hidden;}
+.mebook-root .st-bar-p i{display:block;height:100%;background:#22c55e;transition:width .2s;}
+
+/* text editor */
+.mebook-root .st-textedit{position:fixed;inset:0;z-index:10005;background:rgba(0,0,0,.84);display:flex;flex-direction:column;align-items:center;padding:calc(12px + env(safe-area-inset-top,0px)) 14px calc(14px + env(safe-area-inset-bottom,0px));}
+.mebook-root .st-te-top{width:100%;max-width:520px;display:flex;justify-content:space-between;align-items:center;}
+.mebook-root .st-te-top button{background:none;border:none;color:#fff;font-size:17px;font-weight:800;padding:8px 14px;cursor:pointer;}
+.mebook-root .st-te-area{flex:1;width:100%;max-width:520px;display:flex;align-items:center;justify-content:center;}
+.mebook-root .st-te-area textarea{width:100%;border:none;outline:none;resize:none;text-align:center;font-size:30px;font-weight:800;font-family:inherit;border-radius:12px;padding:8px 12px;max-height:50vh;}
+.mebook-root .st-te-area textarea::placeholder{color:rgba(255,255,255,.5);}
+.mebook-root .st-te-colors{display:flex;gap:10px;overflow-x:auto;padding:10px 4px;max-width:100%;}
+.mebook-root .st-te-colors button{flex:0 0 auto;width:32px;height:32px;border-radius:50%;border:3px solid #fff;cursor:pointer;opacity:.9;}
+.mebook-root .st-te-colors button.on{transform:scale(1.2);opacity:1;border-color:#22c55e;}
+
+/* viewer */
+.mebook-root .st-progress{position:absolute;left:10px;right:10px;top:calc(8px + env(safe-area-inset-top,0px));z-index:6;display:flex;gap:4px;pointer-events:none;}
+.mebook-root .st-seg{flex:1;height:3px;border-radius:2px;background:rgba(255,255,255,.35);overflow:hidden;}
+.mebook-root .st-seg i{display:block;height:100%;background:#fff;}
+.mebook-root .st-vhead{position:absolute;left:0;right:0;top:calc(14px + env(safe-area-inset-top,0px));z-index:5;display:flex;align-items:center;gap:8px;padding:8px 6px 26px 12px;background:linear-gradient(rgba(0,0,0,.5),transparent);}
+.mebook-root .st-vav{width:40px;height:40px;border-radius:50%;object-fit:cover;border:2px solid #fff;cursor:pointer;background:#333;flex:0 0 auto;}
+.mebook-root .st-vname{flex:1;min-width:0;font-weight:800;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-shadow:0 1px 3px rgba(0,0,0,.6);}
+.mebook-root .st-vtime{font-size:13px;opacity:.88;margin-left:8px;font-weight:500;}
+.mebook-root .st-vmusic{position:absolute;left:12px;top:calc(80px + env(safe-area-inset-top,0px));z-index:5;display:inline-flex;align-items:center;gap:8px;background:#fff;color:#111;border-radius:999px;padding:7px 12px;font-size:14px;max-width:72%;}
+.mebook-root .st-vmusic span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.mebook-root .st-vmusic button{background:none;border:none;color:#0866ff;font-weight:800;font-size:14px;cursor:pointer;flex:0 0 auto;padding:0;}
+.mebook-root .st-aipill{position:absolute;right:12px;top:calc(84px + env(safe-area-inset-top,0px));z-index:5;background:rgba(0,0,0,.55);border-radius:999px;padding:5px 10px;font-size:12px;font-weight:700;}
+.mebook-root .st-vfoot{flex:0 0 auto;display:flex;align-items:center;gap:8px;padding:10px 10px calc(10px + env(safe-area-inset-bottom,0px));background:#18191a;border-top:1px solid #2a2b2d;}
+.mebook-root .st-rbtn{width:46px;height:46px;border-radius:50%;border:none;background:#3a3b3c;color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;flex:0 0 auto;}
+.mebook-root .st-input{flex:1;min-width:0;height:46px;border-radius:999px;border:none;outline:none;background:#3a3b3c;color:#fff;padding:0 18px;font-size:16px;font-family:inherit;}
+.mebook-root .st-input::placeholder{color:#b0b3b8;}
+.mebook-root .st-rx{width:46px;height:46px;border-radius:50%;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex:0 0 auto;color:#fff;transition:transform .12s;-webkit-tap-highlight-color:transparent;}
+.mebook-root .st-rx:active{transform:scale(.86);}
+.mebook-root .st-rx.love{background:#f33e58;}
+.mebook-root .st-rx.like{background:#0866ff;}
+.mebook-root .st-rx.gem{background:#3a3b3c;}
+.mebook-root .st-rx.on{box-shadow:0 0 0 3px rgba(255,255,255,.92);}
+.mebook-root .st-viewbtn{display:flex;flex-direction:column;align-items:center;gap:0;background:none;border:none;color:#fff;font-size:15px;font-weight:700;cursor:pointer;padding:0 6px;}
+.mebook-root .st-act{display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:none;color:#fff;font-size:13px;cursor:pointer;min-width:62px;}
+.mebook-root .st-flash{position:absolute;left:50%;top:48%;z-index:7;font-size:84px;pointer-events:none;animation:stFlash .95s ease-out forwards;transform:translate(-50%,-50%);}
+@keyframes stFlash{0%{transform:translate(-50%,-30%) scale(.4);opacity:0}25%{transform:translate(-50%,-60%) scale(1.15);opacity:1}100%{transform:translate(-50%,-160%) scale(1);opacity:0}}
+
+/* sheets / rows */
+.mebook-root .st-sheet-bg{position:fixed;inset:0;z-index:10004;background:rgba(0,0,0,.55);display:flex;align-items:flex-end;justify-content:center;animation:stFade .15s ease;}
+.mebook-root .st-sheet{width:100%;max-width:560px;max-height:84vh;overflow-y:auto;background:#242526;color:#e4e6eb;border-radius:18px 18px 0 0;padding:8px 12px calc(14px + env(safe-area-inset-bottom,0px));animation:stUp .22s cubic-bezier(.2,.8,.2,1);}
+.mebook-root .st-sheet.tall{height:80vh;display:flex;flex-direction:column;overflow:hidden;}
+@keyframes stUp{from{transform:translateY(40px);opacity:0}to{transform:none;opacity:1}}
+.mebook-root .st-sheet-handle{width:44px;height:5px;border-radius:3px;background:#5a5c60;margin:2px auto 10px;flex:0 0 auto;}
+.mebook-root .st-sheet-title{font-size:17px;font-weight:800;text-align:center;margin-bottom:10px;flex:0 0 auto;}
+.mebook-root .st-group{background:#313233;border-radius:14px;padding:4px 0;margin-bottom:10px;flex:0 0 auto;}
+.mebook-root .st-row{width:100%;display:flex;align-items:center;gap:14px;padding:12px 14px;background:none;border:none;color:#e4e6eb;text-align:left;cursor:pointer;font-size:16px;font-weight:700;font-family:inherit;}
+.mebook-root .st-row small{display:block;font-weight:500;font-size:14px;color:#a8abaf;margin-top:2px;line-height:1.3;}
+.mebook-root .st-row:active{background:rgba(255,255,255,.06);}
+.mebook-root .st-row.danger{color:#ff6b6b;}
+.mebook-root .st-user{display:flex;align-items:center;gap:12px;padding:8px 6px;}
+.mebook-root .st-user img{width:46px;height:46px;border-radius:50%;object-fit:cover;background:#333;flex:0 0 auto;}
+.mebook-root .st-un{flex:1;min-width:0;font-size:16px;font-weight:700;}
+.mebook-root .st-un small{display:block;font-size:13px;color:#a8abaf;font-weight:500;}
+.mebook-root .st-sbtn{background:#0866ff;color:#fff;border:none;border-radius:8px;padding:8px 16px;font-weight:700;font-size:14px;cursor:pointer;font-family:inherit;}
+.mebook-root .st-sbtn.ghost{background:#3a3b3c;color:#e4e6eb;}
+.mebook-root .st-sbtn:disabled{opacity:.7;cursor:default;}
+.mebook-root .st-search{width:100%;box-sizing:border-box;height:42px;border-radius:999px;border:none;outline:none;background:#3a3b3c;color:#fff;padding:0 16px;font-size:15px;margin-bottom:10px;font-family:inherit;flex:0 0 auto;}
+.mebook-root .st-search::placeholder{color:#b0b3b8;}
+.mebook-root .st-chips{display:flex;gap:8px;overflow-x:auto;padding:0 0 10px;scrollbar-width:none;flex:0 0 auto;}
+.mebook-root .st-chips::-webkit-scrollbar{display:none;}
+.mebook-root .st-chipb{flex:0 0 auto;padding:8px 14px;border-radius:999px;background:#3a3b3c;color:#e4e6eb;border:none;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;}
+.mebook-root .st-chipb.on{background:#16a34a;color:#fff;}
+.mebook-root .st-musicscroll{flex:1;min-height:0;overflow-y:auto;}
+.mebook-root .st-trk{display:flex;align-items:center;gap:12px;padding:8px 4px;cursor:pointer;border-radius:10px;}
+.mebook-root .st-trk:active{background:rgba(255,255,255,.07);}
+.mebook-root .st-trk img,.mebook-root .st-nocov{width:48px;height:48px;border-radius:8px;object-fit:cover;background:#3a3b3c;flex:0 0 auto;}
+.mebook-root .st-tt{flex:1;min-width:0;}
+.mebook-root .st-tt b{display:block;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.mebook-root .st-tt span{display:block;font-size:13px;color:#a8abaf;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.mebook-root .st-empty{padding:26px 10px;text-align:center;color:#a8abaf;font-size:14px;}
+.mebook-root .st-emojis{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;max-height:50vh;overflow-y:auto;padding-bottom:6px;}
+.mebook-root .st-emojis button{background:none;border:none;font-size:30px;padding:6px 0;cursor:pointer;border-radius:10px;}
+.mebook-root .st-emojis button:active{background:rgba(255,255,255,.1);}
+.mebook-root .st-dialog-bg{position:fixed;inset:0;z-index:10006;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;padding:20px;animation:stFade .15s ease;}
+.mebook-root .st-dialog{width:min(88vw,340px);background:#242526;color:#e4e6eb;border-radius:18px;padding:22px 18px 16px;text-align:center;}
+.mebook-root .st-dialog b{font-size:18px;display:block;margin-bottom:6px;}
+.mebook-root .st-dialog p{font-size:14px;color:#a8abaf;margin:0 0 16px;line-height:1.4;}
+.mebook-root .st-dialog div{display:flex;gap:10px;justify-content:center;}
+.mebook-root .st-dialog .st-sbtn{flex:1;padding:11px 10px;font-size:15px;}
+
+/* viewers page */
+.mebook-root .st-vpage{position:fixed;inset:0;z-index:10003;background:#18191a;color:#e4e6eb;overflow-y:auto;animation:stFade .15s ease;}
+.mebook-root .st-vp-in{max-width:560px;margin:0 auto;padding:0 14px 30px;}
+.mebook-root .st-vp-top{display:flex;justify-content:space-between;align-items:center;padding:calc(14px + env(safe-area-inset-top,0px)) 0 8px;}
+.mebook-root .st-vp-top .gap{display:flex;gap:10px;}
+.mebook-root .st-vp-thumb{position:relative;width:min(62vw,250px);aspect-ratio:9/16;border-radius:18px;overflow:hidden;margin:8px auto 14px;background:#000;}
+.mebook-root .st-vp-thumb .st-stage{border-radius:18px;}
+.mebook-root .st-info{position:relative;background:#2b2c2e;border-radius:14px;padding:14px 48px 14px 16px;margin-bottom:12px;}
+.mebook-root .st-info b{display:block;font-size:20px;line-height:1.2;margin-bottom:6px;}
+.mebook-root .st-info p{margin:0;font-size:16px;color:#c3c6cb;line-height:1.35;}
+.mebook-root .st-info-x{position:absolute;right:10px;top:50%;transform:translateY(-50%);width:40px;height:40px;border-radius:50%;border:none;background:#3a3b3c;color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;}
+.mebook-root .st-stats{display:flex;justify-content:center;gap:34px;padding:12px 0;border-bottom:1px solid #2f3032;font-weight:700;font-size:17px;}
+.mebook-root .st-stats span{display:inline-flex;align-items:center;gap:8px;}
+.mebook-root .st-tabs{display:flex;align-items:center;gap:8px;padding:12px 0;border-bottom:1px solid #2f3032;margin-bottom:12px;}
+.mebook-root .st-tab{padding:12px 22px;border-radius:999px;border:none;background:none;color:#e4e6eb;font-size:18px;font-weight:700;cursor:pointer;font-family:inherit;}
+.mebook-root .st-tab.on{background:#263951;color:#6aa8ff;}
+.mebook-root .st-insights{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:6px;}
+.mebook-root .st-insights div{background:#2b2c2e;border-radius:14px;padding:14px;}
+.mebook-root .st-insights b{display:block;font-size:24px;margin-bottom:2px;}
+.mebook-root .st-insights span{font-size:13px;color:#a8abaf;}
+.mebook-root .st-next{background:#2b2c2e;border-radius:16px;padding:18px;margin-top:16px;}
+.mebook-root .st-next b{font-size:20px;}
+.mebook-root .st-next p{margin:6px 0 0;font-size:15px;color:#c3c6cb;line-height:1.35;}
+.mebook-root .st-nextbtn{width:100%;margin-top:14px;height:48px;border-radius:10px;border:none;background:#263951;color:#6aa8ff;font-weight:800;font-size:17px;cursor:pointer;font-family:inherit;}
+.mebook-root .st-agrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+.mebook-root .st-athumb{position:relative;aspect-ratio:9/16;border-radius:10px;overflow:hidden;background:#000;}
+.mebook-root .st-athumb .st-stage{border-radius:10px;}
+.mebook-root .st-abtns{display:flex;gap:6px;margin-top:6px;}
+.mebook-root .st-abtns button{flex:1;border:none;border-radius:8px;background:#3a3b3c;color:#e4e6eb;font-size:13px;font-weight:700;padding:7px 0;cursor:pointer;font-family:inherit;}
+@media(max-width:480px){.mebook-root .st-card{width:104px;height:186px;}}
 `
 
 /* ============================================================
@@ -5674,6 +5850,2239 @@ function PushPrompt({ perm, onEnable }: { perm: string; onEnable: () => void }) 
         </button>
       )}
     </div>
+  )
+}
+
+/* ============================================================
+STORIES — Facebook-style stories
+(create + edit, view, reactions, viewers, 3-dots menus)
+Firestore collection: "stories"
+============================================================ */
+
+const STORY_MS = 10000 // প্রতিটি story 10 seconds
+const STORY_TTL = 24 * 60 * 60 * 1000 // 24 ঘন্টা পর expire
+
+const ST_IC: Record<string, string> = {
+  back: "M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z",
+  close: "M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z",
+  more: "M6 10c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm12 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-6 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z",
+  down: "M7.41 8.59 12 13.17l4.59-4.58L18 10l-6 6-6-6z",
+  up: "M7.41 15.41 12 10.83l4.59 4.58L18 14l-6-6-6 6z",
+  music: "M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z",
+  sticker: "M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-4 8c.83 0 1.5.67 1.5 1.5S8.83 13 8 13s-1.5-.67-1.5-1.5S7.17 10 8 10zm8 0c.83 0 1.5.67 1.5 1.5S16.83 13 16 13s-1.5-.67-1.5-1.5.67-1.5 1.5-1.5zm-4 8c-2.03 0-3.8-1.21-4.58-2.95h9.16C15.8 16.79 14.03 18 12 18z",
+  sparkle: "M19 9l1.25-2.75L23 5l-2.75-1.25L19 1l-1.25 2.75L15 5l2.75 1.25L19 9zm-7.5.5L9 4 6.5 9.5 1 12l5.5 2.5L9 20l2.5-5.5L17 12l-5.5-2.5zM19 15l-1.25 2.75L15 19l2.75 1.25L19 23l1.25-2.75L23 19l-2.75-1.25L19 15z",
+  mention: "M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10h5v-2h-5c-4.34 0-8-3.66-8-8s3.66-8 8-8 8 3.66 8 8v1.43c0 .79-.71 1.57-1.5 1.57s-1.5-.78-1.5-1.57V12c0-2.76-2.24-5-5-5s-5 2.24-5 5 2.24 5 5 5c1.38 0 2.64-.56 3.54-1.47.65.89 1.77 1.47 2.96 1.47 1.97 0 3.5-1.6 3.5-3.57V12c0-5.52-4.48-10-10-10zm0 13c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3z",
+  lock: "M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z",
+  chat: "M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z",
+  download: "M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z",
+  history: "M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z",
+  trash: "M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z",
+  link: "M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z",
+  phone: "M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z",
+  bug: "M20 8h-2.81c-.45-.78-1.07-1.45-1.82-1.96L17 4.41 15.59 3l-2.17 2.17C12.96 5.06 12.49 5 12 5s-.96.06-1.41.17L8.41 3 7 4.41l1.62 1.63C7.88 6.55 7.26 7.22 6.81 8H4v2h2.09c-.05.33-.09.66-.09 1v1H4v2h2v1c0 .34.04.67.09 1H4v2h2.81c1.04 1.79 2.97 3 5.19 3s4.15-1.21 5.19-3H20v-2h-2.09c.05-.33.09-.66.09-1v-1h2v-2h-2v-1c0-.34-.04-.67-.09-1H20V8zm-6 8h-4v-2h4v2zm0-4h-4v-2h4v2z",
+  plusCircle: "M13 7h-2v4H7v2h4v4h2v-4h4v-2h-4V7zm-1-5C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z",
+  minusCircle: "M7 11v2h10v-2H7zm5-9C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z",
+  share: "M14 9V5l7 7-7 7v-4.1c-5 0-8.5 1.6-11 5.1 1-5 4-10 11-11z",
+  muteBox: "M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2.4 12L15 16.6l-3-3-3 3L7.4 15l3-3-3-3L9 7.4l3 3 3-3L16.6 9l-3 3 3 3z",
+  report: "M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-6 14h-2v-2h2v2zm0-4h-2V7h2v6z",
+  globe: "M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z",
+  friends: "M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z",
+  gear: "M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z",
+  search: "M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z",
+  heart: "M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z",
+  like: "M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-2z",
+  play: "M8 5v14l11-7z",
+  pause: "M6 19h4V5H6v14zm8-14v14h4V5h-4z",
+  repost: "M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4z",
+  check: "M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z",
+  image: "M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z",
+  send: "M2.01 21 23 12 2.01 3 2 10l15 2-15 2z",
+  phoneDev: "M17 1.01 7 1c-1.1 0-2 .9-2 2v18c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V3c0-1.1-.9-1.99-1.99-1.99zM17 19H7V5h10v14z",
+}
+
+const ST_RX: Record<string, string> = { gem: "💖", love: "❤️", like: "👍" }
+
+const STORY_FILTERS = [
+  { id: "none", name: "Normal", css: "none" },
+  { id: "vivid", name: "Vivid", css: "saturate(1.45) contrast(1.08)" },
+  { id: "warm", name: "Warm", css: "sepia(.28) saturate(1.3) hue-rotate(-8deg)" },
+  { id: "cool", name: "Cool", css: "hue-rotate(14deg) saturate(1.1) brightness(1.04)" },
+  { id: "mono", name: "B&W", css: "grayscale(1) contrast(1.05)" },
+  { id: "fade", name: "Fade", css: "contrast(.88) brightness(1.1) saturate(.8)" },
+  { id: "drama", name: "Drama", css: "contrast(1.3) saturate(1.2) brightness(.94)" },
+  { id: "vintage", name: "Vintage", css: "sepia(.5) contrast(1.1) brightness(.98)" },
+]
+function storyFilterCss(id: any): string {
+  const f = STORY_FILTERS.find((x) => x.id === id) || STORY_FILTERS[0]
+  return f.css
+}
+
+const STORY_EMOJIS = "😀 😂 🥰 😍 😎 🤩 😭 😡 🥳 🤔 🙌 👍 👏 🔥 💯 ❤️ 💖 💎 ✨ 🎉 🎬 🍿 🎵 🎧 📸 🌙 ☀️ 🌈 🌹 🦋 👑 💀 👻 😈 🙏 💪 🍕 ☕ ⚽ 🚀 🇧🇩".split(" ")
+const STORY_TEXT_COLORS = ["#ffffff", "#111111", "#22c55e", "#facc15", "#f97316", "#ef4444", "#ec4899", "#3b82f6", "#a855f7"]
+const STORY_REPORT_REASONS = [
+  "Nudity or sexual content",
+  "Violence or harmful content",
+  "Harassment or bullying",
+  "Spam or scam",
+  "False information",
+  "Something else",
+]
+
+function StIco({ d, size = 22 }: { d: string; size?: number }) {
+  return (
+    <svg viewBox="0 0 24 24" width={size} height={size} fill="currentColor" style={{ flexShrink: 0 }}>
+      <path d={d} />
+    </svg>
+  )
+}
+
+function StGem({ size = 30 }: { size?: number }) {
+  return (
+    <svg viewBox="0 0 32 32" width={size} height={size}>
+      <defs>
+        <linearGradient id="stGemG" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stopColor="#7ee0ff" />
+          <stop offset=".5" stopColor="#b48cff" />
+          <stop offset="1" stopColor="#ff7ac8" />
+        </linearGradient>
+      </defs>
+      <path
+        d="M16 29 3.6 16.2C.6 12.9 1.9 7.4 6.2 5.8c2.8-1 5.6.2 7.3 2.4L16 11l2.5-2.8c1.7-2.2 4.5-3.4 7.3-2.4 4.3 1.6 5.6 7.1 2.6 10.4z"
+        fill="url(#stGemG)"
+      />
+      <path d="M8 9l4 3 4-3 4 3 4-3M12 12l4 13 4-13" fill="none" stroke="rgba(255,255,255,.7)" strokeWidth="1.1" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+function stId() {
+  return Math.random().toString(36).slice(2, 10)
+}
+
+function stAgo(ms: number) {
+  const s = Math.max(0, Math.floor((Date.now() - (ms || Date.now())) / 1000))
+  if (s < 60) return "Just now"
+  if (s < 3600) return Math.floor(s / 60) + " min"
+  if (s < 86400) {
+    const h = Math.floor(s / 3600)
+    return h + (h === 1 ? " hr" : " hrs")
+  }
+  return Math.floor(s / 86400) + " d"
+}
+
+function stContrast(hex: any) {
+  return hex === "#ffffff" || hex === "#facc15" || hex === "#22c55e" ? "#111111" : "#ffffff"
+}
+
+function stLoadPrefs(uid: string): any {
+  const base: any = { muted: {}, interested: {}, notInterested: {}, privacy: "public", archive: true, hideInfo: false }
+  try {
+    const p = JSON.parse(localStorage.getItem("mebook_story_prefs_" + uid) || "{}")
+    return { ...base, ...p }
+  } catch {
+    return base
+  }
+}
+function stSavePrefs(uid: string, p: any) {
+  try { localStorage.setItem("mebook_story_prefs_" + uid, JSON.stringify(p)) } catch {}
+}
+
+async function stShrink(file: File, max = 1440): Promise<Blob | File> {
+  try {
+    const url = URL.createObjectURL(file)
+    const img: HTMLImageElement = await new Promise((res, rej) => {
+      const i = new Image()
+      i.onload = () => res(i)
+      i.onerror = rej
+      i.src = url
+    })
+    URL.revokeObjectURL(url)
+    const sc = Math.min(1, max / Math.max(img.width, img.height))
+    if (sc >= 1 && file.size < 1.5 * 1024 * 1024) return file
+    const c = document.createElement("canvas")
+    c.width = Math.round(img.width * sc)
+    c.height = Math.round(img.height * sc)
+    const ctx = c.getContext("2d")
+    if (!ctx) return file
+    ctx.drawImage(img, 0, 0, c.width, c.height)
+    const blob: Blob | null = await new Promise((res) => c.toBlob(res, "image/jpeg", 0.88))
+    return blob || file
+  } catch {
+    return file
+  }
+}
+
+/* ---------- Music (online trending via iTunes API + device) ---------- */
+
+const ST_MUSIC_CHIPS: Record<string, string> = {
+  Trending: "",
+  Hindi: "bollywood hits",
+  Bangla: "bangla songs",
+  English: "pop hits",
+  Phonk: "phonk",
+  "Lo-fi": "lofi chill",
+  Islamic: "nasheed",
+}
+
+function stMapTrack(x: any) {
+  return {
+    title: x.trackName || "Unknown",
+    artist: x.artistName || "",
+    cover: String(x.artworkUrl100 || "").replace("100x100", "200x200"),
+    url: x.previewUrl,
+  }
+}
+
+async function stItunesSearch(term: string): Promise<any[]> {
+  const r = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(term)}&media=music&entity=song&limit=30`)
+  const j = await r.json()
+  return (j.results || []).filter((x: any) => x.previewUrl).map(stMapTrack)
+}
+
+async function stItunesTrending(): Promise<any[]> {
+  try {
+    const r = await fetch("https://rss.applemarketingtools.com/api/v2/us/music/most-played/25/songs.json")
+    const j = await r.json()
+    const items: any[] = (j && j.feed && j.feed.results) || []
+    const ids = items.map((x: any) => x.id).join(",")
+    if (ids) {
+      const r2 = await fetch(`https://itunes.apple.com/lookup?id=${ids}`)
+      const j2 = await r2.json()
+      const map = new Map<string, any>()
+      ;(j2.results || []).forEach((x: any) => {
+        if (x.trackId && x.previewUrl) map.set(String(x.trackId), x)
+      })
+      const out = items.map((x: any) => map.get(String(x.id))).filter(Boolean).map(stMapTrack)
+      if (out.length) return out
+    }
+  } catch {}
+  return stItunesSearch("top hits")
+}
+
+/* ---------- Stage (photo + filter + draggable overlays) ---------- */
+
+function StoryStage(props: {
+  image: string
+  filter?: string
+  overlays?: any[]
+  editable?: boolean
+  onChange?: (id: string, patch: any) => void
+  onTap?: (ov: any) => void
+  onDelete?: (id: string) => void
+  onDrag?: (dragging: boolean, over: boolean) => void
+  onMention?: (uid: string) => void
+  onLoad?: () => void
+  children?: any
+}) {
+  const ref = useRef<HTMLDivElement>(null)
+  const drag = useRef<any>(null)
+
+  const down = (e: any, ov: any) => {
+    if (!props.editable) return
+    e.stopPropagation()
+    try { e.currentTarget.setPointerCapture(e.pointerId) } catch {}
+    drag.current = { id: ov.id, sx: e.clientX, sy: e.clientY, ox: ov.x, oy: ov.y, moved: false, y: ov.y }
+  }
+  const move = (e: any) => {
+    const d = drag.current
+    if (!d || !ref.current) return
+    const r = ref.current.getBoundingClientRect()
+    const dx = e.clientX - d.sx
+    const dy = e.clientY - d.sy
+    if (!d.moved && Math.abs(dx) + Math.abs(dy) < 6) return
+    d.moved = true
+    const x = Math.max(4, Math.min(96, d.ox + (dx / r.width) * 100))
+    const y = Math.max(4, Math.min(96, d.oy + (dy / r.height) * 100))
+    d.y = y
+    if (props.onChange) props.onChange(d.id, { x, y })
+    if (props.onDrag) props.onDrag(true, y > 86)
+  }
+  const up = (ov: any) => {
+    const d = drag.current
+    drag.current = null
+    if (!d) return
+    if (props.onDrag) props.onDrag(false, false)
+    if (!d.moved) {
+      if (props.onTap) props.onTap(ov)
+      return
+    }
+    if (d.y > 86 && props.onDelete) props.onDelete(d.id)
+  }
+
+  return (
+    <div className="st-stage" ref={ref}>
+      <div className="st-bgblur" style={{ backgroundImage: `url("${props.image}")` }} />
+      <img
+        className="st-img"
+        src={props.image}
+        alt=""
+        draggable={false}
+        style={{ filter: storyFilterCss(props.filter) }}
+        onLoad={props.onLoad}
+        onError={props.onLoad}
+      />
+      {(props.overlays || []).map((ov: any) => {
+        const st: any = {
+          left: ov.x + "%",
+          top: ov.y + "%",
+          transform: `translate(-50%,-50%) scale(${ov.scale || 1})`,
+        }
+        if (ov.kind === "text") {
+          if (ov.bg) {
+            st.background = ov.color || "#ffffff"
+            st.color = stContrast(ov.color)
+          } else {
+            st.color = ov.color || "#ffffff"
+          }
+        }
+        return (
+          <div
+            key={ov.id}
+            className={`st-ov st-ov-${ov.kind}${props.editable ? " edit" : ""}`}
+            style={st}
+            data-nav-stop={ov.kind === "mention" && !props.editable ? "1" : undefined}
+            onPointerDown={(e) => down(e, ov)}
+            onPointerMove={move}
+            onPointerUp={() => up(ov)}
+            onPointerCancel={() => {
+              drag.current = null
+              if (props.onDrag) props.onDrag(false, false)
+            }}
+            onClick={() => {
+              if (!props.editable && ov.kind === "mention" && ov.uid && props.onMention) props.onMention(ov.uid)
+            }}
+          >
+            {ov.text}
+          </div>
+        )
+      })}
+      {props.children}
+    </div>
+  )
+}
+
+/* ---------- generic bottom sheet + user row ---------- */
+
+function StSheet(props: { title?: string; onClose: () => void; children: any; tall?: boolean }) {
+  return (
+    <div className="st-sheet-bg" onClick={props.onClose}>
+      <div className={`st-sheet${props.tall ? " tall" : ""}`} onClick={(e) => e.stopPropagation()}>
+        <div className="st-sheet-handle" />
+        {props.title && <div className="st-sheet-title">{props.title}</div>}
+        {props.children}
+      </div>
+    </div>
+  )
+}
+
+function StUser(props: { u: any; sub?: string; right?: any; onClick?: () => void; avatarUrl: (u: any) => string }) {
+  return (
+    <div className="st-user" onClick={props.onClick} style={props.onClick ? { cursor: "pointer" } : undefined}>
+      <img src={props.avatarUrl(props.u)} alt="" />
+      <div className="st-un">
+        {props.u.name || "MeBook user"}
+        {props.sub ? <small>{props.sub}</small> : null}
+      </div>
+      {props.right}
+    </div>
+  )
+}
+
+function StUserPicker(props: {
+  users: any[]
+  avatarUrl: (u: any) => string
+  searchable?: boolean
+  empty: string
+  action: string
+  doneIds?: string[]
+  onPick: (u: any) => void
+}) {
+  const [q, setQ] = useState("")
+  const list = props.users.filter((u: any) => !q.trim() || String(u.name || "").toLowerCase().includes(q.trim().toLowerCase()))
+  return (
+    <div style={{ display: "flex", flexDirection: "column", minHeight: 0, flex: 1 }}>
+      {props.searchable !== false && (
+        <input className="st-search" placeholder="Search" value={q} onChange={(e) => setQ(e.target.value)} />
+      )}
+      <div className="st-musicscroll">
+        {list.length === 0 && <div className="st-empty">{props.empty}</div>}
+        {list.map((u: any) => {
+          const done = (props.doneIds || []).includes(u.uid)
+          return (
+            <StUser
+              key={u.uid}
+              u={u}
+              avatarUrl={props.avatarUrl}
+              right={
+                <button className={`st-sbtn${done ? " ghost" : ""}`} disabled={done} onClick={() => props.onPick(u)}>
+                  {done ? "Sent" : props.action}
+                </button>
+              }
+            />
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+/* ---------- Music picker sheet ---------- */
+
+function StoryMusicSheet(props: { onPick: (m: any) => void; onClose: () => void; onError: (m: string) => void }) {
+  const [q, setQ] = useState("")
+  const [chip, setChip] = useState("Trending")
+  const [list, setList] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  const [err, setErr] = useState("")
+  const [playing, setPlaying] = useState("")
+  const audio = useRef<HTMLAudioElement | null>(null)
+  const fileRef = useRef<HTMLInputElement>(null)
+  const req = useRef(0)
+
+  useEffect(() => {
+    const id = ++req.current
+    const term = q.trim()
+    const t = setTimeout(async () => {
+      setLoading(true)
+      setErr("")
+      try {
+        const res = term
+          ? await stItunesSearch(term)
+          : chip === "Trending"
+          ? await stItunesTrending()
+          : await stItunesSearch(ST_MUSIC_CHIPS[chip])
+        if (id !== req.current) return
+        setList(res)
+        if (!res.length) setErr("No songs found")
+      } catch {
+        if (id === req.current) {
+          setList([])
+          setErr("Couldn't load music. Check your internet connection.")
+        }
+      } finally {
+        if (id === req.current) setLoading(false)
+      }
+    }, term ? 450 : 0)
+    return () => clearTimeout(t)
+  }, [q, chip])
+
+  useEffect(() => {
+    return () => {
+      try { if (audio.current) audio.current.pause() } catch {}
+    }
+  }, [])
+
+  const toggle = (e: any, t: any) => {
+    e.stopPropagation()
+    const a = audio.current
+    if (!a) return
+    if (playing === t.url) {
+      a.pause()
+      setPlaying("")
+      return
+    }
+    a.src = t.url
+    a.play().then(() => setPlaying(t.url)).catch(() => setPlaying(""))
+  }
+
+  const pickFile = (e: any) => {
+    const f = e.target.files && e.target.files[0]
+    e.target.value = ""
+    if (!f) return
+    if (f.size > 20 * 1024 * 1024) {
+      props.onError("Audio file too large (max 20 MB)")
+      return
+    }
+    props.onPick({
+      title: f.name.replace(/\.[^.]+$/, "").slice(0, 60),
+      artist: "From device",
+      cover: "",
+      url: URL.createObjectURL(f),
+      file: f,
+    })
+  }
+
+  return (
+    <StSheet title="Music" onClose={props.onClose} tall>
+      <audio ref={audio} onEnded={() => setPlaying("")} />
+      <input className="st-search" placeholder="Search music" value={q} onChange={(e) => setQ(e.target.value)} />
+      <div className="st-chips">
+        {Object.keys(ST_MUSIC_CHIPS).map((c) => (
+          <button
+            key={c}
+            className={`st-chipb${!q.trim() && chip === c ? " on" : ""}`}
+            onClick={() => {
+              setQ("")
+              setChip(c)
+            }}
+          >
+            {c}
+          </button>
+        ))}
+      </div>
+      <div className="st-group" style={{ marginBottom: 8 }}>
+        <button className="st-row" onClick={() => fileRef.current && fileRef.current.click()}>
+          <StIco d={ST_IC.phoneDev} />
+          <span>
+            From your device
+            <small>Choose an audio file from your phone</small>
+          </span>
+        </button>
+      </div>
+      <input ref={fileRef} type="file" accept="audio/*" style={{ display: "none" }} onChange={pickFile} />
+      <div className="st-musicscroll">
+        {loading && <div className="st-empty">Loading music...</div>}
+        {!loading && err && <div className="st-empty">{err}</div>}
+        {!loading &&
+          list.map((t: any, i: number) => (
+            <div className="st-trk" key={t.url + i} onClick={() => props.onPick(t)}>
+              {t.cover ? <img src={t.cover} alt="" /> : <div className="st-nocov" />}
+              <div className="st-tt">
+                <b>{t.title}</b>
+                <span>{t.artist}</span>
+              </div>
+              <button className="st-rbtn" style={{ width: 38, height: 38 }} onClick={(e) => toggle(e, t)}>
+                <StIco d={playing === t.url ? ST_IC.pause : ST_IC.play} size={20} />
+              </button>
+            </div>
+          ))}
+      </div>
+    </StSheet>
+  )
+}
+
+/* ---------- Creator / editor ---------- */
+
+function StoryCreator(props: {
+  file: File
+  initialMusic: any
+  me: any
+  allUsers: any[]
+  defaultPrivacy: string
+  archive: boolean
+  avatarUrl: (u: any) => string
+  onClose: () => void
+  onPosted: (id: string, wa: boolean) => void
+  showToast: (title: string, msg?: string, type?: "success" | "error" | "info") => void
+}) {
+  const me = props.me
+  const [file, setFile] = useState<File>(props.file)
+  const [src, setSrc] = useState("")
+  const [filter, setFilter] = useState("none")
+  const [ovs, setOvs] = useState<any[]>([])
+  const [music, setMusic] = useState<any>(props.initialMusic || null)
+  const [ai, setAi] = useState(false)
+  const [privacy, setPrivacy] = useState(props.defaultPrivacy || "public")
+  const [wa, setWa] = useState(false)
+  const [panel, setPanel] = useState<string | null>(null)
+  const [textEdit, setTextEdit] = useState<any>(null)
+  const [trash, setTrash] = useState({ on: false, over: false })
+  const [busy, setBusy] = useState(false)
+  const [pct, setPct] = useState(0)
+  const [menu, setMenu] = useState(false)
+  const audioRef = useRef<HTMLAudioElement | null>(null)
+  const fileRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    const u = URL.createObjectURL(file)
+    setSrc(u)
+    return () => URL.revokeObjectURL(u)
+  }, [file])
+
+  useEffect(() => {
+    const a = audioRef.current
+    if (!a) return
+    if (music && music.url) {
+      a.src = music.url
+      a.currentTime = 0
+      a.play().catch(() => {})
+    } else {
+      a.pause()
+    }
+  }, [music && music.url])
+
+  useEffect(() => {
+    return () => {
+      try { if (audioRef.current) audioRef.current.pause() } catch {}
+    }
+  }, [])
+
+  const dirty = ovs.length > 0 || !!music || filter !== "none" || ai
+  const back = () => {
+    if (busy) return
+    if (dirty && !confirm("Discard this story?")) return
+    props.onClose()
+  }
+
+  const openText = (ov?: any) =>
+    setTextEdit(
+      ov
+        ? { id: ov.id, text: ov.text, color: ov.color || "#ffffff", bg: !!ov.bg }
+        : { id: "", text: "", color: "#ffffff", bg: false }
+    )
+  const doneText = () => {
+    const t = textEdit
+    setTextEdit(null)
+    if (!t) return
+    const txt = String(t.text || "").trim()
+    if (t.id) {
+      setOvs((o) =>
+        txt ? o.map((x) => (x.id === t.id ? { ...x, text: txt, color: t.color, bg: t.bg } : x)) : o.filter((x) => x.id !== t.id)
+      )
+    } else if (txt) {
+      setOvs((o) => [...o, { id: stId(), kind: "text", text: txt, color: t.color, bg: t.bg, x: 50, y: 42, scale: 1 }])
+    }
+  }
+
+  const tapOv = (ov: any) => {
+    if (ov.kind === "text") openText(ov)
+    else
+      setOvs((o) =>
+        o.map((x) => (x.id === ov.id ? { ...x, scale: (x.scale || 1) >= 2 ? 0.7 : (x.scale || 1) + 0.5 } : x))
+      )
+  }
+
+  const toolClick = (k: string) => {
+    if (k === "text") return openText()
+    if (k === "ai") {
+      setAi((v) => !v)
+      props.showToast(ai ? "AI label removed" : "AI label added", "", "info")
+      return
+    }
+    setPanel(panel === k && k === "effects" ? null : k)
+  }
+
+  const onPickFile = (e: any) => {
+    const f = e.target.files && e.target.files[0]
+    e.target.value = ""
+    if (f && /^image\//.test(f.type)) setFile(f)
+  }
+
+  const share = async () => {
+    if (busy) return
+    setBusy(true)
+    setPct(2)
+    try {
+      const fb = await getFirebase()
+      const blob = await stShrink(file)
+      const image = await cloudinaryUpload(blob, (p) => setPct(Math.max(2, Math.min(90, Math.round(p * 0.9)))), "image")
+      let mus: any = null
+      if (music) {
+        let url = music.url
+        if (music.file) url = await cloudinaryUpload(music.file, undefined, "video")
+        mus = { title: music.title || "", artist: music.artist || "", cover: music.cover || "", url }
+      }
+      setPct(95)
+      const now = Date.now()
+      const mentions = Array.from(new Set(ovs.filter((o) => o.kind === "mention" && o.uid).map((o) => o.uid)))
+      const ref = await fb.addDoc(fb.collection(fb.db, "stories"), {
+        uid: me.uid,
+        name: me.name || "",
+        photoURL: me.photoURL || "",
+        verified: me.verified === true,
+        image,
+        filter,
+        overlays: ovs.map((o) => ({
+          id: o.id,
+          kind: o.kind,
+          text: o.text || "",
+          color: o.color || "",
+          bg: !!o.bg,
+          x: o.x,
+          y: o.y,
+          scale: o.scale || 1,
+          uid: o.uid || "",
+        })),
+        music: mus,
+        aiLabel: ai,
+        privacy,
+        mentions,
+        viewers: {},
+        reactions: {},
+        rewatches: 0,
+        archived: false,
+        noArchive: !props.archive,
+        createdAt: fb.serverTimestamp(),
+        createdMs: now,
+        expiresAt: now + STORY_TTL,
+      })
+      for (const mu of mentions) {
+        if (mu === me.uid) continue
+        try {
+          await fb.addDoc(fb.collection(fb.db, "notifications"), {
+            uid: mu,
+            fromUid: me.uid,
+            fromName: me.name || "",
+            fromAvatar: me.photoURL || "",
+            title: "Story mention",
+            message: `${me.name || "Someone"} mentioned you in their story.`,
+            type: "post",
+            read: false,
+            createdAt: fb.serverTimestamp(),
+          })
+        } catch {}
+      }
+      props.onPosted(ref.id, wa)
+    } catch (e: any) {
+      setBusy(false)
+      props.showToast("Couldn't share story", e && e.message ? e.message : "Try again", "error")
+    }
+  }
+
+  const tools = [
+    { k: "music", label: "Music", icon: <StIco d={ST_IC.music} size={26} />, on: !!music },
+    { k: "stickers", label: "Stickers", icon: <StIco d={ST_IC.sticker} size={26} />, on: false },
+    { k: "text", label: "Text", icon: "Aa", on: false },
+    { k: "effects", label: "Effects", icon: <StIco d={ST_IC.sparkle} size={26} />, on: filter !== "none" || panel === "effects" },
+    { k: "mention", label: "Mention", icon: <StIco d={ST_IC.mention} size={26} />, on: false },
+    { k: "ai", label: "AI label", icon: "AI", on: ai },
+  ]
+
+  return (
+    <div className="st-layer">
+      <audio ref={audioRef} loop />
+      <input ref={fileRef} type="file" accept="image/*" style={{ display: "none" }} onChange={onPickFile} />
+      <div className="st-col">
+        <div className="st-stagewrap">
+          <div className="st-frame">
+            {src && (
+              <StoryStage
+                image={src}
+                filter={filter}
+                overlays={ovs}
+                editable
+                onChange={(id, patch) => setOvs((o) => o.map((x) => (x.id === id ? { ...x, ...patch } : x)))}
+                onTap={tapOv}
+                onDelete={(id) => setOvs((o) => o.filter((x) => x.id !== id))}
+                onDrag={(on, over) => setTrash({ on, over })}
+              />
+            )}
+
+            <div className="st-top">
+              <button className="st-ibtn" onClick={back}>
+                <StIco d={ST_IC.back} />
+              </button>
+              {music ? (
+                <div className="st-musicpill">
+                  {music.cover ? (
+                    <img src={music.cover} alt="" />
+                  ) : (
+                    <div className="st-mcover">
+                      <StIco d={ST_IC.music} size={18} />
+                    </div>
+                  )}
+                  <div className="st-mtxt">
+                    <b>{music.title}</b>
+                    <span>{music.artist}</span>
+                  </div>
+                  <button className="st-ibtn" style={{ width: 34, height: 34 }} onClick={() => setMusic(null)}>
+                    <StIco d={ST_IC.close} size={20} />
+                  </button>
+                </div>
+              ) : (
+                <div style={{ flex: 1 }} />
+              )}
+              <button className="st-ibtn" onClick={() => setMenu(true)}>
+                <StIco d={ST_IC.more} />
+              </button>
+            </div>
+
+            {ai && <div className="st-aipill" style={{ top: "calc(68px + env(safe-area-inset-top,0px))" }}>AI info</div>}
+            {trash.on && (
+              <div className={`st-trash${trash.over ? " over" : ""}`}>
+                <StIco d={ST_IC.trash} size={26} />
+              </div>
+            )}
+
+            {panel === "effects" && (
+              <div className="st-fx">
+                {STORY_FILTERS.map((f) => (
+                  <button key={f.id} className={`st-fxi${filter === f.id ? " on" : ""}`} onClick={() => setFilter(f.id)}>
+                    <div style={{ backgroundImage: `url("${src}")`, filter: f.css }} />
+                    {f.name}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            <div className="st-tools">
+              {tools.map((t) => (
+                <button key={t.k} className={`st-tool${t.on ? " on" : ""}`} onClick={() => toolClick(t.k)}>
+                  <i>{t.icon}</i>
+                  {t.label}
+                </button>
+              ))}
+            </div>
+
+            {busy && (
+              <div className="st-busy">
+                <div>Sharing story... {pct}%</div>
+                <div className="st-bar-p">
+                  <i style={{ width: pct + "%" }} />
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className="st-foot">
+          <button className="st-chip" onClick={() => setPanel("privacy")}>
+            <StIco d={privacy === "friends" ? ST_IC.friends : ST_IC.globe} size={20} />
+            {privacy === "friends" ? "Friends" : "Public"}
+          </button>
+          <button className="st-chip" onClick={() => setWa((v) => !v)}>
+            <StIco d={ST_IC.phone} size={20} />
+            {wa ? "On" : "Off"}
+          </button>
+          <button className="st-share" disabled={busy} onClick={share}>
+            Share
+          </button>
+        </div>
+      </div>
+
+      {panel === "music" && (
+        <StoryMusicSheet
+          onClose={() => setPanel(null)}
+          onError={(m) => props.showToast("Music", m, "error")}
+          onPick={(m) => {
+            setMusic(m)
+            setPanel(null)
+          }}
+        />
+      )}
+
+      {panel === "stickers" && (
+        <StSheet title="Stickers" onClose={() => setPanel(null)}>
+          <div className="st-emojis">
+            {STORY_EMOJIS.map((em) => (
+              <button
+                key={em}
+                onClick={() => {
+                  setOvs((o) => [...o, { id: stId(), kind: "sticker", text: em, x: 50, y: 45, scale: 1 }])
+                  setPanel(null)
+                }}
+              >
+                {em}
+              </button>
+            ))}
+          </div>
+        </StSheet>
+      )}
+
+      {panel === "mention" && (
+        <StSheet title="Mention" onClose={() => setPanel(null)} tall>
+          <StUserPicker
+            users={props.allUsers}
+            avatarUrl={props.avatarUrl}
+            empty="No people found"
+            action="Mention"
+            onPick={(u) => {
+              setOvs((o) => [
+                ...o,
+                { id: stId(), kind: "mention", text: "@" + (u.name || "user"), uid: u.uid, x: 50, y: 72 - Math.min(o.length, 6) * 3, scale: 1 },
+              ])
+              setPanel(null)
+            }}
+          />
+        </StSheet>
+      )}
+
+      {panel === "privacy" && (
+        <StSheet title="Who can see your story?" onClose={() => setPanel(null)}>
+          <div className="st-group">
+            {[
+              { k: "public", t: "Public", s: "Anyone on MeBook", ic: ST_IC.globe },
+              { k: "friends", t: "Friends", s: "Only your friends", ic: ST_IC.friends },
+            ].map((o) => (
+              <button
+                key={o.k}
+                className="st-row"
+                onClick={() => {
+                  setPrivacy(o.k)
+                  setPanel(null)
+                }}
+              >
+                <StIco d={o.ic} />
+                <span style={{ flex: 1 }}>
+                  {o.t}
+                  <small>{o.s}</small>
+                </span>
+                {privacy === o.k && <StIco d={ST_IC.check} />}
+              </button>
+            ))}
+          </div>
+        </StSheet>
+      )}
+
+      {menu && (
+        <StSheet onClose={() => setMenu(false)}>
+          <div className="st-group">
+            <button
+              className="st-row"
+              onClick={() => {
+                setMenu(false)
+                fileRef.current && fileRef.current.click()
+              }}
+            >
+              <StIco d={ST_IC.image} />
+              Change photo
+            </button>
+            <button
+              className="st-row danger"
+              onClick={() => {
+                setMenu(false)
+                props.onClose()
+              }}
+            >
+              <StIco d={ST_IC.trash} />
+              Discard story
+            </button>
+          </div>
+        </StSheet>
+      )}
+
+      {textEdit && (
+        <div className="st-textedit">
+          <div className="st-te-top">
+            <button
+              onClick={() => setTextEdit({ ...textEdit, bg: !textEdit.bg })}
+              style={{ background: textEdit.bg ? "#fff" : "transparent", color: textEdit.bg ? "#111" : "#fff", borderRadius: 10 }}
+            >
+              Aa
+            </button>
+            <button onClick={doneText}>Done</button>
+          </div>
+          <div className="st-te-area">
+            <textarea
+              autoFocus
+              rows={3}
+              maxLength={120}
+              placeholder="Type something..."
+              value={textEdit.text}
+              onChange={(e) => setTextEdit({ ...textEdit, text: e.target.value })}
+              style={{
+                color: textEdit.bg ? stContrast(textEdit.color) : textEdit.color,
+                background: textEdit.bg ? textEdit.color : "transparent",
+              }}
+            />
+          </div>
+          <div className="st-te-colors">
+            {STORY_TEXT_COLORS.map((c) => (
+              <button
+                key={c}
+                className={textEdit.color === c ? "on" : ""}
+                style={{ background: c }}
+                onClick={() => setTextEdit({ ...textEdit, color: c })}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+/* ---------- Viewers page (own story) ---------- */
+
+function StoryViewersPage(props: {
+  story: any
+  allUsers: any[]
+  friendSet: Set<string>
+  hideInfo: boolean
+  avatarUrl: (u: any) => string
+  onHideInfo: () => void
+  onClose: () => void
+  onSettings: () => void
+  onAdd: () => void
+  onArchive: () => void
+}) {
+  const s = props.story
+  const [tab, setTab] = useState<"viewers" | "insights">("viewers")
+  const [q, setQ] = useState("")
+  const viewers = Object.keys(s.viewers || {})
+    .map((uid) => {
+      const u = props.allUsers.find((x: any) => x.uid === uid)
+      return {
+        uid,
+        t: Number(s.viewers[uid]) || 0,
+        name: (u && u.name) || "MeBook user",
+        photoURL: (u && u.photoURL) || "",
+        rx: s.reactions ? s.reactions[uid] : "",
+      }
+    })
+    .sort((a, b) => b.t - a.t)
+  const shown = viewers.filter((v) => !q.trim() || v.name.toLowerCase().includes(q.trim().toLowerCase()))
+  const rxCount = Object.keys(s.reactions || {}).filter((k) => s.reactions[k]).length
+  const friendViews = viewers.filter((v) => props.friendSet.has(v.uid)).length
+
+  return (
+    <div className="st-vpage">
+      <div className="st-vp-in">
+        <div className="st-vp-top">
+          <button className="st-ibtn" onClick={props.onSettings}>
+            <StIco d={ST_IC.gear} size={26} />
+          </button>
+          <div className="gap">
+            <button className="st-ibtn" onClick={props.onAdd}>
+              <StIco d={ST_IC.plusCircle} size={28} />
+            </button>
+            <button className="st-ibtn" onClick={props.onClose}>
+              <StIco d={ST_IC.close} size={28} />
+            </button>
+          </div>
+        </div>
+
+        <div className="st-vp-thumb">
+          <StoryStage image={s.image} filter={s.filter} overlays={s.overlays} />
+        </div>
+
+        {!props.hideInfo && (
+          <div className="st-info">
+            <b>Your stories will be saved to the archive</b>
+            <p>When a story expires, it's saved to your private archive. You can turn this off in settings.</p>
+            <button className="st-info-x" onClick={props.onHideInfo}>
+              <StIco d={ST_IC.close} size={22} />
+            </button>
+          </div>
+        )}
+
+        <div className="st-stats">
+          <span>
+            <StIco d={ST_IC.friends} size={22} /> {viewers.length} {viewers.length === 1 ? "view" : "views"}
+          </span>
+          <span>
+            <StIco d={ST_IC.history} size={22} /> {s.rewatches || 0} rewatches
+          </span>
+        </div>
+
+        <div className="st-tabs">
+          <button className={`st-tab${tab === "viewers" ? " on" : ""}`} onClick={() => setTab("viewers")}>
+            Viewers
+          </button>
+          <button className={`st-tab${tab === "insights" ? " on" : ""}`} onClick={() => setTab("insights")}>
+            Insights
+          </button>
+          <button className="st-ibtn" style={{ marginLeft: "auto" }} onClick={props.onArchive}>
+            <StIco d={ST_IC.history} size={28} />
+          </button>
+        </div>
+
+        {tab === "viewers" ? (
+          <>
+            <input className="st-search" style={{ height: 50, fontSize: 17 }} placeholder="Search viewers" value={q} onChange={(e) => setQ(e.target.value)} />
+            {shown.length === 0 && <div className="st-empty">{viewers.length ? "No viewers found" : "No one has viewed this story yet"}</div>}
+            {shown.map((v) => (
+              <StUser
+                key={v.uid}
+                u={v}
+                avatarUrl={props.avatarUrl}
+                sub={props.friendSet.has(v.uid) ? "Friend" : "Non-friend"}
+                right={v.rx ? <span style={{ fontSize: 24 }}>{ST_RX[v.rx] || "👍"}</span> : null}
+              />
+            ))}
+          </>
+        ) : (
+          <div className="st-insights">
+            <div><b>{viewers.length}</b><span>Views</span></div>
+            <div><b>{rxCount}</b><span>Reactions</span></div>
+            <div><b>{s.rewatches || 0}</b><span>Rewatches</span></div>
+            <div><b>{friendViews}</b><span>Friends viewed</span></div>
+            <div><b>{viewers.length - friendViews}</b><span>Non-friends viewed</span></div>
+            <div><b>{stAgo(s.createdMs)}</b><span>Posted</span></div>
+          </div>
+        )}
+
+        <div className="st-next">
+          <b>Share your next update ✌️</b>
+          <p>Your friends are loving your updates. Share another story and keep connecting.</p>
+          <button className="st-nextbtn" onClick={props.onAdd}>
+            Create a new story
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/* ---------- Viewer (full-screen story player) ---------- */
+
+function StoryViewer(props: {
+  order: string[]
+  startUid: string
+  startIndex: number
+  getGroup: (uid: string) => any
+  me: any
+  friendSet: Set<string>
+  allUsers: any[]
+  myFriends: any[]
+  archived: any[]
+  prefs: any
+  api: any
+  avatarUrl: (u: any) => string
+  onClose: () => void
+  onOpenProfile: (uid: string) => void
+  onCreate: (music?: any) => void
+}) {
+  const P = useRef(props)
+  P.current = props
+  const me = props.me
+  const [uid, setUid] = useState(props.startUid)
+  const [si, setSi] = useState(props.startIndex)
+  const [prog, setProg] = useState(0)
+  const progRef = useRef(0)
+  const [hold, setHold] = useState(false)
+  const [loaded, setLoaded] = useState(false)
+  const [menu, setMenu] = useState<string | null>(null)
+  const [sheet, setSheet] = useState<string | null>(null)
+  const [replyText, setReplyText] = useState("")
+  const [replyFocus, setReplyFocus] = useState(false)
+  const [flash, setFlash] = useState<any>(null)
+  const [sentTo, setSentTo] = useState<string[]>([])
+  const audioRef = useRef<HTMLAudioElement | null>(null)
+  const seenRef = useRef<Set<string>>(new Set())
+  const gest = useRef<any>(null)
+  const prevRef = useRef<any>(null)
+
+  const g = props.getGroup(uid)
+  const stories: any[] = g ? g.stories : []
+  const idx = Math.max(0, Math.min(si, stories.length - 1))
+  const cur: any = stories[idx]
+  const isMine = !!cur && cur.uid === me.uid
+  const sRef = useRef({ uid, si: idx })
+  sRef.current = { uid, si: idx }
+
+  const startOf = (gr: any) => {
+    if (!gr || gr.uid === me.uid) return 0
+    const i = gr.stories.findIndex((s: any) => !(s.viewers && s.viewers[me.uid]))
+    return i < 0 ? 0 : i
+  }
+
+  const nextGroup = () => {
+    const s = sRef.current
+    const ord = P.current.order
+    for (let i = ord.indexOf(s.uid) + 1; i < ord.length; i++) {
+      const ng = P.current.getGroup(ord[i])
+      if (ng && ng.stories.length) {
+        setUid(ng.uid)
+        setSi(startOf(ng))
+        return
+      }
+    }
+    P.current.onClose()
+  }
+
+  const advance = () => {
+    const s = sRef.current
+    const gr = P.current.getGroup(s.uid)
+    if (gr && s.si < gr.stories.length - 1) {
+      setSi(s.si + 1)
+      return
+    }
+    nextGroup()
+  }
+
+  const retreat = () => {
+    const s = sRef.current
+    if (s.si > 0) {
+      setSi(s.si - 1)
+      return
+    }
+    const ord = P.current.order
+    for (let i = ord.indexOf(s.uid) - 1; i >= 0; i--) {
+      const pg = P.current.getGroup(ord[i])
+      if (pg && pg.stories.length) {
+        setUid(pg.uid)
+        setSi(pg.stories.length - 1)
+        return
+      }
+    }
+    progRef.current = 0
+    setProg(0)
+  }
+
+  const curId = cur ? cur.id : ""
+
+  // story বদলালে progress reset
+  useEffect(() => {
+    progRef.current = 0
+    setProg(0)
+    setLoaded(false)
+    const t = setTimeout(() => setLoaded(true), 4000)
+    return () => clearTimeout(t)
+  }, [curId])
+
+  // current story না থাকলে (delete/archive হলে) পরেরটায় যাও
+  useEffect(() => {
+    if (!cur) advance()
+  }, [curId])
+
+  // শেষ story delete হলে clamp হয়ে আগেরটা দেখাবে — তখন পরের group এ যাও
+  useEffect(() => {
+    const prev = prevRef.current
+    if (prev && cur && prev.uid === uid && prev.id !== cur.id && !stories.some((s: any) => s.id === prev.id) && prev.i >= stories.length) {
+      advance()
+    }
+    prevRef.current = cur ? { id: cur.id, uid, i: idx } : null
+  })
+
+  const paused = hold || !!menu || !!sheet || replyFocus || !loaded
+
+  useEffect(() => {
+    if (paused || !curId) return
+    const t = setInterval(() => {
+      progRef.current += 50 / STORY_MS
+      if (progRef.current >= 1) {
+        progRef.current = 1
+        setProg(1)
+        clearInterval(t)
+        advance()
+        return
+      }
+      setProg(progRef.current)
+    }, 50)
+    return () => clearInterval(t)
+  }, [paused, curId])
+
+  // view mark
+  useEffect(() => {
+    if (!cur || cur.uid === me.uid) return
+    if (seenRef.current.has(cur.id)) return
+    seenRef.current.add(cur.id)
+    P.current.api.markViewed(cur)
+  }, [curId])
+
+  // music
+  useEffect(() => {
+    const a = audioRef.current
+    if (!a) return
+    const url = cur && cur.music && cur.music.url ? cur.music.url : ""
+    if (!url) {
+      a.pause()
+      return
+    }
+    if (a.src !== url) a.src = url
+    a.currentTime = 0
+    a.play().catch(() => {})
+  }, [curId])
+  useEffect(() => {
+    const a = audioRef.current
+    if (!a || !(cur && cur.music && cur.music.url)) return
+    if (paused) a.pause()
+    else a.play().catch(() => {})
+  }, [paused])
+  useEffect(() => {
+    return () => {
+      try { if (audioRef.current) audioRef.current.pause() } catch {}
+    }
+  }, [])
+
+  // keyboard
+  useEffect(() => {
+    const onKey = (e: any) => {
+      if (e.key === "Escape") P.current.onClose()
+      else if (e.key === "ArrowRight") advance()
+      else if (e.key === "ArrowLeft") retreat()
+    }
+    window.addEventListener("keydown", onKey)
+    return () => window.removeEventListener("keydown", onKey)
+  }, [])
+
+  const onPD = (e: any) => {
+    if (e.target && e.target.closest && e.target.closest("[data-nav-stop]")) return
+    const gs: any = { x: e.clientX, y: e.clientY, hold: false, timer: null }
+    gs.timer = setTimeout(() => {
+      gs.hold = true
+      setHold(true)
+    }, 220)
+    gest.current = gs
+  }
+  const onPU = (e: any) => {
+    const gs = gest.current
+    if (!gs) return
+    clearTimeout(gs.timer)
+    gest.current = null
+    if (gs.hold) {
+      setHold(false)
+      return
+    }
+    const dx = e.clientX - gs.x
+    const dy = e.clientY - gs.y
+    if (dy > 90 && Math.abs(dx) < 70) {
+      P.current.onClose()
+      return
+    }
+    if (Math.abs(dx) > 40 || Math.abs(dy) > 40) return
+    const r = (e.currentTarget as HTMLElement).getBoundingClientRect()
+    if (e.clientX - r.left < r.width * 0.3) retreat()
+    else advance()
+  }
+  const onPC = () => {
+    const gs = gest.current
+    if (!gs) return
+    clearTimeout(gs.timer)
+    if (gs.hold) setHold(false)
+    gest.current = null
+  }
+
+  const api = props.api
+  const react = (key: string) => {
+    if (!cur) return
+    api.react(cur, key)
+    setFlash({ k: key, n: Date.now() })
+  }
+  const sendReply = async () => {
+    const t = replyText.trim()
+    if (!t || !cur) return
+    setReplyText("")
+    try { (document.activeElement as any).blur() } catch {}
+    await api.reply(cur, t)
+  }
+
+  const firstName = (cur && cur.name ? String(cur.name).split(" ")[0] : "User") || "User"
+  const menuClose = () => setMenu(null)
+  const pick = (fn: () => void) => () => {
+    setMenu(null)
+    fn()
+  }
+
+  const ownItems: any[] = cur
+    ? [
+        { ic: ST_IC.mention, t: "Mention people", on: () => setSheet("mention") },
+        { ic: ST_IC.lock, t: "Edit story privacy", on: () => setSheet("privacy") },
+        { ic: ST_IC.chat, t: "Send in MeChat", on: () => setSheet("chat") },
+        { ic: ST_IC.download, t: "Save photo", on: () => api.savePhoto(cur) },
+        { ic: ST_IC.history, t: "Archive story", s: "Remove story from your profile and save to archive.", on: () => api.archive(cur) },
+        { ic: ST_IC.trash, t: "Delete story", on: () => setSheet("delete") },
+        { ic: ST_IC.link, t: "Copy link to share this story", s: `Stories are visible to ${firstName}'s audience for 24 hours.`, on: () => api.copyLink(cur) },
+        { ic: ST_IC.phone, t: "Share to WhatsApp", on: () => api.shareWA(cur) },
+        { ic: ST_IC.bug, t: "Something went wrong", on: () => api.bug(cur) },
+      ]
+    : []
+
+  const interested = cur && props.prefs.interested && props.prefs.interested[cur.uid]
+  const notInterested = cur && props.prefs.notInterested && props.prefs.notInterested[cur.uid]
+  const otherTop: any[] = cur
+    ? [
+        { ic: ST_IC.plusCircle, t: "Interested", s: interested ? "You'll see more stories like this." : "More of your stories will be like this.", on: () => api.setInterest(cur.uid, "yes") },
+        { ic: ST_IC.minusCircle, t: "Not interested", s: notInterested ? "You'll see fewer stories like this." : "Fewer of your stories will be like this.", on: () => api.setInterest(cur.uid, "no") },
+      ]
+    : []
+  const otherItems: any[] = cur
+    ? [
+        { ic: ST_IC.share, t: "Share this story", on: () => setSheet("share") },
+        { ic: ST_IC.muteBox, t: `Mute ${firstName}'s stories`, s: `Stop seeing ${firstName}'s stories on MeBook.`, on: () => { api.mute(cur.uid); nextGroup() } },
+        { ic: ST_IC.muteBox, t: `Unfollow ${firstName}`, s: "Stop seeing stories and posts from this person.", on: () => { api.unfollow(cur.uid); nextGroup() } },
+        { ic: ST_IC.report, t: "Find support or report", on: () => setSheet("report") },
+        { ic: ST_IC.link, t: "Copy link to share this story", s: `Stories are visible to ${firstName}'s audience for 24 hours.`, on: () => api.copyLink(cur) },
+        { ic: ST_IC.bug, t: "Something went wrong", on: () => api.bug(cur) },
+        { ic: ST_IC.plusCircle, t: "Create a story", on: () => props.onCreate() },
+      ]
+    : []
+
+  const renderItems = (items: any[]) =>
+    items.map((it: any, i: number) => (
+      <button key={i} className="st-row" onClick={pick(it.on)}>
+        <StIco d={it.ic} />
+        <span style={{ flex: 1 }}>
+          {it.t}
+          {it.s ? <small>{it.s}</small> : null}
+        </span>
+      </button>
+    ))
+
+  const viewerCount = cur ? Object.keys(cur.viewers || {}).length : 0
+  const myRx = cur && cur.reactions ? cur.reactions[me.uid] : ""
+
+  return (
+    <div className="st-layer">
+      <audio ref={audioRef} />
+      <div className="st-col">
+        <div className="st-stagewrap">
+          {cur && (
+            <div className="st-frame" style={{ touchAction: "none" }} onPointerDown={onPD} onPointerUp={onPU} onPointerCancel={onPC}>
+              <StoryStage
+                key={cur.id}
+                image={cur.image}
+                filter={cur.filter}
+                overlays={cur.overlays}
+                onLoad={() => setLoaded(true)}
+                onMention={(u) => {
+                  props.onClose()
+                  props.onOpenProfile(u)
+                }}
+              >
+                {flash && (
+                  <div className="st-flash" key={flash.n}>
+                    {ST_RX[flash.k]}
+                  </div>
+                )}
+              </StoryStage>
+
+              <div className="st-progress">
+                {stories.map((s: any, i: number) => (
+                  <div className="st-seg" key={s.id}>
+                    <i style={{ width: (i < idx ? 100 : i === idx ? prog * 100 : 0) + "%" }} />
+                  </div>
+                ))}
+              </div>
+
+              <div className="st-vhead" data-nav-stop="1">
+                <img
+                  className="st-vav"
+                  src={props.avatarUrl({ photoURL: g.photoURL, name: g.name })}
+                  alt=""
+                  onClick={() => {
+                    props.onClose()
+                    props.onOpenProfile(g.uid)
+                  }}
+                />
+                <div className="st-vname">
+                  {isMine ? "Your story" : g.name}
+                  <span className="st-vtime">{stAgo(cur.createdMs)}</span>
+                </div>
+                <button className="st-ibtn" onClick={props.onClose}>
+                  <StIco d={ST_IC.down} size={28} />
+                </button>
+                <button className="st-ibtn" onClick={() => setMenu(isMine ? "own" : "other")}>
+                  <StIco d={ST_IC.more} size={26} />
+                </button>
+              </div>
+
+              {cur.music && cur.music.url && (
+                <div className="st-vmusic" data-nav-stop="1">
+                  <StIco d={ST_IC.music} size={18} />
+                  <span>
+                    {cur.music.title}
+                    {cur.music.artist ? " · " + cur.music.artist : ""}
+                  </span>
+                  <button onClick={() => props.onCreate({ title: cur.music.title, artist: cur.music.artist, cover: cur.music.cover || "", url: cur.music.url })}>
+                    Try it
+                  </button>
+                </div>
+              )}
+              {cur.aiLabel && <div className="st-aipill">AI info</div>}
+            </div>
+          )}
+        </div>
+
+        {cur && !isMine && (
+          <div className="st-vfoot">
+            <button className="st-rbtn" onClick={() => setSheet("share")} aria-label="Share">
+              <StIco d={ST_IC.repost} size={24} />
+            </button>
+            <input
+              className="st-input"
+              placeholder="Send message..."
+              value={replyText}
+              onChange={(e) => setReplyText(e.target.value)}
+              onFocus={() => setReplyFocus(true)}
+              onBlur={() => setReplyFocus(false)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") sendReply()
+              }}
+            />
+            {replyText.trim() ? (
+              <button className="st-rx like" onClick={sendReply} aria-label="Send">
+                <StIco d={ST_IC.send} size={22} />
+              </button>
+            ) : (
+              <>
+                <button className={`st-rx gem${myRx === "gem" ? " on" : ""}`} onClick={() => react("gem")} aria-label="Care">
+                  <StGem size={30} />
+                </button>
+                <button className={`st-rx love${myRx === "love" ? " on" : ""}`} onClick={() => react("love")} aria-label="Love">
+                  <StIco d={ST_IC.heart} size={24} />
+                </button>
+                <button className={`st-rx like${myRx === "like" ? " on" : ""}`} onClick={() => react("like")} aria-label="Like">
+                  <StIco d={ST_IC.like} size={24} />
+                </button>
+              </>
+            )}
+          </div>
+        )}
+
+        {cur && isMine && (
+          <div className="st-vfoot" style={{ justifyContent: "space-between", padding: "8px 12px calc(10px + env(safe-area-inset-bottom,0px))" }}>
+            <button className="st-viewbtn" onClick={() => setSheet("viewers")}>
+              <StIco d={ST_IC.up} size={26} />
+              {viewerCount} {viewerCount === 1 ? "viewer" : "viewers"}
+            </button>
+            <div style={{ display: "flex", gap: 4 }}>
+              <button className="st-act" onClick={() => props.onCreate()}>
+                <StIco d={ST_IC.plusCircle} size={30} />
+                Add New
+              </button>
+              <button className="st-act" onClick={() => api.highlight(cur)}>
+                <StIco d={ST_IC.heart} size={30} />
+                Highlight
+              </button>
+              <button className="st-act" onClick={() => setSheet("share")}>
+                <StIco d={ST_IC.share} size={30} />
+                Share
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* 3-dots menus */}
+      {menu === "own" && (
+        <StSheet onClose={menuClose}>
+          <div className="st-group">{renderItems(ownItems)}</div>
+        </StSheet>
+      )}
+      {menu === "other" && (
+        <StSheet onClose={menuClose}>
+          <div className="st-group">{renderItems(otherTop)}</div>
+          <div className="st-group">{renderItems(otherItems)}</div>
+        </StSheet>
+      )}
+
+      {/* share */}
+      {sheet === "share" && cur && (
+        <StSheet title="Share story" onClose={() => setSheet(null)}>
+          <div className="st-group">
+            <button className="st-row" onClick={() => { setSheet(null); api.nativeShare(cur) }}>
+              <StIco d={ST_IC.share} />Share link
+            </button>
+            <button className="st-row" onClick={() => setSheet("chat")}>
+              <StIco d={ST_IC.chat} />Send in MeChat
+            </button>
+            <button className="st-row" onClick={() => { setSheet(null); api.shareWA(cur) }}>
+              <StIco d={ST_IC.phone} />Share to WhatsApp
+            </button>
+            <button className="st-row" onClick={() => { setSheet(null); api.copyLink(cur) }}>
+              <StIco d={ST_IC.link} />Copy link
+            </button>
+          </div>
+        </StSheet>
+      )}
+
+      {sheet === "chat" && cur && (
+        <StSheet title="Send in MeChat" onClose={() => setSheet(null)} tall>
+          <StUserPicker
+            users={props.myFriends}
+            avatarUrl={props.avatarUrl}
+            empty="Add friends to send stories in MeChat"
+            action="Send"
+            doneIds={sentTo}
+            onPick={async (u) => {
+              const ok = await api.sendToChat(cur, u.uid)
+              if (ok) setSentTo((a) => [...a, u.uid])
+            }}
+          />
+        </StSheet>
+      )}
+
+      {sheet === "mention" && cur && (
+        <StSheet title="Mention people" onClose={() => setSheet(null)} tall>
+          <StUserPicker
+            users={props.allUsers}
+            avatarUrl={props.avatarUrl}
+            empty="No people found"
+            action="Mention"
+            onPick={(u) => {
+              setSheet(null)
+              api.addMention(cur, u)
+            }}
+          />
+        </StSheet>
+      )}
+
+      {sheet === "privacy" && cur && (
+        <StSheet title="Edit story privacy" onClose={() => setSheet(null)}>
+          <div className="st-group">
+            {[
+              { k: "public", t: "Public", s: "Anyone on MeBook", ic: ST_IC.globe },
+              { k: "friends", t: "Friends", s: "Only your friends", ic: ST_IC.friends },
+            ].map((o) => (
+              <button
+                key={o.k}
+                className="st-row"
+                onClick={() => {
+                  setSheet(null)
+                  api.setPrivacy(cur, o.k)
+                }}
+              >
+                <StIco d={o.ic} />
+                <span style={{ flex: 1 }}>
+                  {o.t}
+                  <small>{o.s}</small>
+                </span>
+                {(cur.privacy || "public") === o.k && <StIco d={ST_IC.check} />}
+              </button>
+            ))}
+          </div>
+        </StSheet>
+      )}
+
+      {sheet === "report" && cur && (
+        <StSheet title="Find support or report" onClose={() => setSheet(null)}>
+          <div className="st-group">
+            {STORY_REPORT_REASONS.map((r) => (
+              <button
+                key={r}
+                className="st-row"
+                onClick={() => {
+                  setSheet(null)
+                  api.report(cur, r)
+                }}
+              >
+                <StIco d={ST_IC.report} />
+                {r}
+              </button>
+            ))}
+          </div>
+        </StSheet>
+      )}
+
+      {sheet === "delete" && cur && (
+        <div className="st-dialog-bg" onClick={() => setSheet(null)}>
+          <div className="st-dialog" onClick={(e) => e.stopPropagation()}>
+            <b>Delete story?</b>
+            <p>This story will be permanently deleted. You can't undo this.</p>
+            <div>
+              <button className="st-sbtn ghost" onClick={() => setSheet(null)}>Cancel</button>
+              <button
+                className="st-sbtn"
+                style={{ background: "#ef4444" }}
+                onClick={() => {
+                  setSheet(null)
+                  api.remove(cur)
+                }}
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {sheet === "viewers" && cur && isMine && (
+        <StoryViewersPage
+          story={cur}
+          allUsers={props.allUsers}
+          friendSet={props.friendSet}
+          hideInfo={!!props.prefs.hideInfo}
+          avatarUrl={props.avatarUrl}
+          onHideInfo={() => api.setPrefs({ hideInfo: true })}
+          onClose={() => setSheet(null)}
+          onSettings={() => setSheet("settings")}
+          onAdd={() => props.onCreate()}
+          onArchive={() => setSheet("archive")}
+        />
+      )}
+
+      {sheet === "archive" && (
+        <StSheet title="Story archive" onClose={() => setSheet("viewers")} tall>
+          <div className="st-musicscroll">
+            {props.archived.length === 0 && <div className="st-empty">Your archive is empty</div>}
+            <div className="st-agrid">
+              {props.archived.map((s: any) => (
+                <div key={s.id}>
+                  <div className="st-athumb">
+                    <StoryStage image={s.image} filter={s.filter} overlays={s.overlays} />
+                  </div>
+                  <div className="st-abtns">
+                    <button onClick={() => api.repost(s)}>Share</button>
+                    <button onClick={() => api.removeArchived(s)}>Delete</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </StSheet>
+      )}
+
+      {sheet === "settings" && (
+        <StSheet title="Story settings" onClose={() => setSheet("viewers")} tall>
+          <div className="st-musicscroll">
+            <div className="st-group">
+              {[
+                { k: "public", t: "Public", ic: ST_IC.globe },
+                { k: "friends", t: "Friends", ic: ST_IC.friends },
+              ].map((o) => (
+                <button key={o.k} className="st-row" onClick={() => api.setPrefs({ privacy: o.k })}>
+                  <StIco d={o.ic} />
+                  <span style={{ flex: 1 }}>
+                    {o.t}
+                    <small>{o.k === "public" ? "Default privacy for new stories" : "Only friends see new stories"}</small>
+                  </span>
+                  {(props.prefs.privacy || "public") === o.k && <StIco d={ST_IC.check} />}
+                </button>
+              ))}
+            </div>
+            <div className="st-group">
+              <button className="st-row" onClick={() => api.setPrefs({ archive: !props.prefs.archive })}>
+                <StIco d={ST_IC.history} />
+                <span style={{ flex: 1 }}>
+                  Save to archive
+                  <small>Expired stories are saved to your private archive.</small>
+                </span>
+                <b style={{ color: props.prefs.archive ? "#22c55e" : "#a8abaf" }}>{props.prefs.archive ? "On" : "Off"}</b>
+              </button>
+            </div>
+            <div className="st-sheet-title" style={{ textAlign: "left", fontSize: 15 }}>Muted stories</div>
+            {Object.keys(props.prefs.muted || {}).length === 0 && <div className="st-empty">You haven't muted anyone's stories</div>}
+            {Object.keys(props.prefs.muted || {}).map((mu) => {
+              const u = props.allUsers.find((x: any) => x.uid === mu) || { uid: mu, name: "MeBook user" }
+              return (
+                <StUser
+                  key={mu}
+                  u={u}
+                  avatarUrl={props.avatarUrl}
+                  right={<button className="st-sbtn" onClick={() => api.unmute(mu)}>Unmute</button>}
+                />
+              )
+            })}
+          </div>
+        </StSheet>
+      )}
+    </div>
+  )
+}
+
+/* ---------- Main section: stories bar + all story logic ---------- */
+
+function StoriesSection(props: {
+  user: any
+  profile: any
+  allUsers: any[]
+  myFriends: any[]
+  hiddenAuthors: Set<string>
+  avatarUrl: (u: any) => string
+  showToast: (title: string, msg?: string, type?: "success" | "error" | "info") => void
+  onUnfollow: (uid: string) => void
+  onOpenProfile: (uid: string) => void
+}) {
+  const user = props.user
+  const profile = props.profile
+  const uidNow = user && user.uid ? user.uid : ""
+  const me = {
+    uid: uidNow,
+    name: (profile && profile.name) || (user && user.displayName) || "User",
+    photoURL: (profile && profile.photoURL) || "",
+    verified: !!(profile && profile.verified === true),
+  }
+
+  const [others, setOthers] = useState<any[]>([])
+  const [mine, setMine] = useState<any[]>([])
+  const [loadedFlags, setLoadedFlags] = useState({ o: false, m: false })
+  const [now, setNow] = useState(Date.now())
+  const [prefs, setPrefsState] = useState<any>(() => stLoadPrefs(uidNow))
+  const [viewer, setViewer] = useState<any>(null)
+  const [creating, setCreating] = useState<any>(null)
+  const fileRef = useRef<HTMLInputElement>(null)
+  const pendingMusic = useRef<any>(null)
+  const prefsRef = useRef<any>(prefs)
+  prefsRef.current = prefs
+  const deepDone = useRef(false)
+
+  useEffect(() => {
+    if (uidNow) setPrefsState(stLoadPrefs(uidNow))
+  }, [uidNow])
+
+  useEffect(() => {
+    const t = setInterval(() => setNow(Date.now()), 30000)
+    return () => clearInterval(t)
+  }, [])
+
+  useEffect(() => {
+    if (!uidNow) return
+    let dead = false
+    let off1: any = null
+    let off2: any = null
+    ;(async () => {
+      try {
+        const fb = await getFirebase()
+        if (dead) return
+        const q1 = fb.query(fb.collection(fb.db, "stories"), fb.where("expiresAt", ">", Date.now()))
+        off1 = fb.onSnapshot(
+          q1,
+          (snap: any) => {
+            const a: any[] = []
+            snap.forEach((d: any) => a.push({ id: d.id, ...d.data() }))
+            setOthers(a.filter((x) => x.uid !== uidNow))
+            setLoadedFlags((f) => ({ ...f, o: true }))
+          },
+          () => setLoadedFlags((f) => ({ ...f, o: true }))
+        )
+        const q2 = fb.query(fb.collection(fb.db, "stories"), fb.where("uid", "==", uidNow))
+        off2 = fb.onSnapshot(
+          q2,
+          (snap: any) => {
+            const a: any[] = []
+            snap.forEach((d: any) => a.push({ id: d.id, ...d.data() }))
+            setMine(a)
+            setLoadedFlags((f) => ({ ...f, m: true }))
+          },
+          () => setLoadedFlags((f) => ({ ...f, m: true }))
+        )
+      } catch {}
+    })()
+    return () => {
+      dead = true
+      if (off1) off1()
+      if (off2) off2()
+    }
+  }, [uidNow])
+
+  useEffect(() => {
+    if (!viewer && !creating) return
+    const o = document.body.style.overflow
+    document.body.style.overflow = "hidden"
+    return () => {
+      document.body.style.overflow = o
+    }
+  }, [!!viewer, !!creating])
+
+  /* ----- build groups ----- */
+  const friendSet = new Set<string>((props.myFriends || []).map((f: any) => f.uid))
+  const friendUsers = (props.myFriends || []).map((f: any) => props.allUsers.find((u: any) => u.uid === f.uid) || f)
+  const isActive = (s: any) => !s.archived && Number(s.expiresAt || 0) > now
+  const visibleOthers = others.filter(
+    (s) =>
+      isActive(s) &&
+      (s.privacy !== "friends" || friendSet.has(s.uid)) &&
+      !props.hiddenAuthors.has(s.uid) &&
+      !(prefs.muted && prefs.muted[s.uid])
+  )
+  const mkGroups = (arr: any[]) => {
+    const m = new Map<string, any>()
+    arr.forEach((s) => {
+      if (!m.has(s.uid)) {
+        const u = props.allUsers.find((x: any) => x.uid === s.uid)
+        m.set(s.uid, { uid: s.uid, name: (u && u.name) || s.name || "User", photoURL: (u && u.photoURL) || s.photoURL || "", stories: [] })
+      }
+      m.get(s.uid).stories.push(s)
+    })
+    const out = Array.from(m.values())
+    out.forEach((gr: any) => {
+      gr.stories.sort((a: any, b: any) => (a.createdMs || 0) - (b.createdMs || 0))
+      gr.unseen = gr.stories.some((s: any) => !(s.viewers && s.viewers[uidNow]))
+      gr.last = gr.stories[gr.stories.length - 1]
+    })
+    return out
+  }
+  const rank = (gr: any) =>
+    prefs.interested && prefs.interested[gr.uid] ? 0 : prefs.notInterested && prefs.notInterested[gr.uid] ? 3 : gr.unseen ? 1 : 2
+  const otherGroups = mkGroups(visibleOthers).sort((a: any, b: any) => rank(a) - rank(b) || (b.last.createdMs || 0) - (a.last.createdMs || 0))
+  const ownGroup: any = mkGroups(mine.filter(isActive).map((s) => ({ ...s, uid: uidNow })))[0] || null
+  if (ownGroup) {
+    ownGroup.name = me.name
+    ownGroup.photoURL = me.photoURL
+  }
+  const getGroup = (u: string) => (ownGroup && ownGroup.uid === u ? ownGroup : otherGroups.find((x: any) => x.uid === u) || null)
+  const archived = mine
+    .filter((s) => (s.archived || Number(s.expiresAt || 0) <= now) && !s.noArchive)
+    .sort((a, b) => (b.createdMs || 0) - (a.createdMs || 0))
+
+  const openGroup = (gr: any, storyId?: string) => {
+    const order = [ownGroup, ...otherGroups].filter(Boolean).map((x: any) => x.uid)
+    let start = gr.uid === uidNow ? 0 : Math.max(0, gr.stories.findIndex((s: any) => !(s.viewers && s.viewers[uidNow])))
+    if (storyId) {
+      const i = gr.stories.findIndex((s: any) => s.id === storyId)
+      if (i >= 0) start = i
+    }
+    setViewer({ order, uid: gr.uid, si: start })
+  }
+
+  // shared link (#story-ID) খোলা
+  useEffect(() => {
+    if (deepDone.current) return
+    if (typeof location === "undefined") return
+    const h = location.hash || ""
+    if (h.indexOf("#story-") !== 0) {
+      deepDone.current = true
+      return
+    }
+    if (!loadedFlags.o || !loadedFlags.m) return
+    deepDone.current = true
+    const id = h.slice(7)
+    const all = [ownGroup, ...otherGroups].filter(Boolean)
+    const gr: any = all.find((x: any) => x.stories.some((s: any) => s.id === id))
+    if (gr) openGroup(gr, id)
+    else props.showToast("Story unavailable", "This story has expired or was removed", "info")
+    try { history.replaceState(null, "", location.pathname + location.search) } catch {}
+  })
+
+  /* ----- helpers / api ----- */
+  const toast = props.showToast
+  const storyUrl = (s: any) => `${location.origin}${location.pathname}#story-${s.id}`
+  const setPrefs = (patch: any) => {
+    const next = { ...prefsRef.current, ...patch }
+    prefsRef.current = next
+    setPrefsState(next)
+    stSavePrefs(uidNow, next)
+  }
+  const refOf = async (s: any) => {
+    const fb = await getFirebase()
+    return { fb, ref: fb.doc(fb.db, "stories", s.id) }
+  }
+  const sendChat = async (toUid: string, text: string, preview: string) => {
+    try {
+      const fb = await getFirebase()
+      const cid = chatIdFor(uidNow, toUid)
+      const cref = fb.doc(fb.db, "chats", cid)
+      const snap = await fb.getDoc(cref)
+      if (!snap.exists()) {
+        await fb.setDoc(cref, {
+          members: [uidNow, toUid],
+          createdAt: fb.serverTimestamp(),
+          lastMessage: null,
+          lastAt: fb.serverTimestamp(),
+        })
+      }
+      await fb.addDoc(fb.collection(fb.db, "chats", cid, "messages"), {
+        from: uidNow,
+        text,
+        at: fb.serverTimestamp(),
+      })
+      await fb.updateDoc(cref, { lastMessage: { text: preview, from: uidNow }, lastAt: fb.serverTimestamp() })
+      return true
+    } catch (e: any) {
+      toast("Couldn't send", e && e.message ? e.message : "", "error")
+      return false
+    }
+  }
+  const copyText = async (t: string) => {
+    try {
+      await navigator.clipboard.writeText(t)
+      return true
+    } catch {
+      try {
+        const ta = document.createElement("textarea")
+        ta.value = t
+        document.body.appendChild(ta)
+        ta.select()
+        document.execCommand("copy")
+        ta.remove()
+        return true
+      } catch {
+        return false
+      }
+    }
+  }
+
+  const api: any = {
+    markViewed: async (s: any) => {
+      try {
+        const { fb, ref } = await refOf(s)
+        if (s.viewers && s.viewers[uidNow]) await fb.updateDoc(ref, { rewatches: fb.increment(1) })
+        else await fb.updateDoc(ref, { ["viewers." + uidNow]: Date.now() })
+      } catch {}
+    },
+    react: async (s: any, key: string) => {
+      const had = s.reactions && s.reactions[uidNow] === key
+      try {
+        const { fb, ref } = await refOf(s)
+        await fb.updateDoc(ref, { ["reactions." + uidNow]: had ? "" : key })
+      } catch (e: any) {
+        toast("Couldn't react", e && e.message ? e.message : "", "error")
+      }
+    },
+    reply: async (s: any, text: string) => {
+      const ok = await sendChat(s.uid, `📖 Replied to your story: ${text}`, "📖 Replied to your story")
+      if (ok) toast("Reply sent", "", "success")
+    },
+    sendToChat: async (s: any, friendUid: string) => {
+      const ok = await sendChat(friendUid, `📖 ${s.name || "A"}'s story\n${storyUrl(s)}`, "📖 Shared a story")
+      if (ok) toast("Sent", "", "success")
+      return ok
+    },
+    copyLink: async (s: any) => {
+      const ok = await copyText(storyUrl(s))
+      toast(ok ? "Link copied" : "Couldn't copy", "", ok ? "success" : "error")
+    },
+    shareWA: (s: any) => {
+      try {
+        window.open("https://wa.me/?text=" + encodeURIComponent(`${s.name || "A"}'s story on MeBook: ${storyUrl(s)}`), "_blank")
+      } catch {}
+    },
+    nativeShare: async (s: any) => {
+      try {
+        if ((navigator as any).share) await (navigator as any).share({ title: `${s.name || "MeBook"}'s story`, url: storyUrl(s) })
+        else api.copyLink(s)
+      } catch {}
+    },
+    savePhoto: async (s: any) => {
+      try {
+        const r = await fetch(s.image)
+        const b = await r.blob()
+        const a = document.createElement("a")
+        a.href = URL.createObjectURL(b)
+        a.download = "mebook-story-" + s.id + ".jpg"
+        document.body.appendChild(a)
+        a.click()
+        a.remove()
+        setTimeout(() => URL.revokeObjectURL(a.href), 4000)
+        toast("Photo saved", "", "success")
+      } catch {
+        try { window.open(s.image, "_blank") } catch {}
+      }
+    },
+    archive: async (s: any) => {
+      try {
+        const { fb, ref } = await refOf(s)
+        await fb.updateDoc(ref, { archived: true })
+        toast("Story archived", "Saved to your private archive", "success")
+      } catch (e: any) {
+        toast("Error", e && e.message ? e.message : "", "error")
+      }
+    },
+    remove: async (s: any) => {
+      try {
+        const { fb, ref } = await refOf(s)
+        await fb.deleteDoc(ref)
+        toast("Story deleted", "", "success")
+      } catch (e: any) {
+        toast("Error", e && e.message ? e.message : "", "error")
+      }
+    },
+    removeArchived: async (s: any) => {
+      if (!confirm("Delete this story from your archive?")) return
+      api.remove(s)
+    },
+    repost: async (s: any) => {
+      try {
+        const fb = await getFirebase()
+        const t = Date.now()
+        await fb.addDoc(fb.collection(fb.db, "stories"), {
+          uid: uidNow,
+          name: me.name,
+          photoURL: me.photoURL,
+          verified: me.verified,
+          image: s.image,
+          filter: s.filter || "none",
+          overlays: s.overlays || [],
+          music: s.music || null,
+          aiLabel: !!s.aiLabel,
+          privacy: s.privacy || prefsRef.current.privacy || "public",
+          mentions: s.mentions || [],
+          viewers: {},
+          reactions: {},
+          rewatches: 0,
+          archived: false,
+          noArchive: !prefsRef.current.archive,
+          createdAt: fb.serverTimestamp(),
+          createdMs: t,
+          expiresAt: t + STORY_TTL,
+        })
+        toast("Story shared again", "Visible for 24 hours", "success")
+      } catch (e: any) {
+        toast("Error", e && e.message ? e.message : "", "error")
+      }
+    },
+    setPrivacy: async (s: any, p: string) => {
+      try {
+        const { fb, ref } = await refOf(s)
+        await fb.updateDoc(ref, { privacy: p })
+        toast("Privacy updated", p === "friends" ? "Only your friends can see this story" : "Anyone on MeBook can see this story", "success")
+      } catch (e: any) {
+        toast("Error", e && e.message ? e.message : "", "error")
+      }
+    },
+    addMention: async (s: any, u: any) => {
+      try {
+        const { fb, ref } = await refOf(s)
+        const ov = {
+          id: stId(),
+          kind: "mention",
+          text: "@" + (u.name || "user"),
+          color: "",
+          bg: false,
+          x: 50,
+          y: Math.min(88, 72 + (s.overlays || []).filter((o: any) => o.kind === "mention").length * 6),
+          scale: 1,
+          uid: u.uid,
+        }
+        await fb.updateDoc(ref, { overlays: fb.arrayUnion(ov), mentions: fb.arrayUnion(u.uid) })
+        if (u.uid !== uidNow) {
+          try {
+            await fb.addDoc(fb.collection(fb.db, "notifications"), {
+              uid: u.uid,
+              fromUid: uidNow,
+              fromName: me.name,
+              fromAvatar: me.photoURL,
+              title: "Story mention",
+              message: `${me.name} mentioned you in their story.`,
+              type: "post",
+              read: false,
+              createdAt: fb.serverTimestamp(),
+            })
+          } catch {}
+        }
+        toast("Mentioned", u.name || "", "success")
+      } catch (e: any) {
+        toast("Error", e && e.message ? e.message : "", "error")
+      }
+    },
+    highlight: async (s: any) => {
+      const list: string[] = Array.isArray(profile && profile.highlights) ? profile.highlights : []
+      if (list.includes(s.image)) {
+        toast("Already in highlights", "", "info")
+        return
+      }
+      if (list.length >= 10) {
+        toast("Highlights full", "You can add up to 10 highlights", "info")
+        return
+      }
+      try {
+        const fb = await getFirebase()
+        await fb.updateDoc(fb.doc(fb.db, "users", uidNow), { highlights: fb.arrayUnion(s.image) })
+        toast("Added to highlights", "Shown on your profile", "success")
+      } catch (e: any) {
+        toast("Error", e && e.message ? e.message : "", "error")
+      }
+    },
+    report: async (s: any, reason: string) => {
+      try {
+        const fb = await getFirebase()
+        await fb.addDoc(fb.collection(fb.db, "story_reports"), {
+          uid: uidNow,
+          storyId: s.id,
+          storyUid: s.uid,
+          reason,
+          createdAt: fb.serverTimestamp(),
+        })
+        toast("Reported", "Thanks! We'll review this story", "success")
+      } catch (e: any) {
+        toast("Error", e && e.message ? e.message : "Report failed", "error")
+      }
+    },
+    bug: async (s: any) => {
+      api.report(s, "Something went wrong")
+    },
+    setInterest: (u: string, kind: string) => {
+      const p = prefsRef.current
+      const interested = { ...(p.interested || {}) }
+      const notInterested = { ...(p.notInterested || {}) }
+      if (kind === "yes") {
+        delete notInterested[u]
+        interested[u] = 1
+        toast("Marked as interested", "You'll see more stories like this", "success")
+      } else {
+        delete interested[u]
+        notInterested[u] = 1
+        toast("Marked as not interested", "You'll see fewer stories like this", "info")
+      }
+      setPrefs({ interested, notInterested })
+    },
+    mute: (u: string) => {
+      setPrefs({ muted: { ...(prefsRef.current.muted || {}), [u]: 1 } })
+      toast("Stories muted", "You won't see their stories anymore", "info")
+    },
+    unmute: (u: string) => {
+      const m = { ...(prefsRef.current.muted || {}) }
+      delete m[u]
+      setPrefs({ muted: m })
+      toast("Unmuted", "", "success")
+    },
+    unfollow: (u: string) => {
+      props.onUnfollow(u)
+    },
+    setPrefs,
+  }
+
+  /* ----- create flow ----- */
+  const openPicker = (music?: any) => {
+    pendingMusic.current = music || null
+    setViewer(null)
+    if (fileRef.current) fileRef.current.click()
+  }
+  const onFile = (e: any) => {
+    const f = e.target.files && e.target.files[0]
+    e.target.value = ""
+    if (!f) return
+    if (!/^image\//.test(f.type)) {
+      toast("Photos only", "Choose an image for your story", "info")
+      return
+    }
+    setCreating({ file: f, music: pendingMusic.current })
+  }
+
+  const host = typeof document !== "undefined" ? (document.querySelector(".mebook-root") as HTMLElement | null) : null
+  const portal = (node: any) => (host ? createPortal(node, host) : null)
+
+  const card = (gr: any, own: boolean) => {
+    const last = gr.last
+    return (
+      <div key={gr.uid} className="st-card" onClick={() => openGroup(gr)}>
+        <img className="st-card-bg" src={last.image} alt="" style={{ filter: storyFilterCss(last.filter) }} loading="lazy" />
+        <div className="st-card-shade" />
+        <img className={`st-ring${own || gr.unseen ? " new" : ""}`} src={props.avatarUrl({ photoURL: gr.photoURL, name: gr.name })} alt="" />
+        <div className="st-card-name">{own ? "Your story" : gr.name}</div>
+      </div>
+    )
+  }
+
+  if (!uidNow) return null
+
+  return (
+    <>
+      <input ref={fileRef} type="file" accept="image/*" style={{ display: "none" }} onChange={onFile} />
+      <div className="st-bar">
+        <div className="st-card st-create" onClick={() => openPicker()}>
+          <div className="st-create-img" style={{ backgroundImage: `url("${props.avatarUrl(profile)}")` }} />
+          <div className="st-create-foot">Create story</div>
+          <div className="st-plus">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
+              <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
+            </svg>
+          </div>
+        </div>
+        {ownGroup && card(ownGroup, true)}
+        {otherGroups.map((gr: any) => card(gr, false))}
+      </div>
+
+      {viewer &&
+        portal(
+          <StoryViewer
+            order={viewer.order}
+            startUid={viewer.uid}
+            startIndex={viewer.si}
+            getGroup={getGroup}
+            me={me}
+            friendSet={friendSet}
+            allUsers={props.allUsers}
+            myFriends={friendUsers}
+            archived={archived}
+            prefs={prefs}
+            api={api}
+            avatarUrl={props.avatarUrl}
+            onClose={() => setViewer(null)}
+            onOpenProfile={props.onOpenProfile}
+            onCreate={openPicker}
+          />
+        )}
+
+      {creating &&
+        portal(
+          <StoryCreator
+            file={creating.file}
+            initialMusic={creating.music}
+            me={me}
+            allUsers={props.allUsers}
+            defaultPrivacy={prefs.privacy || "public"}
+            archive={prefs.archive !== false}
+            avatarUrl={props.avatarUrl}
+            onClose={() => setCreating(null)}
+            showToast={toast}
+            onPosted={(id, wa) => {
+              setCreating(null)
+              toast("Story shared", "Visible for 24 hours", "success")
+              if (wa) {
+                try {
+                  window.open(
+                    "https://wa.me/?text=" + encodeURIComponent(`${me.name}'s story on MeBook: ${location.origin}${location.pathname}#story-${id}`),
+                    "_blank"
+                  )
+                } catch {}
+              }
+            }}
+          />
+        )}
+    </>
   )
 }
 
@@ -12645,6 +15054,17 @@ const handleChatTyping = (value: string) => {
                   </button>
                 </div>
               </div>
+              <StoriesSection
+                user={user}
+                profile={profile}
+                allUsers={allUsers}
+                myFriends={myFriends}
+                hiddenAuthors={hiddenAuthors}
+                avatarUrl={avatarUrl}
+                showToast={showToast}
+                onUnfollow={(uid: string) => handleUnfollow(uid)}
+                onOpenProfile={(uid: string) => openUserProfile(uid)}
+              />
               <div>
                 {feed.length === 0 ? (
                   <div className="mb-loading">Loading feed...</div>

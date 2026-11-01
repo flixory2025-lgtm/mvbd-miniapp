@@ -351,13 +351,17 @@ async function handle(req: NextRequest) {
     const snap = await db.collection("youtubeChannels").get()
     const docs = snap.docs.filter((d) => d.data().enabled !== false)
 
-    const results = []
-    for (const d of docs) results.push(await syncChannel(db, d))
+    // all channels in parallel => new uploads show up faster, one slow channel can't block the rest
+    const results = await Promise.all(docs.map((d) => syncChannel(db, d)))
 
     const imported = results.reduce((n, r) => n + r.imported, 0)
     return NextResponse.json({ ok: true, channels: results.length, imported, results }, { headers: CORS })
   } catch (err: any) {
-    return NextResponse.json({ error: String(err?.message || err) }, { status: 500, headers: CORS })
+    const quota = err?.code === 8 || /RESOURCE_EXHAUSTED/.test(String(err?.message || ""))
+    return NextResponse.json(
+      { error: quota ? "Firestore daily quota exceeded - will work again after reset" : String(err?.message || err) },
+      { status: quota ? 429 : 500, headers: CORS }
+    )
   }
 }
 

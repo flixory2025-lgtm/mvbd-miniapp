@@ -189,7 +189,14 @@ async function getFirebase() {
 
     const app = appMod.initializeApp(FIREBASE_CONFIG)
     const auth = authMod.getAuth(app)
-    const db = fsMod.getFirestore(app)
+    let db
+    try {
+      db = fsMod.initializeFirestore(app, {
+        localCache: fsMod.persistentLocalCache({ tabManager: fsMod.persistentMultipleTabManager() }),
+      })
+    } catch (e) {
+      db = fsMod.getFirestore(app)
+    }
 
     _fb = {
       app, auth, db,
@@ -5780,7 +5787,9 @@ function PhotoViewer({
   )
 }
 
-const PRES_WINDOW_MS = 5 * 60 * 1000;
+const PRES_WINDOW_MS = 6 * 60 * 1000;
+
+const FEED_PAGE = 30;
 
 const NOTE_TTL_MS = 24 * 60 * 60 * 1000;
 
@@ -10733,6 +10742,8 @@ export default function MeBookPage({ onExit }: MeBookPageProps) {
   const [feed, setFeed] = useState([]);
   const [myPosts, setMyPosts] = useState([]);
   const [extraPosts, setExtraPosts] = useState([]);
+  const [feedLimit, setFeedLimit] = useState(FEED_PAGE);
+  const feedHasMore = feed.length >= feedLimit;
   const [notifMenu, setNotifMenu] = useState(null);
   const [notifPrefs, setNotifPrefs] = useState({ less: [], muted: [] });
   const notifPrefsLoaded = useRef(false);
@@ -11220,6 +11231,31 @@ export default function MeBookPage({ onExit }: MeBookPageProps) {
       return false;
     }
   })();
+  useEffect(() => {
+    if (!user || !user.uid) return;
+    let off = null;
+    let dead = false;
+    (async () => {
+      try {
+        const fb = await getFirebase();
+        if (dead) return;
+        const q = fb.query(fb.collection(fb.db, "posts"), fb.orderBy("createdAt", "desc"), fb.limit(feedLimit));
+        off = fb.onSnapshot(q, (snap) => {
+          const arr = [];
+          snap.forEach((d) => arr.push({ id: d.id, ...d.data() }));
+          arr.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+          setFeed(arr);
+        });
+      } catch (e) {
+      }
+    })();
+    return () => {
+      dead = true;
+      if (off) {
+        try { off(); } catch (e) {}
+      }
+    };
+  }, [user && user.uid, feedLimit]);
   const typingTimeoutRef = useRef(null);
   const lastMarkedSeenRef = useRef(null);
   useEffect(() => {
@@ -11242,7 +11278,7 @@ export default function MeBookPage({ onExit }: MeBookPageProps) {
       if (timer) clearInterval(timer);
       timer = setInterval(() => {
         if (!document.hidden) write();
-      }, 90000);
+      }, 180000);
     };
     const onVis = () => {
       if (document.hidden) {
@@ -11728,15 +11764,6 @@ export default function MeBookPage({ onExit }: MeBookPageProps) {
     async (uid) => {
       cleanupListeners();
       const fb = await getFirebase();
-      const feedQ = fb.query(fb.collection(fb.db, "posts"), fb.orderBy("createdAt", "desc"));
-      unsubscribersRef.current.push(
-        fb.onSnapshot(feedQ, (snap) => {
-          const arr = [];
-          snap.forEach((d) => arr.push({ id: d.id, ...d.data() }));
-          arr.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
-          setFeed(arr);
-        })
-      );
       const myQ = fb.query(fb.collection(fb.db, "posts"), fb.where("authorId", "==", uid));
       unsubscribersRef.current.push(
         fb.onSnapshot(myQ, (snap) => {
@@ -11746,7 +11773,7 @@ export default function MeBookPage({ onExit }: MeBookPageProps) {
           setMyPosts(arr);
         })
       );
-      const usersQ = fb.query(fb.collection(fb.db, "users"));
+      const usersQ = fb.query(fb.collection(fb.db, "users"), fb.orderBy("lastActive", "desc"), fb.limit(150));
       unsubscribersRef.current.push(
         fb.onSnapshot(usersQ, (snap) => {
           const arr = [];
@@ -11868,13 +11895,8 @@ export default function MeBookPage({ onExit }: MeBookPageProps) {
           setChats(arr);
         })
       );
-      const notifQ = fb.query(
-        fb.collection(fb.db, "notifications"),
-        fb.where("uid", "==", uid)
-      );
       let firstNotifSnap = true;
-      unsubscribersRef.current.push(
-        fb.onSnapshot(notifQ, (snap) => {
+      const onNotifSnap = (snap) => {
           if (!firstNotifSnap) {
             snap.docChanges().forEach((c) => {
               if (c.type === "added" && !c.doc.metadata.hasPendingWrites) {
@@ -11889,8 +11911,24 @@ export default function MeBookPage({ onExit }: MeBookPageProps) {
           arr.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
           setNotifications(arr);
           setUnreadNotifCount(arr.filter((n) => !n.read).length);
-        })
-      );
+      };
+      const notifCol = fb.collection(fb.db, "notifications");
+      let offNotif = null;
+      const startNotif = (limited) => {
+        const q = limited
+          ? fb.query(notifCol, fb.where("uid", "==", uid), fb.orderBy("createdAt", "desc"), fb.limit(60))
+          : fb.query(notifCol, fb.where("uid", "==", uid));
+        offNotif = fb.onSnapshot(q, onNotifSnap, () => {
+          if (limited) {
+            firstNotifSnap = true;
+            startNotif(false);
+          }
+        });
+      };
+      startNotif(true);
+      unsubscribersRef.current.push(() => {
+        try { if (offNotif) offNotif(); } catch (e) {}
+      });
     },
     [cleanupListeners, showToast]
   );
@@ -16612,7 +16650,7 @@ ${buildShareUrl(post.id)}`;
         onUnfollow: (uid) => handleUnfollow(uid),
         onOpenProfile: (uid) => openUserProfile(uid)
       }
-    ), /* @__PURE__ */ React.createElement("div", null, feed.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "mb-loading" }, "Loading feed...") : feed.filter((p) => !hiddenAuthors.has(p.authorId)).map((p) => renderPost(p)))), currentView === "notifications" && /* @__PURE__ */ React.createElement("div", { className: "mb-view active" }, /* @__PURE__ */ React.createElement("h1", { className: "mb-page-title" }, /* @__PURE__ */ React.createElement("svg", { viewBox: "0 0 24 24" }, /* @__PURE__ */ React.createElement("path", { d: "M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z" })), "Notifications"), /* @__PURE__ */ React.createElement(PushPrompt, { perm: pushPerm, onEnable: enablePush }), /* @__PURE__ */ React.createElement("div", { className: "notif-page-wrap" }, /* @__PURE__ */ React.createElement("div", { className: "notif-page-head" }, /* @__PURE__ */ React.createElement("span", null, visibleNotifications.length, " total"), unreadNotifCount > 0 && /* @__PURE__ */ React.createElement("button", { className: "notif-mark-all", onClick: markAllNotificationsRead }, "Mark all as read")), /* @__PURE__ */ React.createElement("div", { className: "notif-list" }, visibleNotifications.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "notif-empty" }, /* @__PURE__ */ React.createElement("svg", { viewBox: "0 0 24 24" }, /* @__PURE__ */ React.createElement("path", { d: "M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z" })), /* @__PURE__ */ React.createElement("b", null, "No notifications yet"), /* @__PURE__ */ React.createElement("p", null, "When someone likes, comments or sends a friend request, you'll see it here.")) : visibleNotifications.map((n) => {
+    ), /* @__PURE__ */ React.createElement("div", null, feed.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "mb-loading" }, "Loading feed...") : React.createElement(React.Fragment, null, feed.filter((p) => !hiddenAuthors.has(p.authorId)).map((p) => renderPost(p)), feedHasMore ? React.createElement("button", { onClick: () => setFeedLimit((n) => n + FEED_PAGE), style: { display: "block", margin: "14px auto 90px", padding: "10px 22px", borderRadius: 999, border: "1px solid rgba(128,128,128,.4)", background: "transparent", color: "inherit", fontWeight: 600, cursor: "pointer" } }, "Load more posts") : null))), currentView === "notifications" && /* @__PURE__ */ React.createElement("div", { className: "mb-view active" }, /* @__PURE__ */ React.createElement("h1", { className: "mb-page-title" }, /* @__PURE__ */ React.createElement("svg", { viewBox: "0 0 24 24" }, /* @__PURE__ */ React.createElement("path", { d: "M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z" })), "Notifications"), /* @__PURE__ */ React.createElement(PushPrompt, { perm: pushPerm, onEnable: enablePush }), /* @__PURE__ */ React.createElement("div", { className: "notif-page-wrap" }, /* @__PURE__ */ React.createElement("div", { className: "notif-page-head" }, /* @__PURE__ */ React.createElement("span", null, visibleNotifications.length, " total"), unreadNotifCount > 0 && /* @__PURE__ */ React.createElement("button", { className: "notif-mark-all", onClick: markAllNotificationsRead }, "Mark all as read")), /* @__PURE__ */ React.createElement("div", { className: "notif-list" }, visibleNotifications.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "notif-empty" }, /* @__PURE__ */ React.createElement("svg", { viewBox: "0 0 24 24" }, /* @__PURE__ */ React.createElement("path", { d: "M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z" })), /* @__PURE__ */ React.createElement("b", null, "No notifications yet"), /* @__PURE__ */ React.createElement("p", null, "When someone likes, comments or sends a friend request, you'll see it here.")) : visibleNotifications.map((n) => {
       const type = n.type || "admin";
       const iconClass = type === "like" ? "like" : type === "comment" ? "comment" : type === "share" ? "share" : type === "friend" ? "friend" : type === "verification" ? "verification" : type === "subscription" ? "subscription" : type === "account" ? "account" : type === "post" ? "post" : "admin";
       const isFriendRequest = type === "friend" && n.requestId && !n.read;

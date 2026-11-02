@@ -253,6 +253,603 @@ async function getFirebase() {
 }
 
 /* ============================================================
+MEBOOK MOD (HTML site theke): voice orb recorder + audio/video calls + smooth messages
+============================================================ */
+function mbInstallMod() {
+  if (typeof window === "undefined" || window.__mbModInstalled) return
+  window.__mbModInstalled = true
+(function(){
+const CSS = `
+/* ---------- smooth messages ---------- */
+@keyframes mbMsgInMe{0%{opacity:0;transform:translate(26px,18px) scale(.7);}60%{opacity:1;}100%{opacity:1;transform:none;}}
+@keyframes mbMsgInThem{0%{opacity:0;transform:translate(-26px,18px) scale(.7);}60%{opacity:1;}100%{opacity:1;transform:none;}}
+@keyframes mbWaveIn{from{transform:scaleY(.15);}to{transform:scaleY(1);}}
+.mebook-root .mechat-bubble-wrap.me .mechat-bubble{transform-origin:100% 100%;animation:mbMsgInMe .5s cubic-bezier(.22,1.25,.36,1) both;}
+.mebook-root .mechat-bubble-wrap.them .mechat-bubble{transform-origin:0 100%;animation:mbMsgInThem .5s cubic-bezier(.22,1.25,.36,1) both;}
+.mebook-root .mechat-bubble-wrap.me .mechat-voice-wave span{transform-origin:50% 50%;animation:mbWaveIn .6s cubic-bezier(.3,1.4,.5,1) both;}
+.mebook-root .mechat-bubble-wrap.them .mechat-voice-wave span{transform-origin:50% 50%;animation:mbWaveIn .6s cubic-bezier(.3,1.4,.5,1) both;}
+.mebook-root .mechat-bubble-wrap{will-change:transform,opacity;}
+.mebook-root .mechat-recording-bar{display:none !important;}
+.mebook-root .mechat-head-btn{transition:transform .18s cubic-bezier(.3,1.5,.5,1),background .2s;}
+.mebook-root .mechat-head-btn:active{transform:scale(.85);}
+@media (prefers-reduced-motion:reduce){.mebook-root .mechat-bubble-wrap .mechat-bubble,.mebook-root .mechat-voice-wave span{animation:none !important;}}
+
+/* ---------- voice recorder (telegram style, compact) ---------- */
+.mbv{position:fixed;z-index:2147482000;display:flex;align-items:center;justify-content:space-between;padding:0 10px;box-sizing:border-box;
+  background:rgba(14,20,17,.97);color:#fff;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid rgba(255,255,255,.06);
+  touch-action:none;user-select:none;-webkit-user-select:none;font-family:inherit;animation:mbvIn .34s cubic-bezier(.2,1,.3,1) both;}
+.mbv.out{animation:mbvOut .26s ease forwards;}
+@keyframes mbvIn{from{opacity:.4;clip-path:inset(0 0 0 100%);}to{opacity:1;clip-path:inset(0 0 0 0);}}
+@keyframes mbvOut{to{opacity:0;transform:translateY(10px);}}
+.mbv .z{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;position:relative;
+  background:rgba(255,255,255,.08);transition:transform .25s cubic-bezier(.3,1.6,.5,1),background .2s,box-shadow .25s;}
+.mbv .z svg{width:22px;height:22px;fill:#fff;transition:transform .25s cubic-bezier(.3,1.6,.5,1);}
+.mbv .z.del.hot{background:#ef4444;transform:scale(1.3);box-shadow:0 0 0 8px rgba(239,68,68,.2),0 0 30px rgba(239,68,68,.6);}
+.mbv .z.snd.hot{background:#22c55e;transform:scale(1.3);box-shadow:0 0 0 8px rgba(34,197,94,.2),0 0 30px rgba(34,197,94,.65);}
+.mbv .z.del.hot svg{animation:mbvShake .3s ease-in-out infinite;}
+.mbv .z.snd.hot svg{transform:translateX(2px) rotate(-8deg);}
+@keyframes mbvShake{25%{transform:rotate(-14deg);}75%{transform:rotate(14deg);}}
+.mbv .z.burst{animation:mbvBurst .5s ease-out;}
+@keyframes mbvBurst{40%{transform:scale(1.55);background:#22c55e;}100%{transform:scale(1);}}
+.mbv .z.bin{animation:mbvBin .45s ease-out;}
+@keyframes mbvBin{20%{transform:scale(1.5) rotate(-12deg);background:#ef4444;}50%{transform:scale(1.35) rotate(10deg);}100%{transform:scale(1);}}
+.mbv.lock .z{cursor:pointer;}
+.mbv.lock .z.snd{background:#22c55e;box-shadow:0 6px 18px rgba(34,197,94,.45);}
+.mbv.lock .z.del{background:rgba(239,68,68,.18);}
+.mbv .mid{flex:1;display:flex;flex-direction:column;align-items:center;gap:1px;min-width:0;}
+.mbv .tmr{display:flex;align-items:center;gap:7px;font-size:16px;font-weight:700;font-variant-numeric:tabular-nums;}
+.mbv .tmr i{width:9px;height:9px;border-radius:50%;background:#ef4444;animation:mbvDot 1s ease-in-out infinite;}
+@keyframes mbvDot{50%{opacity:.25;transform:scale(1.5);}}
+.mbv .hint{display:flex;gap:16px;font-size:12px;color:rgba(255,255,255,.55);transition:opacity .25s;white-space:nowrap;}
+.mbv .hint b{font-weight:500;animation:mbvNudge 1.6s ease-in-out infinite;}
+.mbv .hint b.l{animation-name:mbvNudgeL;}
+@keyframes mbvNudge{50%{transform:translateX(4px);opacity:.45;}}
+@keyframes mbvNudgeL{50%{transform:translateX(-4px);opacity:.45;}}
+.mbv.lock .hint{opacity:0;}
+.mbo{position:fixed;width:52px;height:52px;z-index:2147482100;--lv:0;pointer-events:none;will-change:transform;animation:mbvPop .38s cubic-bezier(.3,1.7,.5,1) both;}
+@keyframes mbvPop{from{scale:.4;opacity:.2;}to{scale:1;opacity:1;}}
+.mbo.tr{transition:transform .46s cubic-bezier(.3,1.15,.4,1),opacity .42s ease-in,filter .42s;}
+.mbo>*{position:absolute;inset:0;border-radius:50%;}
+.mbo .c{background:radial-gradient(circle at 34% 28%,#d9fbe5 0%,#4ade80 34%,#16a34a 66%,#064e3b 100%);transform:scale(calc(.95 + var(--lv)*.3));
+  box-shadow:0 0 calc(10px + var(--lv)*34px) rgba(34,197,94,.7),inset 0 -4px 9px rgba(0,60,30,.5);transition:transform .08s linear;}
+.mbo .sp{animation:mbvSpin 8s linear infinite;}.mbo .sp.r{animation-duration:12s;animation-direction:reverse;}
+.mbo .b{position:absolute;inset:-9px;background:radial-gradient(circle at 50% 40%,rgba(74,222,128,.5),rgba(16,185,129,0) 68%);animation:mbvMorph 5s ease-in-out infinite;transform:scale(calc(1 + var(--lv)*.8));transition:transform .1s linear;}
+.mbo .sp.r .b{animation-delay:-2s;background:radial-gradient(circle at 40% 60%,rgba(45,212,191,.42),rgba(16,185,129,0) 68%);}
+.mbo .rg{border:1.5px solid rgba(74,222,128,.55);animation:mbvRing 2.2s ease-out infinite;}.mbo .rg.b2{animation-delay:1.1s;}
+@keyframes mbvSpin{to{transform:rotate(360deg);}}
+@keyframes mbvMorph{0%,100%{border-radius:50%;}25%{border-radius:58% 42% 46% 54%/46% 56% 44% 54%;}50%{border-radius:44% 56% 56% 44%/56% 44% 56% 44%;}75%{border-radius:52% 48% 40% 60%/42% 58% 42% 58%;}}
+@keyframes mbvRing{0%{transform:scale(.9);opacity:.8;}100%{transform:scale(2);opacity:0;}}
+.mbo .mic{display:flex;align-items:center;justify-content:center;}.mbo .mic svg{width:24px;height:24px;fill:#fff;}
+/* voice player */
+.mebook-root .mechat-voice.playing .mechat-voice-wave span{opacity:.3 !important;transition:opacity .15s;}
+.mebook-root .mechat-voice.playing .mechat-voice-wave span.pl{opacity:1 !important;}
+/* call log bubble */
+.mebook-root .mbcm{display:flex;align-items:center;gap:10px;min-width:170px;cursor:pointer;position:relative;padding:2px 2px 0;}
+.mebook-root .mbcm-ic{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.22);flex-shrink:0;}
+.mebook-root .mechat-bubble.them .mbcm-ic{background:rgba(22,163,74,.15);}
+.mebook-root .mbcm-ic svg{width:20px;height:20px;fill:currentColor;}
+.mebook-root .mbcm.miss .mbcm-ic{background:rgba(239,68,68,.18);color:#ef4444;}
+.mebook-root .mbcm-tx{display:flex;flex-direction:column;line-height:1.25;flex:1;}
+.mebook-root .mbcm-tx b{font-size:14.5px;font-weight:700;}.mebook-root .mbcm-tx small{font-size:12px;opacity:.75;}
+.mebook-root .mbcm .mechat-bubble-time{align-self:flex-end;}
+/* ---------- call screen ---------- */
+.mbc{position:fixed;inset:0;z-index:2147483000;color:#fff;overflow:hidden;font-family:inherit;
+  background:radial-gradient(120% 70% at 50% 30%,#0f4733 0%,#08150f 48%,#040605 100%);
+  animation:mbcIn .45s cubic-bezier(.2,1,.3,1) both;touch-action:manipulation;}
+.mbc.out{animation:mbcOut .35s ease forwards;}
+@keyframes mbcIn{from{opacity:0;transform:scale(1.06);}to{opacity:1;transform:none;}}
+@keyframes mbcOut{to{opacity:0;transform:scale(.96);}}
+.mbc video{position:absolute;display:block;background:#000;}
+.mbc .rv{inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .5s;}
+.mbc[data-type=video][data-state=live] .rv{opacity:1;}
+.mbc .shade{position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity .4s;background:linear-gradient(180deg,rgba(0,0,0,.55),rgba(0,0,0,0) 26%,rgba(0,0,0,0) 62%,rgba(0,0,0,.6));}
+.mbc[data-type=video][data-state=live] .shade{opacity:1;}
+.mbc .tm{position:absolute;left:16px;top:calc(14px + env(safe-area-inset-top,0px));display:none;align-items:center;gap:7px;
+  background:rgba(239,68,68,.92);padding:6px 12px;border-radius:999px;font-size:13px;font-weight:700;font-variant-numeric:tabular-nums;box-shadow:0 4px 16px rgba(239,68,68,.35);}
+.mbc .tm i{width:7px;height:7px;border-radius:50%;background:#fff;animation:mbvDot 1.2s infinite;}
+.mbc[data-state=live] .tm{display:flex;}
+.mbc .vname{position:absolute;right:16px;top:calc(16px + env(safe-area-inset-top,0px));display:none;font-size:15px;font-weight:600;text-shadow:0 1px 8px rgba(0,0,0,.6);}
+.mbc[data-type=video][data-state=live] .vname{display:block;}
+.mbc .stage{position:absolute;left:0;right:0;top:0;bottom:0;display:flex;flex-direction:column;align-items:center;padding-top:calc(16vh + env(safe-area-inset-top,0px));transition:opacity .5s,transform .5s;}
+.mbc[data-type=video][data-state=live] .stage{opacity:0;transform:scale(.9);pointer-events:none;}
+.mbc .av{position:relative;width:150px;height:150px;display:flex;align-items:center;justify-content:center;}
+.mbc .av .rp{position:absolute;inset:0;border-radius:50%;border:1.5px solid rgba(74,222,128,.5);animation:mbcRipple 3.2s ease-out infinite;opacity:0;}
+.mbc .av .rp:nth-child(2){animation-delay:1.05s;}.mbc .av .rp:nth-child(3){animation-delay:2.1s;}
+.mbc[data-state=live] .av .rp{animation-duration:4.5s;border-color:rgba(255,255,255,.18);}
+.mbc[data-state=ended] .av .rp{animation:none;}
+@keyframes mbcRipple{0%{transform:scale(.8);opacity:.7;}100%{transform:scale(2);opacity:0;}}
+.mbc .av .ring{position:absolute;inset:-8px;border-radius:50%;background:rgba(0,0,0,.28);box-shadow:0 0 0 1px rgba(255,255,255,.07),0 0 60px rgba(34,197,94,.25);}
+.mbc .av img{position:relative;width:132px;height:132px;border-radius:50%;object-fit:cover;border:3px solid rgba(255,255,255,.14);background:#1f2a24;animation:mbcBreath 3.4s ease-in-out infinite;}
+@keyframes mbcBreath{50%{transform:scale(1.035);}}
+.mbc .nm{margin-top:34px;font-size:26px;font-weight:700;letter-spacing:-.2px;max-width:80%;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.mbc .st{margin-top:8px;font-size:14.5px;color:rgba(255,255,255,.6);display:flex;gap:2px;align-items:center;}
+.mbc .st .d{display:inline-flex;gap:3px;margin-left:4px;}
+.mbc .st .d i{width:4px;height:4px;border-radius:50%;background:currentColor;animation:mbcDots 1.2s infinite;}
+.mbc .st .d i:nth-child(2){animation-delay:.15s;}.mbc .st .d i:nth-child(3){animation-delay:.3s;}
+.mbc[data-state=live] .st .d,.mbc[data-state=ended] .st .d{display:none;}
+@keyframes mbcDots{0%,60%,100%{opacity:.25;transform:none;}30%{opacity:1;transform:translateY(-3px);}}
+.mbc .bar{position:absolute;left:0;right:0;bottom:0;display:flex;flex-direction:column;align-items:center;gap:26px;padding:0 20px calc(34px + env(safe-area-inset-bottom,0px));transition:opacity .35s,transform .35s;}
+.mbc .row{display:flex;align-items:center;justify-content:center;gap:22px;}
+.mbc .cb{width:58px;height:58px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:1px solid rgba(255,255,255,.08);
+  background:rgba(255,255,255,.09);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);transition:transform .2s cubic-bezier(.3,1.6,.5,1),background .25s;cursor:pointer;color:#fff;padding:0;}
+.mbc .cb:active{transform:scale(.84);}
+.mbc .cb svg{width:25px;height:25px;fill:currentColor;}
+.mbc .cb.off{background:#fff;color:#111;}
+.mbc .cb .on{display:block;}.mbc .cb .offi{display:none;}
+.mbc .cb.off .on{display:none;}.mbc .cb.off .offi{display:block;}
+.mbc .endw{width:92px;height:92px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:rgba(239,68,68,.14);box-shadow:0 0 0 1px rgba(239,68,68,.3);}
+.mbc .end,.mbc .no,.mbc .yes{width:68px;height:68px;border-radius:50%;border:0;display:flex;align-items:center;justify-content:center;color:#fff;cursor:pointer;padding:0;transition:transform .2s cubic-bezier(.3,1.6,.5,1);}
+.mbc .end,.mbc .no{background:#ef4444;box-shadow:0 10px 30px rgba(239,68,68,.5);}
+.mbc .yes{background:#22c55e;box-shadow:0 10px 30px rgba(34,197,94,.55);animation:mbcRing 1.4s ease-in-out infinite;}
+.mbc .end:active,.mbc .no:active,.mbc .yes:active{transform:scale(.86);}
+.mbc .end svg,.mbc .no svg,.mbc .yes svg{width:30px;height:30px;fill:#fff;}
+.mbc .end svg,.mbc .no svg{transform:rotate(135deg);}
+@keyframes mbcRing{0%,100%{box-shadow:0 10px 30px rgba(34,197,94,.55),0 0 0 0 rgba(34,197,94,.5);}50%{box-shadow:0 10px 30px rgba(34,197,94,.55),0 0 0 16px rgba(34,197,94,0);}}
+.mbc .yes svg{animation:mbcWig 1.4s ease-in-out infinite;}
+@keyframes mbcWig{0%,60%,100%{transform:rotate(0);}10%{transform:rotate(-14deg);}20%{transform:rotate(12deg);}30%{transform:rotate(-10deg);}40%{transform:rotate(8deg);}}
+.mbc .incoming,.mbc .active{display:none;}
+.mbc[data-state=in] .incoming{display:flex;gap:84px;align-items:flex-end;}
+.mbc[data-state=in] .lbl{display:flex;flex-direction:column;align-items:center;gap:10px;font-size:13px;color:rgba(255,255,255,.65);}
+.mbc:not([data-state=in]) .active{display:flex;flex-direction:column;align-items:center;gap:26px;}
+.mbc .vonly{display:none;}
+.mbc[data-type=video] .vonly{display:flex;}
+.mbc[data-state=live][data-type=video] .bar.hide{opacity:0;transform:translateY(30px);pointer-events:none;}
+.mbc[data-type=video][data-state=live] .active .row{background:rgba(25,25,25,.5);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);padding:10px 14px;border-radius:999px;gap:12px;border:1px solid rgba(255,255,255,.08);}
+.mbc[data-type=video][data-state=live] .endw{width:auto;height:auto;background:none;box-shadow:none;}
+.mbc[data-type=video][data-state=live] .end{width:54px;height:54px;}
+.mbc[data-type=video][data-state=live] .end svg{width:26px;height:26px;}
+.mbc[data-type=video][data-state=live] .cb{width:48px;height:48px;background:rgba(255,255,255,.1);}
+.mbc[data-type=video][data-state=live] .cb.off{background:#fff;}
+.mbc[data-state=ended] .bar{opacity:.0;pointer-events:none;}
+.mbc .pip{position:absolute;right:14px;top:calc(62px + env(safe-area-inset-top,0px));width:108px;height:152px;border-radius:20px;overflow:hidden;display:none;
+  box-shadow:0 10px 34px rgba(0,0,0,.5),0 0 0 2px rgba(255,255,255,.22);touch-action:none;transition:transform .35s cubic-bezier(.2,1,.3,1);z-index:3;}
+.mbc[data-type=video]:not([data-state=in]):not([data-state=ended]) .pip{display:block;}
+.mbc[data-type=video][data-state=out] .pip,.mbc[data-type=video][data-state=conn] .pip{opacity:.9;}
+.mbc .pip.dragging{transition:none;}
+.mbc .pip video{inset:0;width:100%;height:100%;object-fit:cover;}
+.mbc .pip.mir video{transform:scaleX(-1);}
+.mbc .pip.camoff video{opacity:0;}
+.mbc .pip.camoff{background:#1b1f1d;}
+.mbtoast{position:fixed;left:50%;bottom:calc(90px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:2147483600;background:rgba(20,24,22,.94);color:#fff;
+  padding:10px 16px;border-radius:14px;font-size:14px;box-shadow:0 8px 30px rgba(0,0,0,.4);animation:mbvUp .3s ease both;max-width:86vw;text-align:center;}
+@media (prefers-reduced-motion:reduce){.mbc *,.mbv *{animation-duration:.01s !important;animation-iteration-count:1 !important;}}
+`;
+const st = document.createElement('style'); st.id = 'mb-mod-css'; st.textContent = CSS; document.head.appendChild(st);
+
+const IC = {
+  phone:'M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z',
+  mic:'M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5-3c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z',
+  micoff:'M19 11h-1.7c0 .74-.16 1.43-.43 2.05l1.23 1.23c.56-.98.9-2.09.9-3.28zm-4.02.17c0-.06.02-.11.02-.17V5c0-1.66-1.34-3-3-3S9 3.34 9 5v.18l5.98 5.99zM4.27 3L3 4.27l6.01 6.01V11c0 1.66 1.33 3 2.99 3 .22 0 .44-.03.65-.08l1.66 1.66c-.71.33-1.5.52-2.31.52-2.76 0-5.3-2.1-5.3-5.1H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c.91-.13 1.77-.45 2.54-.9L19.73 21 21 19.73 4.27 3z',
+  cam:'M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z',
+  camoff:'M21 6.5l-4 4V7c0-.55-.45-1-1-1H9.82L21 17.18V6.5zM3.27 2L2 3.27 4.73 6H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.21 0 .39-.08.54-.18L19.73 21 21 19.73 3.27 2z',
+  flip:'M20 4h-3.17L15 2H9L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm-8 13c-2.76 0-5-2.24-5-5H5l2.5-2.5L10 12H8c0 2.21 1.79 4 4 4 .74 0 1.4-.2 2-.55l.73.73C13.87 16.7 12.97 17 12 17zm4.5-4.5L14 12h2c0-2.21-1.79-4-4-4-.74 0-1.4.2-2 .55l-.73-.73C10.13 7.3 11.03 7 12 7c2.76 0 5 2.24 5 5h2l-2.5 2.5z',
+  trash:'M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z',
+  send:'M2.01 21L23 12 2.01 3 2 10l15 2-15 2z'
+};
+const svg = (k) => `<svg viewBox="0 0 24 24"><path d="${IC[k]}"/></svg>`;
+function toast(m){const t=document.createElement('div');t.className='mbtoast';t.textContent=m;document.body.appendChild(t);setTimeout(()=>{t.style.transition='opacity .3s';t.style.opacity=0;setTimeout(()=>t.remove(),300);},2400);}
+
+/* =================== VOICE RECORDER (telegram-style orb) + PLAYER =================== */
+const MBVoice = (() => {
+  let ox = 0, ov, orb, an, ac, cs, raf, t0, h, sx, sy, cx, cy, ready, pend, locked, closed, timerEl, delZ, sndZ, btn, buf;
+  const fmt = (s) => Math.floor(s/60) + ':' + String(s%60).padStart(2,'0');
+  function attach(stream){
+    try{ cs = stream.clone(); ac = new (window.AudioContext||window.webkitAudioContext)(); if(ac.resume) ac.resume();
+      const s = ac.createMediaStreamSource(cs); an = ac.createAnalyser(); an.fftSize = 256; s.connect(an); buf = new Uint8Array(an.frequencyBinCount); }catch(e){ an = null; }
+  }
+  function loop(){
+    if(closed) return; let lv;
+    if(an){ an.getByteFrequencyData(buf); let sum = 0; for(let i=0;i<buf.length;i++) sum += buf[i]; lv = Math.min(1, (sum/buf.length)/80); }
+    else lv = .3 + .2*Math.sin(Date.now()/220);
+    const c = parseFloat(orb.style.getPropertyValue('--lv')||0); orb.style.setProperty('--lv', (c + (lv-c)*.3).toFixed(3));
+    timerEl.textContent = fmt(Math.floor((Date.now()-t0)/1000)); raf = requestAnimationFrame(loop);
+  }
+  function build(){
+    const bar = document.querySelector('.mechat-input-bar'); const r = bar ? bar.getBoundingClientRect() : { left: 0, width: innerWidth, top: innerHeight - 64, height: 64 };
+    ov = document.createElement('div'); ov.className = 'mbv';
+    ov.style.cssText = `left:${r.left}px;width:${r.width}px;top:${r.top}px;height:${Math.max(r.height,56)}px;`;
+    ov.innerHTML = `<div class="z del">${svg('trash')}</div><div class="mid"><div class="tmr"><i></i><span class="t">0:00</span></div><div class="hint"><b class="l">‹ delete</b><b>send ›</b></div></div><div class="z snd">${svg('send')}</div>`;
+    document.body.appendChild(ov);
+    const b = btn.getBoundingClientRect(); cx = b.left + b.width/2; cy = b.top + b.height/2;
+    orb = document.createElement('div'); orb.className = 'mbo'; orb.style.left = (cx-26) + 'px'; orb.style.top = (cy-26) + 'px';
+    orb.innerHTML = `<div class="rg"></div><div class="rg b2"></div><div class="sp"><i class="b"></i></div><div class="sp r"><i class="b"></i></div><div class="c"></div><div class="mic">${svg('mic')}</div>`;
+    document.body.appendChild(orb);
+    timerEl = ov.querySelector('.t'); delZ = ov.querySelector('.del'); sndZ = ov.querySelector('.snd');
+    delZ.addEventListener('click', () => locked && doDelete()); sndZ.addEventListener('click', () => locked && doSend());
+  }
+  async function press(e, hd){
+    if(ov) return; h = hd; sx = e.clientX; sy = e.clientY; ready = false; pend = false; locked = false; closed = false; an = null; t0 = Date.now();
+    btn = e.currentTarget; try{ btn.setPointerCapture(e.pointerId); }catch(_){}
+    build(); raf = requestAnimationFrame(loop);
+    btn.addEventListener('pointermove', mv); btn.addEventListener('pointerup', up); btn.addEventListener('pointercancel', up);
+    try{ await h.start(); }catch(_){}
+    if(!h.isRec()){ closed = true; unbind(); teardown(); return; }
+    t0 = Date.now(); ready = true; if(pend) decide();
+  }
+  function over(z){ const a = orb.getBoundingClientRect(), b = z.getBoundingClientRect(); return Math.hypot(a.left+a.width/2-(b.left+b.width/2), a.top+a.height/2-(b.top+b.height/2)) < 46; }
+  function mv(e){
+    if(locked || closed) return;
+    const dx = Math.max(-cx+26, Math.min(innerWidth-cx-26, e.clientX - sx)), dy = Math.max(-cy+26, Math.min(innerHeight-cy-26, e.clientY - sy));
+    orb.style.transform = `translate(${dx}px,${dy}px) scale(1.1)`;
+    const d = over(delZ), s = over(sndZ); delZ.classList.toggle('hot', d); sndZ.classList.toggle('hot', s);
+    const hot = d || s; if(hot && !mv.f && navigator.vibrate) navigator.vibrate(12); mv.f = hot;
+  }
+  function up(){ unbind(); if(!ready){ pend = true; return; } decide(); }
+  function unbind(){ if(!btn) return; btn.removeEventListener('pointermove', mv); btn.removeEventListener('pointerup', up); btn.removeEventListener('pointercancel', up); }
+  function decide(){
+    if(closed) return; if(over(sndZ)) return doSend(); if(over(delZ)) return doDelete();
+    locked = true; ov.classList.add('lock'); delZ.classList.remove('hot'); sndZ.classList.remove('hot');
+    const s = sndZ.getBoundingClientRect(); orb.classList.add('tr'); orb.style.transform = `translate(${s.left+s.width/2-62-cx}px,${s.top+s.height/2-cy}px)`;
+  }
+  function tgt(z){ const b = z.getBoundingClientRect(); return [b.left+b.width/2-cx, b.top+b.height/2-cy]; }
+  function doSend(){
+    if(closed) return; closed = true; unbind(); const [tx,ty] = tgt(sndZ); sndZ.classList.add('hot');
+    orb.classList.add('tr'); orb.style.transform = `translate(${tx}px,${ty}px) scale(.15) rotate(20deg)`; orb.style.opacity = 0;
+    setTimeout(() => { sndZ.classList.remove('hot'); sndZ.classList.add('burst'); if(navigator.vibrate) navigator.vibrate(18); }, 300);
+    setTimeout(() => { try{ h.send(); }catch(_){} teardown(); }, 500);
+  }
+  function doDelete(){
+    if(closed) return; closed = true; unbind(); const [tx,ty] = tgt(delZ); delZ.classList.add('hot');
+    orb.classList.add('tr'); orb.style.transform = `translate(${tx}px,${ty}px) scale(.12) rotate(-320deg)`; orb.style.opacity = 0; orb.style.filter = 'grayscale(1) blur(2px)';
+    setTimeout(() => { delZ.classList.remove('hot'); delZ.classList.add('bin'); if(navigator.vibrate) navigator.vibrate([10,40,10]); }, 340);
+    setTimeout(() => { try{ h.cancel(); }catch(_){} teardown(); }, 540);
+  }
+  function teardown(){
+    cancelAnimationFrame(raf); const o = ov, r = orb; ov = null; orb = null;
+    if(o){ o.classList.add('out'); setTimeout(() => o.remove(), 300); } if(r) setTimeout(() => r.remove(), 300);
+    try{ cs && cs.getTracks().forEach((t) => t.stop()); }catch(_){} try{ ac && ac.close(); }catch(_){} an = null; cs = null; ac = null;
+  }
+  /* ----- voice message player (play/pause + progress) ----- */
+  const PLAY = 'M8 5v14l11-7z', PAUSE = 'M6 19h4V5H6v14zm8-14v14h4V5h-4z';
+  let au = null, pb = null, praf = 0;
+  const parts = (b) => { const w = b.closest('.mechat-voice'); return { w, bars: [...w.querySelectorAll('.mechat-voice-wave span')], dur: w.querySelector('.mechat-voice-duration'), path: b.querySelector('path') }; };
+  function preset(){ cancelAnimationFrame(praf); if(!pb) return; try{ const p = parts(pb); p.path.setAttribute('d', PLAY); p.w.classList.remove('playing'); p.bars.forEach((s) => s.classList.remove('pl')); if(p.dur && pb._d != null) p.dur.textContent = pb._d; }catch(_){} }
+  function play(b, url, dur){
+    if(pb === b && au){ const p = parts(b); if(au.paused){ au.play().catch(() => {}); p.path.setAttribute('d', PAUSE); ptick(dur); } else { au.pause(); p.path.setAttribute('d', PLAY); cancelAnimationFrame(praf); } return; }
+    if(au){ au.pause(); preset(); au = null; }
+    pb = b; const p = parts(b); pb._d = p.dur ? p.dur.textContent : null; au = new Audio(); au.preload = 'auto'; au.src = url; const mine = au;
+    au.onended = () => { if(au !== mine) return; preset(); au = null; pb = null; };
+    au.onerror = () => { if(au !== mine) return; toast('Voice message could not be played'); preset(); au = null; pb = null; };
+    au.play().then(() => { if(au !== mine) return; p.path.setAttribute('d', PAUSE); p.w.classList.add('playing'); ptick(dur); }).catch(() => { if(au !== mine) return; toast('Voice message could not be played'); preset(); au = null; pb = null; });
+  }
+  function ptick(dur){
+    cancelAnimationFrame(praf); const step = () => { if(!au || !pb) return; const p = parts(pb); const d = (au.duration && isFinite(au.duration)) ? au.duration : (dur || 1);
+      const r = Math.min(1, au.currentTime / d), n = Math.floor(r * p.bars.length); p.bars.forEach((s, i) => s.classList.toggle('pl', i < n));
+      if(p.dur) p.dur.textContent = fmt(Math.max(0, Math.round(d - au.currentTime))); praf = requestAnimationFrame(step); }; step();
+  }
+  return { press, attach, play };
+})();
+window.MBVoice = MBVoice;
+
+/* =================== CALLS (WebRTC + Firestore signaling) =================== */
+const MBCall = (() => {
+  const ICE = { iceServers: [
+    { urls: 'stun:stun.l.google.com:19302' }, { urls: 'stun:stun1.l.google.com:19302' },
+    { urls: ['turn:openrelay.metered.ca:80','turn:openrelay.metered.ca:443','turn:openrelay.metered.ca:443?transport=tcp'], username: 'openrelayproject', credential: 'openrelayproject' }
+  ] };
+  let fb, me, cur = null, inUn = null, ac2, toneT, ui = {};
+  const col = (...p) => fb.collection(fb.db, ...p);
+  const dref = (id) => fb.doc(fb.db, 'calls', id);
+  const fmt = (s) => { const m = Math.floor(s/60), r = s%60; return String(m).padStart(2,'0') + ':' + String(r).padStart(2,'0'); };
+
+  function stopTone(){ clearInterval(toneT); toneT = null; if(navigator.vibrate) navigator.vibrate(0); }
+  function tone(kind){
+    stopTone();
+    try{
+      ac2 = ac2 || new (window.AudioContext||window.webkitAudioContext)(); if(ac2.state === 'suspended') ac2.resume();
+      const beat = () => { const t = ac2.currentTime; (kind==='in' ? [[0,.45,523],[.55,1,440]] : [[0,1.3,425]]).forEach(([a,b,f]) => {
+        const o = ac2.createOscillator(), g = ac2.createGain(); o.type = 'sine'; o.frequency.value = f;
+        g.gain.setValueAtTime(0, t+a); g.gain.linearRampToValueAtTime(kind==='in' ? .2 : .07, t+a+.05); g.gain.linearRampToValueAtTime(0, t+b);
+        o.connect(g); g.connect(ac2.destination); o.start(t+a); o.stop(t+b+.05); });
+        if(kind==='in' && navigator.vibrate) navigator.vibrate([350,200,350]); };
+      beat(); toneT = setInterval(beat, kind==='in' ? 2200 : 3200);
+    }catch(_){}
+  }
+
+  function render(){
+    const c = cur, r = document.createElement('div'); r.className = 'mbc'; r.dataset.type = c.type; r.dataset.state = c.state;
+    r.innerHTML = `<video class="rv" autoplay playsinline></video><div class="shade"></div>
+    <div class="tm"><i></i><span class="tt">00:00</span></div><div class="vname">${esc(c.peer.name)}</div>
+    <div class="stage"><div class="av"><i class="rp"></i><i class="rp"></i><i class="rp"></i><i class="ring"></i><img alt="" src="${esc(c.peer.photo||'data:,')}"></div>
+      <div class="nm">${esc(c.peer.name||'User')}</div><div class="st"><span class="stt"></span><span class="d"><i></i><i></i><i></i></span></div></div>
+    <div class="pip mir"><video class="lv" autoplay playsinline muted></video></div>
+    <div class="bar"><div class="incoming"><div class="lbl"><button class="no" data-a="no">${svg('phone')}</button>Decline</div><div class="lbl"><button class="yes" data-a="yes">${svg('phone')}</button>Accept</div></div>
+      <div class="active"><div class="row"><button class="cb" data-a="mic">${`<span class="on">${svg('mic')}</span><span class="offi">${svg('micoff')}</span>`}</button>
+        <button class="cb vonly" data-a="cam"><span class="on">${svg('cam')}</span><span class="offi">${svg('camoff')}</span></button>
+        <div class="endw"><button class="end" data-a="end">${svg('phone')}</button></div>
+        <button class="cb vonly" data-a="flip">${svg('flip')}</button></div></div></div>`;
+    document.body.appendChild(r); ui = { r, rv: r.querySelector('.rv'), lv: r.querySelector('.lv'), pip: r.querySelector('.pip'), stt: r.querySelector('.stt'), tt: r.querySelector('.tt'), bar: r.querySelector('.bar') };
+    const im = r.querySelector('.av img'); im.onerror = function(){ this.onerror = null; this.src = 'https://ui-avatars.com/api/?background=16a34a&color=fff&name=' + encodeURIComponent(c.peer.name || 'User'); }; if(!c.peer.photo) im.onerror();
+    r.addEventListener('click', onClick); pipDrag(ui.pip);
+    r.addEventListener('pointerdown', (e) => { if(c.type==='video' && r.dataset.state==='live'){ ui.bar.classList.remove('hide'); clearTimeout(c.hideT); c.hideT = setTimeout(() => { if(cur===c) ui.bar.classList.add('hide'); }, 4200); } });
+    setState(c.state);
+  }
+  const esc = (s) => String(s||'').replace(/[&<>"']/g, (m) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  const LABEL = { in: (c) => 'Incoming ' + (c.type==='video' ? 'video call' : 'call'), out: () => 'Calling', conn: () => 'Connecting', live: () => '', ended: () => 'Call ended' };
+  function setState(s, txt){ if(!cur || !ui.r) return; cur.state = s; ui.r.dataset.state = s; ui.stt.textContent = txt || LABEL[s](cur); }
+  function onClick(e){
+    const b = e.target.closest('[data-a]'); if(!b || !cur) return; const a = b.dataset.a;
+    if(a==='yes') accept(); else if(a==='no') finish('Declined', 'declined'); else if(a==='end') hangup();
+    else if(a==='mic'){ const t = cur.local && cur.local.getAudioTracks()[0]; if(t){ t.enabled = !t.enabled; b.classList.toggle('off', !t.enabled); } }
+    else if(a==='cam'){ const t = cur.local && cur.local.getVideoTracks()[0]; if(t){ t.enabled = !t.enabled; b.classList.toggle('off', !t.enabled); ui.pip.classList.toggle('camoff', !t.enabled); } }
+    else if(a==='flip') flip();
+  }
+  function hangup(){ const c = cur; if(!c) return; if(c.state==='live') finish('Call ended', 'ended'); else finish('Call ended', c.role==='caller' ? 'ended' : 'declined'); }
+  async function flip(){
+    const c = cur; if(!c || !c.local || !c.pc || c.flipping) return; c.flipping = true;
+    const want = c.facing === 'user' ? 'environment' : 'user'; const old = c.local.getVideoTracks()[0]; const was = old ? old.enabled : true;
+    const gum = (v) => navigator.mediaDevices.getUserMedia({ video: v, audio: false });
+    const put = async (ns, face) => {
+      const nt = ns.getVideoTracks()[0]; nt.enabled = was; const sd = c.pc.getSenders().find((s) => s.track && s.track.kind === 'video' || s.track === null);
+      const vs = c.pc.getSenders().find((s) => (s.track && s.track.kind === 'video')); if(vs) await vs.replaceTrack(nt); else if(sd) await sd.replaceTrack(nt);
+      c.local.getVideoTracks().forEach((t) => { c.local.removeTrack(t); t.stop(); }); c.local.addTrack(nt);
+      const real = (nt.getSettings && nt.getSettings().facingMode) || face; c.facing = real === 'environment' ? 'environment' : 'user';
+      ui.lv.srcObject = c.local; ui.lv.play && ui.lv.play().catch(() => {}); ui.pip.classList.toggle('mir', c.facing === 'user');
+    };
+    try{
+      if(old) old.stop();                       /* release the camera first (Android can open only one) */
+      let ns; try{ ns = await gum({ facingMode: { exact: want } }); }catch(_){
+        try{ ns = await gum({ facingMode: want }); }catch(__){
+          const ds = (await navigator.mediaDevices.enumerateDevices()).filter((d) => d.kind === 'videoinput');
+          const back = ds.find((d) => /back|rear|environment/i.test(d.label)) || (want === 'environment' ? ds[ds.length-1] : ds[0]);
+          if(!back) throw new Error('nocam'); ns = await gum({ deviceId: { exact: back.deviceId } });
+        }
+      }
+      await put(ns, want);
+      if(ns.getVideoTracks()[0] && c.facing !== want) toast('This device has only one camera');
+    }catch(e){
+      try{ await put(await gum({ facingMode: c.facing }), c.facing); }catch(_){}
+      toast('Could not switch camera');
+    }
+    c.flipping = false;
+  }
+  function pipDrag(p){
+    let sx, sy, ox = 0, oy = 0, mv = false;
+    p.addEventListener('pointerdown', (e) => { sx = e.clientX; sy = e.clientY; mv = true; p.classList.add('dragging'); p.setPointerCapture(e.pointerId); e.stopPropagation(); });
+    p.addEventListener('pointermove', (e) => { if(!mv) return; p.style.transform = `translate(${ox + e.clientX - sx}px,${oy + e.clientY - sy}px)`; });
+    p.addEventListener('pointerup', (e) => {
+      if(!mv) return; mv = false; p.classList.remove('dragging'); const r = p.getBoundingClientRect(), W = innerWidth, H = innerHeight, m = 14;
+      const left = r.left + r.width/2 < W/2, top = r.top + r.height/2 < H/2; const tx = left ? m : W - r.width - m, ty = top ? 62 : H - r.height - 150;
+      ox += tx - r.left; oy += ty - r.top; p.style.transform = `translate(${ox}px,${oy}px)`;
+    });
+  }
+
+  async function media(type){
+    return navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true }, video: type === 'video' ? { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 720 } } : false });
+  }
+  function makePC(c){
+    const pc = new RTCPeerConnection(ICE); c.pc = pc; c.pending = []; c.hasRemote = false; c.facing = 'user';
+    c.local.getTracks().forEach((t) => pc.addTrack(t, c.local));
+    ui.lv.srcObject = c.local; ui.lv.play && ui.lv.play().catch(() => {});
+    pc.ontrack = (e) => { ui.rv.srcObject = e.streams[0]; ui.rv.play && ui.rv.play().catch(() => {}); };
+    const side = c.role === 'caller' ? 'callerCandidates' : 'calleeCandidates';
+    pc.onicecandidate = (e) => { if(e.candidate) fb.setDoc(fb.doc(col('calls', c.id, side)), e.candidate.toJSON()).catch(() => {}); };
+    pc.onconnectionstatechange = () => {
+      const s = pc.connectionState;
+      if(s === 'connected') goLive(c);
+      else if(s === 'failed') finish('Connection lost', 'ended');
+      else if(s === 'disconnected'){ clearTimeout(c.dcT); c.dcT = setTimeout(() => { if(cur === c && pc.connectionState !== 'connected') finish('Connection lost', 'ended'); }, 9000); }
+    };
+    return pc;
+  }
+  function goLive(c){
+    if(cur !== c || c.state === 'live' || c.ending) return; stopTone(); setState('live'); c.liveAt = Date.now();
+    c.tick = setInterval(() => { ui.tt.textContent = fmt(Math.floor((Date.now() - c.liveAt)/1000)); }, 500); ui.tt.textContent = '00:00';
+    if(c.type === 'video') c.hideT = setTimeout(() => { if(cur === c) ui.bar.classList.add('hide'); }, 4200);
+  }
+  async function flush(c){ c.hasRemote = true; for(const x of c.pending.splice(0)) try{ await c.pc.addIceCandidate(x); }catch(_){} }
+  function listenCands(c, side){
+    c.unsubs.push(fb.onSnapshot(col('calls', c.id, side), (s) => s.docChanges().forEach((ch) => {
+      if(ch.type !== 'added') return; const cand = new RTCIceCandidate(ch.doc.data());
+      if(c.hasRemote) c.pc.addIceCandidate(cand).catch(() => {}); else c.pending.push(cand); })));
+  }
+  function watchDoc(c){
+    c.unsubs.push(fb.onSnapshot(dref(c.id), async (s) => {
+      if(!s.exists() || cur !== c) return; const d = s.data();
+      if(c.role === 'caller' && d.answer && !c.pc.currentRemoteDescription){
+        setState('conn'); stopTone(); try{ await c.pc.setRemoteDescription(d.answer); await flush(c); }catch(_){}
+      }
+      if(c.role === 'caller' && d.ringing && c.state === 'out' && !c.ringShown){ c.ringShown = true; setState('out', 'Ringing'); }
+      if(['ended','declined','busy','missed'].includes(d.status) && !c.ending){
+        const m = { declined: 'Call declined', busy: 'User is busy', missed: 'No answer', ended: 'Call ended' }[d.status]; finish(m, null);
+      }
+    }));
+  }
+
+  async function start(peer, type, chatId){
+    try{
+      if(!peer || !peer.uid){ toast('Calls work in 1-to-1 chats'); return; }
+      if(cur){ toast('You are already in a call'); return; }
+      fb = fb || await getFirebase(); me = fb.auth.currentUser; if(!me){ toast('Please log in first'); return; }
+      if(!window.RTCPeerConnection || !navigator.mediaDevices){ toast('Calls are not supported on this browser'); return; }
+      const c = cur = { role: 'caller', type, peer, chatId, state: 'out', unsubs: [] }; render();
+      try{ c.local = await media(type); }catch(e){ cleanup(c, true); toast(type==='video' ? 'Allow camera & microphone to call' : 'Allow microphone to call'); return; }
+      const id = fb.doc(col('calls')).id; c.id = id; const pc = makePC(c);
+      const offer = await pc.createOffer(); await pc.setLocalDescription(offer);
+      let nm = me.displayName, ph = me.photoURL; try{ const us = await fb.getDoc(fb.doc(fb.db, 'users', me.uid)); const u = (us && us.data && us.data()) || {}; nm = u.name || nm; ph = u.photoURL || u.photo || u.avatar || ph; }catch(_){}
+      await fb.setDoc(dref(id), { from: me.uid, to: peer.uid, fromName: nm || 'User', fromPhoto: ph || '', type, status: 'ringing', offer: { type: offer.type, sdp: offer.sdp }, ts: Date.now() });
+      watchDoc(c); listenCands(c, 'calleeCandidates'); tone('out');
+      c.ringT = setTimeout(() => { if(cur === c && c.state === 'out') finish('No answer', 'missed'); }, 45000);
+    }catch(e){ console.error(e); if(cur) cleanup(cur, true); toast('Could not start the call'); }
+  }
+  function incoming(id, d){
+    const c = cur = { id, role: 'callee', type: d.type || 'audio', peer: { uid: d.from, name: d.fromName || 'User', photo: d.fromPhoto }, offer: d.offer, state: 'in', unsubs: [] };
+    render(); tone('in'); fb.updateDoc(dref(id), { ringing: true }).catch(() => {}); c.ringT = setTimeout(() => { if(cur === c && c.state === 'in') finish('Missed call', 'missed'); }, 45000);
+    c.unsubs.push(fb.onSnapshot(dref(id), (s) => { if(cur !== c || c.ending) return; const x = s.data(); if(x && ['ended','missed'].includes(x.status)) finish('Missed call', null); }));
+  }
+  async function accept(){
+    const c = cur; if(!c || c.state !== 'in') return; clearTimeout(c.ringT); stopTone(); setState('conn');
+    try{
+      c.local = await media(c.type); const pc = makePC(c);
+      await pc.setRemoteDescription(c.offer); await flush(c);
+      const ans = await pc.createAnswer(); await pc.setLocalDescription(ans);
+      await fb.updateDoc(dref(c.id), { answer: { type: ans.type, sdp: ans.sdp }, status: 'accepted' });
+      listenCands(c, 'callerCandidates');
+      c.unsubs.push(fb.onSnapshot(dref(c.id), (s) => { const x = s.data(); if(x && x.status === 'ended' && !c.ending) finish('Call ended', null); }));
+    }catch(e){ console.error(e); toast('Allow microphone/camera to answer'); finish('Call failed', 'declined'); }
+  }
+  async function logCall(c, label){
+    if(c.role !== 'caller' || !c.chatId || c.logged) return; let st; const dur = c.liveAt ? Math.round((Date.now() - c.liveAt)/1000) : 0;
+    if(c.liveAt) st = 'ended'; else if(/no answer/i.test(label)) st = 'missed'; else if(/declined/i.test(label)) st = 'declined'; else if(/busy/i.test(label)) st = 'busy'; else if(label === 'Call ended') st = 'cancelled'; else return;
+    c.logged = true;
+    try{
+      const v = c.type === 'video' ? 'video' : 'voice'; const text = st === 'ended' ? (v === 'video' ? 'Video' : 'Voice') + ' call \u00B7 ' + fmt(dur) : 'Missed ' + v + ' call';
+      await fb.addDoc(col('chats', c.chatId, 'messages'), { from: me.uid, text, type: 'call', callType: c.type, callStatus: st, duration: dur, at: fb.serverTimestamp() });
+      const up = { lastMessage: { text: (c.type === 'video' ? '\u{1F4F9} ' : '\u{1F4DE} ') + text, from: me.uid }, lastAt: fb.serverTimestamp() };
+      if(st !== 'ended') up['unread.' + c.peer.uid] = fb.increment(1);
+      await fb.updateDoc(fb.doc(fb.db, 'chats', c.chatId), up);
+    }catch(e){ console.warn('call log failed', e); }
+  }
+  function finish(label, status){
+    const c = cur; if(!c || c.ending) return; c.ending = true; stopTone(); clearTimeout(c.ringT); logCall(c, label);
+    if(status && c.id) fb.updateDoc(dref(c.id), { status, endedAt: Date.now() }).catch(() => {});
+    if(ui.r){ setState('ended', label); }
+    setTimeout(() => cleanup(c), 1100);
+  }
+  function cleanup(c, now){
+    clearInterval(c.tick); clearTimeout(c.ringT); clearTimeout(c.dcT); clearTimeout(c.hideT); stopTone();
+    (c.unsubs || []).forEach((u) => { try{ u(); }catch(_){} });
+    try{ c.local && c.local.getTracks().forEach((t) => t.stop()); }catch(_){}
+    try{ c.pc && c.pc.close(); }catch(_){}
+    const r = ui.r; if(r){ if(now) r.remove(); else { r.classList.add('out'); setTimeout(() => r.remove(), 360); } }
+    if(cur === c){ cur = null; ui = {}; }
+  }
+  async function init(){
+    try{
+      fb = await getFirebase();
+      fb.onAuthStateChanged(fb.auth, (u) => {
+        if(inUn){ inUn(); inUn = null; } me = u; if(!u) return;
+        const q = fb.query(col('calls'), fb.where('to', '==', u.uid), fb.where('status', '==', 'ringing'));
+        inUn = fb.onSnapshot(q, (s) => s.docChanges().forEach((ch) => {
+          const d = ch.doc.data(), id = ch.doc.id;
+          if(ch.type === 'added'){ if(Date.now() - (d.ts || 0) > 50000) return; if(cur){ fb.updateDoc(ch.doc.ref, { status: 'busy' }).catch(() => {}); return; } incoming(id, d); }
+        }), () => {});
+      });
+    }catch(e){ console.warn('MBCall init failed', e); }
+  }
+  setTimeout(init, 1200);
+  return { start };
+})();
+window.MBCall = MBCall;
+})();
+}
+if (typeof window !== "undefined") {
+  try { mbInstallMod() } catch (e) { console.warn("MBMod failed", e) }
+}
+
+/* ============================================================
+"Get the MeBook app" bottom bar (web only, home page only) + Google Fonts
+============================================================ */
+const MBDL_CSS = `
+#mbdl{position:fixed;left:0;right:0;bottom:0;z-index:1002;display:flex;justify-content:center;padding:0 12px calc(12px + env(safe-area-inset-bottom,0px));pointer-events:none;transform:translate3d(0,130%,0);visibility:hidden;transition:transform .5s cubic-bezier(.2,.8,.2,1),visibility 0s linear .5s;font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+#mbdl.show{transform:none;visibility:visible;transition:transform .5s cubic-bezier(.2,.8,.2,1),visibility 0s}
+#mbdl .mbdl-bar{pointer-events:auto;width:100%;max-width:640px;display:flex;align-items:center;gap:12px;padding:9px 10px 11px 10px;border-radius:999px;color:#1c1e21;
+  background:rgba(255,255,255,.74);-webkit-backdrop-filter:blur(22px) saturate(190%);backdrop-filter:blur(22px) saturate(190%);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.8),inset 0 1.5px 2px rgba(255,255,255,.95),inset 0 -1px 2px rgba(0,0,0,.05),0 8px 26px rgba(0,0,0,.18),0 1px 3px rgba(0,0,0,.1)}
+#mbdl.dark .mbdl-bar{color:#f5f5f5;background:rgba(30,30,34,.72);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.12),inset 0 1.5px 2px rgba(255,255,255,.16),inset 0 -1px 2px rgba(0,0,0,.4),0 8px 28px rgba(0,0,0,.7),0 1px 3px rgba(0,0,0,.5)}
+#mbdl .mbdl-logo{flex:none;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(135deg,#0b1f14,#0f3d24);box-shadow:0 4px 14px rgba(34,197,94,.4)}
+#mbdl .mbdl-logo img{width:30px;height:30px;object-fit:contain}
+#mbdl .mbdl-txt{flex:1;min-width:0;line-height:1.25}
+#mbdl .mbdl-txt b{display:block;font-size:14.5px;font-weight:800;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#mbdl .mbdl-txt small{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;font-size:11.5px;color:#65676b;overflow:hidden}
+#mbdl.dark .mbdl-txt small{color:#8a8a8a}
+#mbdl .mbdl-btn{position:relative;overflow:hidden;flex:none;display:inline-flex;align-items:center;gap:7px;padding:11px 19px;border-radius:999px;border:0;cursor:pointer;text-decoration:none;font:800 14px 'Inter',system-ui,sans-serif;color:#04210f;-webkit-tap-highlight-color:transparent;
+  background:linear-gradient(180deg,#5cf08f 0%,#22c55e 55%,#16a34a 100%);
+  box-shadow:inset 0 2px 0 rgba(255,255,255,.6),inset 0 -2px 0 rgba(0,0,0,.12),0 4px 0 #0f6b32,0 9px 16px rgba(22,163,74,.45);
+  transition:transform .12s ease,box-shadow .12s ease}
+#mbdl .mbdl-btn svg{width:17px;height:17px;flex:none}
+#mbdl .mbdl-btn::after{content:"";position:absolute;top:0;left:-70%;width:40%;height:100%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.6),transparent);transform:skewX(-20deg);animation:mbdlShine 3.6s ease-in-out infinite}
+@keyframes mbdlShine{0%,55%{left:-70%}100%{left:130%}}
+#mbdl .mbdl-btn:hover{filter:brightness(1.06)}
+#mbdl .mbdl-btn:active{transform:translateY(4px);box-shadow:inset 0 2px 0 rgba(255,255,255,.45),inset 0 -2px 0 rgba(0,0,0,.12),0 0 0 #0f6b32,0 3px 6px rgba(22,163,74,.4)}
+#mbdl .mbdl-btn:focus-visible{outline:3px solid #86efac;outline-offset:3px}
+html.mbdl-on .mebook-root .mb-layout{padding-bottom:calc(96px + env(safe-area-inset-bottom,0px)) !important}
+@media(max-width:380px){#mbdl .mbdl-btn{padding:11px 15px}#mbdl .mbdl-logo{width:40px;height:40px}}
+@media(prefers-reduced-motion:reduce){#mbdl,#mbdl *{transition:none!important;animation:none!important}}
+`
+function mbInstallDownloadBar() {
+  if (typeof window === "undefined" || window.__mbDlInstalled) return
+  window.__mbDlInstalled = true
+  try {
+    if (!document.getElementById("mbdl-css")) {
+      const st = document.createElement("style")
+      st.id = "mbdl-css"
+      st.textContent = MBDL_CSS
+      document.head.appendChild(st)
+    }
+  } catch (e) {}
+(function(){
+  /* ---- settings ---- */
+  var APK_URL="https://github.com/flixory2025-lgtm/MeBook/releases/download/v1.0.0/MeBook.apk";
+  var LOGO_URL="https://i.postimg.cc/rsBBsQWF/17832-removebg-preview.png";
+  var TITLE="Get the MeBook app";
+  var SUB="Download app for better experience";
+  var SHOW_ON_LOGIN_SCREEN=false;   /* true = login screen e-o dekhabe */
+
+  /* ---- never inside the app ---- */
+  try{
+    var ua=navigator.userAgent||"",C=window.Capacitor;
+    if(window.__mbNative||document.documentElement.classList.contains("mb-native")||/MeBookApp/i.test(ua)||
+       (C&&C.isNativePlatform&&C.isNativePlatform())||/[?&]mbnative=1/.test(location.search))return;
+  }catch(e){}
+
+  var bar=document.createElement("div");
+  bar.id="mbdl";bar.setAttribute("role","region");bar.setAttribute("aria-label","Download MeBook app");
+  bar.innerHTML=
+    '<div class="mbdl-bar">'+
+      '<div class="mbdl-logo"><img src="'+LOGO_URL+'" alt=""></div>'+
+      '<div class="mbdl-txt"><b>'+TITLE+'</b><small>'+SUB+'</small></div>'+
+      '<a class="mbdl-btn" href="'+APK_URL+'" download>'+
+        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l-5-5m5 5l5-5M4 20h16"/></svg>Download</a>'+
+    '</div>';
+  function mount(){if(document.body&&!bar.parentNode)document.body.appendChild(bar);}
+
+  function onHome(){
+    var r=document.querySelector(".mebook-root");
+    if(!r)return false;
+    var c=r.classList;
+    var loggedIn=!!r.querySelector(".mb-navbar");
+    if(!loggedIn)return SHOW_ON_LOGIN_SCREEN&&!!r.querySelector(".auth-wrap");
+    /* any non-home page (reels, profile, chat, search, friends...) adds one of these */
+    if(c.contains("mb-hdr-off")||c.contains("fbp-full")||c.contains("mc-open")||c.contains("sr-open"))return false;
+    return true;
+  }
+  function typing(){
+    var a=document.activeElement;
+    return !!a&&(/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)||a.isContentEditable);
+  }
+  var last=null;
+  function sync(){
+    mount();
+    var r=document.querySelector(".mebook-root");
+    bar.classList.toggle("dark",!!(r&&r.classList.contains("dark-mode")));
+    var show=onHome()&&!typing();
+    if(show===last)return;
+    last=show;
+    bar.classList.toggle("show",show);
+    document.documentElement.classList.toggle("mbdl-on",show);
+  }
+  /* light polling: cheap, and works with every React re-render / page change */
+  setInterval(function(){if(!document.hidden)sync();},200);
+  document.addEventListener("focusin",sync);document.addEventListener("focusout",function(){setTimeout(sync,50)});
+  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",sync);else sync();
+})();
+}
+if (typeof window !== "undefined") {
+  try {
+    if (!document.getElementById("mb-fonts")) {
+      const lk = document.createElement("link")
+      lk.id = "mb-fonts"
+      lk.rel = "stylesheet"
+      lk.href = "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Manrope:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap"
+      document.head.appendChild(lk)
+    }
+    mbInstallDownloadBar()
+  } catch (e) {}
+}
+
+/* ============================================================
 PUSH NOTIFICATIONS  (OneSignal + Cloudflare Worker)
 ------------------------------------------------------------
 1) ONESIGNAL_APP_ID  -> OneSignal dashboard > Settings > Keys & IDs
@@ -271,8 +868,54 @@ function setPushSenderName(name: string) {
 }
 
 let _osPromise: Promise<any> | null = null
+let _nativeOsInit = false
+let _pendingPushData: any = null
+function isNativeApp() {
+  return typeof window !== "undefined" && !!(window as any).__mbNative
+}
+function getNativeOS(): any {
+  try {
+    const w: any = window
+    const os = (w.plugins && w.plugins.OneSignal) || w.OneSignal || (w.Capacitor && w.Capacitor.Plugins && w.Capacitor.Plugins.OneSignal) || null
+    return os && os.login ? os : null
+  } catch {
+    return null
+  }
+}
+function handlePushData(d: any) {
+  if (!d) return
+  _pendingPushData = d
+  try {
+    if (typeof (window as any).__mbHandlePush === "function") (window as any).__mbHandlePush(d)
+  } catch {}
+}
+function initNativeOneSignal(): any {
+  const os = getNativeOS()
+  if (!os) return null
+  if (_nativeOsInit) return os
+  _nativeOsInit = true
+  try {
+    if (os.initialize) os.initialize(ONESIGNAL_APP_ID)
+  } catch {}
+  try {
+    os.Notifications.addEventListener("click", (e: any) => {
+      try {
+        const n = e?.notification || {}
+        const d = n.additionalData || n.additional_data || {}
+        handlePushData(d)
+      } catch {}
+    })
+    os.Notifications.addEventListener("foregroundWillDisplay", (e: any) => {
+      try {
+        if (document.visibilityState === "visible") e.preventDefault()
+      } catch {}
+    })
+  } catch {}
+  return os
+}
 function loadOneSignal(): Promise<any> {
   if (typeof window === "undefined" || !PUSH_ENABLED) return Promise.resolve(null)
+  if (isNativeApp()) return Promise.resolve(null)
   if (_osPromise) return _osPromise
 
   _osPromise = new Promise((resolve) => {
@@ -319,6 +962,11 @@ function loadOneSignal(): Promise<any> {
 
 async function oneSignalLogin(uid: string) {
   try {
+    if (isNativeApp()) {
+      const nos = initNativeOneSignal()
+      if (nos) nos.login(uid)
+      return
+    }
     const os = await loadOneSignal()
     if (os) await os.login(uid)
   } catch (e) {
@@ -328,18 +976,50 @@ async function oneSignalLogin(uid: string) {
 
 async function oneSignalLogout() {
   try {
+    if (isNativeApp()) {
+      const nos = initNativeOneSignal()
+      if (nos) nos.logout()
+      return
+    }
     const os = await loadOneSignal()
     if (os) await os.logout()
   } catch {}
 }
 
+async function getPushPermissionAsync(): Promise<string> {
+  if (!PUSH_ENABLED) return "disabled"
+  if (isNativeApp()) {
+    try {
+      const nos = initNativeOneSignal()
+      if (!nos) return "unsupported"
+      const ok = await nos.Notifications.getPermissionAsync()
+      return ok ? "granted" : "default"
+    } catch {
+      return "default"
+    }
+  }
+  return getPushPermission()
+}
+
 function getPushPermission(): string {
   if (!PUSH_ENABLED) return "disabled"
+  if (isNativeApp()) return "default"
   if (typeof window === "undefined" || !("Notification" in window)) return "unsupported"
   return Notification.permission // "default" | "granted" | "denied"
 }
 
 async function requestPush(): Promise<string> {
+  if (isNativeApp()) {
+    try {
+      const nos = initNativeOneSignal()
+      if (!nos) return "unsupported"
+      const ok = await nos.Notifications.requestPermission(true)
+      return ok ? "granted" : "denied"
+    } catch (e) {
+      console.warn("Native push permission failed:", e)
+      return "default"
+    }
+  }
   try {
     const os = await loadOneSignal()
     if (!os) return getPushPermission()
@@ -394,7 +1074,10 @@ async function pushAfterAddDoc(ref: any, data: any, fsMod: any) {
       message: data.message || "",
       type: data.type,
       url: pushUrlFor(data),
-    })
+      data: { type: data.type || "notification", fromUid: data.fromUid || data.from || "", postId: data.postId || "", mb: data.type === "friend" ? "friends" : "notifications" },
+      channel: "mebook_default",
+      priority: 10,
+    } as any)
     return
   }
 
@@ -405,8 +1088,11 @@ async function pushAfterAddDoc(ref: any, data: any, fsMod: any) {
     const members: string[] = chatSnap.exists() ? chatSnap.data()?.members || [] : []
     const tos = members.filter((x) => x !== data.from)
     if (!tos.length) return
-    const message =
-      data.type === "image" ? "📷 Photo"
+    const isCall = data.type === "call"
+    if (isCall && data.callStatus !== "missed") return
+    const message = isCall
+      ? (data.callType === "video" ? "\u{1F4F9} Missed video call" : "\u{1F4DE} Missed voice call")
+      : data.type === "image" ? "📷 Photo"
       : data.type === "voice" ? "🎤 Voice message"
       : data.text || "👍"
     for (const to of tos) {
@@ -414,9 +1100,12 @@ async function pushAfterAddDoc(ref: any, data: any, fsMod: any) {
         uid: to,
         title: _pushSenderName,
         message,
-        type: "chat",
-        url: `${pushBaseUrl()}?mb=messages`,
-      })
+        type: isCall ? "missed_call" : "chat",
+        url: `${pushBaseUrl()}?mb=messages&chat=${encodeURIComponent(m[1])}&u=${encodeURIComponent(data.from || "")}`,
+        data: { type: isCall ? "missed_call" : "chat", chatId: m[1], fromUid: data.from || "", fromName: _pushSenderName, mb: "messages" },
+        channel: isCall ? "mebook_calls" : "mebook_chat",
+        priority: 10,
+      } as any)
     }
   }
 }
@@ -464,6 +1153,14 @@ function timeAgo(ts: any) {
   return d.toLocaleDateString()
 }
 
+function fmtCount(n: any) {
+  n = Math.max(0, Math.floor(Number(n) || 0))
+  if (n < 1e3) return String(n)
+  const one = (v: number) => String(Math.floor(v * 10) / 10).replace(/\.0$/, "")
+  if (n < 1e6) return one(n / 1e3) + "k"
+  if (n < 1e9) return one(n / 1e6) + "M"
+  return one(n / 1e9) + "B"
+}
 function time12(d) {
   return d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true });
 }
@@ -737,6 +1434,268 @@ animation:cardFloat .7s cubic-bezier(.2,.8,.3,1);color:#f3f4f6;
 .mebook-root .auth-err{background:rgba(220,38,38,.12);border:1px solid rgba(220,38,38,.25);color:#fca5a5;font-size:13px;padding:11px 14px;border-radius:10px;margin-top:12px;display:none;animation:shake .4s ease;}
 .mebook-root .auth-err.show{display:block;}
 @keyframes shake{0%,100%{transform:translateX(0);}25%{transform:translateX(-4px);}75%{transform:translateX(4px);}}
+
+/* ============ MEBOOK AUTH POPUP (sign in / sign up / reset password) ============ */
+/*
+ * Glow green  = r,g,b  (shudhu ei ek line change korlei shob green change hobe)
+ * --pos-in / --pos-up = background image er kon part focus e thakbe (x y)
+ *   jemon: "center top", "center 20%", "60% 30%"
+ */
+.mebook-root .auth-wrap.av-wrap{
+--glow:60,225,25;
+--pos-in:center 35%;
+--pos-up:center 35%;
+display:flex;align-items:center;justify-content:center;padding:10px;overflow:hidden;
+background:radial-gradient(ellipse at 50% 30%,#0c2b18 0%,#04120a 42%,#010503 100%);
+-webkit-tap-highlight-color:transparent;
+font-family:'Manrope',Inter,-apple-system,'Segoe UI',system-ui,sans-serif;
+}
+.mebook-root .auth-wrap.av-wrap::before{
+content:'';position:absolute;top:0;left:0;width:100%;height:100%;filter:none;transform:none;
+background:radial-gradient(circle at 18% 88%,rgba(60,225,25,.12) 0%,transparent 45%),radial-gradient(circle at 86% 14%,rgba(34,197,94,.10) 0%,transparent 40%);
+animation:avAmbient 12s ease-in-out infinite;pointer-events:none;z-index:0;
+}
+@keyframes avAmbient{0%,100%{opacity:.75;}50%{opacity:1;}}
+
+/* ---------- modal shell ---------- */
+.mebook-root .av-modal{
+position:relative;z-index:2;width:100%;max-width:960px;
+height:min(640px,calc(100vh - 20px));height:min(640px,calc(100dvh - 20px));
+border-radius:30px;overflow:hidden;background:#07100c;border:1px solid rgba(255,255,255,.1);color:#fff;
+box-shadow:0 30px 70px -20px rgba(0,0,0,.9),0 0 50px -22px rgba(var(--glow),.5);
+animation:avModalIn .5s cubic-bezier(.22,1.1,.36,1) both;
+}
+.mebook-root .av-modal *{box-sizing:border-box;}
+@keyframes avModalIn{0%{opacity:0;transform:translateY(22px) scale(.94);}100%{opacity:1;transform:none;}}
+
+/* ---------- poster (background image) : FIXED, kokhono nore na ---------- */
+.mebook-root .av-art-wrap{position:absolute;top:0;left:0;right:0;bottom:0;z-index:0;pointer-events:none;}
+.mebook-root .av-art{position:absolute;top:0;left:0;right:0;bottom:0;overflow:hidden;background:#06120c;}
+.mebook-root .av-art-img{position:absolute;top:0;bottom:0;background-size:cover;background-repeat:no-repeat;background-color:#06120c;}
+.mebook-root .av-art-img.in{left:20%;right:0;background-position:var(--pos-in);-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 25%);mask-image:linear-gradient(90deg,transparent 0,#000 25%);}
+.mebook-root .av-art-img.up{left:0;width:80%;-webkit-mask-image:linear-gradient(90deg,#000 75%,transparent 100%);mask-image:linear-gradient(90deg,#000 75%,transparent 100%);background-position:var(--pos-up);opacity:0;transition:opacity .6s ease .15s;}
+.mebook-root .av-is-up .av-art-img.up{opacity:1;}
+.mebook-root .av-modal:not(.av-play) .av-art-img{transition:none;}
+.mebook-root .av-art-shade{
+position:absolute;top:0;left:0;right:0;bottom:0;
+background:linear-gradient(180deg,rgba(0,0,0,.12) 0%,rgba(0,0,0,.04) 35%,rgba(0,0,0,.12) 65%,rgba(0,0,0,.38) 100%);
+}
+
+/* ---------- torn paper sheets (form layer) : shudhu transform diye slide kore, tai smooth ---------- */
+.mebook-root .av-sheet{
+position:absolute;top:0;left:0;right:0;bottom:0;pointer-events:none;will-change:transform;
+transform:translate3d(0,0,0);backface-visibility:hidden;
+filter:drop-shadow(0 0 6px rgba(0,0,0,.9)) drop-shadow(0 2px 20px rgba(0,0,0,.6));
+transition:transform .9s cubic-bezier(.65,0,.35,1);
+}
+.mebook-root .av-sheet.up{transform:translate3d(108%,0,0);}
+.mebook-root .av-is-up .av-sheet.in{transform:translate3d(-108%,0,0);}
+.mebook-root .av-is-up .av-sheet.up{transform:translate3d(0,0,0);}
+.mebook-root .av-modal:not(.av-play) .av-sheet{transition:none;}
+.mebook-root .av-paper,.mebook-root .av-paper-body{position:absolute;top:0;left:0;right:0;bottom:0;}
+.mebook-root .av-paper{background:linear-gradient(160deg,#f6f1e4 0%,#e4dcc9 100%);}
+.mebook-root .av-paper-body{background:#07100c;}
+.mebook-root .av-sheet.in .av-paper{clip-path:polygon(46.63% 0%,46.04% 1.79%,46.48% 3.57%,47.2% 5.36%,47.15% 7.14%,47.68% 8.93%,48.15% 10.71%,49.17% 12.5%,49.38% 14.29%,50.3% 16.07%,50.23% 17.86%,51.21% 19.64%,51.53% 21.43%,51.36% 23.21%,52.72% 25%,52.6% 26.79%,52.27% 28.57%,52.79% 30.36%,53.17% 32.14%,53.7% 33.93%,54.65% 35.71%,54.46% 37.5%,55.33% 39.29%,56.24% 41.07%,56.43% 42.86%,56.88% 44.64%,56.76% 46.43%,57.56% 48.21%,57.81% 50%,58.42% 51.79%,58.42% 53.57%,58.89% 55.36%,59.41% 57.14%,60.24% 58.93%,61.82% 60.71%,62.05% 62.5%,61.98% 64.29%,62.24% 66.07%,62.38% 67.86%,62.6% 69.64%,62.6% 71.43%,62.32% 73.21%,63.64% 75%,64.1% 76.79%,65.38% 78.57%,65.22% 80.36%,66.22% 82.14%,66.76% 83.93%,66.63% 85.71%,67.39% 87.5%,68.2% 89.29%,67.56% 91.07%,68.42% 92.86%,68.36% 94.64%,68.48% 96.43%,69.32% 98.21%,69.73% 100%,0% 100%,0% 0%);}
+.mebook-root .av-sheet.in .av-paper-body{clip-path:polygon(45.79% 0%,45.57% 1.79%,46.02% 3.57%,46.5% 5.36%,46.52% 7.14%,47.18% 8.93%,47.65% 10.71%,48.56% 12.5%,48.63% 14.29%,49.29% 16.07%,49.22% 17.86%,50.41% 19.64%,50.76% 21.43%,50.65% 23.21%,52.03% 25%,52.2% 26.79%,51.75% 28.57%,52.38% 30.36%,52.57% 32.14%,52.72% 33.93%,53.96% 35.71%,53.55% 37.5%,54.48% 39.29%,55.2% 41.07%,55.46% 42.86%,56.28% 44.64%,56.13% 46.43%,57.14% 48.21%,57.24% 50%,57.93% 51.79%,58.03% 53.57%,58.41% 55.36%,58.96% 57.14%,59.43% 58.93%,60.72% 60.71%,60.98% 62.5%,61.28% 64.29%,61.69% 66.07%,61.68% 67.86%,62.05% 69.64%,62.14% 71.43%,61.84% 73.21%,63.11% 75%,63.64% 76.79%,64.6% 78.57%,64.48% 80.36%,65.54% 82.14%,66.12% 83.93%,65.75% 85.71%,66.62% 87.5%,67.36% 89.29%,66.93% 91.07%,67.86% 92.86%,67.8% 94.64%,67.65% 96.43%,68.79% 98.21%,69.32% 100%,0% 100%,0% 0%);}
+.mebook-root .av-sheet.up .av-paper{clip-path:polygon(53.96% 0%,53.15% 1.79%,53.71% 3.57%,52.96% 5.36%,52.48% 7.14%,51.7% 8.93%,51.63% 10.71%,51.44% 12.5%,50.17% 14.29%,49.47% 16.07%,48.46% 17.86%,48.46% 19.64%,49.01% 21.43%,48.1% 23.21%,47.69% 25%,47.88% 26.79%,47.57% 28.57%,47% 30.36%,47.13% 32.14%,45.97% 33.93%,45.48% 35.71%,45.15% 37.5%,45.11% 39.29%,43.52% 41.07%,43.24% 42.86%,42.53% 44.64%,42.96% 46.43%,43.06% 48.21%,42.15% 50%,41.23% 51.79%,41.37% 53.57%,41.54% 55.36%,40.95% 57.14%,39.82% 58.93%,39.04% 60.71%,37.92% 62.5%,37.81% 64.29%,37.81% 66.07%,37.9% 67.86%,36.58% 69.64%,36.33% 71.43%,36.46% 73.21%,36.27% 75%,35.85% 76.79%,35.28% 78.57%,34.96% 80.36%,34.06% 82.14%,33.68% 83.93%,32.78% 85.71%,31.99% 87.5%,32.26% 89.29%,32.13% 91.07%,31.82% 92.86%,31.2% 94.64%,31.39% 96.43%,30.91% 98.21%,30.93% 100%,100% 100%,100% 0%);}
+.mebook-root .av-sheet.up .av-paper-body{clip-path:polygon(54.85% 0%,53.87% 1.79%,54.44% 3.57%,53.7% 5.36%,53.21% 7.14%,52.17% 8.93%,51.93% 10.71%,51.83% 12.5%,50.93% 14.29%,50.08% 16.07%,49.19% 17.86%,49.16% 19.64%,49.81% 21.43%,48.96% 23.21%,48.74% 25%,48.81% 26.79%,48.17% 28.57%,47.4% 30.36%,47.86% 32.14%,46.75% 33.93%,46.07% 35.71%,45.82% 37.5%,45.89% 39.29%,44.52% 41.07%,44.08% 42.86%,43.31% 44.64%,43.82% 46.43%,43.67% 48.21%,42.8% 50%,41.79% 51.79%,42.08% 53.57%,41.9% 55.36%,41.29% 57.14%,40.5% 58.93%,39.66% 60.71%,38.82% 62.5%,38.38% 64.29%,38.76% 66.07%,38.63% 67.86%,37.36% 69.64%,37.1% 71.43%,37.16% 73.21%,36.77% 75%,36.51% 76.79%,35.83% 78.57%,35.71% 80.36%,34.5% 82.14%,34.26% 83.93%,33.69% 85.71%,32.88% 87.5%,32.99% 89.29%,32.98% 91.07%,32.36% 92.86%,31.9% 94.64%,32.08% 96.43%,31.54% 98.21%,31.26% 100%,100% 100%,100% 0%);}
+
+/* ---------- panes ---------- */
+.mebook-root .av-pane{position:absolute;top:0;height:100%;z-index:2;}
+.mebook-root .av-info{width:40%;padding:0 40px;display:flex;flex-direction:column;justify-content:center;pointer-events:none;text-shadow:0 2px 14px rgba(0,0,0,.8);}
+.mebook-root .av-info-login{right:0;align-items:flex-end;text-align:right;}
+.mebook-root .av-info-register{left:0;align-items:flex-start;text-align:left;width:34%;}
+.mebook-root .av-lockup{display:flex;align-items:center;gap:12px;margin-bottom:20px;}
+.mebook-root .av-info-login .av-lockup{flex-direction:row-reverse;}
+.mebook-root .av-lockup img{width:72px;height:72px;object-fit:contain;filter:drop-shadow(0 0 12px rgba(var(--glow),.45));}
+
+/* brand: "Me" = green 3D, "Book" = white */
+.mebook-root .av-brand{display:inline-flex;align-items:baseline;font-size:30px;font-weight:900;letter-spacing:-1px;line-height:1;text-shadow:none;}
+.mebook-root .av-me{position:relative;display:inline-block;color:transparent;-webkit-text-fill-color:transparent;}
+.mebook-root .av-me::before,.mebook-root .av-me::after{content:attr(data-t);position:absolute;left:0;top:0;white-space:nowrap;}
+.mebook-root .av-me::before{
+-webkit-text-fill-color:#0a5a0c;color:#0a5a0c;
+text-shadow:1px 1px 0 #0d6a10,2px 2px 0 #0c5f0e,3px 3px 0 #0a540c,4px 4px 0 #084a0a,6px 6px 9px rgba(0,0,0,.65),0 0 24px rgba(var(--glow),.6);
+}
+.mebook-root .av-me::after{
+background:linear-gradient(165deg,#d4ffa8 0%,#58ea2e 42%,#16a40f 100%);
+-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;
+}
+.mebook-root .av-book{color:#fff;-webkit-text-fill-color:#fff;margin-left:4px;text-shadow:0 2px 0 rgba(0,0,0,.35),0 0 18px rgba(255,255,255,.28);}
+
+.mebook-root .av-info h2{font-size:30px;line-height:1.15;font-weight:800;text-transform:uppercase;letter-spacing:-.01em;color:#fff;margin:0;}
+.mebook-root .av-info p{font-size:14px;line-height:1.55;margin:10px 0 0;color:#e6efe9;}
+
+/* ---------- logo + name sits above the form title (not on the poster) ---------- */
+.mebook-root .av-form .av-lockup{justify-content:center;gap:10px;margin-bottom:10px;}
+.mebook-root .av-form .av-lockup img{width:56px;height:56px;}
+.mebook-root .av-form .av-brand{font-size:30px;}
+
+/* ---------- forms ---------- */
+.mebook-root .av-form{
+width:46%;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;touch-action:pan-y;scrollbar-width:none;
+display:flex;flex-direction:column;padding:0 36px;
+}
+.mebook-root .av-form::-webkit-scrollbar{display:none;}
+.mebook-root .av-form-login{left:0;}
+.mebook-root .av-form-register{right:0;}
+.mebook-root .av-form-register,.mebook-root .av-is-up .av-form-login{pointer-events:none;}
+.mebook-root .av-form-login,.mebook-root .av-is-up .av-form-register{pointer-events:auto;}
+.mebook-root .av-form-inner{margin:auto 0;padding:26px 0;width:100%;}
+.mebook-root .av-title{font-size:28px;font-weight:700;letter-spacing:-.02em;text-align:center;line-height:1.2;color:#fff;margin:0;}
+.mebook-root .av-sub{font-size:13px;color:#94a3b8;text-align:center;margin:6px 0 22px;font-weight:500;line-height:1.5;}
+.mebook-root .av-sub b{color:#e2e8f0;font-weight:700;word-break:break-all;}
+.mebook-root .av-fields{display:flex;flex-direction:column;gap:11px;}
+
+/* glow field with floating label */
+.mebook-root .av-field{
+position:relative;height:54px;border-radius:999px;overflow:hidden;
+border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);
+transition:border-color .3s,background-color .3s,box-shadow .5s;
+}
+.mebook-root .av-field:focus-within{border-color:rgba(255,255,255,.25);background:rgba(255,255,255,.07);box-shadow:0 0 34px -8px rgba(var(--glow),.55);}
+.mebook-root .av-field::before{
+content:'';position:absolute;left:-24px;top:50%;width:85%;height:140%;transform:translateY(-50%);pointer-events:none;
+background:radial-gradient(ellipse at 28% 50%,rgba(var(--glow),.7) 0%,rgba(var(--glow),.3) 40%,transparent 70%);
+filter:blur(14px);opacity:0;transition:opacity .5s ease-out;
+}
+.mebook-root .av-field::after{
+content:'';position:absolute;left:32px;right:32px;bottom:0;height:1px;pointer-events:none;
+background:linear-gradient(90deg,transparent,rgba(var(--glow),.95),transparent);opacity:0;transition:opacity .5s;
+}
+.mebook-root .av-field:focus-within::before,.mebook-root .av-field:focus-within::after{opacity:1;}
+.mebook-root .av-input{
+position:relative;z-index:1;display:block;width:100%;height:100%;margin:0;padding:18px 22px 3px;border:0;border-radius:999px;outline:none;
+background:transparent;box-shadow:none;color:#fff;font:600 16px 'Manrope',Inter,-apple-system,'Segoe UI',system-ui,sans-serif;caret-color:rgb(var(--glow));
+-webkit-appearance:none;appearance:none;
+}
+.mebook-root .av-input.has-r{padding-right:56px;}
+.mebook-root .av-input:-webkit-autofill,.mebook-root .av-input:-webkit-autofill:focus{-webkit-text-fill-color:#fff;transition:background-color 9999s ease-in-out 0s;box-shadow:0 0 0 1000px transparent inset;}
+.mebook-root .av-label{
+position:absolute;z-index:1;left:22px;top:50%;transform:translateY(-50%);pointer-events:none;
+font-size:14px;font-weight:500;color:#94a3b8;transition:all .3s ease-out;
+}
+.mebook-root .av-input:focus + .av-label,.mebook-root .av-input:not(:placeholder-shown) + .av-label{top:11px;transform:none;font-size:10.5px;}
+.mebook-root .av-input:focus + .av-label{color:#cbd5e1;}
+.mebook-root .av-eye{
+position:absolute;z-index:2;right:10px;top:50%;width:34px;height:34px;margin-top:-17px;padding:0;border:0;border-radius:50%;background:none;
+display:flex;align-items:center;justify-content:center;color:#94a3b8;cursor:pointer;transition:color .2s;
+}
+.mebook-root .av-eye:hover{color:#fff;}
+.mebook-root .av-eye svg{width:17px;height:17px;}
+
+/* pill buttons */
+.mebook-root .av-pill{
+position:relative;display:flex;align-items:center;width:100%;height:54px;margin:0;padding:0 10px 0 20px;border-radius:999px;
+border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);color:#e2e8f0;
+font:600 14.5px 'Manrope',Inter,-apple-system,'Segoe UI',system-ui,sans-serif;text-align:left;cursor:pointer;
+transition:border-color .3s,background-color .3s,transform .15s;
+}
+.mebook-root .av-pill:hover:not(:disabled){border-color:rgba(255,255,255,.25);background:rgba(255,255,255,.09);}
+.mebook-root .av-pill:active:not(:disabled){transform:scale(.99);}
+.mebook-root .av-pill:disabled{opacity:.6;cursor:not-allowed;}
+.mebook-root .av-pill-ico{display:flex;align-items:center;justify-content:center;width:24px;height:24px;margin-right:12px;}
+.mebook-root .av-pill-ico svg{width:20px;height:20px;}
+.mebook-root .av-pill-txt{flex:1;}
+.mebook-root .av-pill-arrow{display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.06);transition:transform .3s,background-color .3s;}
+.mebook-root .av-pill:hover:not(:disabled) .av-pill-arrow{transform:translateX(2px);background:rgba(255,255,255,.15);}
+.mebook-root .av-pill-arrow svg{width:16px;height:16px;color:#fff;}
+.mebook-root .av-pill.av-primary{
+color:#fff;border-color:rgba(var(--glow),.55);
+background:linear-gradient(135deg,rgba(var(--glow),.32),rgba(var(--glow),.12));
+box-shadow:0 10px 26px -12px rgba(var(--glow),.8);
+}
+.mebook-root .av-pill.av-primary:hover:not(:disabled){background:linear-gradient(135deg,rgba(var(--glow),.5),rgba(var(--glow),.2));border-color:rgba(var(--glow),.55);}
+
+.mebook-root .av-row{display:flex;align-items:center;justify-content:space-between;padding:0 6px;height:20px;}
+.mebook-root .av-check{display:inline-flex;align-items:center;gap:8px;position:relative;font-size:12px;font-weight:500;color:#94a3b8;cursor:pointer;}
+.mebook-root .av-check input{position:absolute;opacity:0;width:0;height:0;}
+.mebook-root .av-box{width:16px;height:16px;border-radius:5px;border:1px solid rgba(255,255,255,.22);background:rgba(255,255,255,.04);display:flex;align-items:center;justify-content:center;transition:all .2s;}
+.mebook-root .av-box svg{width:11px;height:11px;opacity:0;transform:scale(.5);transition:all .2s;}
+.mebook-root .av-check input:checked + .av-box{background:rgb(var(--glow));border-color:rgb(var(--glow));box-shadow:0 0 10px rgba(var(--glow),.5);}
+.mebook-root .av-check input:checked + .av-box svg{opacity:1;transform:scale(1);}
+.mebook-root .av-check input:focus-visible + .av-box{box-shadow:0 0 0 3px rgba(var(--glow),.3);}
+.mebook-root .av-link{margin:0;padding:0;border:0;background:none;font:600 12px 'Manrope',Inter,sans-serif;color:#cbd5e1;cursor:pointer;transition:color .2s;}
+.mebook-root .av-link:hover:not(:disabled){color:rgb(var(--glow));text-decoration:underline;text-underline-offset:4px;}
+.mebook-root .av-link:disabled{opacity:.55;cursor:default;}
+
+.mebook-root .av-or{display:flex;align-items:center;gap:12px;padding:2px 0;font-size:10px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:#64748b;}
+.mebook-root .av-or::before,.mebook-root .av-or::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.16),transparent);}
+.mebook-root .av-switch{text-align:center;font-size:13px;font-weight:500;color:#94a3b8;padding-top:12px;margin:0;}
+.mebook-root .av-switch button{margin:0;padding:0;border:0;background:none;font:700 13px 'Manrope',Inter,sans-serif;color:#fff;cursor:pointer;text-underline-offset:4px;transition:color .2s;}
+.mebook-root .av-switch button:hover{text-decoration:underline;color:rgb(var(--glow));}
+
+.mebook-root .av-alert{display:flex;align-items:flex-start;gap:8px;padding:10px 12px;border-radius:16px;font-size:12px;line-height:1.4;color:#fca5a5;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25);animation:avShake .4s;}
+.mebook-root .av-alert .av-dot{flex:none;width:6px;height:6px;margin-top:5px;border-radius:50%;background:#f87171;}
+.mebook-root .av-alert.ok{color:#bbf7d0;background:rgba(var(--glow),.1);border-color:rgba(var(--glow),.3);animation:none;}
+.mebook-root .av-alert.ok .av-dot{background:rgb(var(--glow));}
+@keyframes avShake{20%,60%{transform:translateX(-4px);}40%,80%{transform:translateX(4px);}}
+
+/* ---------- reset password views ---------- */
+.mebook-root .av-swap{animation:avFade .45s cubic-bezier(.22,1,.36,1) both;}
+@keyframes avFade{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:none;}}
+.mebook-root .av-badge{width:64px;height:64px;margin:0 auto 14px;border-radius:50%;display:grid;place-items:center;background:rgba(var(--glow),.14);border:1px solid rgba(var(--glow),.5);box-shadow:0 0 34px -6px rgba(var(--glow),.6);animation:avPop .6s cubic-bezier(.34,1.56,.64,1) both;}
+.mebook-root .av-badge svg{width:28px;height:28px;stroke:rgb(var(--glow));fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;}
+.mebook-root .av-badge.ok svg{width:30px;height:30px;stroke-width:3;stroke-dasharray:30;stroke-dashoffset:30;animation:avDraw .5s ease .35s forwards;}
+@keyframes avDraw{to{stroke-dashoffset:0;}}
+@keyframes avPop{0%{transform:scale(.6);opacity:0;}100%{transform:scale(1);opacity:1;}}
+.mebook-root .av-steps{margin:0 0 14px;padding:13px 14px;border-radius:18px;list-style:none;display:flex;flex-direction:column;gap:10px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09);}
+.mebook-root .av-steps li{display:flex;gap:10px;font-size:12.5px;line-height:1.45;color:#cbd5e1;}
+.mebook-root .av-steps li b{color:#fff;font-weight:700;}
+.mebook-root .av-step-n{flex:none;width:20px;height:20px;margin-top:1px;border-radius:50%;display:grid;place-items:center;font-size:11px;font-weight:800;color:rgb(var(--glow));background:rgba(var(--glow),.16);border:1px solid rgba(var(--glow),.45);}
+.mebook-root .av-resend{margin:0;padding-top:12px;text-align:center;font-size:12.5px;font-weight:500;color:#94a3b8;}
+.mebook-root .av-resend .av-link{font-size:12.5px;font-weight:700;color:#fff;}
+.mebook-root .av-back{display:block;margin:14px auto 0;font-size:13px;}
+
+/* ---------- loading overlay ---------- */
+.mebook-root .av-loading{position:absolute;top:0;left:0;right:0;bottom:0;z-index:9998;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px;background:rgba(0,0,0,.9);}
+.mebook-root .av-orb{position:relative;width:100px;height:100px;display:flex;align-items:center;justify-content:center;}
+.mebook-root .av-orb::before{content:'';position:absolute;top:0;left:0;right:0;bottom:0;border-radius:50%;background:conic-gradient(from 0deg,transparent 0deg,rgba(var(--glow),.85) 90deg,transparent 180deg,transparent 360deg);animation:avSpin 1.8s linear infinite;filter:blur(8px);}
+.mebook-root .av-orb::after{content:'';position:absolute;top:6px;left:6px;right:6px;bottom:6px;border-radius:50%;background:#0b0f14;}
+.mebook-root .av-orb span{position:relative;z-index:3;font-size:34px;font-weight:900;background:linear-gradient(135deg,#fff 0%,#b7ff00 50%,#20e000 100%);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent;}
+@keyframes avSpin{to{transform:rotate(360deg);}}
+.mebook-root .av-loading p{margin:0;padding:0 20px;font-size:13px;font-weight:600;letter-spacing:.15em;text-transform:uppercase;text-align:center;color:rgb(var(--glow));text-shadow:0 0 15px rgba(var(--glow),.5);animation:avBlink 1.6s ease-in-out infinite;}
+@keyframes avBlink{0%,100%{opacity:.6;}50%{opacity:1;}}
+
+/* ---------- slide choreography ---------- */
+.mebook-root .av-anim{transition:transform .6s ease,opacity .6s ease;}
+.mebook-root .av-form-login .av-anim,.mebook-root .av-info-login .av-anim{transform:none;opacity:1;transition-delay:calc(.7s + .05s * var(--n));}
+.mebook-root .av-is-up .av-form-login .av-anim{transform:translateX(-70px);opacity:0;transition-delay:calc(.04s * var(--n));}
+.mebook-root .av-is-up .av-info-login .av-anim{transform:translateX(70px);opacity:0;transition-delay:calc(.04s * var(--n));}
+.mebook-root .av-form-register .av-anim,.mebook-root .av-info-register .av-anim{transform:translateX(70px);opacity:0;transition-delay:calc(.04s * var(--n));}
+.mebook-root .av-info-register .av-anim{transform:translateX(-70px);}
+.mebook-root .av-is-up .av-form-register .av-anim,.mebook-root .av-is-up .av-info-register .av-anim{transform:none;opacity:1;transition-delay:calc(.7s + .05s * var(--n));}
+.mebook-root .av-modal:not(.av-play) .av-anim{transition:none;}
+
+/* ---------- mobile: poster band on top, form below ---------- */
+@media (max-width:720px){
+.mebook-root .av-modal{max-width:430px;height:min(720px,calc(100vh - 20px));height:min(720px,calc(100dvh - 20px));border-radius:28px;}
+.mebook-root .av-art-img.in,.mebook-root .av-art-img.up{left:0;right:0;width:auto;top:0;bottom:auto;height:36%;-webkit-mask-image:none;mask-image:none;}
+.mebook-root .av-sheet.in .av-paper{clip-path:polygon(0% 28.11%,1.79% 28.64%,3.57% 27.7%,5.36% 27.29%,7.14% 27.35%,8.93% 28.04%,10.71% 27.07%,12.5% 27.08%,14.29% 26.36%,16.07% 25.62%,17.86% 26.35%,19.64% 26.36%,21.43% 26.09%,23.21% 26.56%,25% 25.66%,26.79% 25.93%,28.57% 27.01%,30.36% 25.84%,32.14% 24.94%,33.93% 24.81%,35.71% 24.86%,37.5% 25.41%,39.29% 24.07%,41.07% 23.68%,42.86% 24.23%,44.64% 24.64%,46.43% 25.37%,48.21% 24.99%,50% 24.02%,51.79% 23.72%,53.57% 24.54%,55.36% 24.53%,57.14% 22.76%,58.93% 22.91%,60.71% 22.87%,62.5% 22.85%,64.29% 22.51%,66.07% 23%,67.86% 22.67%,69.64% 22.15%,71.43% 23.03%,73.21% 22.61%,75% 21.92%,76.79% 21.59%,78.57% 21.23%,80.36% 21.3%,82.14% 21.5%,83.93% 21.28%,85.71% 21%,87.5% 21.05%,89.29% 21.52%,91.07% 21.58%,92.86% 20.83%,94.64% 20.26%,96.43% 20.62%,98.21% 20.61%,100% 20.62%,100% 100%,0% 100%);}
+.mebook-root .av-sheet.in .av-paper-body{clip-path:polygon(0% 29.18%,1.79% 29.33%,3.57% 28.53%,5.36% 27.86%,7.14% 28.21%,8.93% 29.05%,10.71% 27.91%,12.5% 28.18%,14.29% 27.37%,16.07% 26.85%,17.86% 27.48%,19.64% 27.18%,21.43% 26.76%,23.21% 27.52%,25% 26.52%,26.79% 26.8%,28.57% 27.89%,30.36% 26.73%,32.14% 25.94%,33.93% 25.8%,35.71% 25.93%,37.5% 26.67%,39.29% 24.95%,41.07% 25.03%,42.86% 25.32%,44.64% 25.69%,46.43% 26.19%,48.21% 25.89%,50% 24.88%,51.79% 24.78%,53.57% 25.33%,55.36% 25.24%,57.14% 23.81%,58.93% 24.05%,60.71% 24.3%,62.5% 23.9%,64.29% 23.31%,66.07% 23.86%,67.86% 23.5%,69.64% 22.99%,71.43% 24.06%,73.21% 23.48%,75% 22.37%,76.79% 22.18%,78.57% 22.13%,80.36% 22.27%,82.14% 22.67%,83.93% 22.24%,85.71% 22.41%,87.5% 22.03%,89.29% 22.64%,91.07% 22.2%,92.86% 21.67%,94.64% 20.91%,96.43% 21.34%,98.21% 21.53%,100% 21.63%,100% 100%,0% 100%);}
+.mebook-root .av-sheet.up .av-paper{clip-path:polygon(0% 20.57%,1.79% 19.99%,3.57% 19.99%,5.36% 20.07%,7.14% 19.89%,8.93% 20.29%,10.71% 19.56%,12.5% 19.84%,14.29% 20.76%,16.07% 22.38%,17.86% 21.99%,19.64% 21.93%,21.43% 22.42%,23.21% 22.74%,25% 22.57%,26.79% 21.92%,28.57% 21.79%,30.36% 21.43%,32.14% 22.62%,33.93% 22.02%,35.71% 22.69%,37.5% 23.08%,39.29% 23.2%,41.07% 23.78%,42.86% 24.6%,44.64% 23.93%,46.43% 24.27%,48.21% 24.1%,50% 23.16%,51.79% 23.84%,53.57% 23.84%,55.36% 23.62%,57.14% 23.93%,58.93% 24.22%,60.71% 25.49%,62.5% 26.09%,64.29% 26.03%,66.07% 25.89%,67.86% 25.41%,69.64% 26.38%,71.43% 26.26%,73.21% 25.54%,75% 25.41%,76.79% 25.27%,78.57% 26.49%,80.36% 26.1%,82.14% 26.5%,83.93% 26.3%,85.71% 27.25%,87.5% 27.23%,89.29% 27.65%,91.07% 27.84%,92.86% 26.86%,94.64% 27.6%,96.43% 28%,98.21% 27.76%,100% 27.55%,100% 100%,0% 100%);}
+.mebook-root .av-sheet.up .av-paper-body{clip-path:polygon(0% 21.51%,1.79% 21.31%,3.57% 21.41%,5.36% 21.27%,7.14% 20.81%,8.93% 20.74%,10.71% 20.49%,12.5% 20.86%,14.29% 21.55%,16.07% 22.92%,17.86% 22.74%,19.64% 23.02%,21.43% 23.83%,23.21% 23.88%,25% 23.58%,26.79% 22.74%,28.57% 22.71%,30.36% 22.28%,32.14% 23.73%,33.93% 22.57%,35.71% 23.3%,37.5% 23.58%,39.29% 24.32%,41.07% 24.66%,42.86% 25.4%,44.64% 24.95%,46.43% 25.6%,48.21% 25.41%,50% 24.48%,51.79% 24.73%,53.57% 24.8%,55.36% 24.2%,57.14% 24.52%,58.93% 25.14%,60.71% 26.28%,62.5% 26.7%,64.29% 26.76%,66.07% 27.16%,67.86% 26.56%,69.64% 27.32%,71.43% 27.48%,73.21% 26.75%,75% 26.24%,76.79% 25.96%,78.57% 27.34%,80.36% 26.67%,82.14% 27.33%,83.93% 27.01%,85.71% 28.56%,87.5% 28.4%,89.29% 28.85%,91.07% 28.69%,92.86% 28.12%,94.64% 28.98%,96.43% 28.72%,98.21% 28.58%,100% 28.27%,100% 100%,0% 100%);}
+.mebook-root .av-info,.mebook-root .av-info-register{width:100%;height:23%;top:0;padding:0 22px;align-items:flex-start;text-align:left;}
+.mebook-root .av-info-login{right:auto;left:0;align-items:flex-start;text-align:left;}
+.mebook-root .av-info .av-lockup,.mebook-root .av-info-login .av-lockup{margin-bottom:4px;gap:8px;flex-direction:row;}
+.mebook-root .av-lockup img{width:46px;height:46px;}
+.mebook-root .av-brand{font-size:23px;}
+.mebook-root .av-info h2{font-size:17px;}
+.mebook-root .av-info p{display:none;}
+.mebook-root .av-form{width:100%;top:auto;bottom:0;height:71%;padding:0 22px;}
+.mebook-root .av-form-login,.mebook-root .av-form-register{left:0;right:auto;}
+.mebook-root .av-form-inner{padding:14px 0 22px;}
+.mebook-root .av-title{font-size:24px;}
+.mebook-root .av-sub{margin:4px 0 16px;font-size:12.5px;}
+.mebook-root .av-fields{gap:9px;}
+.mebook-root .av-field,.mebook-root .av-pill{height:50px;}
+.mebook-root .av-form .av-lockup{margin-bottom:6px;}
+.mebook-root .av-form .av-lockup img{width:42px;height:42px;}
+.mebook-root .av-form .av-brand{font-size:25px;}
+}
+@media (prefers-reduced-motion:reduce){
+.mebook-root .av-anim,.mebook-root .av-sheet,.mebook-root .av-art-img,.mebook-root .av-modal,.mebook-root .av-swap,.mebook-root .auth-wrap.av-wrap::before{animation-duration:.01ms !important;transition-duration:.01ms !important;transition-delay:0s !important;}
+}
 
 /* ============ HEADER ============ */
 .mebook-root .mb-header{
@@ -2587,6 +3546,12 @@ text-shadow:0 0 15px rgba(34,197,94,.35);
 .mebook-root .mb-yt-stage iframe{position:absolute;inset:0;width:100%;height:100%;border:0;pointer-events:none;}
 .mebook-root .mb-yt-thumb{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
 .mebook-root .mb-yt-shade{position:absolute;inset:0;background:linear-gradient(to bottom,rgba(0,0,0,.25),rgba(0,0,0,.05) 40%,rgba(0,0,0,.35));}
+.mebook-root .mb-yt-cover{position:absolute;left:0;right:0;top:0;height:15%;z-index:1;pointer-events:none;background:linear-gradient(to bottom,#000 0,rgba(0,0,0,.92) 45%,rgba(0,0,0,0));}
+.mebook-root .mb-yt-wm,.mebook-root .shp-wm{position:absolute;right:10px;z-index:2;pointer-events:none;padding:3px 9px;border-radius:8px;background:rgba(0,0,0,.55);color:#fff;font-size:12px;font-weight:800;letter-spacing:.2px;animation:mbWmIn .6s ease both;}
+.mebook-root .mb-yt-wm{top:10px;}
+.mebook-root .shp-wm{top:58px;z-index:21;}
+.mebook-root .shp-cover{position:absolute;left:0;right:0;top:0;height:16%;z-index:4;pointer-events:none;background:linear-gradient(to bottom,#000 0,rgba(0,0,0,.9) 50%,rgba(0,0,0,0));}
+@keyframes mbWmIn{from{opacity:0;transform:translateY(-6px);}to{opacity:1;transform:none;}}
 .mebook-root .mb-yt-badge{
 position:absolute;top:10px;left:10px;z-index:2;padding:4px 9px;border-radius:8px;
 background:rgba(0,0,0,.6);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;gap:5px;
@@ -4849,9 +5814,11 @@ function EngageSheet(props) {
   entries.forEach(([, k]) => {
     counts[k] = (counts[k] || 0) + 1;
   });
-  const total = entries.length;
+  const fakeR = Math.max(0, Math.min(50000, Number(post.fakeReactions) || 0));
+  const fakeC = Math.max(0, Math.min(10000, Number(post.fakeComments) || 0));
+  const total = entries.length + fakeR;
   const tabKeys = REACTIONS.map((r) => r.key).filter((k) => counts[k]).sort((a, b) => counts[b] - counts[a]);
-  const topKeys = tabKeys.slice(0, 3);
+  const topKeys = tabKeys.length ? tabKeys.slice(0, 3) : fakeR > 0 ? ["like"] : [];
   const tab = props.tab === "all" || counts[props.tab] ? props.tab : "all";
   const friendIds = new Set(props.myFriends.map((f) => f.uid));
   const pendingIds = new Set(
@@ -4975,16 +5942,16 @@ function EngageSheet(props) {
         onClick: () => props.onMode("reactions")
       },
       /* @__PURE__ */ React.createElement("span", { className: "rx-stack" }, topKeys.map((k, i) => /* @__PURE__ */ React.createElement("span", { key: k, className: "rx-stack-item", style: { marginLeft: i ? -5 : 0, zIndex: 5 - i } }, /* @__PURE__ */ React.createElement(ReactionIcon, { k, size: 20, ring: true })))),
-      total
+      fmtCount(total)
     ), /* @__PURE__ */ React.createElement(
       "button",
       {
         className: `rx-head-pill${mode === "comments" ? " active" : ""}`,
         onClick: () => props.onMode("comments")
       },
-      allComments.length,
+      fmtCount(allComments.length + fakeC),
       " ",
-      allComments.length === 1 ? "comment" : "comments"
+      allComments.length + fakeC === 1 ? "comment" : "comments"
     ), /* @__PURE__ */ React.createElement("span", { className: "rx-head-shares" }, sharesCount, " ", sharesCount === 1 ? "share" : "shares"))
   ), mode === "reactions" ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "rx-tabs" }, /* @__PURE__ */ React.createElement(
     "button",
@@ -4994,7 +5961,7 @@ function EngageSheet(props) {
       onClick: () => props.onTab("all")
     },
     "All ",
-    total
+    fmtCount(total)
   ), tabKeys.map((k) => {
     const def = REACTIONS.find((r) => r.key === k);
     return /* @__PURE__ */ React.createElement(
@@ -5006,9 +5973,9 @@ function EngageSheet(props) {
         onClick: () => props.onTab(k)
       },
       /* @__PURE__ */ React.createElement(ReactionIcon, { k, size: 20 }),
-      counts[k]
+      fmtCount(counts[k])
     );
-  })), /* @__PURE__ */ React.createElement("div", { className: "rx-list" }, rows.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "rx-empty" }, "No reactions yet") : rows.map(({ uid, k, u }) => {
+  })), /* @__PURE__ */ React.createElement("div", { className: "rx-list" }, rows.length === 0 && !(fakeR > 0 && tab === "all") ? /* @__PURE__ */ React.createElement("div", { className: "rx-empty" }, "No reactions yet") : rows.map(({ uid, k, u }) => {
     const isMe = uid === me.uid;
     const isFriend = friendIds.has(uid);
     const pend = pendingIds.has(uid) || !!props.sentRequests[uid];
@@ -5020,7 +5987,7 @@ function EngageSheet(props) {
       },
       pend ? "Requested" : "Add friend"
     ));
-  }))) : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "rx-list", style: { display: "flex", flexDirection: "column" } }, allComments.length > 0 && /* @__PURE__ */ React.createElement("button", { className: "rx-sort", onClick: cycleSort }, sortLabel, " \u25BE"), pending && /* @__PURE__ */ React.createElement("div", { className: "rx-cmt" }, /* @__PURE__ */ React.createElement("img", { className: "rx-cmt-av", src: avatarFor(props.profile), alt: "" }), /* @__PURE__ */ React.createElement("div", { className: "rx-cmt-main" }, /* @__PURE__ */ React.createElement("div", { className: "rx-cmt-bubble" }, /* @__PURE__ */ React.createElement("b", null, props.profile?.name || "You"), props.commentText, props.commentImagePreview && /* @__PURE__ */ React.createElement("img", { src: props.commentImagePreview, alt: "" })), /* @__PURE__ */ React.createElement("div", { className: "rx-cmt-meta" }, /* @__PURE__ */ React.createElement("span", null, "Posting\u2026")))), sortedTops.length === 0 && !pending ? /* @__PURE__ */ React.createElement("div", { className: "rx-empty" }, "No comments yet. Be the first to comment.") : sortedTops.map((c) => renderComment(c, false))), /* @__PURE__ */ React.createElement("div", { className: "rx-foot" }, props.lockMsg ? /* @__PURE__ */ React.createElement("div", { className: "rx-lock" }, props.lockMsg) : /* @__PURE__ */ React.createElement(React.Fragment, null, props.replyTo && /* @__PURE__ */ React.createElement("div", { className: "rx-replying" }, /* @__PURE__ */ React.createElement("span", null, "Replying to ", /* @__PURE__ */ React.createElement("b", null, props.replyTo.name)), /* @__PURE__ */ React.createElement("button", { onClick: () => props.setReplyTo(null) }, "Cancel")), /* @__PURE__ */ React.createElement("div", { className: "rx-quick" }, ["\u2764\uFE0F", "\u{1F64C}", "\u{1F525}", "\u{1F44F}", "\u{1F622}", "\u{1F60D}", "\u{1F62E}", "\u{1F602}"].map((em) => /* @__PURE__ */ React.createElement("button", { key: em, type: "button", onClick: () => props.onQuickEmoji(em) }, em))), props.commentImagePreview && /* @__PURE__ */ React.createElement("div", { className: "rx-img-prev" }, /* @__PURE__ */ React.createElement("img", { src: props.commentImagePreview, alt: "" }), /* @__PURE__ */ React.createElement("button", { onClick: props.onRemoveImage, title: "Remove photo" }, /* @__PURE__ */ React.createElement(PmIcon, { d: PM_IC.close }))), /* @__PURE__ */ React.createElement("div", { className: "rx-write" }, /* @__PURE__ */ React.createElement(
+  }), fakeR > 0 && tab === "all" && /* @__PURE__ */ React.createElement("div", { className: "rx-empty", style: { fontSize: 13, padding: "14px 16px" } }, "+", fmtCount(fakeR), " more ", fakeR === 1 ? "reaction" : "reactions", " \u00B7 you are not seen this reactions"))) : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "rx-list", style: { display: "flex", flexDirection: "column" } }, allComments.length > 0 && /* @__PURE__ */ React.createElement("button", { className: "rx-sort", onClick: cycleSort }, sortLabel, " \u25BE"), pending && /* @__PURE__ */ React.createElement("div", { className: "rx-cmt" }, /* @__PURE__ */ React.createElement("img", { className: "rx-cmt-av", src: avatarFor(props.profile), alt: "" }), /* @__PURE__ */ React.createElement("div", { className: "rx-cmt-main" }, /* @__PURE__ */ React.createElement("div", { className: "rx-cmt-bubble" }, /* @__PURE__ */ React.createElement("b", null, props.profile?.name || "You"), props.commentText, props.commentImagePreview && /* @__PURE__ */ React.createElement("img", { src: props.commentImagePreview, alt: "" })), /* @__PURE__ */ React.createElement("div", { className: "rx-cmt-meta" }, /* @__PURE__ */ React.createElement("span", null, "Posting\u2026")))), sortedTops.length === 0 && !pending && fakeC === 0 ? /* @__PURE__ */ React.createElement("div", { className: "rx-empty" }, "No comments yet. Be the first to comment.") : sortedTops.map((c) => renderComment(c, false)), fakeC > 0 && /* @__PURE__ */ React.createElement("div", { className: "rx-empty", style: { fontSize: 13, padding: "14px 16px" } }, fmtCount(fakeC), " more ", fakeC === 1 ? "comment" : "comments", " \u00B7 this comments can't available for you")), /* @__PURE__ */ React.createElement("div", { className: "rx-foot" }, props.lockMsg ? /* @__PURE__ */ React.createElement("div", { className: "rx-lock" }, props.lockMsg) : /* @__PURE__ */ React.createElement(React.Fragment, null, props.replyTo && /* @__PURE__ */ React.createElement("div", { className: "rx-replying" }, /* @__PURE__ */ React.createElement("span", null, "Replying to ", /* @__PURE__ */ React.createElement("b", null, props.replyTo.name)), /* @__PURE__ */ React.createElement("button", { onClick: () => props.setReplyTo(null) }, "Cancel")), /* @__PURE__ */ React.createElement("div", { className: "rx-quick" }, ["\u2764\uFE0F", "\u{1F64C}", "\u{1F525}", "\u{1F44F}", "\u{1F622}", "\u{1F60D}", "\u{1F62E}", "\u{1F602}"].map((em) => /* @__PURE__ */ React.createElement("button", { key: em, type: "button", onClick: () => props.onQuickEmoji(em) }, em))), props.commentImagePreview && /* @__PURE__ */ React.createElement("div", { className: "rx-img-prev" }, /* @__PURE__ */ React.createElement("img", { src: props.commentImagePreview, alt: "" }), /* @__PURE__ */ React.createElement("button", { onClick: props.onRemoveImage, title: "Remove photo" }, /* @__PURE__ */ React.createElement(PmIcon, { d: PM_IC.close }))), /* @__PURE__ */ React.createElement("div", { className: "rx-write" }, /* @__PURE__ */ React.createElement(
     "input",
     {
       ref: inputRef,
@@ -5726,13 +6693,13 @@ function PhotoViewer({
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" strokeLinecap="round">
                     <path d="M7 11v9H4a1 1 0 0 1-1-1v-7a1 1 0 0 1 1-1h3zm0 0 4-7a2 2 0 0 1 2 2v3.5h5.2a2 2 0 0 1 1.96 2.4l-1.2 6A2 2 0 0 1 17 20H7" />
                   </svg>
-                  <span>{stats.likes}</span>
+                  <span>{fmtCount(stats.likes)}</span>
                 </button>
                 <button className="mb-pv-stat" onClick={onComment}>
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" strokeLinecap="round">
                     <path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 9 9 0 0 1-3.6-.8L3 21l1.9-5.1A8.4 8.4 0 0 1 3.5 11.5 8.5 8.5 0 0 1 12 3a8.5 8.5 0 0 1 9 8.5z" />
                   </svg>
-                  <span>{stats.comments}</span>
+                  <span>{fmtCount(stats.comments)}</span>
                 </button>
                 <button className="mb-pv-stat" onClick={onShare}>
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" strokeLinecap="round">
@@ -6541,7 +7508,7 @@ function YouTubePost({
       /* @__PURE__ */ React.createElement("div", { ref: mountRef, style: { position: "absolute", inset: 0 } }),
       !started && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("img", { className: "mb-yt-thumb", src: thumbUrl, alt: "", loading: "lazy" }), /* @__PURE__ */ React.createElement("div", { className: "mb-yt-shade" }))
     ),
-    /* @__PURE__ */ React.createElement("span", { className: "mb-yt-badge" }, /* @__PURE__ */ React.createElement("i", null), isShort ? "Shorts" : "Video"),
+    /* @__PURE__ */ React.createElement("span", { className: "mb-yt-badge" }, /* @__PURE__ */ React.createElement("i", null), isShort ? "Shorts" : "Video"), /* @__PURE__ */ React.createElement("div", { className: "mb-yt-cover" }), /* @__PURE__ */ React.createElement("span", { className: "mb-yt-wm" }, "MeBook"),
     !active && /* @__PURE__ */ React.createElement(
       "button",
       {
@@ -6588,9 +7555,7 @@ let shActivePlayer: any = null // sync mute/unmute from the click handler (brows
 
 function shFmt(n: number) {
   if (!n || n < 0) return "0"
-  if (n >= 1000000) return (n / 1000000).toFixed(n >= 10000000 ? 0 : 1).replace(/\.0$/, "") + "M"
-  if (n >= 1000) return (n / 1000).toFixed(n >= 10000 ? 0 : 1).replace(/\.0$/, "") + "k"
-  return String(n)
+  return fmtCount(n)
 }
 
 function ShortItem(props) {
@@ -6819,7 +7784,7 @@ function ShortItem(props) {
   const audioText = post.music && post.music.title ? `${post.music.title}${post.music.artist ? " \xB7 " + post.music.artist : ""}` : `${post.authorName || "User"} \xB7 Original audio`;
   const showProg = started && !playing && !err;
   const pct = dur ? Math.min(100, cur / dur * 100) : 0;
-  return /* @__PURE__ */ React.createElement("div", { className: "shp-col" }, /* @__PURE__ */ React.createElement("div", { className: "shp-media" }, /* @__PURE__ */ React.createElement("div", { className: "shp-stage" }, /* @__PURE__ */ React.createElement("div", { className: "shp-frame", style: frameStyle }, /* @__PURE__ */ React.createElement("div", { ref: mountRef, className: "shp-mount" }), !started && /* @__PURE__ */ React.createElement("img", { className: "shp-thumb", src: thumbUrl, alt: "" })), active && !err && /* @__PURE__ */ React.createElement("div", { className: "shp-tap", onClick: togglePlay }), active && !started && !err && /* @__PURE__ */ React.createElement("div", { className: "mb-yt-spinner" }), flash && /* @__PURE__ */ React.createElement("div", { className: "mb-yt-flash", key: flash.n }, flash.label), err && /* @__PURE__ */ React.createElement("div", { className: "mb-yt-err" }, /* @__PURE__ */ React.createElement("span", null, "This video can\u2019t be played here."), /* @__PURE__ */ React.createElement("a", { href: post.youtube?.url || `https://www.youtube.com/watch?v=${videoId}`, target: "_blank", rel: "noopener noreferrer" }, "Watch on YouTube")), /* @__PURE__ */ React.createElement("div", { className: "shp-shade" }), /* @__PURE__ */ React.createElement("div", { className: "shp-info" }, /* @__PURE__ */ React.createElement("img", { src: avatar, alt: "", onClick: props.onOpenProfile }), /* @__PURE__ */ React.createElement("div", { className: "shp-itxt" }, /* @__PURE__ */ React.createElement("div", { className: "shp-uname", onClick: props.onOpenProfile }, /* @__PURE__ */ React.createElement("span", null, post.authorName || "User"), props.verified ? /* @__PURE__ */ React.createElement("svg", { width: "15", height: "15", viewBox: "0 0 24 24", style: { fill: "url(#mbTickGrad)" } }, /* @__PURE__ */ React.createElement("path", { d: "M23 12l-2.44-2.79.34-3.69-3.61-.82-1.89-3.2L12 2.96 8.6 1.5 6.71 4.69l-3.61.82.34 3.69L1 12l2.44 2.79-.34 3.7 3.61.82L8.6 22.5l3.4-1.47 3.4 1.46 1.89-3.19 3.61-.82-.34-3.69L23 12zm-12.91 4.72l-3.8-3.81 1.48-1.48 2.32 2.33 5.85-5.87 1.48 1.48-7.33 7.35z" })) : /* @__PURE__ */ React.createElement("svg", { width: "15", height: "15", viewBox: "0 0 24 24" }, /* @__PURE__ */ React.createElement("path", { d: "M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z" }))), /* @__PURE__ */ React.createElement("div", { className: "shp-audio" }, /* @__PURE__ */ React.createElement("svg", { viewBox: "0 0 24 24" }, /* @__PURE__ */ React.createElement("path", { d: "M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" })), /* @__PURE__ */ React.createElement("span", null, audioText))), props.showFollow && /* @__PURE__ */ React.createElement("button", { className: `shp-follow${props.following ? " on" : ""}`, onClick: props.onFollow }, props.following ? "Following" : "Follow")), /* @__PURE__ */ React.createElement("div", { className: "shp-acts" }, /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("div", { className: "shp-col" }, /* @__PURE__ */ React.createElement("div", { className: "shp-media" }, /* @__PURE__ */ React.createElement("div", { className: "shp-stage" }, /* @__PURE__ */ React.createElement("div", { className: "shp-frame", style: frameStyle }, /* @__PURE__ */ React.createElement("div", { ref: mountRef, className: "shp-mount" }), !started && /* @__PURE__ */ React.createElement("img", { className: "shp-thumb", src: thumbUrl, alt: "" })), active && !err && /* @__PURE__ */ React.createElement("div", { className: "shp-tap", onClick: togglePlay }), active && !started && !err && /* @__PURE__ */ React.createElement("div", { className: "mb-yt-spinner" }), flash && /* @__PURE__ */ React.createElement("div", { className: "mb-yt-flash", key: flash.n }, flash.label), err && /* @__PURE__ */ React.createElement("div", { className: "mb-yt-err" }, /* @__PURE__ */ React.createElement("span", null, "This video can\u2019t be played here."), /* @__PURE__ */ React.createElement("a", { href: post.youtube?.url || `https://www.youtube.com/watch?v=${videoId}`, target: "_blank", rel: "noopener noreferrer" }, "Watch on YouTube")), /* @__PURE__ */ React.createElement("div", { className: "shp-cover" }), /* @__PURE__ */ React.createElement("span", { className: "shp-wm" }, "MeBook"), /* @__PURE__ */ React.createElement("div", { className: "shp-shade" }), /* @__PURE__ */ React.createElement("div", { className: "shp-info" }, /* @__PURE__ */ React.createElement("img", { src: avatar, alt: "", onClick: props.onOpenProfile }), /* @__PURE__ */ React.createElement("div", { className: "shp-itxt" }, /* @__PURE__ */ React.createElement("div", { className: "shp-uname", onClick: props.onOpenProfile }, /* @__PURE__ */ React.createElement("span", null, post.authorName || "User"), props.verified ? /* @__PURE__ */ React.createElement("svg", { width: "15", height: "15", viewBox: "0 0 24 24", style: { fill: "url(#mbTickGrad)" } }, /* @__PURE__ */ React.createElement("path", { d: "M23 12l-2.44-2.79.34-3.69-3.61-.82-1.89-3.2L12 2.96 8.6 1.5 6.71 4.69l-3.61.82.34 3.69L1 12l2.44 2.79-.34 3.7 3.61.82L8.6 22.5l3.4-1.47 3.4 1.46 1.89-3.19 3.61-.82-.34-3.69L23 12zm-12.91 4.72l-3.8-3.81 1.48-1.48 2.32 2.33 5.85-5.87 1.48 1.48-7.33 7.35z" })) : /* @__PURE__ */ React.createElement("svg", { width: "15", height: "15", viewBox: "0 0 24 24" }, /* @__PURE__ */ React.createElement("path", { d: "M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z" }))), /* @__PURE__ */ React.createElement("div", { className: "shp-audio" }, /* @__PURE__ */ React.createElement("svg", { viewBox: "0 0 24 24" }, /* @__PURE__ */ React.createElement("path", { d: "M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" })), /* @__PURE__ */ React.createElement("span", null, audioText))), props.showFollow && /* @__PURE__ */ React.createElement("button", { className: `shp-follow${props.following ? " on" : ""}`, onClick: props.onFollow }, props.following ? "Following" : "Follow")), /* @__PURE__ */ React.createElement("div", { className: "shp-acts" }, /* @__PURE__ */ React.createElement(
     "button",
     {
       className: "shp-act",
@@ -6851,6 +7816,35 @@ function ShortItem(props) {
   )), /* @__PURE__ */ React.createElement("button", { className: "shp-cbar", onClick: props.onComment }, /* @__PURE__ */ React.createElement("span", null, "Add a comment"), /* @__PURE__ */ React.createElement("span", { className: "ic" }, /* @__PURE__ */ React.createElement("svg", { viewBox: "0 0 24 24" }, /* @__PURE__ */ React.createElement("path", { d: "M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10h5v-2h-5c-4.34 0-8-3.66-8-8s3.66-8 8-8 8 3.66 8 8v1.43c0 .79-.71 1.57-1.5 1.57s-1.5-.78-1.5-1.57V12c0-2.76-2.24-5-5-5s-5 2.24-5 5 2.24 5 5 5c1.38 0 2.64-.56 3.54-1.47.65.89 1.77 1.47 2.96 1.47 1.97 0 3.5-1.6 3.5-3.57V12c0-5.52-4.48-10-10-10zm0 13c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3z" })), /* @__PURE__ */ React.createElement("svg", { viewBox: "0 0 24 24" }, /* @__PURE__ */ React.createElement("path", { d: "M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm3.5-9c.83 0 1.5-.67 1.5-1.5S16.33 8 15.5 8 14 8.67 14 9.5s.67 1.5 1.5 1.5zm-7 0c.83 0 1.5-.67 1.5-1.5S9.33 8 8.5 8 7 8.67 7 9.5 7.67 11 8.5 11zm3.5 6.5c2.33 0 4.31-1.46 5.11-3.5H6.89c.8 2.04 2.78 3.5 5.11 3.5z" })), /* @__PURE__ */ React.createElement("span", { className: "gif" }, "GIF")))));
 }
 
+function shSeenGet() {
+  try { return JSON.parse(localStorage.getItem("mebook_seen_shorts") || "[]"); } catch (e) { return []; }
+}
+function shSeenAdd(id) {
+  try {
+    const a = shSeenGet().filter((x) => x !== id);
+    a.push(id);
+    localStorage.setItem("mebook_seen_shorts", JSON.stringify(a.slice(-400)));
+  } catch (e) {}
+}
+function shShuffle(a) {
+  const b = a.slice();
+  for (let i = b.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [b[i], b[j]] = [b[j], b[i]];
+  }
+  return b;
+}
+function shSmartOrder(posts, startId) {
+  const seen = new Set(shSeenGet());
+  const ids = posts.map((p) => p.id);
+  const latest = ids.slice(0, 5).filter((id) => !seen.has(id) || id === startId);
+  const rest = ids.filter((id) => !latest.includes(id));
+  const fresh = shShuffle(rest.filter((id) => !seen.has(id)));
+  const old = shShuffle(rest.filter((id) => seen.has(id)));
+  let out = [...latest, ...fresh, ...old];
+  if (startId && out.includes(startId)) out = [startId, ...out.filter((x) => x !== startId)];
+  return out;
+}
 function ShortsPage(props: {
   posts: any[]
   me: any
@@ -6881,12 +7875,17 @@ function ShortsPage(props: {
 
   // the order is frozen when the page opens so new posts never shuffle what you are watching
   useEffect(() => {
-    if (order.length === 0 && props.posts.length > 0) setOrder(props.posts.map((p: any) => p.id))
+    if (order.length === 0 && props.posts.length > 0) setOrder(shSmartOrder(props.posts, props.startPostId))
   }, [props.posts, order.length])
 
   const byId: Record<string, any> = {}
   props.posts.forEach((p: any) => { byId[p.id] = p })
   const list = order.map((id) => byId[id]).filter(Boolean)
+
+  useEffect(() => {
+    const p = list[active]
+    if (p) shSeenAdd(p.id)
+  }, [active, list.length])
 
   useEffect(() => {
     if (initRef.current || list.length === 0) return
@@ -6989,7 +7988,7 @@ function ShortsPage(props: {
           list.map((p: any, i: number) => {
             const reacts: Record<string, string> = p.reactions || props.postReactions[p.id] || {}
             const myReaction = props.me?.uid ? reacts[props.me.uid] : undefined
-            const likesCount = Object.keys(reacts).length || (Array.isArray(p.likes) ? p.likes.length : 0)
+            const likesCount = Object.keys(reacts).length + Math.max(0, Math.min(50000, Number(p.fakeReactions) || 0)) || (Array.isArray(p.likes) ? p.likes.length : 0)
             return (
               <div className="shp-item" key={p.id}>
                 {Math.abs(i - active) <= 1 && (
@@ -7001,7 +8000,7 @@ function ShortsPage(props: {
                     setMuted={setMutedState}
                     myReaction={myReaction}
                     likesCount={likesCount}
-                    commentsCount={Array.isArray(p.comments) ? p.comments.length : 0}
+                    commentsCount={(Array.isArray(p.comments) ? p.comments.length : 0) + Math.max(0, Math.min(10000, Number(p.fakeComments) || 0))}
                     sharesCount={p.shares || 0}
                     saved={props.savedIds.includes(p.id)}
                     verified={props.isVerifiedPost(p)}
@@ -10669,10 +11668,281 @@ function SearchPage(props) {
   })())));
 }
 
+const AV_POSTER_IN = "https://i.postimg.cc/dQCmzCRq/1cd6ea1daef7fee3de3d5c672906bfa2.jpg";
+const AV_POSTER_UP = "https://i.postimg.cc/4xf67FDZ/4adb8f2a0ec86be6e554d2823cdde074.jpg";
+function FlowAuth(p) {
+  const h = React.createElement;
+  const [view, setView] = React.useState("main");
+  const [played, setPlayed] = React.useState(false);
+  const [showIn, setShowIn] = React.useState(false);
+  const [showUp, setShowUp] = React.useState(false);
+  const [remember, setRemember] = React.useState(() => {
+    try {
+      return !!localStorage.getItem("fx_remember_email");
+    } catch (e) {
+      return false;
+    }
+  });
+  const [fEmail, setFEmail] = React.useState("");
+  const [fBusy, setFBusy] = React.useState(false);
+  const [fErr, setFErr] = React.useState("");
+  const [sentTo, setSentTo] = React.useState("");
+  const [cool, setCool] = React.useState(0);
+  const [resent, setResent] = React.useState(false);
+  const paneInRef = React.useRef(null);
+  const paneUpRef = React.useRef(null);
+  const isUp = p.authMode === "signup";
+  React.useEffect(() => {
+    try {
+      const saved = localStorage.getItem("fx_remember_email");
+      if (saved && !p.siEmail) p.setSiEmail(saved);
+    } catch (e) {
+    }
+    [AV_POSTER_IN, AV_POSTER_UP, HEADER_LOGO].forEach((src) => {
+      const im = new Image();
+      im.decoding = "async";
+      im.src = src;
+    });
+  }, []);
+  React.useEffect(() => {
+    if (cool <= 0) return;
+    const t = setTimeout(() => setCool((c) => c - 1), 1e3);
+    return () => clearTimeout(t);
+  }, [cool]);
+  const svg = (props, ...kids) => h("svg", Object.assign({ viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 2, strokeLinecap: "round", strokeLinejoin: "round" }, props), ...kids);
+  const arrow = svg({}, h("path", { d: "M5 12h14M13 6l6 6-6 6" }));
+  const eyeOn = svg({}, h("path", { d: "M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z" }), h("circle", { cx: 12, cy: 12, r: 3 }));
+  const eyeOff = svg({}, h("path", { d: "M17.9 17.9A10.1 10.1 0 0112 19C5.6 19 2 12 2 12a18.5 18.5 0 015.1-5.9M9.9 5.2A9.7 9.7 0 0112 5c6.4 0 10 7 10 7a18.6 18.6 0 01-2.2 3.2M1 1l22 22" }), h("path", { d: "M14.1 14.1a3 3 0 01-4.2-4.2" }));
+  const checkIco = svg({ stroke: "#04120a", strokeWidth: 3.4 }, h("path", { d: "M5 12.5l4.2 4.2L19 7" }));
+  const googleIco = h(
+    "svg",
+    { viewBox: "0 0 48 48" },
+    h("path", { fill: "#FFC107", d: "M43.6 20.5H42V20H24v8h11.3c-1.6 4.6-6 8-11.3 8-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.1 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.2-.1-2.4-.4-3.5z" }),
+    h("path", { fill: "#FF3D00", d: "M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.1 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z" }),
+    h("path", { fill: "#4CAF50", d: "M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2c-2 1.5-4.5 2.4-7.2 2.4-5.2 0-9.6-3.3-11.3-7.9l-6.5 5C9.5 39.6 16.2 44 24 44z" }),
+    h("path", { fill: "#1976D2", d: "M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.1-4.1 5.5l6.2 5.2C41 35.4 44 30.1 44 24c0-1.2-.1-2.4-.4-3.5z" })
+  );
+  const lockIco = svg({}, h("rect", { x: 4, y: 11, width: 16, height: 10, rx: 2.5 }), h("path", { d: "M8 11V8a4 4 0 018 0v3" }), h("circle", { cx: 12, cy: 16, r: 1, fill: "currentColor" }));
+  const okIco = svg({}, h("path", { d: "M5 12.5l4.2 4.2L19 7" }));
+  const A = (n, ...kids) => h("div", { className: "av-anim", style: { "--n": n } }, ...kids);
+  const field = (id, type, label, val, set, extra, right) => h(
+    "div",
+    { className: "av-field" },
+    h("input", Object.assign({
+      id,
+      className: "av-input" + (right ? " has-r" : ""),
+      type,
+      placeholder: " ",
+      required: true,
+      value: val,
+      onChange: (e) => set(e.target.value)
+    }, extra || {})),
+    h("label", { className: "av-label", htmlFor: id }, label),
+    right || null
+  );
+  const eye = (on, toggle) => h("button", { type: "button", className: "av-eye", "aria-label": on ? "Hide password" : "Show password", onClick: toggle, tabIndex: -1 }, on ? eyeOff : eyeOn);
+  const pill = (label, o) => {
+    o = o || {};
+    return h(
+      "button",
+      { type: o.type || "button", onClick: o.onClick, disabled: o.disabled, className: "av-pill" + (o.primary ? " av-primary" : "") },
+      o.icon ? h("span", { className: "av-pill-ico" }, o.icon) : null,
+      h("span", { className: "av-pill-txt" }, label),
+      h("span", { className: "av-pill-arrow" }, arrow)
+    );
+  };
+  const alertEl = (msg, ok) => msg ? h("div", { className: "av-alert" + (ok ? " ok" : ""), role: "alert" }, h("span", { className: "av-dot" }), msg) : null;
+  const orRow = h("div", { className: "av-or" }, h("span", null, "or"));
+  const brand = h("span", { className: "av-brand" }, h("span", { className: "av-me", "data-t": "Me" }, "Me"), h("span", { className: "av-book" }, "Book"));
+  const lockup = () => h("div", { className: "av-lockup" }, h("img", { src: HEADER_LOGO, alt: "", decoding: "async" }), brand);
+  const switchMode = (m) => {
+    if (m === p.authMode || p.authBusy) return;
+    setPlayed(true);
+    setView("main");
+    setShowIn(false);
+    setShowUp(false);
+    p.setAuthErr({ si: "", su: "" });
+    p.setAuthMode(m);
+    if (paneInRef.current) paneInRef.current.scrollTop = 0;
+    if (paneUpRef.current) paneUpRef.current.scrollTop = 0;
+  };
+  const submitIn = (e) => {
+    try {
+      if (remember) localStorage.setItem("fx_remember_email", (p.siEmail || "").trim());
+      else localStorage.removeItem("fx_remember_email");
+    } catch (err) {
+    }
+    return p.handleSignIn(e);
+  };
+  const openForgot = () => {
+    setFEmail((p.siEmail || "").trim());
+    setFErr("");
+    setResent(false);
+    setView("forgot");
+  };
+  const backToSignIn = () => {
+    if (sentTo && !p.siEmail) p.setSiEmail(sentTo);
+    setFErr("");
+    setResent(false);
+    setView("main");
+  };
+  const sendReset = async (isResend) => {
+    if (fBusy) return;
+    const em = (fEmail || "").trim();
+    if (!em) {
+      setFErr("Enter your email address first");
+      return;
+    }
+    setFBusy(true);
+    setFErr("");
+    setResent(false);
+    const r = await p.handleForgot(em);
+    setFBusy(false);
+    if (r.ok) {
+      setSentTo(em);
+      setView("sent");
+      setCool(30);
+      if (isResend) setResent(true);
+    } else {
+      setFErr(r.msg);
+    }
+  };
+  /* ---------- SIGN IN : main ---------- */
+  const loginMain = h(
+    "form",
+    { className: "av-form-inner", key: "main", onSubmit: submitIn },
+    A(0, lockup()),
+    A(0, h("h2", { className: "av-title" }, "Welcome back")),
+    A(1, h("p", { className: "av-sub" }, "Sign in to your MeBook account")),
+    h(
+      "div",
+      { className: "av-fields" },
+      A(2, field("av-si-email", "email", "Email", p.siEmail, p.setSiEmail, { autoComplete: "email", inputMode: "email", autoCapitalize: "off", autoCorrect: "off", spellCheck: false })),
+      A(3, field("av-si-pass", showIn ? "text" : "password", "Password", p.siPass, p.setSiPass, { autoComplete: "current-password", minLength: 6, autoCapitalize: "off", autoCorrect: "off", spellCheck: false }, eye(showIn, () => setShowIn((v) => !v)))),
+      A(
+        4,
+        h(
+          "div",
+          { className: "av-row" },
+          h("label", { className: "av-check" }, h("input", { type: "checkbox", checked: remember, onChange: (e) => setRemember(e.target.checked) }), h("span", { className: "av-box" }, checkIco), h("span", null, "Remember me")),
+          h("button", { type: "button", className: "av-link", onClick: openForgot }, "Forgot password?")
+        )
+      ),
+      alertEl(p.authErr.si),
+      A(5, pill("Sign in", { type: "submit", disabled: p.authBusy, primary: true })),
+      A(6, orRow),
+      A(6, pill("Continue with Google", { onClick: p.handleGoogleSignIn, disabled: p.authBusy, icon: googleIco }))
+    ),
+    A(7, h("p", { className: "av-switch" }, "New to MeBook? ", h("button", { type: "button", onClick: () => switchMode("signup") }, "Create account")))
+  );
+  /* ---------- SIGN IN : forgot password ---------- */
+  const loginForgot = h(
+    "form",
+    { className: "av-form-inner av-swap", key: "forgot", onSubmit: (e) => {
+      e.preventDefault();
+      sendReset(false);
+    }, noValidate: true },
+    h("div", { className: "av-badge" }, lockIco),
+    h("h2", { className: "av-title" }, "Forgot password?"),
+    h("p", { className: "av-sub" }, "Enter your account email and we will send you a link to set a new password."),
+    h(
+      "div",
+      { className: "av-fields" },
+      field("av-fg-email", "email", "Email", fEmail, setFEmail, { autoComplete: "email", inputMode: "email", autoCapitalize: "off", autoCorrect: "off", spellCheck: false }),
+      alertEl(fErr),
+      pill(fBusy ? "Sending..." : "Send reset link", { type: "submit", disabled: fBusy, primary: true })
+    ),
+    h("button", { type: "button", className: "av-link av-back", onClick: backToSignIn }, "Back to sign in")
+  );
+  /* ---------- SIGN IN : reset link sent (success + guide) ---------- */
+  const loginSent = h(
+    "div",
+    { className: "av-form-inner av-swap", key: "sent" },
+    h("div", { className: "av-badge ok" }, okIco),
+    h("h2", { className: "av-title" }, "Reset link sent"),
+    h("p", { className: "av-sub" }, "We sent a password reset link to ", h("b", null, sentTo)),
+    h(
+      "ol",
+      { className: "av-steps" },
+      h("li", null, h("span", { className: "av-step-n" }, "1"), h("span", null, "Open your ", h("b", null, "email app"), " (Gmail, Outlook, etc.) and look for a new email about resetting your MeBook password.")),
+      h("li", null, h("span", { className: "av-step-n" }, "2"), h("span", null, "Can't see it? Check your ", h("b", null, "Spam"), " or ", h("b", null, "Junk"), " folder (in Gmail also try Promotions). It can take a minute or two to arrive.")),
+      h("li", null, h("span", { className: "av-step-n" }, "3"), h("span", null, "Tap the link in that email, choose a ", h("b", null, "new password"), ", then come back here and sign in."))
+    ),
+    alertEl(fErr),
+    resent && !fErr ? alertEl("Email sent again. Please check your inbox and spam folder.", true) : null,
+    pill("Back to sign in", { onClick: backToSignIn, primary: true }),
+    h(
+      "p",
+      { className: "av-resend" },
+      "Did not get it? ",
+      h("button", { type: "button", className: "av-link", disabled: cool > 0 || fBusy, onClick: () => sendReset(true) }, fBusy ? "Sending..." : cool > 0 ? "Resend in " + cool + "s" : "Resend email")
+    )
+  );
+  /* ---------- SIGN UP ---------- */
+  const register = h(
+    "form",
+    { className: "av-form-inner", onSubmit: p.handleSignUp },
+    A(0, lockup()),
+    A(0, h("h2", { className: "av-title" }, "Create account")),
+    A(1, h("p", { className: "av-sub" }, "Join MeBook and dive into the movie community")),
+    h(
+      "div",
+      { className: "av-fields" },
+      A(2, field("av-su-name", "text", "Full name", p.suName, p.setSuName, { autoComplete: "name", minLength: 2 })),
+      A(3, field("av-su-email", "email", "Email", p.suEmail, p.setSuEmail, { autoComplete: "email", inputMode: "email", autoCapitalize: "off", autoCorrect: "off", spellCheck: false })),
+      A(4, field("av-su-pass", showUp ? "text" : "password", "Password (min 6 chars)", p.suPass, p.setSuPass, { autoComplete: "new-password", minLength: 6, autoCapitalize: "off", autoCorrect: "off", spellCheck: false }, eye(showUp, () => setShowUp((v) => !v)))),
+      alertEl(p.authErr.su),
+      A(5, pill("Create account", { type: "submit", disabled: p.authBusy, primary: true })),
+      A(6, orRow),
+      A(6, pill("Continue with Google", { onClick: p.handleGoogleSignIn, disabled: p.authBusy, icon: googleIco }))
+    ),
+    A(7, h("p", { className: "av-switch" }, "Already a member? ", h("button", { type: "button", onClick: () => switchMode("signin") }, "Sign in")))
+  );
+  const infoTitle = view === "forgot" ? "Reset password" : view === "sent" ? "Check your inbox" : "Welcome back";
+  const infoText = view === "forgot" ? "Forgot your password? No problem. We will email you a secure link to create a new one." : view === "sent" ? "Open the email we just sent, tap the link and choose a new password." : "Your movies, reels and friends are waiting. Sign in and pick up right where you left off.";
+  return h(
+    "div",
+    { className: "auth-wrap av-wrap" },
+    h(
+      "div",
+      { className: "av-modal" + (isUp ? " av-is-up" : "") + (played ? " av-play" : ""), role: "dialog", "aria-label": isUp ? "Create account" : "Sign in" },
+      h(
+        "div",
+        { className: "av-art-wrap" },
+        h(
+          "div",
+          { className: "av-art" },
+          h("div", { className: "av-art-img in", style: { backgroundImage: "url('" + AV_POSTER_IN + "')" } }),
+          h("div", { className: "av-art-img up", style: { backgroundImage: "url('" + AV_POSTER_UP + "')" } }),
+          h("div", { className: "av-art-shade" })
+        ),
+        h("div", { className: "av-sheet in" }, h("div", { className: "av-paper" }), h("div", { className: "av-paper-body" })),
+        h("div", { className: "av-sheet up" }, h("div", { className: "av-paper" }), h("div", { className: "av-paper-body" }))
+      ),
+      p.authBusy ? h("div", { className: "av-loading" }, h("div", { className: "av-orb" }, h("span", null, "M")), h("p", null, isUp ? "Creating your account..." : "Signing you in...")) : null,
+      h("section", {
+        ref: (el) => {
+          paneInRef.current = el;
+          if (el) el.inert = isUp;
+        },
+        className: "av-pane av-form av-form-login",
+        "aria-hidden": isUp
+      }, view === "main" ? loginMain : view === "forgot" ? loginForgot : loginSent),
+      h("section", {
+        ref: (el) => {
+          paneUpRef.current = el;
+          if (el) el.inert = !isUp;
+        },
+        className: "av-pane av-form av-form-register",
+        "aria-hidden": !isUp
+      }, register)
+    )
+  );
+}
 export default function MeBookPage({ onExit }: MeBookPageProps) {
   const rootRef = useRef(null);
   const [ready, setReady] = useState(false);
-  const [showSplash, setShowSplash] = useState(true);
+  const [showSplash, setShowSplash] = useState(() => !(typeof window !== "undefined" && window.__mbNative));
   const [theme, setTheme] = useState("light");
   const [authMode, setAuthMode] = useState("signin");
   const [authErr, setAuthErr] = useState({ si: "", su: "" });
@@ -11054,7 +12324,13 @@ export default function MeBookPage({ onExit }: MeBookPageProps) {
   const [unreadNotifCount, setUnreadNotifCount] = useState(0);
   const [pushPerm, setPushPerm] = useState("disabled");
   useEffect(() => {
-    setPushPerm(getPushPermission());
+    let alive = true;
+    getPushPermissionAsync().then((r) => {
+      if (alive) setPushPerm(r);
+    });
+    return () => {
+      alive = false;
+    };
   }, [user]);
   const enablePush = async () => {
     const r = await requestPush();
@@ -11997,6 +13273,12 @@ export default function MeBookPage({ onExit }: MeBookPageProps) {
             void oneSignalLogin(u.uid);
             try {
               const sp = new URLSearchParams(window.location.search);
+              const chatParam = sp.get("chat");
+              if (sp.get("mb") === "messages" && chatParam) {
+                const fromU = sp.get("u") || chatParam.split("_").find((x) => x !== u.uid) || "";
+                if (fromU) _pendingPushData = { type: "chat", chatId: chatParam, fromUid: fromU };
+                window.history.replaceState({}, "", window.location.pathname);
+              }
               const pu = sp.get("u");
               if (sp.get("mb") === "profile" && pu) {
                 pendingProfileRef.current = pu;
@@ -13056,6 +14338,18 @@ export default function MeBookPage({ onExit }: MeBookPageProps) {
       setAuthBusy(false);
     }
   };
+  const handleForgot = async (email) => {
+    const em = (email || "").trim();
+    if (!em) return { ok: false, msg: "Enter your email above first" };
+    try {
+      const fb = await getFirebase();
+      await fb.sendPasswordResetEmail(fb.auth, em);
+      return { ok: true, msg: "Reset link sent. Check your inbox" };
+    } catch (err) {
+      console.error(err);
+      return { ok: false, msg: friendlyErr(err) };
+    }
+  };
   const handleSignOut = async () => {
     if (!confirm("Log out of MeBook?")) return;
     try {
@@ -13229,6 +14523,43 @@ export default function MeBookPage({ onExit }: MeBookPageProps) {
   const openFriendsList = (uid, name) => {
     pushPage("friends-list", { uid, name });
   };
+  useEffect(() => {
+    if (!user) return;
+    const handle = async (d) => {
+      try {
+        if (!d) return;
+        _pendingPushData = null;
+        if (d.type === "chat" || d.type === "missed_call" || d.chatId) {
+          let other = d.fromUid || (d.chatId || "").split("_").find((x) => x !== user.uid);
+          if (!other) {
+            goTo("messages");
+            return;
+          }
+          let name = d.fromName || "", photo = "";
+          try {
+            const fb = await getFirebase();
+            const us = await fb.getDoc(fb.doc(fb.db, "users", other));
+            if (us.exists()) {
+              const ud = us.data();
+              name = ud.name || name;
+              photo = ud.photoURL || ud.photo || "";
+            }
+          } catch {
+          }
+          void startChat(other, name || "Chat", photo);
+        } else if (d.mb && ["notifications", "friends", "messages", "home"].includes(d.mb)) {
+          goTo(d.mb);
+        }
+      } catch (e) {
+        console.warn("push tap handling failed", e);
+      }
+    };
+    window.__mbHandlePush = handle;
+    if (_pendingPushData) setTimeout(() => handle(_pendingPushData), 400);
+    return () => {
+      if (window.__mbHandlePush === handle) window.__mbHandlePush = null;
+    };
+  }, [user]);
   useEffect(() => {
     if (!user || !pendingProfileRef.current) return;
     const pu = pendingProfileRef.current;
@@ -13977,10 +15308,12 @@ ${buildShareUrl(post.id)}`;
       const near = !el || el.scrollHeight - el.scrollTop - el.clientHeight < 180;
       const lastM = arr[arr.length - 1];
       setChatMessages(arr);
+      const _wasFirst = firstLoad;
       if (firstLoad || near || lastM && lastM.from === user.uid) {
         setTimeout(() => {
           if (chatBodyRef.current) {
-            chatBodyRef.current.scrollTop = chatBodyRef.current.scrollHeight;
+            if (_wasFirst) chatBodyRef.current.scrollTop = chatBodyRef.current.scrollHeight;
+            else chatBodyRef.current.scrollTo({ top: chatBodyRef.current.scrollHeight, behavior: "smooth" });
           }
         }, 80);
       }
@@ -14301,8 +15634,10 @@ ${buildShareUrl(post.id)}`;
         showToast("Not supported", "Voice recording not supported", "error");
         return;
       }
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const mr = new MediaRecorder(stream);
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } });
+      if (window.MBVoice) window.MBVoice.attach(stream);
+      const _mt = ["audio/webm;codecs=opus", "audio/webm", "audio/mp4", "audio/ogg;codecs=opus"].find((t) => window.MediaRecorder && MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(t));
+      const mr = _mt ? new MediaRecorder(stream, { mimeType: _mt }) : new MediaRecorder(stream);
       mediaRecorderRef.current = mr;
       recordChunksRef.current = [];
       mr.ondataavailable = (e) => {
@@ -14351,7 +15686,7 @@ ${buildShareUrl(post.id)}`;
           mr.stream.getTracks().forEach((t) => t.stop());
         } catch {
         }
-        resolve(new Blob(chunks, { type: "audio/webm" }));
+        resolve(new Blob(chunks, { type: (mr.mimeType || "audio/webm").split(";")[0] }));
       };
     });
     try {
@@ -14369,7 +15704,8 @@ ${buildShareUrl(post.id)}`;
     }
     try {
       showToast("Uploading voice...", "Please wait", "info");
-      const file = new File([blob], `voice-${Date.now()}.webm`, { type: "audio/webm" });
+      const _ext = /mp4|aac/.test(blob.type) ? "m4a" : /ogg/.test(blob.type) ? "ogg" : "webm";
+      const file = new File([blob], `voice-${Date.now()}.${_ext}`, { type: blob.type || "audio/webm" });
       const url = await cloudinaryUpload(file, void 0, "video");
       const fb = await getFirebase();
       await fb.addDoc(fb.collection(fb.db, "chats", activeChat, "messages"), {
@@ -14566,91 +15902,27 @@ ${buildShareUrl(post.id)}`;
     return isVerified(allUsers.find((u) => u.uid === uid));
   };
   if (!user) {
-    return /* @__PURE__ */ React.createElement("div", { className: "mebook-root dark-mode", ref: rootRef }, /* @__PURE__ */ React.createElement("div", { className: "auth-wrap" }, /* @__PURE__ */ React.createElement("div", { className: "auth-card" }, /* @__PURE__ */ React.createElement("div", { className: "auth-logo" }, /* @__PURE__ */ React.createElement("img", { src: HEADER_LOGO, alt: "MeBook" }), /* @__PURE__ */ React.createElement("div", { className: "mb-logo-stack" }, /* @__PURE__ */ React.createElement("div", { className: "mb-logo-text" }, /* @__PURE__ */ React.createElement("span", { className: "me" }, "Me"), /* @__PURE__ */ React.createElement("span", { className: "book" }, "Book")), /* @__PURE__ */ React.createElement("span", { className: "mb-beta-badge" }, /* @__PURE__ */ React.createElement("span", { className: "mb-beta-dot" }), "BETA"))), /* @__PURE__ */ React.createElement("p", { className: "auth-sub" }, "Movie lovers' social network \u{1F3AC}"), /* @__PURE__ */ React.createElement("div", { className: "auth-tabs" }, /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        type: "button",
-        className: `auth-tab ${authMode === "signin" ? "active" : ""}`,
-        onClick: () => {
-          setAuthMode("signin");
-          setAuthErr({ si: "", su: "" });
-        }
-      },
-      "Sign In"
-    ), /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        type: "button",
-        className: `auth-tab ${authMode === "signup" ? "active" : ""}`,
-        onClick: () => {
-          setAuthMode("signup");
-          setAuthErr({ si: "", su: "" });
-        }
-      },
-      "Sign Up"
-    )), authMode === "signin" ? /* @__PURE__ */ React.createElement("form", { onSubmit: handleSignIn }, /* @__PURE__ */ React.createElement("div", { className: "auth-field" }, /* @__PURE__ */ React.createElement("label", null, "Email"), /* @__PURE__ */ React.createElement(
-      "input",
-      {
-        type: "email",
-        required: true,
-        autoComplete: "email",
-        placeholder: "you@example.com",
-        value: siEmail,
-        onChange: (e) => setSiEmail(e.target.value)
-      }
-    )), /* @__PURE__ */ React.createElement("div", { className: "auth-field" }, /* @__PURE__ */ React.createElement("label", null, "Password"), /* @__PURE__ */ React.createElement(
-      "input",
-      {
-        type: "password",
-        required: true,
-        autoComplete: "current-password",
-        placeholder: "\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022",
-        minLength: 6,
-        value: siPass,
-        onChange: (e) => setSiPass(e.target.value)
-      }
-    )), /* @__PURE__ */ React.createElement("button", { type: "submit", className: "auth-btn", disabled: authBusy }, authBusy ? "Signing in..." : "Sign In"), authErr.si && /* @__PURE__ */ React.createElement("div", { className: "auth-err show" }, authErr.si)) : /* @__PURE__ */ React.createElement("form", { onSubmit: handleSignUp }, /* @__PURE__ */ React.createElement("div", { className: "auth-field" }, /* @__PURE__ */ React.createElement("label", null, "Full Name"), /* @__PURE__ */ React.createElement(
-      "input",
-      {
-        type: "text",
-        required: true,
-        placeholder: "Your name",
-        minLength: 2,
-        value: suName,
-        onChange: (e) => setSuName(e.target.value)
-      }
-    )), /* @__PURE__ */ React.createElement("div", { className: "auth-field" }, /* @__PURE__ */ React.createElement("label", null, "Email"), /* @__PURE__ */ React.createElement(
-      "input",
-      {
-        type: "email",
-        required: true,
-        autoComplete: "email",
-        placeholder: "you@example.com",
-        value: suEmail,
-        onChange: (e) => setSuEmail(e.target.value)
-      }
-    )), /* @__PURE__ */ React.createElement("div", { className: "auth-field" }, /* @__PURE__ */ React.createElement("label", null, "Password (min 6 chars)"), /* @__PURE__ */ React.createElement(
-      "input",
-      {
-        type: "password",
-        required: true,
-        autoComplete: "new-password",
-        placeholder: "\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022",
-        minLength: 6,
-        value: suPass,
-        onChange: (e) => setSuPass(e.target.value)
-      }
-    )), /* @__PURE__ */ React.createElement("button", { type: "submit", className: "auth-btn", disabled: authBusy }, authBusy ? "Creating..." : "Create Account"), authErr.su && /* @__PURE__ */ React.createElement("div", { className: "auth-err show" }, authErr.su)), /* @__PURE__ */ React.createElement("div", { className: "auth-divider" }, "OR"), /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        type: "button",
-        className: "auth-google",
-        onClick: handleGoogleSignIn,
-        disabled: authBusy
-      },
-      /* @__PURE__ */ React.createElement("svg", { viewBox: "0 0 48 48" }, /* @__PURE__ */ React.createElement("path", { fill: "#FFC107", d: "M43.6 20.5H42V20H24v8h11.3c-1.6 4.6-6 8-11.3 8-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.1 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.2-.1-2.4-.4-3.5z" }), /* @__PURE__ */ React.createElement("path", { fill: "#FF3D00", d: "M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.1 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z" }), /* @__PURE__ */ React.createElement("path", { fill: "#4CAF50", d: "M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2c-2 1.5-4.5 2.4-7.2 2.4-5.2 0-9.6-3.3-11.3-7.9l-6.5 5C9.5 39.6 16.2 44 24 44z" }), /* @__PURE__ */ React.createElement("path", { fill: "#1976D2", d: "M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.1-4.1 5.5l6.2 5.2C41 35.4 44 30.1 44 24c0-1.2-.1-2.4-.4-3.5z" })),
-      "Continue with Google"
-    ))));
+    return /* @__PURE__ */ React.createElement("div", { className: "mebook-root dark-mode", ref: rootRef }, /* @__PURE__ */ React.createElement(FlowAuth, {
+      authMode,
+      setAuthMode,
+      authErr,
+      setAuthErr,
+      authBusy,
+      siEmail,
+      setSiEmail,
+      siPass,
+      setSiPass,
+      suName,
+      setSuName,
+      suEmail,
+      setSuEmail,
+      suPass,
+      setSuPass,
+      handleSignIn,
+      handleSignUp,
+      handleGoogleSignIn,
+      handleForgot
+    }));
   }
   const renderSharedEmbed = (sp) => {
     const av = sp.authorAvatar || `https://ui-avatars.com/api/?background=16a34a&color=fff&name=${encodeURIComponent(sp.authorName || "User")}`;
@@ -14692,10 +15964,10 @@ ${buildShareUrl(post.id)}`;
     });
     const sortedReactionKeys = Object.keys(reactionCounts).sort((a, b) => reactionCounts[b] - reactionCounts[a]);
     const topReactionKeys = sortedReactionKeys.length ? sortedReactionKeys.slice(0, 3) : ["like"];
-    const totalLikes = reactionEntries.length;
+    const totalLikes = reactionEntries.length + Math.max(0, Math.min(50000, Number(post.fakeReactions) || 0));
     const liked = Array.isArray(post.likes) && post.likes.includes(user?.uid);
     const likesCount = totalLikes || (Array.isArray(post.likes) ? post.likes.length : 0);
-    const commentsCount = Array.isArray(post.comments) ? post.comments.length : 0;
+    const commentsCount = (Array.isArray(post.comments) ? post.comments.length : 0) + Math.max(0, Math.min(10000, Number(post.fakeComments) || 0));
     const sharesCount = post.shares || 0;
     const isOfficial = post.isOfficial === true;
     const authorAvatar = isOfficial ? LOGO_URL : post.authorAvatar || `https://ui-avatars.com/api/?background=16a34a&color=fff&name=${encodeURIComponent(post.authorName || "User")}`;
@@ -14759,14 +16031,14 @@ ${buildShareUrl(post.id)}`;
         className: "mb-reacts",
         onClick: () => likesCount > 0 && setEngageSheet({ postId: post.id, mode: "reactions", tab: "all" })
       },
-      likesCount ? /* @__PURE__ */ React.createElement("span", { className: "mb-react-pill" }, /* @__PURE__ */ React.createElement("span", { className: "rx-stack" }, topReactionKeys.map((k, i) => /* @__PURE__ */ React.createElement("span", { key: k, className: "rx-stack-item", style: { marginLeft: i ? -5 : 0, zIndex: 5 - i } }, /* @__PURE__ */ React.createElement(ReactionIcon, { k, size: 18, ring: true })))), /* @__PURE__ */ React.createElement("span", null, likesCount)) : /* @__PURE__ */ React.createElement("span", { style: { fontSize: 13 } }, "0 likes")
+      likesCount ? /* @__PURE__ */ React.createElement("span", { className: "mb-react-pill" }, /* @__PURE__ */ React.createElement("span", { className: "rx-stack" }, topReactionKeys.map((k, i) => /* @__PURE__ */ React.createElement("span", { key: k, className: "rx-stack-item", style: { marginLeft: i ? -5 : 0, zIndex: 5 - i } }, /* @__PURE__ */ React.createElement(ReactionIcon, { k, size: 18, ring: true })))), /* @__PURE__ */ React.createElement("span", null, fmtCount(likesCount))) : /* @__PURE__ */ React.createElement("span", { style: { fontSize: 13 } }, "0 likes")
     ), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement(
       "span",
       {
         className: "rx-count-link",
         onClick: () => setEngageSheet({ postId: post.id, mode: "comments", tab: "all" })
       },
-      commentsCount,
+      fmtCount(commentsCount),
       " comments"
     ), " \xB7 ", sharesCount, " shares")), /* @__PURE__ */ React.createElement("div", { className: "mb-post-actions" }, /* @__PURE__ */ React.createElement(
       "button",
@@ -16770,7 +18042,7 @@ ${buildShareUrl(post.id)}`;
           )
         );
       }))));
-    })(), currentView === "user-profile" && viewingUser && renderFbProfile(), currentView === "fb-profile-menu" && renderFbMenu(), currentView === "fb-own-menu" && renderFbOwnMenu(), currentView === "fb-settings" && renderFbSettings(), currentView === "fb-view-as" && renderFbProfileCore("preview", profile, myPosts, myFriends, false), currentView === "fb-activity" && renderFbActivity(), currentView === "messages" && /* @__PURE__ */ React.createElement("div", { className: "mb-view active" }, !activeChat ? /* @__PURE__ */ React.createElement("div", { className: "mc-listpage" }, mcListPageContent()) : /* @__PURE__ */ React.createElement("div", { className: "mc-shell", style: kbUp && vvh ? { height: vvh } : void 0 }, /* @__PURE__ */ React.createElement("aside", { className: "mc-side" }, /* @__PURE__ */ React.createElement("div", { className: "mc-side-head" }, /* @__PURE__ */ React.createElement("button", { className: "mc-side-back", onClick: () => goTo("home"), title: "Back to MeBook" }, /* @__PURE__ */ React.createElement("svg", { viewBox: "0 0 24 24" }, /* @__PURE__ */ React.createElement("path", { d: "M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" }))), /* @__PURE__ */ React.createElement("h2", { className: "mc-title" }, /* @__PURE__ */ React.createElement("span", null, "Me"), "Chat")), /* @__PURE__ */ React.createElement("div", { className: "mc-side-body" }, renderChatListPanel(true)), mcBackBtn("in-side")), /* @__PURE__ */ React.createElement("section", { className: "mc-main" }, /* @__PURE__ */ React.createElement("div", { className: "mechat-page" }, /* @__PURE__ */ React.createElement("div", { className: "mechat-head" }, /* @__PURE__ */ React.createElement("button", { className: "mechat-head-back", onClick: closeChat }, /* @__PURE__ */ React.createElement("svg", { viewBox: "0 0 24 24" }, /* @__PURE__ */ React.createElement("path", { d: "M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" }))), /* @__PURE__ */ React.createElement("div", { className: "mechat-head-avatar-wrap", onClick: openPartnerOrGroup }, /* @__PURE__ */ React.createElement("img", { src: chatPartner ? avatarUrl(chatPartner) : "", alt: "" }), (!(chatPartner && chatPartner.isGroup) && isUserOnline(allUsers.find((x) => x.uid === (chatPartner && chatPartner.uid)), presNow)) ? /* @__PURE__ */ React.createElement("span", { className: "mechat-head-online" }) : null), /* @__PURE__ */ React.createElement("div", { className: "mechat-head-info", onClick: openPartnerOrGroup, style: { cursor: "pointer" } }, /* @__PURE__ */ React.createElement("div", { className: "mechat-head-name" }, mcNickOf(chatPartner?.uid) || chatPartner?.name, isVerified(chatPartner) && /* @__PURE__ */ React.createElement("svg", { width: "14", height: "14", viewBox: "0 0 24 24", fill: "url(#mbTickGrad)" }, /* @__PURE__ */ React.createElement("path", { d: "M23 12l-2.44-2.79.34-3.69-3.61-.82-1.89-3.2L12 2.96 8.6 1.5 6.71 4.69l-3.61.82.34 3.69L1 12l2.44 2.79-.34 3.7 3.61.82L8.6 22.5l3.4-1.47 3.4 1.46 1.89-3.19 3.61-.82-.34-3.69L23 12zm-12.91 4.72l-3.8-3.81 1.48-1.48 2.32 2.33 5.85-5.87 1.48 1.48-7.33 7.35z" }))), /* @__PURE__ */ React.createElement("div", { className: "mechat-head-status" }, partnerTyping ? /* @__PURE__ */ React.createElement("span", { className: "mechat-typing-text" }, "typing", /* @__PURE__ */ React.createElement("span", { className: "mechat-typing-dots" }, "...")) : chatPartner && chatPartner.isGroup ? "Group chat" : presLabel(allUsers.find((x) => x.uid === (chatPartner && chatPartner.uid)), presNow))), /* @__PURE__ */ React.createElement("div", { className: "mechat-head-actions" }, /* @__PURE__ */ React.createElement("button", { className: "mechat-head-btn", title: "Audio call" }, /* @__PURE__ */ React.createElement("svg", { viewBox: "0 0 24 24" }, /* @__PURE__ */ React.createElement("path", { d: "M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z" }))), /* @__PURE__ */ React.createElement("button", { className: "mechat-head-btn", title: "Video call" }, /* @__PURE__ */ React.createElement("svg", { viewBox: "0 0 24 24" }, /* @__PURE__ */ React.createElement("path", { d: "M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z" }))), /* @__PURE__ */ React.createElement("button", { className: "mechat-head-btn", title: "Info", onClick: openPartnerOrGroup }, /* @__PURE__ */ React.createElement("svg", { viewBox: "0 0 24 24" }, /* @__PURE__ */ React.createElement("path", { d: "M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" }))))), mcPinBar(), /* @__PURE__ */ React.createElement(
+    })(), currentView === "user-profile" && viewingUser && renderFbProfile(), currentView === "fb-profile-menu" && renderFbMenu(), currentView === "fb-own-menu" && renderFbOwnMenu(), currentView === "fb-settings" && renderFbSettings(), currentView === "fb-view-as" && renderFbProfileCore("preview", profile, myPosts, myFriends, false), currentView === "fb-activity" && renderFbActivity(), currentView === "messages" && /* @__PURE__ */ React.createElement("div", { className: "mb-view active" }, !activeChat ? /* @__PURE__ */ React.createElement("div", { className: "mc-listpage" }, mcListPageContent()) : /* @__PURE__ */ React.createElement("div", { className: "mc-shell", style: kbUp && vvh ? { height: vvh } : void 0 }, /* @__PURE__ */ React.createElement("aside", { className: "mc-side" }, /* @__PURE__ */ React.createElement("div", { className: "mc-side-head" }, /* @__PURE__ */ React.createElement("button", { className: "mc-side-back", onClick: () => goTo("home"), title: "Back to MeBook" }, /* @__PURE__ */ React.createElement("svg", { viewBox: "0 0 24 24" }, /* @__PURE__ */ React.createElement("path", { d: "M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" }))), /* @__PURE__ */ React.createElement("h2", { className: "mc-title" }, /* @__PURE__ */ React.createElement("span", null, "Me"), "Chat")), /* @__PURE__ */ React.createElement("div", { className: "mc-side-body" }, renderChatListPanel(true)), mcBackBtn("in-side")), /* @__PURE__ */ React.createElement("section", { className: "mc-main" }, /* @__PURE__ */ React.createElement("div", { className: "mechat-page" }, /* @__PURE__ */ React.createElement("div", { className: "mechat-head" }, /* @__PURE__ */ React.createElement("button", { className: "mechat-head-back", onClick: closeChat }, /* @__PURE__ */ React.createElement("svg", { viewBox: "0 0 24 24" }, /* @__PURE__ */ React.createElement("path", { d: "M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" }))), /* @__PURE__ */ React.createElement("div", { className: "mechat-head-avatar-wrap", onClick: openPartnerOrGroup }, /* @__PURE__ */ React.createElement("img", { src: chatPartner ? avatarUrl(chatPartner) : "", alt: "" }), (!(chatPartner && chatPartner.isGroup) && isUserOnline(allUsers.find((x) => x.uid === (chatPartner && chatPartner.uid)), presNow)) ? /* @__PURE__ */ React.createElement("span", { className: "mechat-head-online" }) : null), /* @__PURE__ */ React.createElement("div", { className: "mechat-head-info", onClick: openPartnerOrGroup, style: { cursor: "pointer" } }, /* @__PURE__ */ React.createElement("div", { className: "mechat-head-name" }, mcNickOf(chatPartner?.uid) || chatPartner?.name, isVerified(chatPartner) && /* @__PURE__ */ React.createElement("svg", { width: "14", height: "14", viewBox: "0 0 24 24", fill: "url(#mbTickGrad)" }, /* @__PURE__ */ React.createElement("path", { d: "M23 12l-2.44-2.79.34-3.69-3.61-.82-1.89-3.2L12 2.96 8.6 1.5 6.71 4.69l-3.61.82.34 3.69L1 12l2.44 2.79-.34 3.7 3.61.82L8.6 22.5l3.4-1.47 3.4 1.46 1.89-3.19 3.61-.82-.34-3.69L23 12zm-12.91 4.72l-3.8-3.81 1.48-1.48 2.32 2.33 5.85-5.87 1.48 1.48-7.33 7.35z" }))), /* @__PURE__ */ React.createElement("div", { className: "mechat-head-status" }, partnerTyping ? /* @__PURE__ */ React.createElement("span", { className: "mechat-typing-text" }, "typing", /* @__PURE__ */ React.createElement("span", { className: "mechat-typing-dots" }, "...")) : chatPartner && chatPartner.isGroup ? "Group chat" : presLabel(allUsers.find((x) => x.uid === (chatPartner && chatPartner.uid)), presNow))), /* @__PURE__ */ React.createElement("div", { className: "mechat-head-actions" }, /* @__PURE__ */ React.createElement("button", { className: "mechat-head-btn", title: "Audio call", onClick: () => window.MBCall && window.MBCall.start(chatPartner && !chatPartner.isGroup ? { uid: chatPartner.uid, name: chatPartner.name, photo: avatarUrl(chatPartner) } : null, "audio", activeChat) }, /* @__PURE__ */ React.createElement("svg", { viewBox: "0 0 24 24" }, /* @__PURE__ */ React.createElement("path", { d: "M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z" }))), /* @__PURE__ */ React.createElement("button", { className: "mechat-head-btn", title: "Video call", onClick: () => window.MBCall && window.MBCall.start(chatPartner && !chatPartner.isGroup ? { uid: chatPartner.uid, name: chatPartner.name, photo: avatarUrl(chatPartner) } : null, "video", activeChat) }, /* @__PURE__ */ React.createElement("svg", { viewBox: "0 0 24 24" }, /* @__PURE__ */ React.createElement("path", { d: "M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z" }))), /* @__PURE__ */ React.createElement("button", { className: "mechat-head-btn", title: "Info", onClick: openPartnerOrGroup }, /* @__PURE__ */ React.createElement("svg", { viewBox: "0 0 24 24" }, /* @__PURE__ */ React.createElement("path", { d: "M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" }))))), mcPinBar(), /* @__PURE__ */ React.createElement(
       "div",
       {
         className: "mechat-body",
@@ -16878,8 +18150,7 @@ ${buildShareUrl(post.id)}`;
               className: "mechat-voice-play",
               onClick: (e) => {
                 e.stopPropagation();
-                const audio = new Audio(m.voiceUrl);
-                audio.play();
+                if (window.MBVoice) window.MBVoice.play(e.currentTarget, m.voiceUrl, m.duration); else new Audio(m.voiceUrl).play();
               }
             },
             /* @__PURE__ */ React.createElement("svg", { viewBox: "0 0 24 24" }, /* @__PURE__ */ React.createElement("path", { d: "M8 5v14l11-7z" }))
@@ -16893,6 +18164,14 @@ ${buildShareUrl(post.id)}`;
               }
             }
           ))), /* @__PURE__ */ React.createElement("span", { className: "mechat-voice-duration" }, formatVoiceDuration(m.duration || 0)));
+        } else if (m.type === "call" && !m.unsent) {
+          const _cv = m.callType === "video", _ok = m.callStatus === "ended";
+          const _title = _ok || mine ? (_cv ? "Video call" : "Voice call") : "Missed " + (_cv ? "video" : "voice") + " call";
+          const _sub = _ok ? formatVoiceDuration(m.duration || 0) : mine ? { missed: "No answer", declined: "Declined", busy: "Busy", cancelled: "Cancelled" }[m.callStatus] || "Not answered" : "Tap to call back";
+          bubbleContent = React.createElement("div", { className: "mbcm" + (_ok || mine && m.callStatus === "cancelled" ? "" : " miss"), onClick: (e) => {
+            e.stopPropagation();
+            if (window.MBCall && chatPartner && !chatPartner.isGroup) window.MBCall.start({ uid: chatPartner.uid, name: chatPartner.name, photo: avatarUrl(chatPartner) }, _cv ? "video" : "audio", activeChat);
+          } }, React.createElement("span", { className: "mbcm-ic" }, React.createElement("svg", { viewBox: "0 0 24 24" }, React.createElement("path", { d: _cv ? "M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z" : "M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z" }))), React.createElement("span", { className: "mbcm-tx" }, React.createElement("b", null, _title), React.createElement("small", null, _sub)), React.createElement("span", { className: `mechat-bubble-time ${mine ? "me" : "them"}` }, chatTime(m.at)));
         } else if (isLikeMsg) {
           bubbleContent = /* @__PURE__ */ React.createElement("div", { style: { fontSize: 40, lineHeight: 1, padding: "2px 4px" } }, m.emoji || "\u{1F44D}");
         } else {
@@ -17044,7 +18323,9 @@ ${buildShareUrl(post.id)}`;
       {
         className: "mechat-input-icon",
         title: "Voice",
-        onClick: startVoiceRecording
+        style: { touchAction: "none" },
+        onContextMenu: (e) => e.preventDefault(),
+        onPointerDown: (e) => { e.preventDefault(); window.MBVoice ? window.MBVoice.press(e, { start: startVoiceRecording, send: sendVoiceRecording, cancel: cancelVoiceRecording, isRec: () => !!mediaRecorderRef.current && mediaRecorderRef.current.state === "recording" }) : startVoiceRecording(); }
       },
       /* @__PURE__ */ React.createElement("svg", { viewBox: "0 0 24 24" }, /* @__PURE__ */ React.createElement("path", { d: "M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5-3c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z" }))
     )), /* @__PURE__ */ React.createElement(
@@ -17169,7 +18450,8 @@ ${buildShareUrl(post.id)}`;
       }
       const allComments = post.comments || [];
       const { tops, repliesMap } = buildCommentTree(allComments);
-      const totalCount = allComments.length;
+      const fakeCmtCount = Math.max(0, Math.min(10000, Number(post.fakeComments) || 0));
+      const totalCount = allComments.length + fakeCmtCount;
       const renderReactionBadge = (reactions) => {
         const entries = Object.entries(reactions || {});
         if (entries.length === 0) return null;
@@ -17303,7 +18585,7 @@ ${buildShareUrl(post.id)}`;
           ));
         })())));
       };
-      return /* @__PURE__ */ React.createElement("div", { className: "mb-view active" }, /* @__PURE__ */ React.createElement("button", { className: "mb-back-btn", onClick: goBack }, /* @__PURE__ */ React.createElement("svg", { viewBox: "0 0 24 24" }, /* @__PURE__ */ React.createElement("path", { d: "M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" })), "Back"), /* @__PURE__ */ React.createElement("div", { className: "cmt-page-wrap" }, /* @__PURE__ */ React.createElement("div", { className: "cmt-page-head" }, /* @__PURE__ */ React.createElement("span", null, "\u{1F4AC} Comments (", totalCount, ")"), /* @__PURE__ */ React.createElement("span", { style: { fontSize: 12.5, color: "var(--text-muted)", fontWeight: 500 } }, "Double-click a comment to react")), /* @__PURE__ */ React.createElement("div", { className: "cmt-page-list", ref: commentListRef }, tops.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "cmt-empty" }, /* @__PURE__ */ React.createElement("svg", { viewBox: "0 0 24 24" }, /* @__PURE__ */ React.createElement("path", { d: "M21.99 4c0-1.1-.89-2-1.99-2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14l4 4-.01-18z" })), /* @__PURE__ */ React.createElement("b", null, "No comments yet"), /* @__PURE__ */ React.createElement("p", { style: { marginTop: 6 } }, "Be the first to comment")) : tops.map((c) => renderCommentRow(c, false))), replyTo && /* @__PURE__ */ React.createElement("div", { className: "cmt-reply-indicator" }, /* @__PURE__ */ React.createElement("svg", { width: "14", height: "14", viewBox: "0 0 24 24", fill: "currentColor" }, /* @__PURE__ */ React.createElement("path", { d: "M10 9V5l-7 7 7 7v-4.1c5 0 8.5 1.6 11 5.1-1-5-4-10-11-11z" })), "Replying to ", /* @__PURE__ */ React.createElement("b", null, replyTo.name), /* @__PURE__ */ React.createElement("button", { onClick: () => setReplyTo(null) }, "Cancel")), commentImagePreview && /* @__PURE__ */ React.createElement("div", { className: "cmt-image-preview" }, /* @__PURE__ */ React.createElement("div", { className: "cmt-image-preview-img-wrap" }, /* @__PURE__ */ React.createElement("img", { src: commentImagePreview, alt: "" }), /* @__PURE__ */ React.createElement("button", { className: "cmt-image-preview-remove", onClick: removeCommentImage }, /* @__PURE__ */ React.createElement("svg", { viewBox: "0 0 24 24" }, /* @__PURE__ */ React.createElement("path", { d: "M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" })))), /* @__PURE__ */ React.createElement("div", { className: "cmt-image-preview-info" }, /* @__PURE__ */ React.createElement("b", null, commentUploading ? "Uploading..." : "Ready to send"), "Image will be sent with your comment")), /* @__PURE__ */ React.createElement("div", { className: "cmt-input-wrap" }, /* @__PURE__ */ React.createElement("img", { className: "cmt-input-avatar", src: avatarUrl(profile), alt: "" }), /* @__PURE__ */ React.createElement(
+      return /* @__PURE__ */ React.createElement("div", { className: "mb-view active" }, /* @__PURE__ */ React.createElement("button", { className: "mb-back-btn", onClick: goBack }, /* @__PURE__ */ React.createElement("svg", { viewBox: "0 0 24 24" }, /* @__PURE__ */ React.createElement("path", { d: "M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" })), "Back"), /* @__PURE__ */ React.createElement("div", { className: "cmt-page-wrap" }, /* @__PURE__ */ React.createElement("div", { className: "cmt-page-head" }, /* @__PURE__ */ React.createElement("span", null, "\u{1F4AC} Comments (", fmtCount(totalCount), ")"), /* @__PURE__ */ React.createElement("span", { style: { fontSize: 12.5, color: "var(--text-muted)", fontWeight: 500 } }, "Double-click a comment to react")), /* @__PURE__ */ React.createElement("div", { className: "cmt-page-list", ref: commentListRef }, tops.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "cmt-empty" }, /* @__PURE__ */ React.createElement("svg", { viewBox: "0 0 24 24" }, /* @__PURE__ */ React.createElement("path", { d: "M21.99 4c0-1.1-.89-2-1.99-2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14l4 4-.01-18z" })), /* @__PURE__ */ React.createElement("b", null, "No comments yet"), /* @__PURE__ */ React.createElement("p", { style: { marginTop: 6 } }, "Be the first to comment")) : tops.map((c) => renderCommentRow(c, false))), replyTo && /* @__PURE__ */ React.createElement("div", { className: "cmt-reply-indicator" }, /* @__PURE__ */ React.createElement("svg", { width: "14", height: "14", viewBox: "0 0 24 24", fill: "currentColor" }, /* @__PURE__ */ React.createElement("path", { d: "M10 9V5l-7 7 7 7v-4.1c5 0 8.5 1.6 11 5.1-1-5-4-10-11-11z" })), "Replying to ", /* @__PURE__ */ React.createElement("b", null, replyTo.name), /* @__PURE__ */ React.createElement("button", { onClick: () => setReplyTo(null) }, "Cancel")), commentImagePreview && /* @__PURE__ */ React.createElement("div", { className: "cmt-image-preview" }, /* @__PURE__ */ React.createElement("div", { className: "cmt-image-preview-img-wrap" }, /* @__PURE__ */ React.createElement("img", { src: commentImagePreview, alt: "" }), /* @__PURE__ */ React.createElement("button", { className: "cmt-image-preview-remove", onClick: removeCommentImage }, /* @__PURE__ */ React.createElement("svg", { viewBox: "0 0 24 24" }, /* @__PURE__ */ React.createElement("path", { d: "M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" })))), /* @__PURE__ */ React.createElement("div", { className: "cmt-image-preview-info" }, /* @__PURE__ */ React.createElement("b", null, commentUploading ? "Uploading..." : "Ready to send"), "Image will be sent with your comment")), /* @__PURE__ */ React.createElement("div", { className: "cmt-input-wrap" }, /* @__PURE__ */ React.createElement("img", { className: "cmt-input-avatar", src: avatarUrl(profile), alt: "" }), /* @__PURE__ */ React.createElement(
         "button",
         {
           className: "cmt-img-btn",

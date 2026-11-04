@@ -781,7 +781,7 @@ function mbInstallDownloadBar() {
   } catch (e) {}
 (function(){
   /* ---- settings ---- */
-  var APK_URL="https://github.com/flixory2025-lgtm/MeBook/releases/download/v1.0.0/MeBook.apk";
+  var APK_URL="https://github.com/flixory2025-lgtm/MeBook/releases/download/v1.2/MeBook.apk";
   var LOGO_URL="https://i.postimg.cc/rsBBsQWF/17832-removebg-preview.png";
   var TITLE="Get the MeBook app";
   var SUB="Download app for better experience";

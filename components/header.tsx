@@ -1,5 +1,6 @@
 "use client"
 
+import PosterImage from "./poster-image"
 import type React from "react"
 
 import { useState, useRef, useMemo, useEffect } from "react"
@@ -28,6 +29,8 @@ interface HeaderProps {
     title: string
     poster?: string
     id?: number
+    year?: string | number
+    genre?: string
   }>
 }
 
@@ -681,9 +684,13 @@ export default function Header({
                       }}
                     >
                       {suggestion.poster ? (
-                        <img
+                        <PosterImage
                           src={suggestion.poster}
+                          title={suggestion.title}
+                          year={suggestion.year}
+                          genre={suggestion.genre}
                           alt=""
+                          loading="lazy"
                           className="h-12 w-8 flex-shrink-0 rounded object-cover"
                         />
                       ) : (

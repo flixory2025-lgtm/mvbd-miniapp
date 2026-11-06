@@ -5,7 +5,9 @@ import {
   useEffect,
   useMemo,
   useRef,
+  useCallback,
   type ReactNode,
+  type PointerEvent as ReactPointerEvent,
 } from "react"
 import {
   Eye,
@@ -14,7 +16,6 @@ import {
   MessageCircle,
   Share2,
   Send,
-  ArrowRight,
   X,
   MoreHorizontal,
   Copy,
@@ -417,62 +418,162 @@ function Avatar({
 }
 
 /* ------------------------------------------------------------------ */
-/*  Bottom-sheet shell (mobile: bottom sheet, desktop: centered modal) */
+/*  Bottom-sheet shell (iPhone style: slides up, drag down to close)   */
 /* ------------------------------------------------------------------ */
+
+const SHEET_MS = 420
 
 function Sheet({
   title,
   onClose,
   children,
   tall,
+  poster,
 }: {
   title: ReactNode
   onClose: () => void
   children: ReactNode
   tall?: boolean
+  poster?: string
 }) {
+  const [open, setOpen] = useState(false)
+  const [dragY, setDragY] = useState(0)
+  const [dragging, setDragging] = useState(false)
+  const startY = useRef(0)
+  const startT = useRef(0)
+  const closing = useRef(false)
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const onCloseRef = useRef(onClose)
+  onCloseRef.current = onClose
+
+  // lock page scroll + slide up on mount
   useEffect(() => {
     const prev = document.body.style.overflow
     document.body.style.overflow = "hidden"
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose()
-    }
-    window.addEventListener("keydown", onKey)
+    let raf2 = 0
+    const raf1 = requestAnimationFrame(() => {
+      raf2 = requestAnimationFrame(() => setOpen(true))
+    })
     return () => {
       document.body.style.overflow = prev
-      window.removeEventListener("keydown", onKey)
+      cancelAnimationFrame(raf1)
+      cancelAnimationFrame(raf2)
+      if (timer.current) clearTimeout(timer.current)
     }
-  }, [onClose])
+  }, [])
+
+  // slide down first, then tell the parent
+  const requestClose = useCallback(() => {
+    if (closing.current) return
+    closing.current = true
+    setDragging(false)
+    setDragY(0)
+    setOpen(false)
+    timer.current = setTimeout(() => onCloseRef.current(), SHEET_MS - 20)
+  }, [])
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") requestClose()
+    }
+    window.addEventListener("keydown", onKey)
+    return () => window.removeEventListener("keydown", onKey)
+  }, [requestClose])
+
+  // drag the header down to dismiss
+  const onPointerDown = (e: ReactPointerEvent<HTMLDivElement>) => {
+    if (closing.current) return
+    if ((e.target as HTMLElement).closest("button")) return
+    startY.current = e.clientY
+    startT.current = Date.now()
+    setDragging(true)
+    e.currentTarget.setPointerCapture(e.pointerId)
+  }
+  const onPointerMove = (e: ReactPointerEvent<HTMLDivElement>) => {
+    if (!dragging) return
+    setDragY(Math.max(0, e.clientY - startY.current))
+  }
+  const onPointerUp = () => {
+    if (!dragging) return
+    const velocity = dragY / Math.max(1, Date.now() - startT.current)
+    if (dragY > 110 || velocity > 0.6) {
+      requestClose()
+    } else {
+      setDragging(false)
+      setDragY(0)
+    }
+  }
 
   return (
     <div
-      className="fixed inset-0 z-[70] flex items-end sm:items-center justify-center"
+      className="fixed inset-0 z-[70] flex items-end justify-center"
       role="dialog"
       aria-modal="true"
     >
       <div
-        className="absolute inset-0 bg-black/70 backdrop-blur-sm mv-fade"
-        onClick={onClose}
+        className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+        style={{
+          opacity: open ? Math.max(0, 1 - dragY / 420) : 0,
+          transition: dragging ? "none" : `opacity ${SHEET_MS}ms ease`,
+        }}
+        onClick={requestClose}
       />
       <div
-        className={`relative w-full sm:max-w-lg flex flex-col bg-[#15101f] border border-white/10 shadow-2xl rounded-t-[28px] sm:rounded-[28px] mv-sheet ${
+        className={`relative w-full sm:max-w-lg flex flex-col overflow-hidden bg-[#08080a] border border-white/10 border-b-0 shadow-2xl rounded-t-[28px] ${
           tall ? "h-[88vh] sm:h-[80vh]" : "max-h-[88vh]"
         }`}
+        style={{
+          transform: open ? `translateY(${dragY}px)` : "translateY(100%)",
+          transition: dragging
+            ? "none"
+            : `transform ${SHEET_MS}ms cubic-bezier(.32,.72,0,1)`,
+          willChange: "transform",
+        }}
       >
-        <div className="sm:hidden flex justify-center pt-2.5">
-          <span className="h-1 w-10 rounded-full bg-white/20" />
-        </div>
-        <div className="flex items-center justify-between px-5 py-3.5 border-b border-white/10 flex-shrink-0">
-          <h3 className="text-base font-bold text-white">{title}</h3>
-          <button
-            onClick={onClose}
-            aria-label="Close"
-            className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition"
+        {/* faint movie poster behind everything */}
+        {poster && (
+          <div aria-hidden="true" className="absolute inset-0 pointer-events-none">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={poster}
+              alt=""
+              draggable={false}
+              className="w-full h-full object-cover object-top select-none"
+            />
+            <div
+              className="absolute inset-0"
+              style={{
+                background:
+                  "linear-gradient(to bottom, rgba(6,6,8,.70) 0%, rgba(6,6,8,.84) 55%, rgba(6,6,8,.93) 100%)",
+              }}
+            />
+          </div>
+        )}
+
+        <div className="relative z-10 flex flex-col flex-1 min-h-0">
+          <div
+            className="flex-shrink-0 touch-none cursor-grab active:cursor-grabbing"
+            onPointerDown={onPointerDown}
+            onPointerMove={onPointerMove}
+            onPointerUp={onPointerUp}
+            onPointerCancel={onPointerUp}
           >
-            <X className="w-4 h-4" />
-          </button>
+            <div className="flex justify-center pt-2.5">
+              <span className="h-1 w-10 rounded-full bg-white/30" />
+            </div>
+            <div className="flex items-center justify-between px-5 py-3.5 border-b border-white/10">
+              <h3 className="text-base font-bold text-white">{title}</h3>
+              <button
+                onClick={requestClose}
+                aria-label="Close"
+                className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+          {children}
         </div>
-        {children}
       </div>
     </div>
   )
@@ -485,9 +586,11 @@ function Sheet({
 function ShareSheet({
   title,
   onClose,
+  poster,
 }: {
   title: string
   onClose: () => void
+  poster?: string
 }) {
   const [toast, setToast] = useState("")
   const shareText = `🎬 ${title} — MoviesVerse এ দেখুন`
@@ -592,8 +695,8 @@ function ShareSheet({
   ]
 
   return (
-    <Sheet title="Share" onClose={onClose}>
-      <div className="p-5 overflow-y-auto">
+    <Sheet title="Share" onClose={onClose} poster={poster}>
+      <div className="p-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] overflow-y-auto">
         <p className="text-sm text-slate-400 mb-5">
           বন্ধুদের সাথে MoviesVerse শেয়ার করুন
         </p>
@@ -668,6 +771,7 @@ function CommentsSheet({
   onDelete,
   onLike,
   onNeedLogin,
+  poster,
 }: {
   comments: CommentItem[]
   me: Me | null
@@ -677,6 +781,7 @@ function CommentsSheet({
   onDelete: (id: string) => void
   onLike: (id: string) => void
   onNeedLogin: () => void
+  poster?: string
 }) {
   const [text, setText] = useState("")
   const [replyTo, setReplyTo] = useState<CommentItem | null>(null)
@@ -763,7 +868,7 @@ function CommentsSheet({
                   {c.text}
                 </p>
                 {c.likes.length > 0 && (
-                  <span className="absolute -bottom-2.5 right-2 flex items-center gap-1 rounded-full bg-[#2a2338] border border-white/10 px-1.5 py-0.5 text-[11px] text-slate-200 shadow">
+                  <span className="absolute -bottom-2.5 right-2 flex items-center gap-1 rounded-full bg-[#1f1f26] border border-white/10 px-1.5 py-0.5 text-[11px] text-slate-200 shadow">
                     <span className="w-4 h-4 rounded-full bg-sky-500 flex items-center justify-center">
                       <ThumbsUp className="w-2.5 h-2.5 text-white" fill="white" />
                     </span>
@@ -787,7 +892,7 @@ function CommentsSheet({
                         className="fixed inset-0 z-10"
                         onClick={() => setMenuId(null)}
                       />
-                      <div className="absolute right-0 top-9 z-20 w-36 rounded-xl bg-[#241d33] border border-white/10 shadow-2xl overflow-hidden mv-pop-in">
+                      <div className="absolute right-0 top-9 z-20 w-36 rounded-xl bg-[#1a1a20] border border-white/10 shadow-2xl overflow-hidden mv-pop-in">
                         <button
                           onClick={() => startEdit(c)}
                           className="w-full flex items-center gap-2 px-3 py-2.5 text-sm hover:bg-white/10"
@@ -860,6 +965,7 @@ function CommentsSheet({
     <Sheet
       tall
       onClose={onClose}
+      poster={poster}
       title={
         <span>
           Comments{" "}
@@ -879,7 +985,7 @@ function CommentsSheet({
         )}
       </div>
 
-      <div className="flex-shrink-0 border-t border-white/10 bg-[#15101f] rounded-b-[28px]">
+      <div className="flex-shrink-0 border-t border-white/10 bg-black/45 backdrop-blur-md">
         {(replyTo || editingId) && (
           <div className="flex items-center justify-between px-4 pt-2.5 text-xs text-slate-400">
             <span>
@@ -952,37 +1058,52 @@ function CommentsSheet({
 /* ------------------------------------------------------------------ */
 
 const PAGE_CSS = `
-@keyframes mvSheetUp { from{transform:translateY(100%)} to{transform:none} }
 @keyframes mvZoomIn { from{opacity:0;transform:scale(.94) translateY(12px)} to{opacity:1;transform:none} }
 @keyframes mvFade { from{opacity:0} to{opacity:1} }
 @keyframes mvFadeUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:none} }
 @keyframes mvLikePop { 0%{transform:scale(1)} 35%{transform:scale(1.45) rotate(-12deg)} 100%{transform:scale(1)} }
 
-.mv-sheet { animation: mvSheetUp .32s cubic-bezier(.2,.8,.2,1) both }
-@media (min-width:640px){ .mv-sheet { animation-name: mvZoomIn } }
 .mv-fade { animation: mvFade .25s ease both }
 .mv-fadeup { animation: mvFadeUp .3s ease both }
 .mv-pop-in { animation: mvZoomIn .15s ease both }
 .mv-like-pop { animation: mvLikePop .45s ease both }
 
-/* CTA buttons: completely still, animate only on hover / press */
-.mv-cta {
-  border: 1px solid rgba(255,255,255,.10);
-  box-shadow: 0 8px 20px -12px var(--cta-glow);
-  transition: transform .25s ease, filter .25s ease, box-shadow .25s ease;
+/* Glossy 3D pill buttons (Telegram + YouTube) */
+.mv-btn {
+  position: relative; isolation: isolate; overflow: hidden;
+  flex: 1 1 0; min-width: 0; height: 54px;
+  display: flex; align-items: center; justify-content: center; gap: 9px;
+  padding: 0 14px; border-radius: 999px; color: #fff;
+  border: 1px solid rgba(255,255,255,.16);
+  -webkit-tap-highlight-color: transparent;
+  transition: transform .15s ease, box-shadow .15s ease, filter .2s ease;
 }
-.mv-cta-tg { background: linear-gradient(105deg,#06243f 0%,#0a4a78 50%,#126a9c 100%); --cta-glow: rgba(34,158,217,.45) }
-.mv-cta-yt { background: linear-gradient(105deg,#2e0008 0%,#6a0818 52%,#92152a 100%); --cta-glow: rgba(255,35,65,.4) }
-.mv-cta .mv-art, .mv-cta .mv-ico, .mv-cta .mv-arrow { transition: transform .45s ease }
-.mv-cta:active { transform: scale(.97) }
-@media (hover:hover) {
-  .mv-cta:hover { transform: translateY(-2px); filter: brightness(1.18); box-shadow: 0 14px 26px -10px var(--cta-glow) }
-  .mv-cta:hover .mv-art-a { transform: translate(-10px,3px) rotate(-6deg) scale(1.08) }
-  .mv-cta:hover .mv-art-b { transform: translateX(8px) }
-  .mv-cta:hover .mv-ico { transform: rotate(-10deg) scale(1.08) }
-  .mv-cta:hover .mv-arrow { transform: translateX(3px) }
+.mv-btn-tg {
+  background: linear-gradient(180deg,#46c3f7 0%,#229ed9 46%,#1678b4 100%);
+  box-shadow: inset 0 1.5px 0 rgba(255,255,255,.55), inset 0 -5px 10px rgba(0,40,90,.35), 0 5px 0 #0d5a8c, 0 12px 24px -6px rgba(34,158,217,.55);
 }
-.mv-script { font-family: 'Snell Roundhand','Segoe Script','Brush Script MT','Lucida Handwriting','Apple Chancery',cursive; font-style: italic }
+.mv-btn-yt {
+  background: radial-gradient(120% 160% at 28% 0%,#e8283c 0%,#b5121f 42%,#650811 100%);
+  box-shadow: inset 0 1.5px 0 rgba(255,255,255,.4), inset 0 -5px 10px rgba(40,0,5,.45), 0 5px 0 #4a0510, 0 12px 24px -6px rgba(255,35,65,.45);
+}
+.mv-btn:active { transform: translateY(4px) }
+.mv-btn-tg:active { box-shadow: inset 0 1.5px 0 rgba(255,255,255,.55), inset 0 -5px 10px rgba(0,40,90,.35), 0 1px 0 #0d5a8c, 0 6px 14px -6px rgba(34,158,217,.55) }
+.mv-btn-yt:active { box-shadow: inset 0 1.5px 0 rgba(255,255,255,.4), inset 0 -5px 10px rgba(40,0,5,.45), 0 1px 0 #4a0510, 0 6px 14px -6px rgba(255,35,65,.45) }
+@media (hover:hover) { .mv-btn:hover { filter: brightness(1.1); transform: translateY(-1px) } .mv-btn:active { transform: translateY(4px) } }
+.mv-btn-gloss {
+  position: absolute; left: 6%; right: 6%; top: 2px; height: 46%; z-index: 0; pointer-events: none;
+  border-radius: 999px; background: linear-gradient(180deg,rgba(255,255,255,.38),rgba(255,255,255,0));
+}
+.mv-btn-ico {
+  position: relative; z-index: 1; flex: none; width: 34px; height: 34px; border-radius: 999px; background: #fff;
+  display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(0,0,0,.3);
+}
+.mv-btn-label {
+  position: relative; z-index: 1; display: flex; flex-direction: column; align-items: flex-start;
+  line-height: 1; text-align: left; text-shadow: 0 1px 2px rgba(0,0,0,.35); white-space: nowrap;
+}
+.mv-btn-label small { font-size: 10px; font-weight: 500; opacity: .85; margin-bottom: 3px }
+.mv-btn-label b { font-size: 15.5px; font-weight: 700; letter-spacing: .2px }
 `
 
 /* ------------------------------------------------------------------ */
@@ -1267,92 +1388,35 @@ export default function MovieDetailPage({
       <div style={{ background: BG }}>
       <main className="relative max-w-2xl mx-auto px-4 pt-2 space-y-4">
         {/* Buttons */}
-        <div className="space-y-2.5">
+        <div className="flex items-center justify-center gap-2.5 max-w-[420px] mx-auto pt-1 pb-2">
           <button
             onClick={handleWatchNow}
-            className="mv-cta mv-cta-tg relative block w-[88%] max-w-[330px] mx-auto h-12 overflow-hidden rounded-xl text-white"
+            className="mv-btn mv-btn-tg"
+            aria-label="Download on Telegram"
           >
-            {/* calligraphy-style artwork */}
-            <svg
-              aria-hidden="true"
-              viewBox="0 0 330 48"
-              preserveAspectRatio="none"
-              className="mv-art mv-art-b absolute inset-0 w-full h-full pointer-events-none"
-              fill="none"
-              stroke="#fff"
-              strokeLinecap="round"
-            >
-              <path d="M-5 38 C30 4, 62 54, 112 22 S 190 2, 236 30 S 304 44, 336 12" strokeWidth="1.6" opacity=".22" />
-              <path d="M-5 44 C40 16, 80 50, 130 30 S 210 14, 252 36 S 310 40, 336 24" strokeWidth=".8" opacity=".25" />
-              <circle cx="300" cy="9" r="2" fill="#fff" stroke="none" opacity=".25" />
-              <circle cx="22" cy="40" r="1.6" fill="#fff" stroke="none" opacity=".25" />
-            </svg>
-            <span
-              aria-hidden="true"
-              className="mv-art mv-art-b mv-script absolute -left-1 -bottom-3 text-[46px] leading-none text-white/[0.14] pointer-events-none select-none"
-            >
-              Telegram
+            <span className="mv-btn-gloss" aria-hidden="true" />
+            <span className="mv-btn-ico">
+              <TelegramLogo size={28} uid="btn" />
             </span>
-            <Send
-              aria-hidden="true"
-              strokeWidth={1.1}
-              className="mv-art mv-art-a absolute -right-3 -top-6 w-24 h-24 -rotate-12 text-white/[0.17] pointer-events-none"
-            />
-
-            <span className="relative z-10 h-full flex items-center justify-center gap-2.5 pl-3 pr-10 text-[14.5px] font-semibold tracking-wide">
-              <span className="mv-ico w-7 h-7 rounded-full bg-white/90 flex items-center justify-center shadow">
-                <TelegramLogo size={26} uid="btn" />
-              </span>
-              <span className="drop-shadow-sm">Download on Telegram</span>
-            </span>
-            <span className="mv-arrow absolute right-2.5 top-1/2 -translate-y-1/2 z-10 w-6 h-6 rounded-full border border-white/45 bg-white/10 flex items-center justify-center">
-              <ArrowRight className="w-3.5 h-3.5" />
+            <span className="mv-btn-label">
+              <small>Download on</small>
+              <b>Telegram</b>
             </span>
           </button>
 
           {movie.trailer && (
             <button
               onClick={() => setShowTrailer(true)}
-              className="mv-cta mv-cta-yt relative block w-[88%] max-w-[330px] mx-auto h-12 overflow-hidden rounded-xl text-white"
+              className="mv-btn mv-btn-yt"
+              aria-label="Watch trailer on YouTube"
             >
-              <svg
-                aria-hidden="true"
-                viewBox="0 0 330 48"
-                preserveAspectRatio="none"
-                className="mv-art mv-art-b absolute inset-0 w-full h-full pointer-events-none"
-                fill="none"
-                stroke="#fff"
-                strokeLinecap="round"
-              >
-                <path d="M-5 38 C30 4, 62 54, 112 22 S 190 2, 236 30 S 304 44, 336 12" strokeWidth="1.6" opacity=".22" />
-                <path d="M-5 44 C40 16, 80 50, 130 30 S 210 14, 252 36 S 310 40, 336 24" strokeWidth=".8" opacity=".25" />
-                <circle cx="300" cy="9" r="2" fill="#fff" stroke="none" opacity=".25" />
-                <circle cx="22" cy="40" r="1.6" fill="#fff" stroke="none" opacity=".25" />
-              </svg>
-              <span
-                aria-hidden="true"
-                className="mv-art mv-art-b mv-script absolute -left-1 -bottom-3 text-[46px] leading-none text-white/[0.14] pointer-events-none select-none"
-              >
-                YouTube
+              <span className="mv-btn-gloss" aria-hidden="true" />
+              <span className="mv-btn-ico">
+                <YouTubeLogo size={24} />
               </span>
-              <svg
-                aria-hidden="true"
-                viewBox="0 0 24 24"
-                className="mv-art mv-art-a absolute -right-4 -top-5 w-24 h-24 -rotate-12 pointer-events-none"
-                fill="none"
-              >
-                <rect x="1.2" y="4.2" width="21.6" height="15.6" rx="4.4" stroke="#fff" strokeWidth=".6" opacity=".2" />
-                <path d="M9.8 8.6v6.8l5.9-3.4z" stroke="#fff" strokeWidth=".6" opacity=".2" />
-              </svg>
-
-              <span className="relative z-10 h-full flex items-center justify-center gap-2.5 pl-3 pr-10 text-[14.5px] font-semibold tracking-wide">
-                <span className="mv-ico w-7 h-7 rounded-full bg-white/90 flex items-center justify-center shadow">
-                  <YouTubeLogo size={22} />
-                </span>
-                <span className="drop-shadow-sm">Trailer</span>
-              </span>
-              <span className="mv-arrow absolute right-2.5 top-1/2 -translate-y-1/2 z-10 w-6 h-6 rounded-full border border-white/45 bg-white/10 flex items-center justify-center">
-                <ArrowRight className="w-3.5 h-3.5" />
+              <span className="mv-btn-label">
+                <small>Watch</small>
+                <b>Trailer</b>
               </span>
             </button>
           )}
@@ -1425,27 +1489,9 @@ export default function MovieDetailPage({
       </main>
       </div>
 
-      {/* Poster background: starts under Like/Comments/Share, full poster (no zoom), fades in and out */}
-      <div className="relative overflow-hidden" style={{ background: BG }}>
-        <div
-          aria-hidden="true"
-          className="absolute top-0 left-1/2 -translate-x-1/2 w-full md:w-[480px] aspect-[2/3] pointer-events-none"
-          style={{
-            WebkitMaskImage:
-              "linear-gradient(to bottom, transparent 0%, #000 28%, #000 68%, transparent 100%)",
-            maskImage:
-              "linear-gradient(to bottom, transparent 0%, #000 28%, #000 68%, transparent 100%)",
-          }}
-        >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={movie.poster || "/placeholder.svg"}
-            alt=""
-            className="w-full h-full object-cover object-center opacity-60"
-          />
-          <div className="absolute inset-0 bg-black/35" />
-        </div>
 
+      {/* Cast + related: plain black background (poster removed) */}
+      <div className="relative overflow-hidden" style={{ background: BG }}>
         <div className="relative z-10 max-w-2xl mx-auto px-4 pt-6">
         {/* Cast */}
         <section>
@@ -1573,12 +1619,17 @@ export default function MovieDetailPage({
           onDelete={deleteComment}
           onLike={likeComment}
           onNeedLogin={needLogin}
+          poster={movie.poster}
         />
       )}
 
       {/* Share */}
       {showShare && (
-        <ShareSheet title={movie.title} onClose={() => setShowShare(false)} />
+        <ShareSheet
+          title={movie.title}
+          poster={movie.poster}
+          onClose={() => setShowShare(false)}
+        />
       )}
 
       {showAuthModal && (
@@ -1608,4 +1659,4 @@ export default function MovieDetailPage({
       )}
     </div>
   )
-                            }
+    }

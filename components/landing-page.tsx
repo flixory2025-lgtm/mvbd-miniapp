@@ -391,7 +391,7 @@ export default function LandingPage({
   const heroRef = useRef<HTMLDivElement>(null);
   const sceneRef = useRef<HTMLDivElement>(null);
 
-  /* ✅ INTRO LOADER (circle → logo → MoviesVerseBD → curtain up) */
+  /* ✅ INTRO LOADER (Netflix style: M → oviesVerse + BD → zoom out) */
   const [phase, setPhase] = useState<"intro" | "out" | "done">("intro");
   const loaded = phase !== "intro";
 
@@ -401,8 +401,8 @@ export default function LandingPage({
     const t1 = setTimeout(() => {
       setPhase("out");
       document.body.style.overflow = prev;
-    }, 3000);
-    const t2 = setTimeout(() => setPhase("done"), 4300);
+    }, 4100);
+    const t2 = setTimeout(() => setPhase("done"), 5300);
     return () => {
       clearTimeout(t1);
       clearTimeout(t2);
@@ -580,20 +580,18 @@ export default function LandingPage({
     <div className="landing-page-root mvl" ref={rootRef} style={{ background: "#000000" }}>
       <style>{CSS}</style>
 
-      {/* ✅ INTRO */}
+      {/* ✅ INTRO — Netflix style: M, then "oviesVerse" + green "BD" */}
       {phase !== "done" && (
         <div className={`mv-intro ${phase === "out" ? "out" : ""}`} aria-hidden="true">
-          <div className="mv-ring" />
           <div className="mv-intro-in">
-            <div className="mv-mark"><Mark size={58} /></div>
-            <div className="mv-word">
-              {"MoviesVerse".split("").map((ch, i) => (
-                <span key={i} style={{ "--i": i } as React.CSSProperties}>{ch}</span>
-              ))}
-              {"BD".split("").map((ch, i) => (
-                <span className="bd" key={`b${i}`} style={{ "--i": 11 + i } as React.CSSProperties}>{ch}</span>
-              ))}
+            <div className="mv-wm">
+              <span className="m">M</span>
+              <span className="rest">
+                <span>oviesVerse</span>
+                <span className="bd">BD</span>
+              </span>
             </div>
+            <div className="mv-spin" />
           </div>
         </div>
       )}
@@ -900,7 +898,7 @@ export default function LandingPage({
       change koro. Green er jonno:  --accent-rgb: 34 197 94;  --accent-hi: #86efac;
 ============================================================ */
 const CSS = `
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Oswald:wght@700&display=swap');
 
 .mvl{--accent-rgb:255 98 31;--accent:rgb(var(--accent-rgb));--accent-hi:#ff9a52;--bg:#09090b;--muted:#9a9aa5;--line:rgb(255 255 255 / .09);
   position:relative;background:var(--bg);color:#fff;font-family:'Plus Jakarta Sans',system-ui,-apple-system,'Segoe UI',sans-serif;overflow-x:clip;-webkit-font-smoothing:antialiased}
@@ -910,16 +908,17 @@ const CSS = `
 .mvl button{font-family:inherit}
 .mvl img{max-width:100%}
 
-/* ---------- INTRO ---------- */
-.mv-intro{position:fixed;inset:0;z-index:200;background:#0a0a0b;display:grid;place-items:center;transition:transform 1.1s cubic-bezier(.77,0,.18,1)}
-.mv-intro.out{transform:translateY(-101%)}
-.mv-ring{position:absolute;left:50%;top:50%;width:56px;height:56px;margin:-28px 0 0 -28px;border-radius:50%;border:3px solid #fff;display:grid;place-items:center;animation:ringIn .8s cubic-bezier(.2,.8,.2,1) both,ringOut .45s .95s ease forwards}
-.mv-ring::after{content:"";width:18px;height:18px;border-radius:50%;background:#fff;animation:pulse .9s ease-in-out infinite}
-.mv-intro-in{display:flex;align-items:center;gap:14px}
-.mv-mark{animation:markIn .7s 1.05s cubic-bezier(.2,.8,.2,1) both;display:grid}
-.mv-word{display:flex;overflow:hidden;font-size:clamp(28px,6.2vw,54px);font-weight:800;letter-spacing:-.025em;line-height:1.2;padding-bottom:.06em}
-.mv-word span{display:inline-block;transform:translateY(115%);animation:rise .75s cubic-bezier(.2,.8,.2,1) forwards;animation-delay:calc(1.25s + var(--i) * .045s)}
-.mv-word .bd{color:var(--accent)}
+/* ---------- INTRO (Netflix-style: M + oviesVerse + BD) ---------- */
+.mv-intro{position:fixed;inset:0;z-index:200;background:#000;display:grid;place-items:center;overflow:hidden;transition:opacity .7s ease .2s}
+.mv-intro.out{opacity:0;pointer-events:none}
+.mv-intro-in{display:flex;flex-direction:column;align-items:center;gap:34px}
+.mv-wm{display:flex;font-family:'Oswald','Bebas Neue',Impact,system-ui,sans-serif;font-weight:700;font-size:clamp(40px,13vw,112px);line-height:1.05;letter-spacing:.015em;white-space:nowrap;color:#fff;transform-origin:50% 50%}
+.mv-wm .m{display:inline-block;animation:mvM .5s .3s cubic-bezier(.2,.8,.2,1) both}
+.mv-wm .rest{display:inline-flex;clip-path:inset(0 100% 0 0);animation:mvWipe 1.4s .85s steps(18,end) forwards}
+.mv-wm .bd{color:#19e65e;text-shadow:0 0 26px rgb(25 230 94 / .5)}
+.mv-intro.out .mv-wm{transform:scale(12);opacity:0;transition:transform .85s cubic-bezier(.65,0,.95,.45),opacity .55s ease .3s}
+.mv-spin{width:34px;height:34px;border-radius:50%;border:3px solid #19e65e;border-top-color:transparent;animation:mvFade .3s 2.7s both,mvRot .8s 2.7s linear infinite;transition:opacity .2s}
+.mv-intro.out .mv-spin{opacity:0}
 
 /* ---------- NAV ---------- */
 .mv-nav{position:fixed;top:16px;left:50%;z-index:90;transform:translate(-50%,-160%);display:flex;align-items:center;gap:8px;padding:7px 7px 7px 16px;border-radius:999px;width:max-content;max-width:calc(100vw - 20px);
@@ -1146,11 +1145,11 @@ const CSS = `
 .mv-foot-bottom .legal a:hover{color:#fff}
 
 /* ---------- KEYFRAMES ---------- */
-@keyframes ringIn{from{transform:scale(0);opacity:0}to{transform:scale(1);opacity:1}}
-@keyframes ringOut{to{transform:scale(.2);opacity:0}}
+@keyframes mvM{from{clip-path:inset(0 0 100% 0);transform:translateY(-14px)}to{clip-path:inset(0 0 0 0);transform:none}}
+@keyframes mvWipe{to{clip-path:inset(0 0 0 0)}}
+@keyframes mvFade{from{opacity:0}to{opacity:1}}
+@keyframes mvRot{to{transform:rotate(360deg)}}
 @keyframes pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(.82);opacity:.7}}
-@keyframes markIn{from{transform:scale(0) rotate(-120deg);opacity:0}to{transform:none;opacity:1}}
-@keyframes rise{to{transform:translateY(0)}}
 @keyframes blink{50%{opacity:0}}
 @keyframes floaty{0%,100%{transform:translateZ(var(--z,40px)) translateY(0)}50%{transform:translateZ(var(--z,40px)) translateY(-10px)}}
 @keyframes dash{from{stroke-dashoffset:0}to{stroke-dashoffset:-236}}

@@ -50,6 +50,7 @@ import AuthModal from "./auth-modal"
 import SubscriptionPanel from "./subscription-panel"
 import { useAuth } from "./auth-provider"
 import MovieCast from "./movie-cast"
+import PosterImage, { usePosterUrl } from "./poster-image"
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -1127,37 +1128,47 @@ function getRelatedFor(base: DetailItem, items: DetailItem[], max: number) {
   return picked
 }
 
-/* Related card thumbnail: falls back to the poster when YouTube has no thumbnail
+/* Related card thumbnail: falls back to the (resolved) poster when YouTube has no thumbnail
    (deleted / private videos return a tiny 120x90 grey placeholder) */
 function RelatedThumb({
   rid,
-  poster,
-  title,
+  item,
   blur,
 }: {
   rid: string | null
-  poster?: string
-  title: string
+  item: DetailItem
   blur: boolean
 }) {
   const [bad, setBad] = useState(false)
-  const usePoster = !rid || bad
+
+  if (!rid || bad) {
+    return (
+      <PosterImage
+        src={item.poster}
+        title={item.title}
+        year={item.year}
+        genre={item.genre}
+        tmdbId={item.tmdbId}
+        tmdbType={item.tmdbType}
+        loading="lazy"
+        draggable={false}
+        className={`w-full h-full object-cover object-[center_22%] ${blur ? "blur-lg" : ""}`}
+      />
+    )
+  }
+
   return (
     // eslint-disable-next-line @next/next/no-img-element
     <img
-      src={usePoster ? poster || "/placeholder.svg" : `https://i.ytimg.com/vi/${rid}/mqdefault.jpg`}
-      alt={title}
+      src={`https://i.ytimg.com/vi/${rid}/mqdefault.jpg`}
+      alt={item.title}
       loading="lazy"
       draggable={false}
       onLoad={(e) => {
-        if (!usePoster && e.currentTarget.naturalWidth <= 120) setBad(true)
+        if (e.currentTarget.naturalWidth <= 120) setBad(true)
       }}
-      onError={() => {
-        if (!usePoster) setBad(true)
-      }}
-      className={`w-full h-full object-cover ${usePoster ? "object-[center_22%]" : ""} ${
-        blur ? "blur-lg" : ""
-      }`}
+      onError={() => setBad(true)}
+      className={`w-full h-full object-cover ${blur ? "blur-lg" : ""}`}
     />
   )
 }
@@ -1176,6 +1187,14 @@ function TrailerSheet({
   const [cur, setCur] = useState<DetailItem>(movie)
   const curRef = useRef(cur)
   curRef.current = cur
+  const curPoster = usePosterUrl({
+    src: cur.poster,
+    title: cur.title,
+    year: cur.year,
+    genre: cur.genre,
+    tmdbId: cur.tmdbId,
+    tmdbType: cur.tmdbType,
+  })
   const { open, closing, requestClose, dragProps, sheetStyle, backdropStyle } =
     useSheetMotion(() => onClose(curRef.current))
 
@@ -1335,7 +1354,7 @@ function TrailerSheet({
           ) : (
             // eslint-disable-next-line @next/next/no-img-element
             <img
-              src={cur.poster || "/placeholder.svg"}
+              src={curPoster}
               alt=""
               draggable={false}
               className="mv-ambient-img"
@@ -1359,7 +1378,7 @@ function TrailerSheet({
               src={
                 ytId && !unavailable
                   ? `https://i.ytimg.com/vi/${ytId}/hqdefault.jpg`
-                  : cur.poster || "/placeholder.svg"
+                  : curPoster
               }
               alt=""
               draggable={false}
@@ -1491,12 +1510,7 @@ function TrailerSheet({
                         className="group block w-full text-left px-4 active:opacity-80"
                       >
                         <div className="relative aspect-video overflow-hidden rounded-xl bg-neutral-900 ring-1 ring-white/10">
-                          <RelatedThumb
-                            rid={rid}
-                            poster={rm.poster}
-                            title={rm.title}
-                            blur={blur}
-                          />
+                          <RelatedThumb rid={rid} item={rm} blur={blur} />
                           <span className="absolute inset-0 flex items-center justify-center">
                             <span className="w-11 h-11 rounded-full bg-black/55 backdrop-blur-sm border border-white/25 flex items-center justify-center transition group-hover:scale-110">
                               <Play className="w-5 h-5 text-white" fill="white" />
@@ -1694,6 +1708,17 @@ export default function MovieDetailPage({
     return { id, name, avatar }
   }, [user])
 
+  // poster: /public first, then TMDB / MyDramaList when the local file is missing
+  const posterUrl = usePosterUrl({
+    src: movie.poster,
+    title: movie.title,
+    year: movie.year,
+    genre: movie.genre,
+    mediaType,
+    tmdbId: movie.tmdbId,
+    tmdbType: movie.tmdbType,
+  })
+
   const social = useMovieSocial(`${mediaType}_${movie.id}`, me?.id ?? null, showComments)
 
   const isAdultMovie = (genre: string): boolean => {
@@ -1801,7 +1826,7 @@ export default function MovieDetailPage({
         <div className="relative mx-auto h-full w-full md:max-w-[380px] overflow-hidden">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src={movie.poster || "/placeholder.svg"}
+            src={posterUrl}
             alt={movie.title}
             className="h-full w-full object-cover object-top"
           />
@@ -2020,10 +2045,15 @@ export default function MovieDetailPage({
                   className="cursor-pointer group"
                 >
                   <div className="aspect-[2/3] rounded-xl overflow-hidden shadow-lg ring-1 ring-white/10 group-hover:ring-white/30 group-hover:shadow-2xl transition transform group-hover:-translate-y-1 group-hover:scale-[1.03] relative">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={rm.poster || "/placeholder.svg"}
-                      alt={rm.title}
+                    <PosterImage
+                      src={rm.poster}
+                      title={rm.title}
+                      year={rm.year}
+                      genre={rm.genre}
+                      mediaType={mediaType}
+                      tmdbId={rm.tmdbId}
+                      tmdbType={rm.tmdbType}
+                      loading="lazy"
                       className={`w-full h-full object-cover ${blur ? "blur-lg" : ""}`}
                     />
 
@@ -2097,7 +2127,7 @@ export default function MovieDetailPage({
           onDelete={deleteComment}
           onLike={likeComment}
           onNeedLogin={needLogin}
-          poster={movie.poster}
+          poster={posterUrl}
         />
       )}
 
@@ -2105,7 +2135,7 @@ export default function MovieDetailPage({
       {showShare && (
         <ShareSheet
           title={movie.title}
-          poster={movie.poster}
+          poster={posterUrl}
           onClose={() => setShowShare(false)}
         />
       )}
@@ -2121,7 +2151,7 @@ export default function MovieDetailPage({
           onClose={() => setShowTelegramPopup(false)}
           telegramLink={movie.telegramLink}
           telegram4kLink={movie.telegram4kLink}
-          moviePoster={movie.poster}
+          moviePoster={posterUrl}
           hasPremiumAccess={entitlement.isPremiumActive}
         />
       )}
@@ -2137,4 +2167,4 @@ export default function MovieDetailPage({
       )}
     </div>
   )
-               }
+            }

@@ -82,6 +82,7 @@ export default function Header({
   const [isFocused, setIsFocused] = useState(false)
 
   // ✅ Scroll ট্র্যাক করার জন্য স্টেট
+  const headerRef = useRef<HTMLElement>(null)
   const [isScrolled, setIsScrolled] = useState(false)
 
   const [bubbles, setBubbles] = useState<
@@ -166,19 +167,31 @@ export default function Header({
     return () => clearInterval(interval)
   }, [historyScope])
 
-  // ✅ Scroll ট্র্যাক করার জন্য (Header Transparent ↔ Solid)
+  // ✅ Scroll korle header-er background aste aste fire ashe, upore gele aste aste chole jay
+  //    (scroll distance onujayi 0 -> 1, tai pura smooth)
   useEffect(() => {
-    const handleScroll = () => {
-      if (window.scrollY > 10) {
-        setIsScrolled(true)
-      } else {
-        setIsScrolled(false)
-      }
+    const FADE_DISTANCE = 170 // koto px scroll korle background pura ashe
+    let raf = 0
+
+    const update = () => {
+      raf = 0
+      const y = window.scrollY
+      const t = Math.min(1, Math.max(0, y / FADE_DISTANCE))
+      const eased = t * t * (3 - 2 * t) // smoothstep: shuru ar shesh-e narom
+      headerRef.current?.style.setProperty("--hp", eased.toFixed(3))
+      setIsScrolled(y > 10)
     }
 
-    handleScroll() // পেজ লোড হওয়ার সময় একবার চেক
-    window.addEventListener("scroll", handleScroll, { passive: true })
-    return () => window.removeEventListener("scroll", handleScroll)
+    const onScroll = () => {
+      if (!raf) raf = requestAnimationFrame(update)
+    }
+
+    update() // page load-e ekbar
+    window.addEventListener("scroll", onScroll, { passive: true })
+    return () => {
+      window.removeEventListener("scroll", onScroll)
+      if (raf) cancelAnimationFrame(raf)
+    }
   }, [])
 
   // When user logs in, sync Firestore history
@@ -350,13 +363,27 @@ export default function Header({
   return (
     // ✅ FIXED HEADER — Transparent at top, Solid on scroll
     <header
-      className={`fixed top-0 left-0 right-0 lg:left-[220px] z-50 transition-all duration-300 ease-in-out ${
-        isScrolled
-          ? "bg-black/60 backdrop-blur-xl border-b border-white/10 shadow-lg"
-          : "bg-transparent border-b border-transparent shadow-none"
-      }`}
+      ref={headerRef}
+      className="mvbd-header-fade fixed top-0 left-0 right-0 lg:left-[220px] z-50"
     >
       <style>{`
+        /* ---- Scroll-linked header background (--hp = 0 top ... 1 scrolled) ---- */
+        .mvbd-header-fade { --hp: 0; }
+        .mvbd-header-fade::before {
+          content: "";
+          position: absolute;
+          inset: 0;
+          z-index: -1;
+          pointer-events: none;
+          box-sizing: border-box;
+          background: rgba(10, 10, 12, calc(var(--hp) * 0.86));
+          -webkit-backdrop-filter: blur(calc(var(--hp) * 18px)) saturate(calc(1 + var(--hp) * 0.4));
+          backdrop-filter: blur(calc(var(--hp) * 18px)) saturate(calc(1 + var(--hp) * 0.4));
+          border-bottom: 1px solid rgba(255, 255, 255, calc(var(--hp) * 0.08));
+          box-shadow: 0 10px 28px rgba(0, 0, 0, calc(var(--hp) * 0.38));
+          transition: background-color .14s linear, border-color .14s linear, box-shadow .14s linear;
+        }
+
         @keyframes liquidGlassZoom {
           0% { transform: scale(1); background: rgba(255,255,255,.05); backdrop-filter: blur(20px); }
           50% { transform: scale(1.03); background: rgba(255,255,255,.08); backdrop-filter: blur(25px); }

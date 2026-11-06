@@ -1127,6 +1127,41 @@ function getRelatedFor(base: DetailItem, items: DetailItem[], max: number) {
   return picked
 }
 
+/* Related card thumbnail: falls back to the poster when YouTube has no thumbnail
+   (deleted / private videos return a tiny 120x90 grey placeholder) */
+function RelatedThumb({
+  rid,
+  poster,
+  title,
+  blur,
+}: {
+  rid: string | null
+  poster?: string
+  title: string
+  blur: boolean
+}) {
+  const [bad, setBad] = useState(false)
+  const usePoster = !rid || bad
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={usePoster ? poster || "/placeholder.svg" : `https://i.ytimg.com/vi/${rid}/mqdefault.jpg`}
+      alt={title}
+      loading="lazy"
+      draggable={false}
+      onLoad={(e) => {
+        if (!usePoster && e.currentTarget.naturalWidth <= 120) setBad(true)
+      }}
+      onError={() => {
+        if (!usePoster) setBad(true)
+      }}
+      className={`w-full h-full object-cover ${usePoster ? "object-[center_22%]" : ""} ${
+        blur ? "blur-lg" : ""
+      }`}
+    />
+  )
+}
+
 function TrailerSheet({
   movie,
   relatedItems,
@@ -1148,12 +1183,15 @@ function TrailerSheet({
   const [meta, setMeta] = useState<{ title?: string; author?: string }>({})
   const [progress, setProgress] = useState<number | null>(null)
   const [tick, setTick] = useState(0)
+  const [badId, setBadId] = useState<string | null>(null)
   const durRef = useRef(0)
   const iframeRef = useRef<HTMLIFrameElement>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
 
   const ytId = getYouTubeId(cur.trailer)
   const embedSrc = cur.trailer ? buildEmbedSrc(cur.trailer, ytId) : ""
+  // true when YouTube says the video is deleted / private / not embeddable
+  const unavailable = !!ytId && badId === ytId
   const related = useMemo(
     () => getRelatedFor(cur, relatedItems, 12),
     [cur, relatedItems]
@@ -1180,7 +1218,10 @@ function TrailerSheet({
       )}&format=json`,
       { signal: ctrl.signal }
     )
-      .then((r) => (r.ok ? r.json() : null))
+      .then((r) => {
+        if (r.status === 400 || r.status === 401 || r.status === 404) setBadId(ytId)
+        return r.ok ? r.json() : null
+      })
       .then((j) => {
         if (j) setMeta({ title: j.title, author: j.author_name })
       })
@@ -1202,6 +1243,10 @@ function TrailerSheet({
         } catch {
           return
         }
+      }
+      if (d?.event === "onError") {
+        setBadId(ytId)
+        return
       }
       const info = d?.info
       if (!info) return
@@ -1249,7 +1294,7 @@ function TrailerSheet({
     scrollRef.current?.scrollTo({ top: 0, behavior: "smooth" })
   }
 
-  const title = meta.title || `${cur.title} — Official Trailer`
+  const title = unavailable ? cur.title : meta.title || `${cur.title} — Official Trailer`
   const longDesc = (cur.description || "").length > 120
 
   return (
@@ -1275,7 +1320,7 @@ function TrailerSheet({
       >
         {/* Ambient background: colours follow the video */}
         <div aria-hidden="true" className="absolute inset-0 overflow-hidden pointer-events-none">
-          {ytId ? (
+          {ytId && !unavailable ? (
             [0, 1, 2, 3].map((n) => (
               // eslint-disable-next-line @next/next/no-img-element
               <img
@@ -1311,12 +1356,25 @@ function TrailerSheet({
           <div className="relative flex-shrink-0 w-full aspect-video bg-black overflow-hidden">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src={ytId ? `https://i.ytimg.com/vi/${ytId}/hqdefault.jpg` : cur.poster || "/placeholder.svg"}
+              src={
+                ytId && !unavailable
+                  ? `https://i.ytimg.com/vi/${ytId}/hqdefault.jpg`
+                  : cur.poster || "/placeholder.svg"
+              }
               alt=""
               draggable={false}
-              className="absolute inset-0 w-full h-full object-cover"
+              onLoad={(e) => {
+                // YouTube serves a 120x90 grey placeholder for deleted / private videos
+                if (ytId && !unavailable && e.currentTarget.naturalWidth <= 120) setBadId(ytId)
+              }}
+              onError={() => {
+                if (ytId && !unavailable) setBadId(ytId)
+              }}
+              className={`absolute inset-0 w-full h-full object-cover ${
+                ytId && !unavailable ? "" : "object-[center_22%]"
+              }`}
             />
-            {embedSrc && open && !closing ? (
+            {embedSrc && open && !closing && !unavailable && (
               <iframe
                 key={cur.id}
                 ref={iframeRef}
@@ -1328,11 +1386,15 @@ function TrailerSheet({
                 referrerPolicy="strict-origin-when-cross-origin"
                 className="absolute inset-0 w-full h-full border-0 block"
               />
-            ) : !embedSrc ? (
-              <div className="absolute inset-0 flex items-center justify-center bg-black/60 text-sm font-semibold text-slate-200">
-                Trailer not available
+            )}
+            {(unavailable || !embedSrc) && (
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-1 bg-gradient-to-b from-black/55 via-black/60 to-black/75 px-6 text-center">
+                <span className="text-[15px] font-bold text-white">Trailer unavailable</span>
+                <span className="text-[12px] text-slate-300">
+                  This trailer is no longer available. You can still watch related trailers below.
+                </span>
               </div>
-            ) : null}
+            )}
 
             {/* drag handle (swipe down to close) */}
             <div
@@ -1358,8 +1420,14 @@ function TrailerSheet({
                 {title}
               </h2>
               <p className="mt-1 text-[12px] text-slate-300/90">
-                {meta.author ? `${meta.author} • ` : ""}
-                {cur.title}
+                {unavailable ? (
+                  <span className="text-amber-300">Trailer unavailable</span>
+                ) : (
+                  <>
+                    {meta.author ? `${meta.author} • ` : ""}
+                    {cur.title}
+                  </>
+                )}
               </p>
 
               {(cur.description || genreList.length > 0) && (
@@ -1423,17 +1491,11 @@ function TrailerSheet({
                         className="group block w-full text-left px-4 active:opacity-80"
                       >
                         <div className="relative aspect-video overflow-hidden rounded-xl bg-neutral-900 ring-1 ring-white/10">
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img
-                            src={
-                              rid
-                                ? `https://i.ytimg.com/vi/${rid}/mqdefault.jpg`
-                                : rm.poster || "/placeholder.svg"
-                            }
-                            alt={rm.title}
-                            loading="lazy"
-                            draggable={false}
-                            className={`w-full h-full object-cover ${blur ? "blur-lg" : ""}`}
+                          <RelatedThumb
+                            rid={rid}
+                            poster={rm.poster}
+                            title={rm.title}
+                            blur={blur}
                           />
                           <span className="absolute inset-0 flex items-center justify-center">
                             <span className="w-11 h-11 rounded-full bg-black/55 backdrop-blur-sm border border-white/25 flex items-center justify-center transition group-hover:scale-110">
@@ -2075,4 +2137,4 @@ export default function MovieDetailPage({
       )}
     </div>
   )
-                  }
+               }

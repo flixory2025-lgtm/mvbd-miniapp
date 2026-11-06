@@ -1,5 +1,6 @@
 "use client"
 
+import PosterImage from "./poster-image"
 import { useState, useEffect, useRef, useCallback } from "react"
 import { ChevronLeft, ChevronRight, Play, Film, Star } from "lucide-react"
 import { animes } from "@/lib/anime-data"
@@ -478,16 +479,23 @@ export default function AnimeTrendingCarousel({
                   style={{ width: `${100 / topSeriesMovies.length}%` }}
                 >
                   {isMobile ? (
-                    <img
-                      src={movie.poster || "/placeholder.svg"}
-                      alt={movie.title}
+                    <PosterImage
+                      src={movie.poster}
+                      title={movie.title}
+                      year={movie.year}
+                      genre={movie.genre}
+                      mediaType="anime"
                       className="w-full h-full object-cover pointer-events-none"
                       style={{ objectPosition: "top" }}
                     />
                   ) : (
                     <>
-                      <img
-                        src={movie.poster || "/placeholder.svg"}
+                      <PosterImage
+                        src={movie.poster}
+                        title={movie.title}
+                        year={movie.year}
+                        genre={movie.genre}
+                        mediaType="anime"
                         alt=""
                         aria-hidden="true"
                         className="absolute inset-0 w-full h-full object-cover pointer-events-none"
@@ -497,9 +505,12 @@ export default function AnimeTrendingCarousel({
                         }}
                       />
                       <div className="absolute inset-y-0 right-0 w-[52%] flex items-center justify-center pt-[84px] pb-8 pr-6 lg:pr-14">
-                        <img
-                          src={movie.poster || "/placeholder.svg"}
-                          alt={movie.title}
+                        <PosterImage
+                          src={movie.poster}
+                          title={movie.title}
+                          year={movie.year}
+                          genre={movie.genre}
+                          mediaType="anime"
                           className="h-full max-w-full object-contain rounded-xl pointer-events-none"
                           style={{
                             boxShadow:
@@ -583,9 +594,12 @@ export default function AnimeTrendingCarousel({
             {isMobile ? (
               <div className="absolute bottom-0 left-0 w-full p-4 z-20 pointer-events-none flex items-end gap-4">
                 <div className="w-16 h-24 rounded-lg overflow-hidden border-2 border-white/20 shadow-lg flex-shrink-0">
-                  <img
-                    src={currentTopMovie.poster || "/placeholder.svg"}
-                    alt={currentTopMovie.title}
+                  <PosterImage
+                    src={currentTopMovie.poster}
+                    title={currentTopMovie.title}
+                    year={currentTopMovie.year}
+                    genre={currentTopMovie.genre}
+                    mediaType="anime"
                     className="w-full h-full object-cover"
                   />
                 </div>
@@ -778,9 +792,12 @@ export default function AnimeTrendingCarousel({
                     onClick={() => onAnimeClick(movie)}
                   >
                     <div className="relative aspect-[2/3] overflow-hidden rounded-lg bg-gray-900 shadow-lg transition-transform duration-300 group-hover/card:scale-[1.04]">
-                      <img
-                        src={movie.poster || "/placeholder.svg"}
-                        alt={movie.title}
+                      <PosterImage
+                        src={movie.poster}
+                        title={movie.title}
+                        year={movie.year}
+                        genre={movie.genre}
+                        mediaType="anime"
                         loading="lazy"
                         className="w-full h-full object-cover transition-transform duration-500 group-hover/card:scale-105"
                         draggable={false}
@@ -843,9 +860,12 @@ export default function AnimeTrendingCarousel({
                 style={getCardStyle(idx)}
                 onClick={() => onAnimeClick(movie)}
               >
-                <img
-                  src={movie.poster || "/placeholder.svg"}
-                  alt={movie.title}
+                <PosterImage
+                  src={movie.poster}
+                  title={movie.title}
+                  year={movie.year}
+                  genre={movie.genre}
+                  mediaType="anime"
                   className="w-full h-full object-cover pointer-events-none"
                 />
                 {movie.rating && movie.rating !== "not available" && (
@@ -946,4 +966,4 @@ export default function AnimeTrendingCarousel({
       <AnimeUpcomingSection />
     </section>
   )
-        }
+}

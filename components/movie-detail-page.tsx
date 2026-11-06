@@ -1266,8 +1266,12 @@ function TrailerSheet({
       />
 
       <div
-        className="relative w-full sm:max-w-lg h-[94vh] flex flex-col overflow-hidden bg-[#08080a] rounded-t-[22px] shadow-2xl"
-        style={sheetStyle}
+        className="relative w-full sm:max-w-lg flex flex-col overflow-hidden bg-[#08080a] rounded-t-[22px] shadow-2xl"
+        style={{
+          ...sheetStyle,
+          // leave a small gap at the top so the page shows above the sheet
+          height: "calc(100% - max(48px, calc(env(safe-area-inset-top, 0px) + 24px)))",
+        }}
       >
         {/* Ambient background: colours follow the video */}
         <div aria-hidden="true" className="absolute inset-0 overflow-hidden pointer-events-none">

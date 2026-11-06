@@ -9,7 +9,7 @@ import {
   useRef,
   useState,
 } from "react"
-import { ChevronDown } from "lucide-react"
+import { ChevronDown, Film, Info, Smartphone, X, Zap } from "lucide-react"
 import { movies } from "@/lib/movie-data"
 
 interface GenreCategoriesProps {
@@ -44,13 +44,18 @@ type FilterType = SelectorType | null
 
 const tutorialVideoId = "deuVIRqrscs"
 const apkDownloadUrl = "https://github.com/flixory2025-lgtm/mvbd-miniapp/releases/download/2.0.5v/MVBD.MINI.APP.apk"
+const requestGroupUrl = "https://t.me/mvbdreq"
+const youtubeChannelUrl = "https://youtube.com/@moviesversebd26?si=HwJWqaqEkTx_I-ve"
+
+/* 👉 MVBDS er official logo er image link ekhane boshao (png/webp).
+   Khali rakhle ekta "M" icon dekhabe. */
+const MVBD_LOGO_URL = ""
 
 /* =========================================================
    CATEGORY TILE BACKGROUNDS
    ---------------------------------------------------------
    Category button er bhitorer image. Key = genre er normalised
    naam (choto hater, special character chhara).
-   (নিচের animated stage ta puro bad — tai shudhu image ta rakha holo)
 ========================================================= */
 
 const CATEGORY_IMAGES: Record<string, string> = {
@@ -104,7 +109,6 @@ const getCategoryImage = (name: string | null): string | undefined => {
 /* ---------------------------------------------------------
    ⚡ Image gulo onek boro (kono kono ta 3840px). Mobile e decode +
    memory te lag hoy. true korle wsrv.nl diye 480px webp version load hobe.
-   (Prothome false e ache — test kore dekho, thik thakle true koro)
 --------------------------------------------------------- */
 const RESIZE_TILE_IMAGES = false
 
@@ -273,10 +277,10 @@ function PlatformIcon({ platform }: { platform: SocialPlatform }) {
   }
 }
 
-/* ✅ YouTube + Android official-style logos (CTA button background) */
+/* ✅ YouTube + Android official-style logos */
 function YouTubeLogo() {
   return (
-    <svg viewBox="0 0 24 24" className="gc-bgi" aria-hidden="true">
+    <svg viewBox="0 0 24 24" aria-hidden="true">
       <rect x="1" y="4.5" width="22" height="15" rx="4.2" fill="#FF0000" />
       <path d="M9.8 8.7v6.6l5.7-3.3z" fill="#fff" />
     </svg>
@@ -285,21 +289,53 @@ function YouTubeLogo() {
 
 function AndroidLogo() {
   return (
-    <svg viewBox="0 0 24 24" className="gc-bgi" aria-hidden="true">
-      <path d="M4.6 15.2a7.4 7.4 0 0 1 14.8 0z" fill="#3DDC84" />
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M3.5 17.5a8.5 8.5 0 0 1 17 0z" fill="#3DDC84" />
       <path
-        d="M4.6 16.2h14.8v3.2a1.6 1.6 0 0 1-1.6 1.6H6.2a1.6 1.6 0 0 1-1.6-1.6z"
-        fill="#3DDC84"
-      />
-      <path
-        d="M8.2 6.2 6.6 3.6M15.8 6.2l1.6-2.6"
+        d="M7.2 9.8 5.4 6.4M16.8 9.8l1.8-3.4"
         stroke="#3DDC84"
-        strokeWidth="1.3"
+        strokeWidth="1.4"
         strokeLinecap="round"
         fill="none"
       />
-      <circle cx="9.4" cy="11.6" r=".95" fill="#04110a" />
-      <circle cx="14.6" cy="11.6" r=".95" fill="#04110a" />
+      <circle cx="9" cy="14" r=".95" fill="#07130c" />
+      <circle cx="15" cy="14" r=".95" fill="#07130c" />
+    </svg>
+  )
+}
+
+/* MVBDS icon — MVBD_LOGO_URL dile oi logo, na dile "M" icon */
+function MvbdIcon() {
+  if (MVBD_LOGO_URL) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={MVBD_LOGO_URL}
+        alt=""
+        aria-hidden="true"
+        draggable={false}
+        className="gc-mvbd-img"
+      />
+    )
+  }
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <defs>
+        <linearGradient id="gcMv" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stopColor="#B7FF00" />
+          <stop offset="1" stopColor="#20E000" />
+        </linearGradient>
+      </defs>
+      <circle cx="12" cy="12" r="11" fill="#07090d" />
+      <circle cx="12" cy="12" r="10.2" fill="none" stroke="url(#gcMv)" strokeWidth="1.4" />
+      <path
+        d="M6.8 16.5V7.5l5.2 5.6 5.2-5.6v9"
+        fill="none"
+        stroke="url(#gcMv)"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </svg>
   )
 }
@@ -385,8 +421,7 @@ function CategoryHighlight() {
   return <span className="gc-orbit" aria-hidden="true" />
 }
 
-/* Ekta category button — memo kora, tai dropdown khulle/bondho hole
-   (ba onno kono state bodlale) category gulo abar render hoy na */
+/* Ekta category button — memo kora */
 const CategoryButton = memo(function CategoryButton({
   genre,
   image,
@@ -414,15 +449,167 @@ const CategoryButton = memo(function CategoryButton({
 })
 
 /* =========================================================
+   BOTTOM SHEET (iPhone / Facebook style)
+   - niche theke smooth uthe ashe
+   - X e click korle / backdrop e click korle / Esc dile smooth neme jay
+   - upor theke (grabber / header) tene niche namiye dile-o close hoy
+========================================================= */
+function BottomSheet({
+  kicker,
+  title,
+  onClosed,
+  children,
+}: {
+  kicker: string
+  title: string
+  onClosed: () => void
+  children: React.ReactNode
+}) {
+  const [show, setShow] = useState(false)
+  const sheetRef = useRef<HTMLElement>(null)
+  const backdropRef = useRef<HTMLDivElement>(null)
+  const closingRef = useRef(false)
+  const onClosedRef = useRef(onClosed)
+  const drag = useRef({
+    active: false,
+    startY: 0,
+    lastY: 0,
+    lastT: 0,
+    v: 0,
+    dy: 0,
+  })
+
+  useEffect(() => {
+    onClosedRef.current = onClosed
+  }, [onClosed])
+
+  // mount howar por ektu pore "in" class — tahole niche theke slide-up animation hoy
+  useEffect(() => {
+    const t = window.setTimeout(() => setShow(true), 30)
+    return () => window.clearTimeout(t)
+  }, [])
+
+  const close = useCallback(() => {
+    if (closingRef.current) return
+    closingRef.current = true
+    setShow(false)
+    window.setTimeout(() => onClosedRef.current(), 450)
+  }, [])
+
+  // Esc + page scroll lock
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") close()
+    }
+    document.addEventListener("keydown", onKey)
+    const prev = document.body.style.overflow
+    document.body.style.overflow = "hidden"
+    return () => {
+      document.removeEventListener("keydown", onKey)
+      document.body.style.overflow = prev
+    }
+  }, [close])
+
+  const onDragStart = (e: React.PointerEvent<HTMLDivElement>) => {
+    if ((e.target as HTMLElement).closest("button,a")) return
+    const d = drag.current
+    d.active = true
+    d.startY = e.clientY
+    d.lastY = e.clientY
+    d.lastT = performance.now()
+    d.v = 0
+    d.dy = 0
+    e.currentTarget.setPointerCapture(e.pointerId)
+    if (sheetRef.current) sheetRef.current.style.transition = "none"
+  }
+
+  const onDragMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    const d = drag.current
+    if (!d.active) return
+    const sheet = sheetRef.current
+    const dy = Math.max(0, e.clientY - d.startY)
+    const now = performance.now()
+    d.v = (e.clientY - d.lastY) / Math.max(1, now - d.lastT)
+    d.lastY = e.clientY
+    d.lastT = now
+    d.dy = dy
+    if (sheet) sheet.style.transform = `translateY(${dy}px)`
+    if (backdropRef.current && sheet) {
+      backdropRef.current.style.opacity = String(
+        Math.max(0, 1 - dy / (sheet.offsetHeight || 600)),
+      )
+    }
+  }
+
+  const onDragEnd = () => {
+    const d = drag.current
+    if (!d.active) return
+    d.active = false
+    const shouldClose = d.dy > 110 || (d.v > 0.6 && d.dy > 20)
+    if (sheetRef.current) {
+      sheetRef.current.style.transition = ""
+      sheetRef.current.style.transform = ""
+    }
+    if (backdropRef.current) backdropRef.current.style.opacity = ""
+    if (shouldClose) close()
+  }
+
+  return (
+    <div
+      ref={backdropRef}
+      className={`gc-sheet-bd${show ? " in" : ""}`}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) close()
+      }}
+    >
+      <section
+        ref={sheetRef}
+        className={`gc-sheet${show ? " in" : ""}`}
+        role="dialog"
+        aria-modal="true"
+        aria-label={title}
+      >
+        <div
+          className="gc-zone"
+          onPointerDown={onDragStart}
+          onPointerMove={onDragMove}
+          onPointerUp={onDragEnd}
+          onPointerCancel={onDragEnd}
+        >
+          <div className="gc-grab" aria-hidden="true" />
+          <div className="gc-sh-head">
+            <div className="min-w-0">
+              <p>{kicker}</p>
+              <h2>{title}</h2>
+            </div>
+            <button
+              type="button"
+              className="gc-circle"
+              aria-label="Close"
+              onClick={close}
+            >
+              <X />
+            </button>
+          </div>
+        </div>
+
+        <div className="gc-sheet-body">{children}</div>
+      </section>
+    </div>
+  )
+}
+
+/* =========================================================
    STYLES — component er baire, tai ekbar-i toiri hoy
 ========================================================= */
 const STYLES = `
+        @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
+
         @keyframes liquidGlassButtonZoom {
           0% { transform: scale(1); }
           50% { transform: scale(1.06); }
           100% { transform: scale(1); }
         }
-        /* ⚡ backdrop-filter / transition:all soriye deya hoyeche (GPU lag er karon) */
         .liquid-glass-category {
           background: rgba(255, 255, 255, 0.05);
           border: 1px solid rgba(255, 255, 255, 0.15);
@@ -443,55 +630,42 @@ const STYLES = `
         }
 
         /* =========================================================
-           ✅ Category buttons grid
-           Mobile: 6 কলামের grid → category = 2 কলাম (৩টা এক লাইনে),
-                   CTA button (tutorial / download) = 3 কলাম (২টা এক লাইনে)
-           Desktop: মাঝখানে (center) সাজানো
+           ✅ Categories: side by side, dane-bame smooth scroll
            ========================================================= */
-        .category-grid {
-          display: grid;
-          grid-template-columns: repeat(6, minmax(0, 1fr));
-          grid-auto-rows: auto;
-          gap: 8px;
+        .category-scroller {
+          position: relative;
+          display: flex;
+          flex-wrap: nowrap;
+          gap: 10px;
+          padding: 8px 14px;
+          overflow-x: auto;
+          overflow-y: hidden;
+          overscroll-behavior-x: contain;
+          -webkit-overflow-scrolling: touch;
+          scrollbar-width: none;
+          cursor: grab;
+          -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 14px, #000 calc(100% - 14px), transparent 100%);
+          mask-image: linear-gradient(90deg, transparent 0, #000 14px, #000 calc(100% - 14px), transparent 100%);
         }
-        .category-grid > .category-btn { grid-column: span 2; }
-        .category-grid > .category-btn.gc-cta { grid-column: span 3; }
-        .gc-br { display: none; }
+        .category-scroller::-webkit-scrollbar { display: none; }
+        .category-scroller.dragging { cursor: grabbing; user-select: none; }
         .category-btn {
-          width: 100%;
+          flex: none;
+          width: 120px;
           min-height: 54px;
-          padding: 6px 6px;
+          padding: 6px 8px;
           display: flex;
           align-items: center;
           justify-content: center;
           text-align: center;
-          font-size: 12px;
+          font-size: 12.5px;
           line-height: 1.25;
           text-transform: none;
           overflow-wrap: anywhere;
         }
-        @media (min-width: 400px) {
-          .category-btn { font-size: 13px; padding: 6px 8px; }
-        }
-        @media (min-width: 640px) {
-          .category-grid { gap: 10px; }
-          .category-btn { font-size: 14px; min-height: 52px; }
-        }
         @media (min-width: 768px) {
-          .category-grid {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 12px;
-          }
-          .category-btn {
-            width: auto;
-            min-height: 0;
-            padding: 8px 16px;
-            font-size: 16px;
-            line-height: 1.5;
-          }
-          .gc-br { display: block; flex-basis: 100%; height: 0; }
+          .category-btn { width: 150px; min-height: 58px; font-size: 14px; }
+          .category-scroller { gap: 12px; }
         }
 
         /* ✅ Category button er bhitorer image */
@@ -519,37 +693,81 @@ const STYLES = `
         }
         @keyframes gc-tbk { to { transform: scale(1.14) translateX(-3%); } }
 
-        /* ✅ CTA buttons: tutorial (YouTube) + download (Android) */
-        .category-btn.gc-cta {
-          min-height: 76px; justify-content: flex-start; text-align: left;
-          padding: 10px 74px 10px 14px; font-size: 13px; font-weight: 600;
-          line-height: 1.25; color: #fff; border-radius: 16px;
+        /* =========================================================
+           ✅ 3D buttons (shared)
+           ========================================================= */
+        .gc-3d {
+          position: relative;
+          display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
+          overflow: hidden; margin-bottom: 4px;
+          border: 1px solid rgba(255,255,255,.28);
+          font-family: Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
+          font-weight: 700; text-decoration: none; cursor: pointer;
+          -webkit-tap-highlight-color: transparent;
+          box-shadow:
+            0 4px 0 var(--d),
+            0 9px 16px -5px var(--gl),
+            inset 0 1px 0 rgba(255,255,255,.5),
+            inset 0 -2px 3px rgba(0,0,0,.22);
+          transition: transform .12s ease, box-shadow .12s ease;
+        }
+        .gc-3d::before {
+          content: ""; position: absolute; left: 0; right: 0; top: 0; height: 50%;
+          background: linear-gradient(180deg, rgba(255,255,255,.3), rgba(255,255,255,0));
+          pointer-events: none;
+        }
+        .gc-3d > * { position: relative; z-index: 1; }
+        .gc-3d:active {
+          transform: translateY(3px);
+          box-shadow:
+            0 1px 0 var(--d),
+            0 3px 8px -4px var(--gl),
+            inset 0 1px 0 rgba(255,255,255,.4),
+            inset 0 -2px 3px rgba(0,0,0,.22);
+        }
+        .gc-red {
+          --d: #6f0000; --gl: rgba(255,40,40,.55);
+          background: linear-gradient(180deg, #ff5a5a 0%, #ee1111 50%, #c20000 100%);
+          color: #fff;
+        }
+        .gc-green {
+          --d: #0b5a30; --gl: rgba(61,220,132,.55);
+          background: linear-gradient(180deg, #5cf5a6 0%, #2bc673 50%, #1a9a58 100%);
+          color: #04140b;
+        }
+        .gc-blue {
+          --d: #0b4a73; --gl: rgba(42,171,238,.55);
+          background: linear-gradient(180deg, #5cc8f7 0%, #2aabee 50%, #1b86c4 100%);
+          color: #fff;
+        }
+        .gc-chip {
+          flex: none; display: grid; place-items: center;
+          width: 1.7rem; height: 1.7rem; border-radius: .55rem; background: #fff;
+          box-shadow: inset 0 -1px 2px rgba(0,0,0,.22), 0 1px 3px rgba(0,0,0,.3);
+        }
+        .gc-chip svg, .gc-chip .gc-mvbd-img { width: 1.3rem; height: 1.3rem; display: block; }
+        .gc-chip .gc-mvbd-img { object-fit: contain; border-radius: .3rem; }
+        .gc-chip.dk { background: #07130c; }
+        .gc-chip.mv { background: #07090d; }
+
+        /* ✅ Choto CTA buttons (category er moto size) */
+        .gc-cta-row {
+          display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+          margin-top: 6px; padding: 0 14px;
+        }
+        .gc-mini {
+          width: 100%; height: 46px; padding: 0 10px; border-radius: 14px;
+          justify-content: flex-start; text-align: left;
+          font-size: 11.5px; line-height: 1.2;
+        }
+        .gc-mini span.gc-ct {
+          display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+          overflow: hidden; text-transform: none;
         }
         @media (min-width: 768px) {
-          .category-btn.gc-cta { flex: 1 1 280px; max-width: 420px; width: auto; font-size: 15px; }
+          .gc-cta-row { display: flex; justify-content: center; gap: 12px; }
+          .gc-mini { width: 240px; font-size: 12.5px; }
         }
-        .gc-ct { position: relative; z-index: 1; text-shadow: 0 1px 6px #000; }
-        .gc-cta .gc-bgi {
-          position: absolute; right: -10px; top: 50%; width: 84px; height: 84px;
-          transform: translateY(-50%) rotate(-8deg);
-          filter: drop-shadow(0 0 14px var(--g));
-          animation: gc-f 4s ease-in-out infinite;
-        }
-        .gc-cta::after {
-          content: ""; position: absolute; inset: 0; pointer-events: none;
-          background: linear-gradient(110deg, transparent 35%, #ffffff22 50%, transparent 65%);
-          transform: translateX(-100%); animation: gc-s 4.2s infinite;
-        }
-        .category-btn.gc-yt, .category-btn.gc-yt:hover {
-          --g: #ff0000aa; border-color: rgba(255,60,60,.4);
-          background: radial-gradient(circle at 92% 50%, rgba(255,0,0,.42), transparent 58%), linear-gradient(135deg, #1f0608, #09090b 75%);
-        }
-        .category-btn.gc-an, .category-btn.gc-an:hover {
-          --g: #3ddc84aa; border-color: rgba(61,220,132,.4);
-          background: radial-gradient(circle at 92% 50%, rgba(61,220,132,.38), transparent 58%), linear-gradient(135deg, #04170d, #09090b 75%);
-        }
-        @keyframes gc-f { 50% { transform: translateY(-57%) rotate(-4deg); } }
-        @keyframes gc-s { 60%, 100% { transform: translateX(100%); } }
 
         /* ✅ Selected category: border er chardike ghurte thaka choto green light */
         @property --gc-a {
@@ -580,14 +798,6 @@ const STYLES = `
           animation: gc-orbit-spin 6s linear infinite;
         }
         @keyframes gc-orbit-spin { to { --gc-a: 360deg; } }
-        @media (prefers-reduced-motion: reduce) {
-          .gc-orbit { animation: none; }
-        }
-
-        @media (prefers-reduced-motion: reduce) {
-          .category-btn.active .gc-tb.ld, .gc-cta::after, .gc-cta .gc-bgi,
-          .liquid-glass-category.active { animation: none !important; }
-        }
 
         @keyframes filterDropdownOpenUp {
           from {
@@ -674,6 +884,162 @@ const STYLES = `
         .platform-tiktok .platform-icon-box svg {
           filter: drop-shadow(1px 1px 0 #fe2c55) drop-shadow(-1px -1px 0 #25f4ee);
         }
+
+        /* =========================================================
+           ✅ BOTTOM SHEET (iPhone style)
+           ========================================================= */
+        .gc-sheet-bd {
+          position: fixed; inset: 0; z-index: 9999;
+          display: flex; align-items: flex-end; justify-content: center;
+          background: rgba(0,0,0,.62);
+          -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+          opacity: 0; transition: opacity .45s ease;
+        }
+        .gc-sheet-bd.in { opacity: 1; }
+        .gc-sheet {
+          position: relative; width: 100%; max-width: 30rem;
+          max-height: 92vh; max-height: 92dvh;
+          display: flex; flex-direction: column; overflow: hidden;
+          color: #fff;
+          font-family: Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
+          -webkit-text-size-adjust: 100%; text-size-adjust: 100%;
+          border-radius: 1.5rem 1.5rem 0 0;
+          border: 1px solid rgba(255,255,255,.1); border-bottom: 0;
+          background:
+            radial-gradient(100% 45% at 100% 0%, rgba(61,220,132,.12), transparent 60%),
+            linear-gradient(160deg, #1d1f19, #0c0d0a);
+          box-shadow: inset 0 1px 0 rgba(255,255,255,.12), 0 -20px 60px -20px rgba(0,0,0,.9);
+          transform: translateY(100%);
+          transition: transform .5s cubic-bezier(.32,.72,0,1);
+          will-change: transform;
+          padding-bottom: env(safe-area-inset-bottom);
+        }
+        .gc-sheet.in { transform: translateY(0); }
+        .gc-sheet *, .gc-sheet *::before, .gc-sheet *::after { box-sizing: border-box; }
+
+        .gc-zone { flex: none; touch-action: none; cursor: grab; user-select: none; -webkit-user-select: none; }
+        .gc-zone:active { cursor: grabbing; }
+        .gc-grab {
+          width: 2.4rem; height: .28rem; border-radius: 99px;
+          background: rgba(255,255,255,.28); margin: .55rem auto .1rem;
+        }
+        .gc-sh-head {
+          display: flex; align-items: center; justify-content: space-between; gap: .75rem;
+          padding: .4rem .9rem .7rem 1.1rem;
+        }
+        .gc-sh-head p { margin: 0; font-size: 10px; color: rgba(255,255,255,.5); }
+        .gc-sh-head h2 { margin: 2px 0 0; font-size: 15px; font-weight: 600; text-transform: none; }
+        .gc-circle {
+          display: grid; place-items: center; flex: none; width: 2rem; height: 2rem; border-radius: 50%;
+          color: rgba(255,255,255,.88);
+          background: linear-gradient(145deg, rgba(255,255,255,.1), rgba(255,255,255,.03));
+          border: 1px solid rgba(255,255,255,.12);
+          box-shadow: inset 0 1px 0 rgba(255,255,255,.12);
+          transition: transform .2s ease, background .2s ease;
+        }
+        .gc-circle:active { transform: scale(.92); }
+        .gc-circle svg { width: 14px; height: 14px; }
+        .gc-sheet-body {
+          flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain;
+          -webkit-overflow-scrolling: touch;
+        }
+
+        /* download sheet */
+        .gc-dl { display: flex; flex-direction: column; gap: .55rem; padding: 0 1rem 1rem; }
+        .gc-hero {
+          display: flex; align-items: center; gap: .75rem; padding: .8rem;
+          border-radius: 1.1rem;
+          background:
+            radial-gradient(90% 120% at 100% 100%, rgba(61,220,132,.16), transparent 62%),
+            linear-gradient(135deg, rgba(255,255,255,.075), rgba(255,255,255,.02));
+          border: 1px solid rgba(61,220,132,.16);
+          box-shadow: inset 0 1px 0 rgba(255,255,255,.1);
+        }
+        .gc-hero-ic {
+          flex: none; display: grid; place-items: center; width: 2.8rem; height: 2.8rem; border-radius: .9rem;
+          background: #07130c; border: 1px solid rgba(61,220,132,.35);
+          box-shadow: 0 0 0 3px rgba(61,220,132,.08), 0 8px 18px -8px rgba(61,220,132,.6);
+        }
+        .gc-hero-ic svg { width: 1.8rem; height: 1.8rem; }
+        .gc-hero b { display: block; font-size: 13px; font-weight: 600; }
+        .gc-hero p { margin: .2rem 0 0; font-size: 10.5px; line-height: 1.5; color: rgba(255,255,255,.58); }
+        .gc-row {
+          display: flex; align-items: center; gap: .65rem; min-height: 2.6rem;
+          padding: .28rem .85rem .28rem .35rem; border-radius: 999px;
+          font-size: 11.5px; font-weight: 500; line-height: 1.35; color: rgba(255,255,255,.9);
+          background: linear-gradient(145deg, rgba(255,255,255,.065), rgba(255,255,255,.025));
+          border: 1px solid rgba(255,255,255,.075);
+          box-shadow: inset 0 1px 0 rgba(255,255,255,.07);
+        }
+        .gc-ri {
+          flex: none; display: grid; place-items: center; width: 1.95rem; height: 1.95rem; border-radius: 50%;
+          color: #86efac; background: rgba(61,220,132,.08); border: 1px solid rgba(61,220,132,.25);
+        }
+        .gc-ri svg { width: 14px; height: 14px; }
+        .gc-note {
+          padding: .65rem .85rem; border-radius: 1rem;
+          background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.08);
+        }
+        .gc-note b { display: flex; align-items: center; gap: .4rem; font-size: 11px; font-weight: 600; }
+        .gc-note b svg { width: 13px; height: 13px; color: #86efac; }
+        .gc-note ol { margin: .4rem 0 0; padding-left: 1.1rem; font-size: 10.5px; line-height: 1.6; color: rgba(255,255,255,.62); }
+        .gc-note ol li::marker { color: #86efac; font-weight: 700; }
+        .gc-note ol em { font-style: normal; font-weight: 600; color: #fff; }
+        .gc-btn-lg { width: 100%; height: 2.9rem; border-radius: 1rem; font-size: 13px; margin-top: .25rem; }
+
+        /* tutorial sheet */
+        .gc-amb { position: relative; overflow: hidden; isolation: isolate; padding-bottom: 1rem; }
+        .gc-amb-bg { position: absolute; inset: 0; z-index: -1; background: #0c0d0a; overflow: hidden; }
+        .gc-amb-bg::after {
+          content: ""; position: absolute; inset: 0;
+          background: linear-gradient(180deg, rgba(12,13,10,.1) 0%, rgba(12,13,10,.5) 55%, rgba(12,13,10,.88) 100%);
+        }
+        .gc-amb-l {
+          position: absolute; inset: -30%;
+          background-size: cover; background-position: center;
+          filter: blur(22px) saturate(1.9) brightness(.9);
+          opacity: 0;
+          animation:
+            gc-amb-fade 12s linear var(--d, 0s) infinite,
+            gc-amb-drift 9s ease-in-out infinite alternate;
+        }
+        @keyframes gc-amb-fade {
+          0% { opacity: 0; }
+          12% { opacity: .85; }
+          33% { opacity: .85; }
+          45% { opacity: 0; }
+          100% { opacity: 0; }
+        }
+        @keyframes gc-amb-drift {
+          from { transform: translate3d(-4%, -3%, 0) scale(1.15); }
+          to { transform: translate3d(4%, 3%, 0) scale(1.35); }
+        }
+        .gc-vid {
+          width: 100%; aspect-ratio: 16 / 9; background: #000;
+          box-shadow: 0 12px 40px -10px rgba(0,0,0,.85);
+        }
+        .gc-vid iframe { display: block; width: 100%; height: 100%; border: 0; }
+        .gc-info { padding: .85rem 1rem 0; }
+        .gc-vt { margin: 0; font-size: 14px; font-weight: 700; line-height: 1.3; text-transform: none; }
+        .gc-ch { display: flex; align-items: center; gap: .5rem; margin: .5rem 0; font-size: 11px; color: rgba(255,255,255,.75); }
+        .gc-ch .gc-chip { width: 1.5rem; height: 1.5rem; border-radius: 50%; background: #07090d; }
+        .gc-ch .gc-chip svg, .gc-ch .gc-chip .gc-mvbd-img { width: 1.5rem; height: 1.5rem; }
+        .gc-desc {
+          margin: 0; padding: .6rem .75rem; border-radius: .85rem;
+          font-size: 11px; line-height: 1.55; color: rgba(255,255,255,.78);
+          background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.08);
+        }
+        .gc-acts { display: grid; grid-template-columns: 1fr 1fr; gap: .6rem; padding: .8rem 1rem 0; }
+        .gc-act { height: 2.7rem; border-radius: .95rem; font-size: 12px; width: 100%; }
+
+        @media (prefers-reduced-motion: reduce) {
+          .gc-orbit { animation: none; }
+          .category-btn.active .gc-tb.ld,
+          .liquid-glass-category.active { animation: none !important; }
+          .gc-amb-l { animation: none; }
+          .gc-amb-l:first-child { opacity: .6; }
+          .gc-sheet, .gc-sheet-bd { transition-duration: .01ms; }
+        }
 `
 
 export { normalizeLanguage, isSeries }
@@ -693,6 +1059,11 @@ export default function GenreCategories({
   const [activeModal, setActiveModal] = useState<AppModal>(null)
   const [openFilter, setOpenFilter] = useState<FilterType>(null)
   const filterBarRef = useRef<HTMLDivElement>(null)
+  const scrollerRef = useRef<HTMLDivElement>(null)
+  const mouseDrag = useRef({ down: false, startX: 0, left: 0, moved: false })
+  const [dragging, setDragging] = useState(false)
+
+  const closeModal = useCallback(() => setActiveModal(null), [])
 
   /* Parent er onGenreSelect function protibar notun hole-o category button
      gulo abar render hobe na — tai ref diye stable callback */
@@ -703,6 +1074,42 @@ export default function GenreCategories({
   const handleCategorySelect = useCallback((genre: string | null) => {
     onGenreSelectRef.current(genre)
   }, [])
+
+  /* Selected category ta scroll kore majhkhane niye ashe */
+  useEffect(() => {
+    const sc = scrollerRef.current
+    if (!sc) return
+    const el = sc.querySelector<HTMLElement>(".category-btn.active")
+    if (!el) return
+    sc.scrollTo({
+      left: el.offsetLeft - (sc.clientWidth - el.offsetWidth) / 2,
+      behavior: "smooth",
+    })
+  }, [selectedGenre])
+
+  /* Desktop e mouse diye drag kore scroll */
+  const onScrollerPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (e.pointerType !== "mouse" || !scrollerRef.current) return
+    const d = mouseDrag.current
+    d.down = true
+    d.moved = false
+    d.startX = e.clientX
+    d.left = scrollerRef.current.scrollLeft
+  }
+  const onScrollerPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    const d = mouseDrag.current
+    if (!d.down || !scrollerRef.current) return
+    const dx = e.clientX - d.startX
+    if (!d.moved && Math.abs(dx) > 5) {
+      d.moved = true
+      setDragging(true)
+    }
+    if (d.moved) scrollerRef.current.scrollLeft = d.left - dx
+  }
+  const endScrollerDrag = () => {
+    mouseDrag.current.down = false
+    if (dragging) setDragging(false)
+  }
 
   const availableYears = useMemo(() => {
     const years = new Set<string>()
@@ -723,10 +1130,7 @@ export default function GenreCategories({
     return Array.from(langs).sort()
   }, [items])
 
-  /* ✅ Genre selector: movie-data এর সব movie থেকে unique genre বের করা হয়
-     (genre গুলো "Action | Drama | bangla" এই format এ থাকে)
-     - বড়/ছোট হাতের একই genre (Bangla / bangla) একবারই দেখাবে
-     - উপরের Categories চিপে যে নামে আছে সেই নামটাই ব্যবহার হবে */
+  /* ✅ Genre selector: movie-data এর সব movie থেকে unique genre বের করা হয় */
   const availableGenres = useMemo(() => {
     const variants = new Map<string, Map<string, number>>()
 
@@ -737,7 +1141,6 @@ export default function GenreCategories({
       m.set(name, (m.get(name) || 0) + weight)
     }
 
-    // Categories এর নামগুলোকে বেশি গুরুত্ব দেওয়া হলো যেন নামের বানান একই থাকে
     genres.filter((g) => g !== "All").forEach((g) => add(g, 100000))
 
     items.forEach((m) => {
@@ -795,22 +1198,6 @@ export default function GenreCategories({
     }
   }, [openFilter])
 
-  /* Modal khola thakle: Esc dile bondho + page scroll lock */
-  useEffect(() => {
-    if (!activeModal) return
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setActiveModal(null)
-    }
-
-    document.addEventListener("keydown", handleKeyDown)
-    document.body.style.overflow = "hidden"
-    return () => {
-      document.removeEventListener("keydown", handleKeyDown)
-      document.body.style.overflow = ""
-    }
-  }, [activeModal])
-
   const handleFilterSelect = (type: SelectorType, value: string) => {
     if (type === "genre") {
       onGenreSelect(value === "All" ? null : value)
@@ -863,11 +1250,26 @@ export default function GenreCategories({
       <style>{STYLES}</style>
 
       <div className="max-w-7xl mx-auto">
-        <h2 className="gc-h2 text-white font-bold text-lg mb-4 md:text-center">
+        <h2 className="gc-h2 text-white font-bold text-lg mb-2 md:text-center">
           Categories
         </h2>
 
-        <div className="category-grid">
+        {/* ✅ Side by side categories — dane/bame freely scroll */}
+        <div
+          ref={scrollerRef}
+          className={`category-scroller${dragging ? " dragging" : ""}`}
+          onPointerDown={onScrollerPointerDown}
+          onPointerMove={onScrollerPointerMove}
+          onPointerUp={endScrollerDrag}
+          onPointerLeave={endScrollerDrag}
+          onClickCapture={(e) => {
+            if (mouseDrag.current.moved) {
+              e.preventDefault()
+              e.stopPropagation()
+              mouseDrag.current.moved = false
+            }
+          }}
+        >
           <CategoryButton
             genre={null}
             image={CATEGORY_IMAGES.all}
@@ -883,21 +1285,28 @@ export default function GenreCategories({
               onSelect={handleCategorySelect}
             />
           ))}
-          <span className="gc-br" aria-hidden="true" />
+        </div>
+
+        {/* ✅ 3D CTA buttons (choto) */}
+        <div className="gc-cta-row">
           <button
             type="button"
             onClick={() => setActiveModal("tutorial")}
-            className={`${CATEGORY_BASE} gc-cta gc-yt`}
+            className="gc-3d gc-red gc-mini"
           >
-            <YouTubeLogo />
+            <span className="gc-chip">
+              <YouTubeLogo />
+            </span>
             <span className="gc-ct">mvbd mini app tutorial</span>
           </button>
           <button
             type="button"
             onClick={() => setActiveModal("download")}
-            className={`${CATEGORY_BASE} gc-cta gc-an`}
+            className="gc-3d gc-green gc-mini"
           >
-            <AndroidLogo />
+            <span className="gc-chip dk">
+              <AndroidLogo />
+            </span>
             <span className="gc-ct">download app for better experience</span>
           </button>
         </div>
@@ -1016,70 +1425,155 @@ export default function GenreCategories({
         </div>
       </div>
 
-      {/* Tutorial / Download Modal */}
+      {/* ========================================================= */}
+      {/* ✅ Tutorial / Download — niche theke uthbe (iPhone style)   */}
+      {/* ========================================================= */}
       {activeModal && typeof document !== "undefined" &&
         createPortal(
-          <div
-            className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 p-4"
-            role="presentation"
-            onMouseDown={(event) => {
-              if (event.target === event.currentTarget) setActiveModal(null)
-            }}
-          >
-            <section
-              role="dialog"
-              aria-modal="true"
-              aria-labelledby="app-feature-title"
-              className="relative z-[10000] w-full max-w-2xl overflow-hidden rounded-2xl border border-white/20 bg-slate-950 text-white shadow-2xl ring-1 ring-black/40"
+          activeModal === "tutorial" ? (
+            <BottomSheet
+              key="tutorial"
+              kicker="Watch & learn"
+              title="Tutorial"
+              onClosed={closeModal}
             >
-              <button
-                type="button"
-                aria-label="Close popup"
-                onClick={() => setActiveModal(null)}
-                className="absolute right-3 top-3 z-10 rounded-full bg-black/60 px-3 py-1 text-2xl leading-none text-slate-200 transition hover:bg-white/15 hover:text-white"
-              >
-                ×
-              </button>
-              {activeModal === "tutorial" ? (
-                <>
-                  <div className="px-6 pb-4 pt-6 pr-14">
-                    <h3 id="app-feature-title" className="text-xl font-bold text-balance">mvbd mini app tutorial</h3>
-                    <p className="mt-1 text-sm text-slate-400">ভিডিওটি দেখে অ্যাপটি আরও সহজে ব্যবহার করুন।</p>
-                  </div>
-                  <div className="aspect-video w-full bg-black">
-                    <iframe
-                      className="h-full w-full"
-                      src={`https://www.youtube.com/embed/${tutorialVideoId}?autoplay=1&rel=0`}
-                      title="MVBD Mini App tutorial"
-                      allow="autoplay; encrypted-media; picture-in-picture"
-                      allowFullScreen
+              <div className="gc-amb">
+                {/* YouTube ambient mode er moto — video onujay rong bodlay */}
+                <div className="gc-amb-bg" aria-hidden="true">
+                  {[1, 2, 3].map((n) => (
+                    <span
+                      key={n}
+                      className="gc-amb-l"
+                      style={
+                        {
+                          backgroundImage: `url(https://i.ytimg.com/vi/${tutorialVideoId}/${n}.jpg)`,
+                          "--d": `${(n - 1) * 4}s`,
+                        } as React.CSSProperties
+                      }
                     />
+                  ))}
+                </div>
+
+                <div className="gc-vid">
+                  <iframe
+                    src={`https://www.youtube.com/embed/${tutorialVideoId}?autoplay=1&rel=0&playsinline=1&modestbranding=1`}
+                    title="MVBD Mini App tutorial"
+                    allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
+                    allowFullScreen
+                  />
+                </div>
+
+                <div className="gc-info">
+                  <h3 className="gc-vt">mvbd mini app tutorial</h3>
+                  <div className="gc-ch">
+                    <span className="gc-chip mv">
+                      <MvbdIcon />
+                    </span>
+                    <span>Movies Verse BD</span>
                   </div>
-                </>
-              ) : (
-                <div className="px-6 pb-7 pt-8 pr-14">
-                  <h3 id="app-feature-title" className="text-xl font-bold text-balance">Download app for better experience</h3>
-                  <p className="mt-3 leading-6 text-slate-300">
-                    MVBD Mini App ব্যবহার করলে মুভি ব্রাউজিং হবে আরও দ্রুত ও সুবিধাজনক। অ্যাপ থেকে সহজে মুভি খুঁজে পাবেন, স্মুথ নেভিগেশন উপভোগ করবেন এবং মোবাইলে আরও ভালো অভিজ্ঞতা পাবেন।
+                  <p className="gc-desc">
+                    ভিডিওটি দেখে অ্যাপটি আরও সহজে ব্যবহার করুন।
                   </p>
-                  <ul className="mt-4 list-disc space-y-2 pl-5 leading-6 text-slate-400">
-                    <li>দ্রুত ও সহজে মুভি এবং সিরিজ খুঁজে দেখুন</li>
-                    <li>মোবাইলের জন্য তৈরি স্মুথ অ্যাপ অভিজ্ঞতা</li>
-                    <li>অবশ্যই মিনি অ্যাপ টি ডাউনলোড করতে হলে আপনাকে chrome browser এ গিয়ে mvbds.xyz ওখান থেকে আমাদের সাইট এ প্রবেশ করে এরপর ডাউনলোড বাটন এ ক্লিক করলে ডিরেক্ট ডাউনলোড হবে।</li>
-                  </ul>
+                </div>
+
+                <div className="gc-acts">
                   <a
-                    href={apkDownloadUrl}
-                    download
-                    className="mt-6 inline-flex rounded-lg bg-emerald-500 px-5 py-3 font-semibold text-slate-950 transition hover:bg-emerald-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300"
+                    href={requestGroupUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="gc-3d gc-blue gc-act"
                   >
-                    Download Now
+                    <span className="gc-chip mv">
+                      <MvbdIcon />
+                    </span>
+                    <span>Request Group</span>
+                  </a>
+                  <a
+                    href={youtubeChannelUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="gc-3d gc-red gc-act"
+                  >
+                    <span className="gc-chip">
+                      <YouTubeLogo />
+                    </span>
+                    <span>YouTube</span>
                   </a>
                 </div>
-              )}
-            </section>
-          </div>,
+              </div>
+            </BottomSheet>
+          ) : (
+            <BottomSheet
+              key="download"
+              kicker="Android app"
+              title="Download app"
+              onClosed={closeModal}
+            >
+              <div className="gc-dl">
+                <div className="gc-hero">
+                  <span className="gc-hero-ic">
+                    <AndroidLogo />
+                  </span>
+                  <div className="min-w-0">
+                    <b>MVBD Mini App</b>
+                    <p>
+                      অ্যাপ ব্যবহার করলে মুভি ব্রাউজিং হবে আরও দ্রুত ও সুবিধাজনক।
+                    </p>
+                  </div>
+                </div>
+
+                <div className="gc-row">
+                  <span className="gc-ri">
+                    <Film />
+                  </span>
+                  <span>দ্রুত ও সহজে মুভি এবং সিরিজ খুঁজে দেখুন</span>
+                </div>
+                <div className="gc-row">
+                  <span className="gc-ri">
+                    <Smartphone />
+                  </span>
+                  <span>মোবাইলের জন্য তৈরি স্মুথ অ্যাপ অভিজ্ঞতা</span>
+                </div>
+                <div className="gc-row">
+                  <span className="gc-ri">
+                    <Zap />
+                  </span>
+                  <span>স্মুথ নেভিগেশন ও আরও ভালো অভিজ্ঞতা</span>
+                </div>
+
+                <div className="gc-note">
+                  <b>
+                    <Info />
+                    কীভাবে ডাউনলোড করবেন
+                  </b>
+                  <ol>
+                    <li>
+                      <em>Chrome browser</em> এ যান
+                    </li>
+                    <li>
+                      <em>mvbds.xyz</em> থেকে আমাদের সাইটে প্রবেশ করুন
+                    </li>
+                    <li>
+                      <em>Download</em> বাটনে ক্লিক করলেই ডিরেক্ট ডাউনলোড হবে
+                    </li>
+                  </ol>
+                </div>
+
+                <a
+                  href={apkDownloadUrl}
+                  download
+                  className="gc-3d gc-green gc-btn-lg"
+                >
+                  <span className="gc-chip dk">
+                    <AndroidLogo />
+                  </span>
+                  <span>Download Now</span>
+                </a>
+              </div>
+            </BottomSheet>
+          ),
           document.body,
         )}
     </div>
   )
-      }
+}

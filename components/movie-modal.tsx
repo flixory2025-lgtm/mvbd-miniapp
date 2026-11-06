@@ -1,5 +1,6 @@
 "use client"
 
+import PosterImage, { usePosterUrl } from "./poster-image"
 import { X, Play, Eye } from "lucide-react"
 import { useState, useEffect } from "react"
 import { movies } from "@/lib/movie-data"
@@ -34,6 +35,7 @@ export default function MovieModal({ movie, onClose, onMovieClick, showAdultCont
   const [showJoinPopup, setShowJoinPopup] = useState(false)
   const [isAddedToWatchLater, setIsAddedToWatchLater] = useState(false)
   const [viewCount, setViewCount] = useState(0)
+  const posterUrl = usePosterUrl({ src: movie.poster, title: movie.title, year: movie.year, genre: movie.genre })
 
   const movieGenres = movie.genre.split(" | ").map((g) => g.trim())
   const isAdult = isAdultMovie(movie.genre)
@@ -71,7 +73,7 @@ export default function MovieModal({ movie, onClose, onMovieClick, showAdultCont
         <div
           className="absolute inset-0 opacity-30"
           style={{
-            backgroundImage: `url(${movie.poster})`,
+            backgroundImage: `url(${posterUrl})`,
             backgroundSize: "cover",
             backgroundPosition: "center",
             backgroundAttachment: "fixed",
@@ -136,7 +138,7 @@ export default function MovieModal({ movie, onClose, onMovieClick, showAdultCont
 
           <div className="flex justify-center pt-6 px-6">
             <div className="relative w-40 aspect-[2/3] overflow-hidden rounded-lg shadow-lg">
-              <img src={movie.poster || "/placeholder.svg"} alt={movie.title} className="w-full h-full object-cover" />
+              <PosterImage src={movie.poster} title={movie.title} year={movie.year} genre={movie.genre} className="w-full h-full object-cover" />
 
               {isAdult && (
                 <span className="absolute top-1 right-8 bg-gradient-to-r from-pink-500 to-red-500 text-white text-[8px] px-1.5 py-0.5 rounded font-bold animate-pulse border border-white z-10">
@@ -223,9 +225,11 @@ export default function MovieModal({ movie, onClose, onMovieClick, showAdultCont
                         className="cursor-pointer group"
                       >
                         <div className="aspect-[2/3] rounded-lg overflow-hidden shadow-lg hover:shadow-2xl transition transform hover:scale-105 relative">
-                          <img
-                            src={relatedMovie.poster || "/placeholder.svg"}
-                            alt={relatedMovie.title}
+                          <PosterImage
+                            src={relatedMovie.poster}
+                            title={relatedMovie.title}
+                            year={relatedMovie.year}
+                            genre={relatedMovie.genre}
                             className={`w-full h-full object-cover ${shouldBlurRelated ? "blur-lg" : ""}`}
                           />
 

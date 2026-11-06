@@ -25,6 +25,7 @@ import {
   Pencil,
   Trash2,
   Star,
+  Play,
 } from "lucide-react"
 import {
   doc,
@@ -423,25 +424,15 @@ function Avatar({
 
 const SHEET_MS = 420
 
-function Sheet({
-  title,
-  onClose,
-  children,
-  tall,
-  poster,
-}: {
-  title: ReactNode
-  onClose: () => void
-  children: ReactNode
-  tall?: boolean
-  poster?: string
-}) {
+/* Shared iPhone-style motion: slide up, drag down to close, slide down on close */
+function useSheetMotion(onClose: () => void) {
   const [open, setOpen] = useState(false)
+  const [closing, setClosing] = useState(false)
   const [dragY, setDragY] = useState(0)
   const [dragging, setDragging] = useState(false)
   const startY = useRef(0)
   const startT = useRef(0)
-  const closing = useRef(false)
+  const closingRef = useRef(false)
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const onCloseRef = useRef(onClose)
   onCloseRef.current = onClose
@@ -464,8 +455,9 @@ function Sheet({
 
   // slide down first, then tell the parent
   const requestClose = useCallback(() => {
-    if (closing.current) return
-    closing.current = true
+    if (closingRef.current) return
+    closingRef.current = true
+    setClosing(true)
     setDragging(false)
     setDragY(0)
     setOpen(false)
@@ -480,9 +472,8 @@ function Sheet({
     return () => window.removeEventListener("keydown", onKey)
   }, [requestClose])
 
-  // drag the header down to dismiss
   const onPointerDown = (e: ReactPointerEvent<HTMLDivElement>) => {
-    if (closing.current) return
+    if (closingRef.current) return
     if ((e.target as HTMLElement).closest("button")) return
     startY.current = e.clientY
     startT.current = Date.now()
@@ -504,6 +495,38 @@ function Sheet({
     }
   }
 
+  return {
+    open,
+    closing,
+    requestClose,
+    dragProps: { onPointerDown, onPointerMove, onPointerUp, onPointerCancel: onPointerUp },
+    sheetStyle: {
+      transform: open ? `translateY(${dragY}px)` : "translateY(100%)",
+      transition: dragging ? "none" : `transform ${SHEET_MS}ms cubic-bezier(.32,.72,0,1)`,
+      willChange: "transform",
+    },
+    backdropStyle: {
+      opacity: open ? Math.max(0, 1 - dragY / 420) : 0,
+      transition: dragging ? "none" : `opacity ${SHEET_MS}ms ease`,
+    },
+  }
+}
+
+function Sheet({
+  title,
+  onClose,
+  children,
+  tall,
+  poster,
+}: {
+  title: ReactNode
+  onClose: () => void
+  children: ReactNode
+  tall?: boolean
+  poster?: string
+}) {
+  const { requestClose, dragProps, sheetStyle, backdropStyle } = useSheetMotion(onClose)
+
   return (
     <div
       className="fixed inset-0 z-[70] flex items-end justify-center"
@@ -512,23 +535,14 @@ function Sheet({
     >
       <div
         className="absolute inset-0 bg-black/70 backdrop-blur-sm"
-        style={{
-          opacity: open ? Math.max(0, 1 - dragY / 420) : 0,
-          transition: dragging ? "none" : `opacity ${SHEET_MS}ms ease`,
-        }}
+        style={backdropStyle}
         onClick={requestClose}
       />
       <div
         className={`relative w-full sm:max-w-lg flex flex-col overflow-hidden bg-[#08080a] border border-white/10 border-b-0 shadow-2xl rounded-t-[28px] ${
           tall ? "h-[88vh] sm:h-[80vh]" : "max-h-[88vh]"
         }`}
-        style={{
-          transform: open ? `translateY(${dragY}px)` : "translateY(100%)",
-          transition: dragging
-            ? "none"
-            : `transform ${SHEET_MS}ms cubic-bezier(.32,.72,0,1)`,
-          willChange: "transform",
-        }}
+        style={sheetStyle}
       >
         {/* faint movie poster behind everything */}
         {poster && (
@@ -553,10 +567,7 @@ function Sheet({
         <div className="relative z-10 flex flex-col flex-1 min-h-0">
           <div
             className="flex-shrink-0 touch-none cursor-grab active:cursor-grabbing"
-            onPointerDown={onPointerDown}
-            onPointerMove={onPointerMove}
-            onPointerUp={onPointerUp}
-            onPointerCancel={onPointerUp}
+            {...dragProps}
           >
             <div className="flex justify-center pt-2.5">
               <span className="h-1 w-10 rounded-full bg-white/30" />
@@ -1054,6 +1065,406 @@ function CommentsSheet({
 }
 
 /* ------------------------------------------------------------------ */
+/*  Trailer sheet (YouTube style: autoplay, ambient glow, related)     */
+/* ------------------------------------------------------------------ */
+
+function getYouTubeId(url?: string): string | null {
+  if (!url) return null
+  const m = url.match(
+    /(?:youtube\.com\/(?:embed\/|watch\?(?:.*&)?v=|shorts\/|live\/|v\/)|youtu\.be\/|youtube-nocookie\.com\/embed\/)([A-Za-z0-9_-]{11})/
+  )
+  return m ? m[1] : null
+}
+
+function buildEmbedSrc(url: string, id: string | null) {
+  if (id) {
+    const origin =
+      typeof window !== "undefined"
+        ? `&origin=${encodeURIComponent(window.location.origin)}`
+        : ""
+    return `https://www.youtube.com/embed/${id}?autoplay=1&playsinline=1&rel=0&modestbranding=1&iv_load_policy=3&enablejsapi=1${origin}`
+  }
+  return url + (url.includes("?") ? "&" : "?") + "autoplay=1"
+}
+
+function isAdultGenre(genre: string) {
+  const g = (genre || "").toLowerCase()
+  return g.includes("adult") || g.includes("18+")
+}
+
+function getRelatedFor(base: DetailItem, items: DetailItem[], max: number) {
+  const baseGenres = base.genre.split("|").map((g) => g.trim().toLowerCase())
+  const baseName = base.title.split("(")[0].toLowerCase().trim()
+  const scored = items
+    .filter((m) => m.id !== base.id)
+    .map((m) => {
+      const mg = m.genre.split("|").map((g) => g.trim().toLowerCase())
+      const matches = mg.filter((g) => baseGenres.includes(g)).length
+      const name = m.title.split("(")[0].toLowerCase().trim()
+      const titleMatch = !!name && !!baseName && (name.includes(baseName) || baseName.includes(name))
+      return { m, matches, titleMatch, hasTrailer: !!m.trailer }
+    })
+  const picked = scored
+    .filter((x) => x.matches > 0 || x.titleMatch)
+    .sort(
+      (a, b) =>
+        Number(b.hasTrailer) - Number(a.hasTrailer) ||
+        Number(b.titleMatch) - Number(a.titleMatch) ||
+        b.matches - a.matches
+    )
+    .slice(0, max)
+    .map((x) => x.m)
+  if (picked.length < max) {
+    const used = new Set(picked.map((m) => m.id))
+    for (const x of scored) {
+      if (picked.length >= max) break
+      if (x.hasTrailer && !used.has(x.m.id)) {
+        picked.push(x.m)
+        used.add(x.m.id)
+      }
+    }
+  }
+  return picked
+}
+
+function TrailerSheet({
+  movie,
+  relatedItems,
+  showAdultContent,
+  onClose,
+}: {
+  movie: DetailItem
+  relatedItems: DetailItem[]
+  showAdultContent: boolean
+  onClose: (current: DetailItem) => void
+}) {
+  const [cur, setCur] = useState<DetailItem>(movie)
+  const curRef = useRef(cur)
+  curRef.current = cur
+  const { open, closing, requestClose, dragProps, sheetStyle, backdropStyle } =
+    useSheetMotion(() => onClose(curRef.current))
+
+  const [descOpen, setDescOpen] = useState(false)
+  const [meta, setMeta] = useState<{ title?: string; author?: string }>({})
+  const [progress, setProgress] = useState<number | null>(null)
+  const [tick, setTick] = useState(0)
+  const durRef = useRef(0)
+  const iframeRef = useRef<HTMLIFrameElement>(null)
+  const scrollRef = useRef<HTMLDivElement>(null)
+
+  const ytId = getYouTubeId(cur.trailer)
+  const embedSrc = cur.trailer ? buildEmbedSrc(cur.trailer, ytId) : ""
+  const related = useMemo(
+    () => getRelatedFor(cur, relatedItems, 12),
+    [cur, relatedItems]
+  )
+  const genreList = cur.genre
+    .split("|")
+    .map((g) => g.trim())
+    .filter(Boolean)
+  const hasRating =
+    cur.rating !== undefined &&
+    cur.rating !== "" &&
+    String(cur.rating).toLowerCase() !== "not available"
+  const ratingText =
+    typeof cur.rating === "number" ? cur.rating.toFixed(1) : cur.rating
+
+  // real video title from YouTube (no API key needed)
+  useEffect(() => {
+    setMeta({})
+    if (!ytId) return
+    const ctrl = new AbortController()
+    fetch(
+      `https://www.youtube.com/oembed?url=${encodeURIComponent(
+        `https://www.youtube.com/watch?v=${ytId}`
+      )}&format=json`,
+      { signal: ctrl.signal }
+    )
+      .then((r) => (r.ok ? r.json() : null))
+      .then((j) => {
+        if (j) setMeta({ title: j.title, author: j.author_name })
+      })
+      .catch(() => {})
+    return () => ctrl.abort()
+  }, [ytId])
+
+  // ambient glow follows the real playback position (YouTube iframe API messages)
+  useEffect(() => {
+    setProgress(null)
+    durRef.current = 0
+    if (!ytId) return
+    const onMsg = (e: MessageEvent) => {
+      if (!String(e.origin).includes("youtube.com")) return
+      let d: any = e.data
+      if (typeof d === "string") {
+        try {
+          d = JSON.parse(d)
+        } catch {
+          return
+        }
+      }
+      const info = d?.info
+      if (!info) return
+      if (typeof info.duration === "number" && info.duration > 0) durRef.current = info.duration
+      if (typeof info.currentTime === "number" && durRef.current > 0) {
+        setProgress(Math.min(1, info.currentTime / durRef.current))
+      }
+    }
+    window.addEventListener("message", onMsg)
+    return () => window.removeEventListener("message", onMsg)
+  }, [ytId])
+
+  // fallback: if no playback info arrives, slowly cycle the frames
+  useEffect(() => {
+    if (!ytId || progress !== null) return
+    const t = setInterval(() => setTick((n) => n + 1), 4000)
+    return () => clearInterval(t)
+  }, [ytId, progress])
+
+  const frame =
+    progress === null
+      ? tick % 4
+      : progress < 0.12
+        ? 0
+        : progress < 0.37
+          ? 1
+          : progress < 0.62
+            ? 2
+            : 3
+
+  const handshake = () => {
+    const send = () =>
+      iframeRef.current?.contentWindow?.postMessage(
+        JSON.stringify({ event: "listening", id: 1, channel: "widget" }),
+        "*"
+      )
+    send()
+    setTimeout(send, 800)
+    setTimeout(send, 2000)
+  }
+
+  const pick = (rm: DetailItem) => {
+    setCur(rm)
+    setDescOpen(false)
+    scrollRef.current?.scrollTo({ top: 0, behavior: "smooth" })
+  }
+
+  const title = meta.title || `${cur.title} — Official Trailer`
+  const longDesc = (cur.description || "").length > 120
+
+  return (
+    <div
+      className="fixed inset-0 z-[80] flex items-end justify-center"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Trailer"
+    >
+      <div
+        className="absolute inset-0 bg-black/75 backdrop-blur-sm"
+        style={backdropStyle}
+        onClick={requestClose}
+      />
+
+      <div
+        className="relative w-full sm:max-w-lg h-[94vh] flex flex-col overflow-hidden bg-[#08080a] rounded-t-[22px] shadow-2xl"
+        style={sheetStyle}
+      >
+        {/* Ambient background: colours follow the video */}
+        <div aria-hidden="true" className="absolute inset-0 overflow-hidden pointer-events-none">
+          {ytId ? (
+            [0, 1, 2, 3].map((n) => (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                key={`${ytId}-${n}`}
+                src={`https://i.ytimg.com/vi/${ytId}/${n}.jpg`}
+                alt=""
+                draggable={false}
+                className="mv-ambient-img"
+                style={{ opacity: frame === n ? 1 : 0 }}
+              />
+            ))
+          ) : (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={cur.poster || "/placeholder.svg"}
+              alt=""
+              draggable={false}
+              className="mv-ambient-img"
+              style={{ opacity: 1 }}
+            />
+          )}
+          <div
+            className="absolute inset-0"
+            style={{
+              background:
+                "linear-gradient(to bottom, rgba(8,8,10,.22) 0%, rgba(8,8,10,.58) 36%, rgba(8,8,10,.86) 100%)",
+            }}
+          />
+        </div>
+
+        <div className="relative z-10 flex flex-col flex-1 min-h-0">
+          {/* VIDEO — edge to edge, no border */}
+          <div className="relative flex-shrink-0 w-full aspect-video bg-black overflow-hidden">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={ytId ? `https://i.ytimg.com/vi/${ytId}/hqdefault.jpg` : cur.poster || "/placeholder.svg"}
+              alt=""
+              draggable={false}
+              className="absolute inset-0 w-full h-full object-cover"
+            />
+            {embedSrc && open && !closing ? (
+              <iframe
+                key={cur.id}
+                ref={iframeRef}
+                src={embedSrc}
+                title={title}
+                onLoad={handshake}
+                allow="autoplay; encrypted-media; picture-in-picture; fullscreen; clipboard-write"
+                allowFullScreen
+                referrerPolicy="strict-origin-when-cross-origin"
+                className="absolute inset-0 w-full h-full border-0 block"
+              />
+            ) : !embedSrc ? (
+              <div className="absolute inset-0 flex items-center justify-center bg-black/60 text-sm font-semibold text-slate-200">
+                Trailer not available
+              </div>
+            ) : null}
+
+            {/* drag handle (swipe down to close) */}
+            <div
+              className="absolute top-0 inset-x-0 h-7 z-10 touch-none cursor-grab active:cursor-grabbing flex justify-center pt-2"
+              {...dragProps}
+            >
+              <span className="h-1 w-10 rounded-full bg-white/50 shadow" />
+            </div>
+
+            <button
+              onClick={requestClose}
+              aria-label="Close trailer"
+              className="absolute top-2.5 right-2.5 z-20 w-8 h-8 rounded-full bg-black/55 backdrop-blur-md border border-white/20 flex items-center justify-center hover:bg-black/75 active:scale-95 transition"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+
+          {/* CAPTION + RELATED */}
+          <div ref={scrollRef} className="flex-1 min-h-0 overflow-y-auto overscroll-contain">
+            <div className="px-4 pt-3.5">
+              <h2 className="text-[17px] font-bold leading-snug text-white line-clamp-2">
+                {title}
+              </h2>
+              <p className="mt-1 text-[12px] text-slate-300/90">
+                {meta.author ? `${meta.author} • ` : ""}
+                {cur.title}
+              </p>
+
+              {(cur.description || genreList.length > 0) && (
+                <div className="mt-3 rounded-xl bg-white/[0.09] px-3.5 py-3 backdrop-blur-sm">
+                  <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[12px] font-semibold text-white">
+                    <span>{cur.year}</span>
+                    {genreList.length > 0 && (
+                      <span className="text-slate-300 font-medium">
+                        {genreList.slice(0, 3).join(" • ")}
+                      </span>
+                    )}
+                    {hasRating && (
+                      <span className="flex items-center gap-1 text-yellow-400">
+                        <Star className="w-3 h-3" fill="currentColor" />
+                        {ratingText}
+                      </span>
+                    )}
+                  </div>
+                  {cur.description && (
+                    <>
+                      <p
+                        className={`mt-1.5 text-[12.5px] leading-relaxed text-slate-200 ${
+                          descOpen ? "" : "line-clamp-2"
+                        }`}
+                      >
+                        {cur.description}
+                      </p>
+                      {longDesc && (
+                        <button
+                          onClick={() => setDescOpen((v) => !v)}
+                          className="mt-0.5 text-[12.5px] font-bold text-white"
+                        >
+                          {descOpen ? "Show less" : "...more"}
+                        </button>
+                      )}
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {related.length > 0 && (
+              <div className="pt-5 pb-[max(1rem,env(safe-area-inset-bottom))]">
+                <h3 className="px-4 mb-3 text-[14px] font-bold text-white">
+                  {`Related Movies & Series`}
+                </h3>
+                <div className="space-y-5">
+                  {related.map((rm) => {
+                    const rid = getYouTubeId(rm.trailer)
+                    const blur = isAdultGenre(rm.genre) && !showAdultContent
+                    const rg = rm.genre
+                      .split("|")
+                      .map((g) => g.trim())
+                      .filter(Boolean)
+                      .slice(0, 2)
+                      .join(" • ")
+                    return (
+                      <button
+                        key={rm.id}
+                        onClick={() => pick(rm)}
+                        className="group block w-full text-left px-4 active:opacity-80"
+                      >
+                        <div className="relative aspect-video overflow-hidden rounded-xl bg-neutral-900 ring-1 ring-white/10">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={
+                              rid
+                                ? `https://i.ytimg.com/vi/${rid}/mqdefault.jpg`
+                                : rm.poster || "/placeholder.svg"
+                            }
+                            alt={rm.title}
+                            loading="lazy"
+                            draggable={false}
+                            className={`w-full h-full object-cover ${blur ? "blur-lg" : ""}`}
+                          />
+                          <span className="absolute inset-0 flex items-center justify-center">
+                            <span className="w-11 h-11 rounded-full bg-black/55 backdrop-blur-sm border border-white/25 flex items-center justify-center transition group-hover:scale-110">
+                              <Play className="w-5 h-5 text-white" fill="white" />
+                            </span>
+                          </span>
+                          {rm.year && (
+                            <span className="absolute bottom-1.5 right-1.5 rounded bg-black/75 px-1.5 py-0.5 text-[10px] font-semibold">
+                              {rm.year}
+                            </span>
+                          )}
+                        </div>
+                        <p className="mt-2 text-[14px] font-semibold leading-snug text-white line-clamp-2">
+                          {rm.title}
+                        </p>
+                        <p className="mt-0.5 text-[12px] text-slate-400">
+                          {rg}
+                          {rm.rating && String(rm.rating).toLowerCase() !== "not available"
+                            ? `${rg ? " • " : ""}⭐ ${rm.rating}`
+                            : ""}
+                        </p>
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/* ------------------------------------------------------------------ */
 /*  Styles                                                             */
 /* ------------------------------------------------------------------ */
 
@@ -1067,6 +1478,20 @@ const PAGE_CSS = `
 .mv-fadeup { animation: mvFadeUp .3s ease both }
 .mv-pop-in { animation: mvZoomIn .15s ease both }
 .mv-like-pop { animation: mvLikePop .45s ease both }
+
+/* Trailer ambient glow */
+@keyframes mvAmbient {
+  from { transform: scale(1.8) translate3d(-3%,-2%,0) }
+  to   { transform: scale(2.2) translate3d(3%,3%,0) }
+}
+.mv-ambient-img {
+  position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; user-select: none;
+  filter: blur(46px) saturate(1.9) brightness(.95);
+  transition: opacity 1.6s ease;
+  animation: mvAmbient 16s ease-in-out infinite alternate;
+  will-change: opacity, transform;
+}
+@media (prefers-reduced-motion: reduce) { .mv-ambient-img { animation: none } }
 
 /* Glossy 3D pill buttons (Telegram + YouTube) */
 .mv-btn {
@@ -1582,30 +2007,17 @@ export default function MovieDetailPage({
         </div>
       </div>
 
-      {/* Trailer Modal */}
+      {/* Trailer (YouTube style bottom sheet) */}
       {showTrailer && movie.trailer && (
-        <div
-          className="fixed inset-0 bg-black/90 flex items-center justify-center z-[60] p-4 mv-fade"
-          onClick={() => setShowTrailer(false)}
-        >
-          <div
-            className="relative w-full max-w-4xl aspect-video mv-pop-in"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button
-              onClick={() => setShowTrailer(false)}
-              className="absolute -top-10 right-0 bg-slate-700 hover:bg-slate-600 text-white p-2 rounded-full transition"
-            >
-              ✕
-            </button>
-            <iframe
-              src={movie.trailer}
-              title="Trailer"
-              allowFullScreen
-              className="w-full h-full rounded-lg"
-            />
-          </div>
-        </div>
+        <TrailerSheet
+          movie={movie}
+          relatedItems={relatedItems}
+          showAdultContent={showAdultContent}
+          onClose={(current) => {
+            setShowTrailer(false)
+            if (current.id !== movie.id) onMovieClick?.(current)
+          }}
+        />
       )}
 
       {/* Comments */}
@@ -1659,4 +2071,4 @@ export default function MovieDetailPage({
       )}
     </div>
   )
-    }
+                  }

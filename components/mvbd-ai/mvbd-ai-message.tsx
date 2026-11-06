@@ -1,5 +1,6 @@
 "use client"
 
+import { usePosterUrl, POSTER_PLACEHOLDER } from "../poster-image"
 import { useEffect, useMemo, useRef, useState } from "react"
 import type { ReactNode } from "react"
 import { Check, Copy, Film, Share2 } from "lucide-react"
@@ -122,13 +123,14 @@ function renderContent(content: string): ReactNode[] {
 /* ---------- movie cards ---------- */
 
 function MovieCard({ movie }: { movie: MvbdAiMovie }) {
+  const posterUrl = usePosterUrl({ src: movie.poster, title: movie.title, year: movie.year })
   const meta = [movie.year, movie.language, movie.quality].filter(Boolean).join(" · ")
   const body = (
     <>
       <span className="mvbd-ai-poster">
-        {movie.poster ? (
+        {posterUrl !== POSTER_PLACEHOLDER ? (
           <img
-            src={movie.poster}
+            src={posterUrl}
             alt=""
             loading="lazy"
             onError={(e) => { e.currentTarget.style.display = "none" }}

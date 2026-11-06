@@ -1,5 +1,6 @@
 "use client"
 
+import PosterImage from "./poster-image"
 import type { movies as allMovies } from "@/lib/movie-data"
 import { useEffect, useState } from "react"
 import { getMovieUploadTime, getTimeAgo, setMovieUploadTime } from "@/lib/firebase"
@@ -92,9 +93,11 @@ export default function MovieGrid({
               return (
                 <div key={movie.id} onClick={() => onMovieClick(movie)} className="cursor-pointer group">
                   <div className="aspect-[2/3] rounded-lg overflow-hidden shadow-lg hover:shadow-2xl transition transform hover:scale-105 bg-slate-700 relative">
-                    <img
-                      src={movie.poster || "/placeholder.svg"}
-                      alt={movie.title}
+                    <PosterImage
+                      src={movie.poster}
+                      title={movie.title}
+                      year={movie.year}
+                      genre={movie.genre}
                       className={`w-full h-full object-cover ${shouldBlur ? "blur-lg" : ""}`}
                     />
 
